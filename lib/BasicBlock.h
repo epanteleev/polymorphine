@@ -3,25 +3,27 @@
 #include <vector>
 #include <iosfwd>
 
-#include "Instruction.h"
+#include "instruction/Instruction.h"
 #include "utility/OrderedSet.h"
 
 class BasicBlock final {
 public:
+    template<typename U>
+    using creator = std::function<std::unique_ptr<U>(std::size_t, BasicBlock*)>;
+
     explicit BasicBlock(const std::size_t id): m_id(id) {}
 
-    UnaryInstruction* push_back(const UnaryOp op, const Value& operand) {
-        return m_instructions.push_back<UnaryInstruction>(this, op, operand);
+    template<typename U>
+    U* push_back(const creator<U> fn) {
+        auto creator = [&] (std::size_t id) {
+            return fn(id, this);
+        };
+
+        return m_instructions.push_back<U>(creator);
     }
 
-    BinaryInstruction* push_back(const BinaryOp op, const Value& lhs, const Value& rhs) {
-        return m_instructions.push_back<BinaryInstruction>(this, op, lhs, rhs);
-    }
-
-    TerminateInstruction* push_back(const TermInstType type,
-                                                  std::vector<BasicBlock *> &&successors) {
-        return m_instructions.push_back<TerminateInstruction>(this, type, std::move(successors));
-    }
+    [[nodiscard]]
+    std::size_t id() const { return m_id; }
 
     void print(std::ostream &os) const;
 

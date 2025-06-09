@@ -14,10 +14,21 @@ struct Elem {
     }
 };
 
+template<typename T>
+using create_fn = std::function<std::unique_ptr<Elem<T>>(std::size_t)>;
+
+
+template<typename T>
+create_fn<T> create(T value) {
+    return [&](std::size_t id) {
+        return std::make_unique<Elem<int>>(id, value);
+    };
+}
+
 TEST(OrderedSet, test1) {
     OrderedSet<Elem<int>> set;
-    set.push_back<Elem<int>>(3);
-    set.push_back<Elem<int>>(4);
+    set.push_back(create(3));
+    set.push_back(create(4));
 
     ASSERT_EQ(set[0].value, 3);
     ASSERT_EQ(set[1].value, 4);
@@ -25,8 +36,8 @@ TEST(OrderedSet, test1) {
 
 TEST(OrderedSet, iterator1) {
     OrderedSet<Elem<int>> set;
-    set.push_back<Elem<int>>(3);
-    set.push_back<Elem<int>>(4);
+    set.push_back(create(3));
+    set.push_back(create(4));
 
     auto it = set.begin();
     ASSERT_EQ(it->value, 3);
@@ -36,8 +47,8 @@ TEST(OrderedSet, iterator1) {
 
 TEST(OrderedSet, iterator2) {
     OrderedSet<Elem<int>> set;
-    set.push_back<Elem<int>>(3);
-    set.push_back<Elem<int>>(4);
+    set.push_back(create(3));
+    set.push_back(create(4));
 
     auto it = set.end();
     ASSERT_EQ(it->value, 4);

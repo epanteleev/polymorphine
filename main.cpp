@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "lib/BasicBlock.h"
+#include "lib/FunctionData.h"
 #include "lib/types/Type.h"
 #include "lib/types/TypeMatchingRules.h"
 
@@ -12,13 +13,16 @@ int main() {
         std::cout << "Type is a signed integer type." << std::endl;
     }
 
-    BasicBlock bb(0);
-    const auto v = bb.push_back(BinaryOp::Add, Value::i32(3), Value::i32(4));
+    FunctionPrototype proto(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "main");
+    ArgumentValue arg(1, SignedIntegerType::i32());
+    FunctionData fd(0, std::move(proto), {std::move(arg)});
 
-    bb.print(std::cout);
+    auto bb = fd.begin();
+    auto arg0 = fd.arg(0);
+    auto add = bb->push_back(Binary::add(arg0, Value::i32(2)));
+    auto sub = bb->push_back(Binary::sub(Value::i32(5), add));
 
-    std::function<BinaryInstruction(std::size_t, BasicBlock*)> p = BinaryInstruction::add(Value::i32(3), Value::i32(4));
-    auto inst = p(0, &bb);
-    inst.print(std::cout);
+
+    fd.print(std::cout);
     return 0;
 }

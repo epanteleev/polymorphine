@@ -18,6 +18,14 @@ public:
 
     void print(std::ostream &os) const;
 
+    bool operator==(const Type &other) const {
+        return this == &other;
+    }
+
+    bool operator!=(const Type &other) const {
+        return !(*this == other);
+    }
+
     virtual void visit(type::Visitor &visitor) = 0;
 };
 

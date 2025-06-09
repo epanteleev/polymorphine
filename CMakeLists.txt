@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 26)
 add_library(ckoof SHARED lib/types/Type.h
         lib/BasicBlock.cpp
         lib/BasicBlock.h
-        lib/Instruction.cpp
-        lib/Instruction.h
+        lib/instruction/Instruction.cpp
+        lib/instruction/Instruction.h
         lib/ir_frwd.h
         lib/value/Value.cpp
         lib/value/Value.h
@@ -20,6 +20,12 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/utility/Error.h
         lib/types/Type.cpp
         lib/types/TypeVisitor.h
+        lib/FunctionData.cpp
+        lib/FunctionData.h
+        lib/FunctionPrototype.h
+        lib/FunctionPrototype.cpp
+        lib/ArgumentValue.cpp
+        lib/ArgumentValue.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

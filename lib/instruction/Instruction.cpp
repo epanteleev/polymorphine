@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "utility/Error.h"
-#include "types/Type.h"
-#include "value/Value.h"
+#include "../utility/Error.h"
+#include "../types/Type.h"
+#include "../value/Value.h"
 
 
 namespace {
@@ -30,7 +30,7 @@ namespace {
             }
         }
 
-        void accept(BinaryInstruction *inst) override {
+        void accept(Binary *inst) override {
             os << '%' << inst->id() << " = ";
             os << binaryOpToString(inst->op());
             os << ' ';
@@ -53,12 +53,22 @@ namespace {
             }
         }
 
-        void accept(UnaryInstruction *inst) override {
+        void accept(Unary *inst) override {
             os << '%' << inst->id() << " = ";
             os << unaryOpToString(inst->op());
             os << ' ';
             inst->type()->print(os);
             os << ' ' << inst->operand();
+        }
+
+        static std::string_view terminateOpToString(const TermInstType op) {
+            switch (op) {
+                case TermInstType::Return: return "ret";
+                case TermInstType::Branch: return "br";
+                case TermInstType::ConditionalBranch: return "br_cond";
+                case TermInstType::Switch: return "switch";
+                default: die("wrong type");
+            }
         }
 
         void accept(TerminateInstruction *inst) override {

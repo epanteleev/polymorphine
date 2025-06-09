@@ -12,4 +12,10 @@ namespace error {
         std::cerr << std::stacktrace::current() << std::endl;
         std::terminate();
     }
+
+    void assert(const bool condition, std::source_location loc, const std::string& msg) {
+        if (condition) return;
+        std::cerr << "Assertion " << condition << " failed: " << msg << std::endl;
+        raise(loc, msg);
+    }
 }

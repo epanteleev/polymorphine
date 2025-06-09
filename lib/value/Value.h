@@ -10,6 +10,7 @@ template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
     std::is_same_v<T, std::uint64_t> ||
+    std::is_same_v<T, ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *>;
 
 class Value final {
@@ -17,6 +18,9 @@ public:
     Value(double value, FloatingPointType* type) noexcept;
     Value(std::uint64_t value, UnsignedIntegerType* type) noexcept;
     Value(std::int64_t value, SignedIntegerType * type) noexcept;
+
+    Value(ArgumentValue* value) noexcept;
+    Value(ValueInstruction * value) noexcept;
 
     template <IsValueType T>
     [[nodiscard]] T get() const {
@@ -42,6 +46,7 @@ private:
     std::variant<double,
         std::int64_t,
         std::uint64_t,
+        ArgumentValue*,
         ValueInstruction *> m_value;
     Type* m_type;
 };

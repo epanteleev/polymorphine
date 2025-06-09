@@ -53,4 +53,3 @@ void Type::print(std::ostream &os) const {
     Printer p(os);
     p.do_print(const_cast<Type *>(this));
 }
-

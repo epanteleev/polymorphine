@@ -4,11 +4,17 @@
 #include <functional>
 #include <vector>
 
-#include "InstructionVisitor.h"
-#include "ir_frwd.h"
-#include "value/Value.h"
+#include "../InstructionVisitor.h"
+#include "../ir_frwd.h"
+#include "../value/Value.h"
 
 #include <iosfwd>
+#include <memory>
+
+#include "../BasicBlock.h"
+
+template <typename T>
+using InstructionBuilder = std::function<std::unique_ptr<T>(std::size_t, BasicBlock*)>;
 
 class Instruction {
 public:
@@ -71,9 +77,9 @@ enum class BinaryOp {
     ShiftRight
 };
 
-class BinaryInstruction final: public ValueInstruction {
+class Binary final: public ValueInstruction {
 public:
-    BinaryInstruction(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value& lhs, const Value& rhs):
+    Binary(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value& lhs, const Value& rhs):
         ValueInstruction(id, bb, lhs.type(), {lhs, rhs}), m_op(op) {}
 
     [[nodiscard]]
@@ -91,12 +97,16 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static BinaryInstruction create(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value& lhs, const Value& rhs) {
-        return BinaryInstruction(id, bb, op, lhs, rhs);
+    static InstructionBuilder<Binary> add(const Value& lhs, const Value& rhs) {
+        return [&] (std::size_t id, BasicBlock *bb) {
+            return std::make_unique<Binary>(id, bb, BinaryOp::Add, lhs, rhs);
+        };
     }
 
-    static auto add(const Value& lhs, const Value& rhs) {
-        return std::bind(&BinaryInstruction::create, std::placeholders::_1, std::placeholders::_2, BinaryOp::Add, lhs, rhs);
+    static InstructionBuilder<Binary> sub(const Value& lhs, const Value& rhs) {
+        return [&] (std::size_t id, BasicBlock *bb) {
+            return std::make_unique<Binary>(id, bb, BinaryOp::Subtract, lhs, rhs);
+        };
     }
 
 private:
@@ -115,9 +125,9 @@ enum class UnaryOp {
     Float2Int,
 };
 
-class UnaryInstruction final: public ValueInstruction {
+class Unary final: public ValueInstruction {
 public:
-    UnaryInstruction(const std::size_t id, BasicBlock *bb, const UnaryOp op, const Value& operand)
+    Unary(const std::size_t id, BasicBlock *bb, const UnaryOp op, const Value& operand)
         : ValueInstruction(id, bb, operand.type(), {operand}), m_op(op) {}
 
     [[nodiscard]]
@@ -137,6 +147,7 @@ private:
 enum class TermInstType {
     Branch,
     ConditionalBranch,
+    Switch,
     Return,
     Call,
     VCall,
@@ -153,6 +164,11 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
+    static InstructionBuilder<TerminateInstruction> ret() {
+        return [&] (std::size_t id, BasicBlock *bb) {
+            return std::make_unique<TerminateInstruction>(id, bb, TermInstType::Return, std::vector<BasicBlock *>{});
+        };
+    }
 private:
     const TermInstType m_type;
     std::vector<BasicBlock* > m_successors;

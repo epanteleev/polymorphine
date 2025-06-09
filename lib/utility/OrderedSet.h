@@ -4,13 +4,7 @@
 #include <vector>
 
 
-
-template<typename T>
-concept HasId = requires(T t) {
-    { t.id() } -> std::convertible_to<std::size_t>;
-};
-
-template<HasId T>
+template<typename  T>
 class OrderedSet final {
     class Node final {
     public:
@@ -70,10 +64,13 @@ class OrderedSet final {
             return current->data.get();
         }
 
+        T* get() { return current->data.get(); }
     private:
         Node* current;
     };
 public:
+    template<typename U>
+    using creator = std::function<std::unique_ptr<U>(std::size_t)>;
     using iterator = Iterator;
     using const_iterator = Iterator;
 
@@ -84,11 +81,11 @@ public:
         }
     }
 
-    template<HasId U, typename... Args>
-    U* push_back(Args&&... args) {
+    template<typename U>
+    U* push_back(const creator<U>& fn) {
         m_size++;
         if (m_head == nullptr) {
-            return add_first<U>(std::forward<Args>(args)...);
+            return add_first(fn);
         }
         if (m_size == 2) {
             delete m_tail;
@@ -96,7 +93,7 @@ public:
         }
 
         const auto index = get_free_index();
-        auto * node = new Node(std::make_unique<U>(index, std::forward<Args>(args)...));
+        auto * node = new Node(fn(index));
         m_tail->next = node;
         node->prev = m_tail;
         m_tail = node;
@@ -104,11 +101,11 @@ public:
         return static_cast<U*>(m_tail->data.get());
     }
 
-    template<HasId U, typename... Args>
-    T* push_front(Args&&... args) {
+    template<typename U>
+    T* push_front(const creator<U>& fn) {
         m_size++;
         if (m_head == nullptr) {
-            return add_first<U>(std::forward<Args>(args)...);
+            return add_first(fn);
         }
         if (m_size == 2) {
             delete m_tail;
@@ -116,7 +113,7 @@ public:
         }
 
         const auto index = get_free_index();
-        auto node = new Node(std::make_unique<U>(index, std::forward<Args>(args)...));
+        auto * node = new Node(fn(index));
         node->next = m_head;
         m_head->prev = node;
         m_head = node;
@@ -165,9 +162,9 @@ public:
     }
 
 private:
-    template<HasId U, typename... Args>
-    U* add_first(Args&&... args) {
-        m_head = new Node(std::make_unique<U>(0, std::forward<Args>(args)...));
+    template<typename U>
+    U* add_first(const creator<U>& fn) {
+        m_head = new Node(fn(0));
         m_tail = new Node(nullptr);
 
         m_head->next = m_tail;
