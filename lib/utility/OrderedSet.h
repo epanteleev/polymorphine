@@ -90,6 +90,10 @@ public:
         if (m_head == nullptr) {
             return add_first<U>(std::forward<Args>(args)...);
         }
+        if (m_size == 2) {
+            delete m_tail;
+            m_tail = m_head;
+        }
 
         const auto index = get_free_index();
         auto * node = new Node(std::make_unique<U>(index, std::forward<Args>(args)...));
@@ -106,6 +110,10 @@ public:
         if (m_head == nullptr) {
             return add_first<U>(std::forward<Args>(args)...);
         }
+        if (m_size == 2) {
+            delete m_tail;
+            m_tail = m_head;
+        }
 
         const auto index = get_free_index();
         auto node = new Node(std::make_unique<U>(index, std::forward<Args>(args)...));
@@ -118,8 +126,9 @@ public:
     void remove(T* item) {
         m_size--;
         const auto id = item->id();
-        m_list.at(id)->data.reset();
+        auto node = m_list.at(id);
         m_free_indices.push_back(id);
+        delete node;
     }
 
     T &operator[](std::size_t index) {
@@ -147,7 +156,7 @@ public:
     }
 
     const_iterator end() const {
-        return Iterator(m_head);
+        return Iterator(m_tail);
     }
 
     [[nodiscard]]
@@ -159,7 +168,11 @@ private:
     template<HasId U, typename... Args>
     U* add_first(Args&&... args) {
         m_head = new Node(std::make_unique<U>(0, std::forward<Args>(args)...));
-        m_tail = m_head;
+        m_tail = new Node(nullptr);
+
+        m_head->next = m_tail;
+        m_tail->prev = m_head;
+
         m_list.push_back(m_head);
         return static_cast<U*>(m_head->data.get());
     }

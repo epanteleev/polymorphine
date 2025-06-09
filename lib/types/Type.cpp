@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "InstructionVisitor.h"
-
 
 SignedIntegerType * SignedIntegerType::i8() noexcept {
     static SignedIntegerType i8_instance(1);

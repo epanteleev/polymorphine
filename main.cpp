@@ -12,10 +12,13 @@ int main() {
         std::cout << "Type is a signed integer type." << std::endl;
     }
 
-    BasicBlock bb;
+    BasicBlock bb(0);
     const auto v = bb.push_back(BinaryOp::Add, Value::i32(3), Value::i32(4));
-    v->print(std::cout);
 
+    bb.print(std::cout);
 
+    std::function<BinaryInstruction(std::size_t, BasicBlock*)> p = BinaryInstruction::add(Value::i32(3), Value::i32(4));
+    auto inst = p(0, &bb);
+    inst.print(std::cout);
     return 0;
 }

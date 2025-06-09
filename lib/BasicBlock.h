@@ -1,11 +1,15 @@
 #pragma once
 
 #include <vector>
+#include <iosfwd>
+
 #include "Instruction.h"
 #include "utility/OrderedSet.h"
 
 class BasicBlock final {
 public:
+    explicit BasicBlock(const std::size_t id): m_id(id) {}
+
     UnaryInstruction* push_back(const UnaryOp op, const Value& operand) {
         return m_instructions.push_back<UnaryInstruction>(this, op, operand);
     }
@@ -19,7 +23,10 @@ public:
         return m_instructions.push_back<TerminateInstruction>(this, type, std::move(successors));
     }
 
+    void print(std::ostream &os) const;
+
 private:
+    const std::size_t m_id;
     std::vector<BasicBlock *> m_predecessors;
     std::vector<BasicBlock *> m_successors;
     OrderedSet<Instruction> m_instructions;

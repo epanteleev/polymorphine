@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <vector>
 
 #include "InstructionVisitor.h"
@@ -89,6 +90,14 @@ public:
     BinaryOp op() const { return m_op; }
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
+
+    static BinaryInstruction create(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value& lhs, const Value& rhs) {
+        return BinaryInstruction(id, bb, op, lhs, rhs);
+    }
+
+    static auto add(const Value& lhs, const Value& rhs) {
+        return std::bind(&BinaryInstruction::create, std::placeholders::_1, std::placeholders::_2, BinaryOp::Add, lhs, rhs);
+    }
 
 private:
     const BinaryOp m_op;
