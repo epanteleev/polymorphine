@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <variant>
+#include <iosfwd>
 
 #include "../ir_frwd.h"
 
@@ -33,6 +34,10 @@ public:
         return m_type;
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const Value& obj);
+
+    static Value i32(int value) noexcept;
+
 private:
     std::variant<double,
         std::int64_t,
@@ -40,5 +45,7 @@ private:
         ValueInstruction *> m_value;
     Type* m_type;
 };
+
+std::ostream& operator<<(std::ostream& os, const Value& obj);
 
 static_assert(std::is_trivially_copyable_v<Value>, "assumed to be");

@@ -3,16 +3,25 @@
 #include <cstddef>
 #include <vector>
 
+#include "InstructionVisitor.h"
 #include "ir_frwd.h"
 #include "value/Value.h"
 
+#include <iosfwd>
+
 class Instruction {
 public:
-    Instruction(const std::size_t id, BasicBlock *bb)
-        : m_owner(bb), m_id(id) {}
+    virtual ~Instruction() = default;
+
+    Instruction(const std::size_t id, BasicBlock *bb, const std::initializer_list<Value>& values)
+        : m_owner(bb), m_id(id), m_values(values) {}
 
     [[nodiscard]]
     std::size_t id() const { return m_id; }
+
+    virtual void visit(Visitor& visitor) = 0;
+
+    void print(std::ostream& os) const;
 
 protected:
     BasicBlock* m_owner;
@@ -22,9 +31,15 @@ protected:
 
 class ValueInstruction : public Instruction {
 public:
-    ValueInstruction(const std::size_t id, BasicBlock *bb): Instruction(id, bb) {}
+    ValueInstruction(const std::size_t id, BasicBlock *bb, Type* ty, const std::initializer_list<Value>& values):
+        Instruction(id, bb, values),
+        m_ty(ty) {}
+
+    [[nodiscard]]
+    Type* type() const { return m_ty; }
 
 protected:
+    Type* m_ty;
     std::vector<Instruction*> m_users;
 };
 
@@ -33,13 +48,14 @@ struct PhiEntry final {
     BasicBlock* predecessor{};
 };
 
-class PhiInstruction : public ValueInstruction {
+class PhiInstruction final: public ValueInstruction {
 public:
-    PhiInstruction(const std::size_t id, BasicBlock *bb, std::vector<PhiEntry> &&entries)
-        : ValueInstruction(id, bb), m_entries(std::move(entries)) {}
+    PhiInstruction(std::size_t id, BasicBlock *bb, NonTrivialType* ty, const std::initializer_list<Value>& values, std::vector<BasicBlock*> targets);
+
+    void visit(Visitor &visitor) override { visitor.accept(this); }
 
 private:
-    std::vector<PhiEntry> m_entries;
+    std::vector<BasicBlock*> m_entries;
 };
 
 enum class BinaryOp {
@@ -54,9 +70,10 @@ enum class BinaryOp {
     ShiftRight
 };
 
-class BinaryInstruction final: public Instruction {
+class BinaryInstruction final: public ValueInstruction {
 public:
-    BinaryInstruction(const std::size_t id, BasicBlock *bb, const BinaryOp op): Instruction(id, bb), m_op(op) {}
+    BinaryInstruction(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value& lhs, const Value& rhs):
+        ValueInstruction(id, bb, lhs.type(), {lhs, rhs}), m_op(op) {}
 
     [[nodiscard]]
     Value lhs() const {
@@ -67,6 +84,11 @@ public:
     Value rhs() const {
         return m_values.at(1);
     }
+
+    [[nodiscard]]
+    BinaryOp op() const { return m_op; }
+
+    void visit(Visitor &visitor) override { visitor.accept(this); }
 
 private:
     const BinaryOp m_op;
@@ -84,15 +106,20 @@ enum class UnaryOp {
     Float2Int,
 };
 
-class UnaryInstruction final: public Instruction {
+class UnaryInstruction final: public ValueInstruction {
 public:
-    UnaryInstruction(BasicBlock *bb, const std::size_t id, const UnaryOp op)
-        : Instruction(id, bb), m_op(op) {}
+    UnaryInstruction(const std::size_t id, BasicBlock *bb, const UnaryOp op, const Value& operand)
+        : ValueInstruction(id, bb, operand.type(), {operand}), m_op(op) {}
 
     [[nodiscard]]
     Value operand() const {
         return m_values.at(0);
     }
+
+    [[nodiscard]]
+    UnaryOp op() const { return m_op; }
+
+    void visit(Visitor &visitor) override { visitor.accept(this); }
 
 private:
     const UnaryOp m_op;
@@ -110,10 +137,12 @@ enum class TermInstType {
 
 class TerminateInstruction final: public Instruction {
 public:
-    TerminateInstruction(BasicBlock *bb, const std::size_t id, const TermInstType type,
+    TerminateInstruction(const std::size_t id, BasicBlock *bb, const TermInstType type,
                          std::vector<BasicBlock *> &&successors)
-        : Instruction(id, bb), m_type(type), m_successors(std::move(successors)) {
+        : Instruction(id, bb, {}), m_type(type), m_successors(std::move(successors)) {
     }
+
+    void visit(Visitor &visitor) override { visitor.accept(this); }
 
 private:
     const TermInstType m_type;

@@ -2,7 +2,9 @@
 
 #include <cstddef>
 #include <functional>
+#include <iosfwd>
 
+#include "TypeVisitor.h"
 #include "TypeMatcher.h"
 
 class Type {
@@ -13,6 +15,10 @@ public:
     bool isa(const TypeMatcher &matcher) const {
         return matcher(this);
     }
+
+    void print(std::ostream &os) const;
+
+    virtual void visit(type::Visitor &visitor) = 0;
 };
 
 class NonTrivialType : public Type {
@@ -43,6 +49,8 @@ public:
         return m_size;
     }
 
+    void visit(type::Visitor &visitor) override { visitor.accept(this); }
+
 private:
     std::size_t m_size;
 };
@@ -55,6 +63,13 @@ public:
     std::size_t size_of() const override {
         return m_size;
     }
+
+    void visit(type::Visitor &visitor) override { visitor.accept(this); }
+
+    static SignedIntegerType* i8() noexcept;
+    static SignedIntegerType* i16() noexcept;
+    static SignedIntegerType* i32() noexcept;
+    static SignedIntegerType* i64() noexcept;
 
 private:
     const std::size_t m_size;
@@ -69,6 +84,8 @@ public:
     std::size_t size_of() const override {
         return m_size;
     }
+
+    void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
 private:
     const std::size_t m_size;

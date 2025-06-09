@@ -1,6 +1,11 @@
 #pragma once
 
 class Instruction;
+class BinaryInstruction;
+class UnaryInstruction;
+class TerminateInstruction;
+class PhiInstruction;
+
 class BasicBlock;
 
 class Type;

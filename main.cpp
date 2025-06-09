@@ -1,10 +1,9 @@
 #include <iostream>
 #include <memory>
 
-#include "lib/Instruction.h"
+#include "lib/BasicBlock.h"
 #include "lib/types/Type.h"
 #include "lib/types/TypeMatchingRules.h"
-#include "lib/utlility/OrderedSet.h"
 
 
 int main() {
@@ -13,8 +12,10 @@ int main() {
         std::cout << "Type is a signed integer type." << std::endl;
     }
 
-    OrderedSet<Instruction> orderedSet;
-    auto instruction = orderedSet.push_back<BinaryInstruction>(nullptr, BinaryOp::Add);
+    BasicBlock bb;
+    const auto v = bb.push_back(BinaryOp::Add, Value::i32(3), Value::i32(4));
+    v->print(std::cout);
+
 
     return 0;
 }
