@@ -8,13 +8,10 @@
 
 class BasicBlock final {
 public:
-    template<typename U>
-    using creator = std::function<std::unique_ptr<U>(std::size_t, BasicBlock*)>;
-
     explicit BasicBlock(const std::size_t id): m_id(id) {}
 
     template<typename U>
-    U* push_back(const creator<U> fn) {
+    U* push_back(const InstructionBuilder<U> fn) {
         auto creator = [&] (std::size_t id) {
             return fn(id, this);
         };

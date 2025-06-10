@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iosfwd>
+#include <span>
 
 #include "ArgumentValue.h"
 #include "ir_frwd.h"

@@ -6,6 +6,7 @@ class Unary;
 class TerminateInstruction;
 class PhiInstruction;
 class ValueInstruction;
+class TerminateValueInstruction;
 
 class BasicBlock;
 

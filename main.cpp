@@ -1,10 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "lib/BasicBlock.h"
-#include "lib/FunctionData.h"
-#include "lib/types/Type.h"
-#include "lib/types/TypeMatchingRules.h"
+#include "lib/ir.h"
 
 
 int main() {

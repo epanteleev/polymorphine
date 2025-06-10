@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31)
 project(shlang_cpp)
 
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 23)
 
 add_library(ckoof SHARED lib/types/Type.h
         lib/BasicBlock.cpp
@@ -26,6 +26,12 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/FunctionPrototype.cpp
         lib/ArgumentValue.cpp
         lib/ArgumentValue.h
+        lib/instruction/Binary.h
+        lib/instruction/ValueInstruction.h
+        lib/instruction/Unary.h
+        lib/instruction/TerminateValueInstruction.h
+        lib/instruction/TerminateInstruction.h
+        lib/ir.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

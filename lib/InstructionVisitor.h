@@ -8,5 +8,6 @@ public:
     virtual void accept(Binary *inst) = 0;
     virtual void accept(Unary *inst) = 0;
     virtual void accept(TerminateInstruction *inst) = 0;
+    virtual void accept(TerminateValueInstruction* inst) = 0;
     virtual void accept(PhiInstruction *inst) = 0;
 };

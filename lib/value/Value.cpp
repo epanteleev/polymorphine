@@ -3,18 +3,19 @@
 
 #include <iostream>
 #include "../instruction/Instruction.h"
+#include "../instruction/ValueInstruction.h"
 #include "ArgumentValue.h"
 
 
-Value::Value(double value, FloatingPointType *type): m_value(value),
+Value::Value(double value, FloatingPointType *type) noexcept: m_value(value),
                                                      m_type(type) {
 }
 
-Value::Value(std::uint64_t value, UnsignedIntegerType *type): m_value(value),
+Value::Value(std::uint64_t value, UnsignedIntegerType *type) noexcept: m_value(value),
                                                                 m_type(type) {
 }
 
-Value::Value(std::int64_t value, SignedIntegerType *type): m_value(value),
+Value::Value(std::int64_t value, SignedIntegerType *type) noexcept: m_value(value),
                                                       m_type(type) {
 }
 
