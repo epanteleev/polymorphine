@@ -6,9 +6,11 @@
 
 #include "ir_frwd.h"
 
+#include "value/LocalValue.h"
+
 class ArgumentValue final {
 public:
-    explicit ArgumentValue(std::size_t index, Type* type) noexcept
+    explicit ArgumentValue(const std::size_t index, Type* type) noexcept
         : m_index(index), m_type(type) {}
 
     void print(std::ostream& os) const;
@@ -23,3 +25,5 @@ private:
     Type* m_type;
     std::vector<Instruction*> m_used_in;
 };
+
+static_assert(LocalValueType<ArgumentValue>, "ArgumentValue should be a LocalValueType");

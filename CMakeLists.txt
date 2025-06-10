@@ -32,6 +32,7 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/TerminateValueInstruction.h
         lib/instruction/TerminateInstruction.h
         lib/ir.h
+        lib/value/LocalValue.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

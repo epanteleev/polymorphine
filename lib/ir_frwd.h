@@ -7,6 +7,13 @@ class TerminateInstruction;
 class PhiInstruction;
 class ValueInstruction;
 class TerminateValueInstruction;
+class Return;
+class Branch;
+class CondBranch;
+class Switch;
+class ReturnValue;
+class VCall;
+class IVCall;
 
 class BasicBlock;
 

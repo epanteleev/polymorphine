@@ -11,7 +11,7 @@ public:
     explicit BasicBlock(const std::size_t id): m_id(id) {}
 
     template<typename U>
-    U* push_back(const InstructionBuilder<U> fn) {
+    U* push_back(const InstructionBuilder<U>& fn) {
         auto creator = [&] (std::size_t id) {
             return fn(id, this);
         };

@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "lib/ir.h"
+#include "lib/instruction/TerminateInstruction.h"
 
 
 int main() {
@@ -15,10 +16,10 @@ int main() {
     FunctionData fd(0, std::move(proto), {std::move(arg)});
 
     auto bb = fd.begin();
-    auto arg0 = fd.arg(0);
+    const auto arg0 = fd.arg(0);
     auto add = bb->push_back(Binary::add(arg0, Value::i32(2)));
     auto sub = bb->push_back(Binary::sub(Value::i32(5), add));
-
+    bb->push_back(ReturnValue::ret(sub));
 
     fd.print(std::cout);
     return 0;

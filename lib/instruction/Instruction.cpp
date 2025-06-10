@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "BasicBlock.h"
 #include "../utility/Error.h"
 #include "types/Type.h"
 #include "value/Value.h"
@@ -66,25 +67,43 @@ namespace {
             os << ' ' << inst->operand();
         }
 
-        static std::string_view terminateOpToString(const TermInstType op) {
-            switch (op) {
-                case TermInstType::Return: return "ret";
-                case TermInstType::Branch: return "br";
-                case TermInstType::ConditionalBranch: return "br_cond";
-                case TermInstType::Switch: return "switch";
-                default: die("wrong type");
-            }
+        void accept(Branch* branch) override {
+            os << "br label %" << branch->target()->id();
         }
 
-        void accept(TerminateInstruction *inst) override {
-
+        void accept(CondBranch *cond_branch) override {
+            os << "br " << cond_branch->condition();
+            os << ", label %" << cond_branch->onTrue()->id();
+            os << ", label %" << cond_branch->onFalse()->id();
         }
 
         void accept(PhiInstruction *inst) override {
 
         }
 
+        void accept(Return *inst) override {
+            os << "ret void";
+        }
+
+        void accept(ReturnValue *inst) override {
+            os << "ret ";
+            inst->ret_value().type()->print(os);
+            os << ' ' << inst->ret_value();
+        }
+
         void accept(TerminateValueInstruction *inst) override {
+
+        }
+
+        void accept(Switch *inst) override {
+
+        }
+
+        void accept(VCall *call) override {
+
+        }
+
+        void accept(IVCall *call) override {
 
         }
 
