@@ -9,3 +9,4 @@
 #include "instruction/ValueInstruction.h"
 #include "instruction/Binary.h"
 #include "instruction/Unary.h"
+#include "instruction/TerminateInstruction.h"

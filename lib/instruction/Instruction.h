@@ -5,9 +5,10 @@
 #include <vector>
 #include <iosfwd>
 #include <memory>
+#include <span>
 
-#include "../InstructionVisitor.h"
-#include "../value/Value.h"
+#include "InstructionVisitor.h"
+#include "value/Value.h"
 
 template <typename T>
 using InstructionBuilder = std::function<std::unique_ptr<T>(std::size_t, BasicBlock*)>;
@@ -26,6 +27,11 @@ public:
 
     [[nodiscard]]
     BasicBlock *owner() const { return m_owner; }
+
+    [[nodiscard]]
+    std::span<const Value> operands() const {
+        return m_values;
+    }
 
     virtual void visit(Visitor& visitor) = 0;
 

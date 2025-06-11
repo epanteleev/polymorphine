@@ -1,9 +1,47 @@
 #pragma once
 
-#include <type_traits>
+#include <expected>
+#include <iosfwd>
+#include <variant>
 
-#include "../ir_frwd.h"
+#include "ir_frwd.h"
+#include "utility/Error.h"
 
 template<typename T>
-concept LocalValueType = std::is_same_v<T, ValueInstruction> ||
-    std::is_same_v<T, ArgumentValue>;
+concept IsLocalValueType = std::is_same_v<T, ValueInstruction*> ||
+    std::is_same_v<T, ArgumentValue*>;
+
+class LocalValue final {
+public:
+    LocalValue(ArgumentValue* value) noexcept;
+    LocalValue(ValueInstruction * value) noexcept;
+
+    template <IsLocalValueType T>
+    [[nodiscard]] T get() const {
+        return std::get<T>(m_value);
+    }
+
+    template <IsLocalValueType T>
+    [[nodiscard]]
+    bool is() const {
+        return std::holds_alternative<T>(m_value);
+    }
+
+    [[nodiscard]]
+    const Type* type() const noexcept {
+        return m_type;
+    }
+
+    void add_user(Instruction* user);
+
+    friend std::ostream& operator<<(std::ostream& os, const LocalValue& obj);
+    static std::expected<LocalValue, Error> from(const Value& value);
+
+private:
+    std::variant<
+        ArgumentValue *,
+        ValueInstruction *> m_value;
+    const Type *m_type;
+};
+
+std::ostream& operator<<(std::ostream& os, const LocalValue& obj);

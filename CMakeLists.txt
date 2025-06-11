@@ -33,10 +33,19 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/TerminateInstruction.h
         lib/ir.h
         lib/value/LocalValue.h
+        lib/value/LocalValue.cpp
+        lib/instruction/ValueInstruction.cpp
+        lib/instruction/Terminator.h
+        lib/instruction/Terminator.cpp
+        lib/instruction/TerminateInstruction.cpp
+        lib/instruction/TerminateValueInstruction.cpp
 )
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror ")
+
 target_link_libraries(ckoof PRIVATE stdc++exp)
-target_include_directories(ckoof PRIVATE
+target_include_directories(ckoof PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>
         $<INSTALL_INTERFACE:include>
 )

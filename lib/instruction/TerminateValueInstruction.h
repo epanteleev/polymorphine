@@ -14,6 +14,9 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
+    [[nodiscard]]
+    std::span<BasicBlock *> successors();
+
 private:
     const TermValueInstType m_type;
     std::vector<BasicBlock* > m_successors;

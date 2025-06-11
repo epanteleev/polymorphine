@@ -4,7 +4,8 @@
 #include <variant>
 #include <iosfwd>
 
-#include "../ir_frwd.h"
+#include "ir_frwd.h"
+#include "types/Type.h"
 
 template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
@@ -15,32 +16,39 @@ concept IsValueType = std::is_same_v<T, double> ||
 
 class Value final {
 public:
-    Value(double value, FloatingPointType* type) noexcept;
-    Value(std::uint64_t value, UnsignedIntegerType* type) noexcept;
-    Value(std::int64_t value, SignedIntegerType * type) noexcept;
+    constexpr Value(double value, const FloatingPointType *type) noexcept: m_value(value), m_type(type) {}
+    constexpr Value(std::uint64_t value, const UnsignedIntegerType* type) noexcept: m_value(value), m_type(type) {}
+    constexpr Value(std::int64_t value, const SignedIntegerType * type) noexcept: m_value(value), m_type(type) {}
 
     Value(ArgumentValue* value) noexcept;
     Value(ValueInstruction * value) noexcept;
 
     template <IsValueType T>
-    [[nodiscard]] T get() const {
+    [[nodiscard]] constexpr T get() const {
         return std::get<T>(m_value);
     }
 
     template <IsValueType T>
     [[nodiscard]]
-    bool is() const {
+    constexpr bool is() const {
         return std::holds_alternative<T>(m_value);
     }
 
     [[nodiscard]]
-    Type* type() const noexcept {
+    constexpr const Type* type() const noexcept {
         return m_type;
+    }
+
+    template <typename T, typename Visitor>
+    constexpr T visit(Visitor&& visitor) const {
+        return std::visit(std::forward<Visitor>(visitor), m_value);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Value& obj);
 
-    static Value i32(int value) noexcept;
+    constexpr static Value i32(int value) noexcept {
+        return {value, SignedIntegerType::i32()};
+    }
 
 private:
     std::variant<double,
@@ -48,7 +56,7 @@ private:
         std::uint64_t,
         ArgumentValue*,
         ValueInstruction *> m_value;
-    Type* m_type;
+    const Type* m_type;
 };
 
 std::ostream& operator<<(std::ostream& os, const Value& obj);

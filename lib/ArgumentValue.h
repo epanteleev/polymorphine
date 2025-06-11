@@ -5,25 +5,24 @@
 #include <iosfwd>
 
 #include "ir_frwd.h"
-
 #include "value/LocalValue.h"
 
 class ArgumentValue final {
 public:
-    explicit ArgumentValue(const std::size_t index, Type* type) noexcept
+    explicit ArgumentValue(const std::size_t index, const Type* type) noexcept
         : m_index(index), m_type(type) {}
 
     void print(std::ostream& os) const;
 
     [[nodiscard]]
-    Type* type() const noexcept {
+    const Type* type() const noexcept {
         return m_type;
     }
 
+    void add_user(Instruction* user);
+
 private:
     std::size_t m_index;
-    Type* m_type;
+    const Type* m_type;
     std::vector<Instruction*> m_used_in;
 };
-
-static_assert(LocalValueType<ArgumentValue>, "ArgumentValue should be a LocalValueType");

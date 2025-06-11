@@ -16,3 +16,25 @@ void BasicBlock::print(std::ostream &os) const {
         os << '\n';
     }
 }
+
+void BasicBlock::make_def_use_chain(Instruction *inst) {
+    for (const auto& operand: inst->operands()) {
+        auto local = LocalValue::from(operand);
+        if (!local.has_value()) {
+            continue;
+        }
+
+        local.value().add_user(inst);
+    }
+}
+
+void BasicBlock::make_edges(Instruction *inst)  {
+    const auto term = Terminator::from(inst);
+    if (!term.has_value()) {
+        return;
+    }
+
+    for (auto& succ: term.value().targets()) {
+        succ->m_predecessors.push_back(succ);
+    }
+}

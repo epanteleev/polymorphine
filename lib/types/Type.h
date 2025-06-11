@@ -49,9 +49,8 @@ public:
 class IntegerType : public PrimitiveType {};
 
 class UnsignedIntegerType final: public IntegerType {
-public:
     explicit UnsignedIntegerType(std::size_t size) : m_size(size) {}
-
+public:
     [[nodiscard]]
     std::size_t size_of() const override {
         return m_size;
@@ -64,9 +63,9 @@ private:
 };
 
 class SignedIntegerType final: public IntegerType {
-public:
-    explicit SignedIntegerType(const std::size_t size) : m_size(size) {}
+    explicit constexpr SignedIntegerType(const std::size_t size) : m_size(size) {}
 
+public:
     [[nodiscard]]
     std::size_t size_of() const override {
         return m_size;
@@ -74,20 +73,35 @@ public:
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
-    static SignedIntegerType* i8() noexcept;
-    static SignedIntegerType* i16() noexcept;
-    static SignedIntegerType* i32() noexcept;
-    static SignedIntegerType* i64() noexcept;
+    static consteval const SignedIntegerType * i8() noexcept {
+        static constexpr SignedIntegerType i8_instance(1);
+        return &i8_instance;
+    }
+
+    static consteval const SignedIntegerType *i16() noexcept {
+        static constexpr SignedIntegerType i16_instance(2);
+        return &i16_instance;
+    }
+
+    static consteval const SignedIntegerType *i32() noexcept {
+        static constexpr SignedIntegerType i32_instance(4);
+        return &i32_instance;
+    }
+
+    static consteval const SignedIntegerType *i64() noexcept {
+        static constexpr SignedIntegerType i8_instance(8);
+        return &i8_instance;
+    }
 
 private:
     const std::size_t m_size;
 };
 
 class FloatingPointType final : public PrimitiveType {
-public:
     explicit FloatingPointType(const std::size_t size)
         : m_size(size) {}
 
+public:
     [[nodiscard]]
     std::size_t size_of() const override {
         return m_size;

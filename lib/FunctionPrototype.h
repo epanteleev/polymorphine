@@ -10,14 +10,14 @@
 
 class FunctionPrototype final {
 public:
-    explicit FunctionPrototype(Type* ret_type, std::vector<Type*> arg_types, std::string name)
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const Type*> arg_types, std::string name)
         : m_ret_type(ret_type), m_arg_types(std::move(arg_types)), m_name(std::move(name)) {}
 
     [[nodiscard]]
-    Type* ret_type() const { return m_ret_type; }
+    const Type* ret_type() const { return m_ret_type; }
 
     [[nodiscard]]
-    const std::vector<Type*>& arg_types() const { return m_arg_types; }
+    const std::vector<const Type*>& arg_types() const { return m_arg_types; }
 
     [[nodiscard]]
     std::string_view name() const { return m_name; }
@@ -26,7 +26,7 @@ public:
     void print(std::ostream &os, std::span<ArgumentValue> args) const;
 
 private:
-    Type* m_ret_type;
-    std::vector<Type*> m_arg_types;
+    const Type* m_ret_type;
+    std::vector<const Type*> m_arg_types;
     std::string m_name;
 };

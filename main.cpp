@@ -2,11 +2,10 @@
 #include <memory>
 
 #include "lib/ir.h"
-#include "lib/instruction/TerminateInstruction.h"
-
 
 int main() {
-    auto type = std::make_unique<SignedIntegerType>(4);
+    constexpr auto type = SignedIntegerType::i32();
+    constexpr auto value = Value::i32(2);
     if (type->isa(signedType() && i32())) {
         std::cout << "Type is a signed integer type." << std::endl;
     }
@@ -17,7 +16,7 @@ int main() {
 
     auto bb = fd.begin();
     const auto arg0 = fd.arg(0);
-    auto add = bb->push_back(Binary::add(arg0, Value::i32(2)));
+    auto add = bb->push_back(Binary::add(arg0, value));
     auto sub = bb->push_back(Binary::sub(Value::i32(5), add));
     bb->push_back(ReturnValue::ret(sub));
 

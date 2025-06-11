@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ir_frwd.h"
+#include "ir_frwd.h"
 
 namespace type {
     class Visitor {

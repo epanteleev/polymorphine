@@ -1,23 +1,10 @@
 #include "Value.h"
-#include "../types/Type.h"
+#include "types/Type.h"
 
 #include <iostream>
-#include "../instruction/Instruction.h"
-#include "../instruction/ValueInstruction.h"
+#include "instruction/Instruction.h"
+#include "instruction/ValueInstruction.h"
 #include "ArgumentValue.h"
-
-
-Value::Value(double value, FloatingPointType *type) noexcept: m_value(value),
-                                                     m_type(type) {
-}
-
-Value::Value(std::uint64_t value, UnsignedIntegerType *type) noexcept: m_value(value),
-                                                                m_type(type) {
-}
-
-Value::Value(std::int64_t value, SignedIntegerType *type) noexcept: m_value(value),
-                                                      m_type(type) {
-}
 
 Value::Value(ArgumentValue *value) noexcept : m_value(value), m_type(value->type()) {}
 
@@ -41,8 +28,4 @@ std::ostream& operator<<(std::ostream& os, const Value& obj) {
 
     std::visit(visitor, obj.m_value);
     return os;
-}
-
-Value Value::i32(const int value) noexcept {
-    return {value, SignedIntegerType::i32()};
 }

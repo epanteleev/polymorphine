@@ -4,7 +4,6 @@
 
 #include "FunctionData.h"
 #include "utility/Error.h"
-#include <types/Type.h>
 
 FunctionData::FunctionData(const std::size_t id, FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) :
     m_id(id),

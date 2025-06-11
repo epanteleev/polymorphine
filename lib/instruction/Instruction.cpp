@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "BasicBlock.h"
-#include "../utility/Error.h"
+#include "utility/Error.h"
 #include "types/Type.h"
 #include "value/Value.h"
 #include "instruction/ValueInstruction.h"
@@ -118,7 +118,7 @@ void Instruction::print(std::ostream& os) const {
 }
 
 PhiInstruction::PhiInstruction(const std::size_t id, BasicBlock *bb, NonTrivialType *ty,
-    const std::initializer_list<Value> &values, std::vector<BasicBlock *> targets)
+                               const std::initializer_list<Value> &values, std::vector<BasicBlock *> targets)
         : ValueInstruction(id, bb, ty, values), m_entries(std::move(targets)) {}
 
 TerminateValueInstruction::TerminateValueInstruction(const std::size_t id, BasicBlock *bb, NonTrivialType *ty,

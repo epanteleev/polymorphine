@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../FunctionPrototype.h"
+#include "FunctionPrototype.h"
 #include "Instruction.h"
 
 
@@ -10,6 +10,9 @@ public:
                          std::vector<BasicBlock *> &&successors)
         : Instruction(id, bb, std::move(values)), m_successors(std::move(successors)) {}
 
+    [[nodiscard]]
+    std::span<BasicBlock *> successors();
+    
 protected:
     std::vector<BasicBlock* > m_successors;
 };

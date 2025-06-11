@@ -4,15 +4,17 @@
 
 class ValueInstruction : public Instruction {
 public:
-    ValueInstruction(const std::size_t id, BasicBlock *bb, Type* ty, const std::initializer_list<Value>& values):
+    ValueInstruction(const std::size_t id, BasicBlock *bb, const Type* ty, const std::initializer_list<Value>& values):
         Instruction(id, bb, values),
         m_ty(ty) {}
 
     [[nodiscard]]
-    Type* type() const { return m_ty; }
+    const Type* type() const { return m_ty; }
+
+    void add_user(Instruction* user);
 
 protected:
-    Type* m_ty;
+    const Type* m_ty;
     std::vector<Instruction*> m_users;
 };
 
