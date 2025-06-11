@@ -14,6 +14,8 @@ class Switch;
 class ReturnValue;
 class VCall;
 class IVCall;
+class Store;
+class Alloc;
 
 class BasicBlock;
 
@@ -24,6 +26,7 @@ class FloatingPointType;
 class SignedIntegerType;
 class PrimitiveType;
 class NonTrivialType;
+class PointerType;
 
 class Value;
 class ArgumentValue;

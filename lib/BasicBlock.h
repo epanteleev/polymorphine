@@ -4,7 +4,6 @@
 #include <iosfwd>
 
 #include "instruction/Instruction.h"
-#include "instruction/Terminator.h"
 #include "utility/OrderedSet.h"
 #include "value/LocalValue.h"
 

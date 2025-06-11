@@ -10,7 +10,6 @@
 class FunctionData final {
 public:
     explicit FunctionData(std::size_t id, FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
-
     BasicBlock* create_basic_block() {
         const auto creator = [this](std::size_t id) {
             return std::make_unique<BasicBlock>(id);

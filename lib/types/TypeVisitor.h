@@ -10,5 +10,6 @@ namespace type {
         virtual void accept(SignedIntegerType *type) = 0;
         virtual void accept(UnsignedIntegerType *type) = 0;
         virtual void accept(FloatingPointType *type) = 0;
+        virtual void accept(PointerType* ptr) = 0;
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <limits>
+#include <deque>
 #include <list>
 #include <memory>
 #include <vector>
@@ -11,8 +11,8 @@ class OrderedSet final {
 public:
     template<typename U>
     using creator = std::function<std::unique_ptr<U>(std::size_t)>;
-    using iterator = typename std::list<std::unique_ptr<T>>::iterator;
-    using const_iterator = typename std::list<std::unique_ptr<T>>::const_iterator;
+    using iterator = typename std::deque<std::unique_ptr<T>>::iterator;
+    using const_iterator = typename std::deque<std::unique_ptr<T>>::const_iterator;
 
 private:
     template<typename iterator>
@@ -49,7 +49,6 @@ private:
 
 public:
     OrderedSet() = default;
-    ~OrderedSet() = default;
 
     template<typename U>
     U* push_back(const creator<U>& fn) {
@@ -138,5 +137,5 @@ private:
 
     std::vector<std::size_t> m_free_indices;
     std::vector<iterator> m_list;
-    std::list<std::unique_ptr<T>> m_holder;
+    std::deque<std::unique_ptr<T>> m_holder;
 };

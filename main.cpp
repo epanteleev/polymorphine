@@ -1,7 +1,18 @@
 #include <iostream>
-#include <memory>
 
 #include "lib/ir.h"
+
+
+FunctionData fib() {
+    FunctionPrototype prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "fib");
+
+    ArgumentValue arg(0, SignedIntegerType::i32());
+    FunctionData fn(0, std::move(prototype), {std::move(arg)});
+    auto bb = fn.begin();
+    const auto arg0 = fn.arg(0);
+
+    return fn;
+}
 
 int main() {
     constexpr auto type = SignedIntegerType::i32();

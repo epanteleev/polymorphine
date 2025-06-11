@@ -2,6 +2,7 @@
 
 #include "types/Type.h"
 #include "FunctionPrototype.h"
+#include "ArgumentValue.h"
 
 void FunctionPrototype::print(std::ostream &os) const {
     os << m_name << '(';

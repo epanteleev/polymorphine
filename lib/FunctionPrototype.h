@@ -5,7 +5,6 @@
 #include <iosfwd>
 #include <span>
 
-#include "ArgumentValue.h"
 #include "ir_frwd.h"
 
 class FunctionPrototype final {

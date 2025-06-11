@@ -1,6 +1,7 @@
-#include "BasicBlock.h"
-
 #include <iostream>
+
+#include "BasicBlock.h"
+#include "instruction/Terminator.h"
 
 void BasicBlock::print(std::ostream &os) const {
     if (m_id == 0) {

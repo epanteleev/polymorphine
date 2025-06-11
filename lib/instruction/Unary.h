@@ -12,6 +12,7 @@ enum class UnaryOp {
     Int2Ptr,
     Int2Float,
     Float2Int,
+    Load
 };
 
 class Unary final: public ValueInstruction {

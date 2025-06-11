@@ -24,6 +24,10 @@ namespace {
             os << 'f' << type->size_of() * 8;
         }
 
+        void accept(PointerType *type) override {
+            os << "ptr";
+        }
+
         std::ostream &os;
     };
 }

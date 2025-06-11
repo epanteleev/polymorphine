@@ -2,7 +2,9 @@
 
 #include <iostream>
 
+#include "Alloc.h"
 #include "BasicBlock.h"
+#include "Store.hpp"
 #include "utility/Error.h"
 #include "types/Type.h"
 #include "value/Value.h"
@@ -107,6 +109,15 @@ namespace {
 
         }
 
+        void accept(Store *store) override {
+            os << "store ptr" << store->pointer() << ", " << store->value().type() << ": " <<store->value();
+        }
+
+        void accept(Alloc *alloc) override {
+            os << '%' << alloc->id() << " = alloc ";
+            os << ' ';
+            alloc->type()->print(os);
+        }
         std::ostream& os;
     };
 }
