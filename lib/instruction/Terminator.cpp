@@ -19,10 +19,10 @@ std::span<BasicBlock *> Terminator::targets() const noexcept {
 }
 
 std::expected<Terminator, Error> Terminator::from(Instruction *inst) noexcept {
-    if (auto term = dynamic_cast<TerminateInstruction *>(inst)) {
+    if (const auto term = dynamic_cast<TerminateInstruction *>(inst)) {
         return Terminator(term);
     }
-    if (auto term = dynamic_cast<TerminateValueInstruction *>(inst)) {
+    if (const auto term = dynamic_cast<TerminateValueInstruction *>(inst)) {
         return Terminator(term);
     }
 

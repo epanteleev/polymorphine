@@ -41,6 +41,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/TerminateValueInstruction.cpp
         lib/instruction/Store.hpp
         lib/instruction/Alloc.h
+        lib/builder/FunctionBuilder.cpp
+        lib/builder/FunctionBuilder.hpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

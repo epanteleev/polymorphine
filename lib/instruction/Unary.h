@@ -30,6 +30,12 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
+    static InstructionBuilder<Unary> load(const Value &value) {
+        return [&](std::size_t id, BasicBlock* bb) {
+            return std::make_unique<Unary>(id, bb, UnaryOp::Load, value);
+        };
+    }
+
 private:
     const UnaryOp m_op;
 };

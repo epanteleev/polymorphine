@@ -110,14 +110,16 @@ namespace {
         }
 
         void accept(Store *store) override {
-            os << "store ptr" << store->pointer() << ", " << store->value().type() << ": " <<store->value();
+            os << "store ptr " << store->pointer() << ", ";
+            store->value().type()->print(os);
+            os << ": " << store->value();
         }
 
         void accept(Alloc *alloc) override {
             os << '%' << alloc->id() << " = alloc ";
-            os << ' ';
             alloc->type()->print(os);
         }
+
         std::ostream& os;
     };
 }
