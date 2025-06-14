@@ -1,5 +1,5 @@
 #include "TerminateValueInstruction.h"
 
-std::span<BasicBlock *> TerminateValueInstruction::successors() {
+std::span<BasicBlock *const> TerminateValueInstruction::successors() {
     return m_successors;
 }

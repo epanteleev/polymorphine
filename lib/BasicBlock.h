@@ -4,8 +4,8 @@
 #include <iosfwd>
 
 #include "instruction/Instruction.h"
+#include "instruction/Terminator.h"
 #include "utility/OrderedSet.h"
-#include "value/LocalValue.h"
 
 class BasicBlock final {
 public:
@@ -27,7 +27,22 @@ public:
     [[nodiscard]]
     std::size_t id() const { return m_id; }
 
+    [[nodiscard]]
+    Terminator last() const;
+
+    [[nodiscard]]
+    std::span<BasicBlock* const> successors() const {
+        return last().targets();
+    }
+
+    [[nodiscard]]
+    std::span<BasicBlock* const> predecessors() const {
+        return m_predecessors;
+    }
+
     void print(std::ostream &os) const;
+
+    void print_short_name(std::ostream &os) const;
 
 private:
     static void make_def_use_chain(Instruction* inst);

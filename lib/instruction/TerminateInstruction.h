@@ -11,7 +11,7 @@ public:
         : Instruction(id, bb, std::move(values)), m_successors(std::move(successors)) {}
 
     [[nodiscard]]
-    std::span<BasicBlock *> successors();
+    std::span<BasicBlock * const> successors() const;
     
 protected:
     std::vector<BasicBlock* > m_successors;
@@ -52,12 +52,12 @@ public:
     }
 
     [[nodiscard]]
-    const Value *condition() const {
-        return &m_values.at(0);
+    const Value &condition() const {
+        return m_values.at(0);
     }
 
     static InstructionBuilder<CondBranch> br_cond(const Value& condition, BasicBlock *true_target, BasicBlock *false_target) {
-        return [&] (std::size_t id, BasicBlock *bb) {
+        return [=] (std::size_t id, BasicBlock *bb) {
             return std::make_unique<CondBranch>(id, bb, condition, true_target, false_target);
         };
     }
@@ -76,7 +76,7 @@ public:
     }
 
     static InstructionBuilder<Branch> br(BasicBlock *target) {
-        return [&] (std::size_t id, BasicBlock *bb) {
+        return [=] (std::size_t id, BasicBlock *bb) {
             return std::make_unique<Branch>(id, bb, target);
         };
     }
@@ -90,11 +90,11 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static InstructionBuilder<Switch> sw(Value condition, std::vector<Value> &&cases, BasicBlock* default_target, std::vector<BasicBlock*>&& targets) {
-        return [&] (std::size_t id, BasicBlock *bb) {
-            auto t = std::move(targets);
+    static InstructionBuilder<Switch> sw(const Value &condition, std::vector<Value> &&cases, BasicBlock* default_target, std::vector<BasicBlock*>&& targets) {
+        return [=, targets = std::move(targets), cases = std::move(cases)] (std::size_t id, BasicBlock *bb) {
+            auto t = targets;
             t.emplace_back(default_target);
-            return std::make_unique<Switch>(id, bb, condition, std::move(cases), std::move(t));
+            return std::make_unique<Switch>(id, bb, condition, static_cast<std::vector<Value>>(cases), std::move(t));
         };
     }
 
@@ -115,7 +115,7 @@ public:
     }
 
     static InstructionBuilder<ReturnValue> ret(const Value& ret_value) {
-        return [&] (std::size_t id, BasicBlock *bb) {
+        return [=] (std::size_t id, BasicBlock *bb) {
             return std::make_unique<ReturnValue>(id, bb, ret_value);
         };
     }
@@ -132,8 +132,9 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static InstructionBuilder<VCall> call(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock *successor) {
-        return [&] (std::size_t id, BasicBlock *bb) {
-            return std::make_unique<VCall>(id, bb, prototype, std::move(args), successor);
+        return [=, args = std::move(args)] (std::size_t id, BasicBlock *bb) {
+            auto args1 = args;
+            return std::make_unique<VCall>(id, bb, prototype, std::move(args1), successor);
         };
     }
 private:
@@ -149,8 +150,8 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static InstructionBuilder<IVCall> call(const FunctionPrototype* prototype, const Value& pointer, std::vector<Value> &&args, BasicBlock *successor) {
-        return [&] (std::size_t id, BasicBlock *bb) {
-            auto values = std::move(args);
+        return [=, args = std::move(args)] (std::size_t id, BasicBlock *bb) {
+            auto values = args;
             values.push_back(pointer);
             return std::make_unique<IVCall>(id, bb, prototype, std::move(values), successor);
         };

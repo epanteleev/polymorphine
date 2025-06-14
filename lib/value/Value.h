@@ -20,7 +20,7 @@ public:
     constexpr Value(std::uint64_t value, const UnsignedIntegerType* type) noexcept: m_value(value), m_type(type) {}
     constexpr Value(std::int64_t value, const SignedIntegerType * type) noexcept: m_value(value), m_type(type) {}
 
-    Value(ArgumentValue* value) noexcept;
+    Value(const ArgumentValue* value) noexcept;
     Value(ValueInstruction * value) noexcept;
 
     template <IsValueType T>
@@ -54,7 +54,7 @@ private:
     std::variant<double,
         std::int64_t,
         std::uint64_t,
-        ArgumentValue*,
+        const ArgumentValue*,
         ValueInstruction *> m_value;
     const Type* m_type;
 };

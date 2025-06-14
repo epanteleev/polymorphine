@@ -2,19 +2,39 @@
 
 #include "BasicBlock.h"
 #include "instruction/Terminator.h"
+#include "utility/Error.h"
+#include "value/LocalValue.h"
+
+Terminator BasicBlock::last() const {
+    const auto back = m_instructions.back();
+    if (!back) {
+        die("BasicBlock has no instructions");
+    }
+
+    const auto term = Terminator::from(back.value());
+    if (!term.has_value()) {
+        die("Last instruction is not a terminator");
+    }
+
+    return term.value();
+}
 
 void BasicBlock::print(std::ostream &os) const {
-    if (m_id == 0) {
-        os << "entry:";
-    } else {
-        os << 'L' << m_id << ":" << std::endl;
-    }
+    print_short_name(os);
     os << std::endl;
 
     for (const auto &inst : m_instructions) {
         os << "  ";
         inst.print(os);
         os << '\n';
+    }
+}
+
+void BasicBlock::print_short_name(std::ostream &os) const {
+    if (m_id == 0) {
+        os << "entry:";
+    } else {
+        os << 'L' << m_id << ":";
     }
 }
 
@@ -35,7 +55,7 @@ void BasicBlock::make_edges(Instruction *inst)  {
         return;
     }
 
-    for (auto& succ: term.value().targets()) {
+    for (auto succ: term.value().targets()) {
         succ->m_predecessors.push_back(succ);
     }
 }

@@ -2,6 +2,9 @@
 
 #include "builder/FunctionBuilder.hpp"
 #include "lib/ir.h"
+#include "pass/analysis/AnalysisPassCache.h"
+#include "pass/analysis/traverse/PostOrderTraverse.h"
+#include "pass/analysis/traverse/PreorderTraverse.h"
 
 
 std::unique_ptr<FunctionData> fib() {
@@ -9,10 +12,75 @@ std::unique_ptr<FunctionData> fib() {
 
     ArgumentValue arg(0, SignedIntegerType::i32());
     auto data = FunctionBuilder::make(0, std::move(prototype), { std::move(arg) });
-    auto arg0 = data.arg(0);
-    //auto ret_addr = data.alloc(SignedIntegerType::i32());
+    auto n = data.arg(0);
+    auto ret_addr = data.alloc(SignedIntegerType::i32());
     auto n_addr = data.alloc(SignedIntegerType::i32());
-    data.store(n_addr, arg0);
+
+    auto a = data.alloc(SignedIntegerType::i32());
+    auto b = data.alloc(SignedIntegerType::i32());
+    auto c = data.alloc(SignedIntegerType::i32());
+    auto i = data.alloc(SignedIntegerType::i32());
+
+    data.store(n_addr, n);
+    data.store(a, Value::i32(0));
+    data.store(b, Value::i32(1));
+
+    auto v0 = data.load(n_addr);
+    auto cmp0 = data.icmp(IcmpPredicate::Eq, v0, Value::i32(0));
+
+    auto if_then = data.create_basic_block();
+    auto if_end = data.create_basic_block();
+    auto for_cond = data.create_basic_block();
+    auto for_body = data.create_basic_block();
+    auto for_end = data.create_basic_block();
+    auto for_inc = data.create_basic_block();
+    auto ret = data.create_basic_block();
+
+    data.br_cond(cmp0, if_then, if_end);
+
+    data.switch_block(if_then);
+
+    auto v1 = data.load(b);
+    data.store(ret_addr, v1);
+    data.br(ret);
+
+    data.switch_block(if_end);
+    data.store(i, Value::i32(2));
+    data.br(for_cond);
+
+    data.switch_block(for_cond);
+    auto v2 = data.load(n_addr);
+    auto v3 = data.load(i);
+    auto cmp = data.icmp(IcmpPredicate::Lt, v3, v2);
+    data.br_cond(cmp, for_body, for_end);
+
+    data.switch_block(for_body);
+    auto v4 = data.load(a);
+    auto v5 = data.load(b);
+    auto v6 = data.add(v4, v5);
+    data.store(c, v6);
+    data.store(a, v5);
+    data.store(b, v6);
+    data.br(for_inc);
+
+    data.switch_block(for_inc);
+
+    auto v7 = data.load(i);
+    auto v8 = data.add(v7, Value::i32(1));
+    data.store(i, v8);
+
+    data.br(for_cond);
+
+    data.switch_block(for_end);
+    auto v9 = data.load(b);
+    data.store(ret_addr, v9);
+    data.br(ret);
+
+    data.switch_block(ret);
+    auto v10 = data.load(ret_addr);
+
+    data.ret(v10);
+
     return data.build();
 }
 
@@ -26,6 +94,10 @@ int main() {
     ArgumentValue arg(1, SignedIntegerType::i32());
     auto fd = fib();
 
+    AnalysisPassCache cache;
+    auto order = cache.analyze<PostOrderTraverse>(fd.get());
+
+    std::cout << "Preorder traversal order: " << *order << std::endl;
     fd->print(std::cout);
     return 0;
 }

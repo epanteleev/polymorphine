@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include <list>
+#include <optional>
 #include <memory>
 #include <vector>
 
@@ -120,8 +120,16 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t size() const {
+    std::size_t size() const noexcept {
         return m_holder.size();
+    }
+
+    std::optional<T*> back() const {
+        if (size() == 0) {
+            return std::nullopt;
+        }
+
+        return std::make_optional(m_list.back()->get());
     }
 
 private:

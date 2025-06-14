@@ -3,6 +3,7 @@
 #include "instruction/ValueInstruction.h"
 #include "ArgumentValue.h"
 #include "value/Value.h"
+#include "utility/Error.h"
 
 LocalValue::LocalValue(ArgumentValue *value) noexcept :
     m_value(value),
@@ -39,14 +40,14 @@ void LocalValue::add_user(Instruction* user) {
 
 std::ostream& operator<<(std::ostream& os, const LocalValue& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if (std::is_same_v<T, ArgumentValue *>) {
+        if constexpr (std::is_same_v<T, ArgumentValue *>) {
             val->print(os);
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
             os << '%' << val->id();
 
         } else {
-            static_assert(IsLocalValueType<T>, "Unsupported type in Value variant");
+            static_assert(false, "Unsupported type in Value variant");
         }
     };
 

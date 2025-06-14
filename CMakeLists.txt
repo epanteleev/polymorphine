@@ -43,9 +43,21 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/Alloc.h
         lib/builder/FunctionBuilder.cpp
         lib/builder/FunctionBuilder.hpp
+        lib/instruction/Compare.cpp
+        lib/instruction/Compare.h
+        lib/pass/analysis/AnalysisPass.cpp
+        lib/pass/analysis/AnalysisPass.h
+        lib/pass/analysis/traverse/PreorderTraverse.cpp
+        lib/pass/analysis/traverse/PreorderTraverse.h
+        lib/pass/analysis/traverse/Ordering.h
+        lib/pass/analysis/traverse/Ordering.cpp
+        lib/pass/analysis/AnalysisPassCache.cpp
+        lib/pass/analysis/AnalysisPassCache.h
+        lib/pass/analysis/traverse/PostOrderTraverse.cpp
+        lib/pass/analysis/traverse/PostOrderTraverse.h
 )
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=thread")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 target_link_libraries(ckoof PRIVATE stdc++exp)
@@ -57,4 +69,5 @@ target_include_directories(ckoof PUBLIC
 add_executable(shlang_cpp main.cpp)
 target_link_libraries(shlang_cpp PRIVATE ckoof)
 
+enable_testing()
 add_subdirectory(tests)

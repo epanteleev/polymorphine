@@ -16,6 +16,7 @@ class VCall;
 class IVCall;
 class Store;
 class Alloc;
+class IcmpInstruction;
 
 class BasicBlock;
 
@@ -27,6 +28,12 @@ class SignedIntegerType;
 class PrimitiveType;
 class NonTrivialType;
 class PointerType;
+class FlagType;
+
 
 class Value;
 class ArgumentValue;
+
+class FunctionData;
+
+enum class Error;

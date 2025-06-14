@@ -28,6 +28,10 @@ namespace {
             os << "ptr";
         }
 
+        void accept(FlagType *type) override {
+            os << "flag";
+        }
+
         std::ostream &os;
     };
 }

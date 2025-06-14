@@ -13,6 +13,7 @@
 #include "instruction/Unary.h"
 #include "instruction/TerminateInstruction.h"
 #include "instruction/TerminateValueInstruction.h"
+#include "instruction/Compare.h"
 
 
 namespace {
@@ -57,6 +58,7 @@ namespace {
                 case UnaryOp::Int2Ptr: return "int2ptr";
                 case UnaryOp::Int2Float: return "int2fp";
                 case UnaryOp::Float2Int: return "fp2int";
+                case UnaryOp::Load: return "load";
                 default: die("wrong type");
             }
         }
@@ -74,7 +76,7 @@ namespace {
         }
 
         void accept(CondBranch *cond_branch) override {
-            os << "br " << cond_branch->condition();
+            os << "br_cond " << cond_branch->condition();
             os << ", label %" << cond_branch->onTrue()->id();
             os << ", label %" << cond_branch->onFalse()->id();
         }
@@ -118,6 +120,25 @@ namespace {
         void accept(Alloc *alloc) override {
             os << '%' << alloc->id() << " = alloc ";
             alloc->type()->print(os);
+        }
+
+        static std::string_view icmpOpToString(const IcmpPredicate op) noexcept {
+            switch (op) {
+                case IcmpPredicate::Eq: return "eq";
+                case IcmpPredicate::Ne: return "ne";
+                case IcmpPredicate::Gt: return "gt";
+                case IcmpPredicate::Ge: return "ge";
+                case IcmpPredicate::Lt: return "lt";
+                case IcmpPredicate::Le: return "le";
+                default: die("wrong type");
+            }
+        }
+
+        void accept(IcmpInstruction *icmp) override {
+            os << '%' << icmp->id() << " = icmp ";
+            icmp->type()->print(os);
+            os << ' ' << icmpOpToString(icmp->predicate()) << ' ';
+            os << icmp->lhs() << ", " << icmp->rhs();
         }
 
         std::ostream& os;

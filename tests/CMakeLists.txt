@@ -1,6 +1,6 @@
+
 include(../cmake/GoogleTest.cmake)
 
-enable_testing()
 include(GoogleTest)
 
 function(add_test_executable target)
@@ -14,3 +14,4 @@ function(add_test_executable target)
 endfunction()
 
 add_test_executable(ordered_set_tests ordered_set_tests ordered_set_tests.cpp)
+add_test_executable(instruction_tests instruction_tests instruction_tests.cpp)

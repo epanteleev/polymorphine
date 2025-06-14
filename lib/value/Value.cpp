@@ -6,7 +6,7 @@
 #include "instruction/ValueInstruction.h"
 #include "ArgumentValue.h"
 
-Value::Value(ArgumentValue *value) noexcept : m_value(value), m_type(value->type()) {}
+Value::Value(const ArgumentValue *value) noexcept : m_value(value), m_type(value->type()) {}
 
 Value::Value(ValueInstruction *value) noexcept: m_value(value), m_type(value->type()) {}
 
@@ -15,14 +15,14 @@ std::ostream& operator<<(std::ostream& os, const Value& obj) {
         if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
             os << val;
 
-        } else if (std::is_same_v<T, ArgumentValue *>) {
+        } else if constexpr (std::is_same_v<T, const ArgumentValue *>) {
             val->print(os);
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
             os << '%' << val->id();
 
         } else {
-            static_assert(IsValueType<T>, "Unsupported type in Value variant");
+            static_assert(false, "Unsupported type in Value variant");
         }
     };
 

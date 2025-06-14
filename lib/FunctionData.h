@@ -21,17 +21,23 @@ public:
     void print(std::ostream& os);
 
     [[nodiscard]]
-    BasicBlock* begin() {
+    BasicBlock* first() const {
         return m_basic_blocks.begin().get();
     }
 
     [[nodiscard]]
-    BasicBlock* end() {
+    BasicBlock* last() const {
         return m_basic_blocks.end().get();
     }
 
-    ArgumentValue* arg(const std::size_t index) {
+    [[nodiscard]]
+    const ArgumentValue *arg(const std::size_t index) const {
         return &m_args[index];
+    }
+
+    [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_basic_blocks.size();
     }
 
 private:

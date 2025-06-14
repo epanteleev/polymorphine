@@ -5,17 +5,16 @@
 #include <variant>
 
 #include "ir_frwd.h"
-#include "utility/Error.h"
 
 template<typename T>
-concept IsLocalValueType = std::is_same_v<T, ValueInstruction*> ||
-    std::is_same_v<T, ArgumentValue*>;
+concept IsLocalValueType = std::is_base_of_v<ValueInstruction, T> ||
+    std::is_same_v<T, ArgumentValue>;
 
 class LocalValue final {
-public:
-    LocalValue(ArgumentValue* value) noexcept;
-    LocalValue(ValueInstruction * value) noexcept;
+    explicit LocalValue(ArgumentValue* value) noexcept;
+    explicit LocalValue(ValueInstruction * value) noexcept;
 
+public:
     template <IsLocalValueType T>
     [[nodiscard]] T get() const {
         return std::get<T>(m_value);

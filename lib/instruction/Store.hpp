@@ -20,7 +20,7 @@ public:
     }
 
     static InstructionBuilder<Store> store(const Value& ptr, const Value& value) {
-        return [&](std::size_t id, BasicBlock *bb) {
+        return [=](std::size_t id, BasicBlock *bb) {
             return std::make_unique<Store>(id, bb, ptr, value);
         };
     }

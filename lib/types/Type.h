@@ -29,6 +29,18 @@ public:
     virtual void visit(type::Visitor &visitor) = 0;
 };
 
+class FlagType final: public Type {
+    FlagType() = default;
+public:
+
+    void visit(type::Visitor &visitor) override { visitor.accept(this); }
+
+    static consteval const FlagType *flag() noexcept {
+        static constexpr FlagType flag_instance;
+        return &flag_instance;
+    }
+};
+
 class NonTrivialType : public Type {
 public:
     [[nodiscard]]
@@ -49,7 +61,8 @@ public:
 class IntegerType : public PrimitiveType {};
 
 class UnsignedIntegerType final: public IntegerType {
-    explicit UnsignedIntegerType(std::size_t size) : m_size(size) {}
+    explicit UnsignedIntegerType(const std::size_t size) : m_size(size) {}
+
 public:
     [[nodiscard]]
     std::size_t size_of() const override {

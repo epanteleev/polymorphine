@@ -4,7 +4,7 @@
 
 class Alloc final: public ValueInstruction {
 public:
-    Alloc(std::size_t id, BasicBlock *bb, const NonTrivialType *ty) noexcept :
+    Alloc(const std::size_t id, BasicBlock *bb, const NonTrivialType *ty) noexcept :
         ValueInstruction(id, bb, PointerType::ptr(), {}),
         m_type(ty) {}
 
@@ -12,7 +12,7 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static InstructionBuilder<Alloc> alloc(const NonTrivialType* ty) {
-        return [&](std::size_t id, BasicBlock *bb) {
+        return [=](std::size_t id, BasicBlock *bb) {
             return std::make_unique<Alloc>(id, bb, ty);
         };
     }
