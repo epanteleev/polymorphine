@@ -11,10 +11,12 @@
 class PostOrderTraverse final: public AnalysisPass {
 public:
     using result_type = Ordering;
-    static constexpr AnalysisType analysis_kind = AnalysisType::PostorderTraverse;
+    static constexpr auto analysis_kind = AnalysisType::PostorderTraverse;
 
-    explicit PostOrderTraverse(const FunctionData* data, Ordering& preorder) noexcept
-        : AnalysisPass(data), m_preorder(preorder), m_order(preorder.size()) {}
+    explicit PostOrderTraverse(const FunctionData *data, Ordering &preorder) noexcept
+        : AnalysisPass(data),
+          m_order(preorder.size()),
+          m_preorder(preorder) {}
 
     void run() override;
 

@@ -55,9 +55,13 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/analysis/AnalysisPassCache.h
         lib/pass/analysis/traverse/PostOrderTraverse.cpp
         lib/pass/analysis/traverse/PostOrderTraverse.h
+        lib/pass/analysis/dom/DominatorTreeEval.cpp
+        lib/pass/analysis/dom/DominatorTreeEval.h
+        lib/pass/analysis/dom/DominatorTree.cpp
+        lib/pass/analysis/dom/DominatorTree.h
 )
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=thread")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

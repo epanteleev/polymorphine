@@ -37,3 +37,7 @@ class ArgumentValue;
 class FunctionData;
 
 enum class Error;
+
+class AnalysisPassCache;
+class AnalysisPass;
+class AnalysisPassResult;

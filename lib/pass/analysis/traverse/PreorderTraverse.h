@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <vector>
 
@@ -13,7 +14,7 @@ class PreorderTraverse final : public AnalysisPass {
 
 public:
     using result_type = Ordering;
-    static constexpr AnalysisType analysis_kind = AnalysisType::PreorderTraverse;
+    static constexpr auto analysis_kind = AnalysisType::PreorderTraverse;
 
     void run() override;
 

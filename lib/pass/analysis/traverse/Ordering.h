@@ -8,17 +8,11 @@
 
 class Ordering final: public AnalysisPassResult {
 public:
-    using iterator = std::vector<BasicBlock*>::iterator;
     using const_iterator = std::vector<BasicBlock*>::const_iterator;
 
     [[nodiscard]]
     explicit Ordering(std::vector<BasicBlock*> &&ordering)
         : m_ordering(std::move(ordering)) {}
-
-    [[nodiscard]]
-    iterator begin() noexcept { return m_ordering.begin(); }
-    [[nodiscard]]
-    iterator end() noexcept { return m_ordering.end(); }
 
     [[nodiscard]]
     const_iterator begin() const noexcept { return m_ordering.begin(); }

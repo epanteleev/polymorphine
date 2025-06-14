@@ -55,7 +55,7 @@ void BasicBlock::make_edges(Instruction *inst)  {
         return;
     }
 
-    for (auto succ: term.value().targets()) {
-        succ->m_predecessors.push_back(succ);
+    for (auto block: term.value().targets()) {
+        block->m_predecessors.push_back(inst->owner());
     }
 }

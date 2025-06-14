@@ -3,6 +3,7 @@
 #include "builder/FunctionBuilder.hpp"
 #include "lib/ir.h"
 #include "pass/analysis/AnalysisPassCache.h"
+#include "pass/analysis/dom/DominatorTreeEval.h"
 #include "pass/analysis/traverse/PostOrderTraverse.h"
 #include "pass/analysis/traverse/PreorderTraverse.h"
 
@@ -95,9 +96,10 @@ int main() {
     auto fd = fib();
 
     AnalysisPassCache cache;
-    auto order = cache.analyze<PostOrderTraverse>(fd.get());
+    auto order = cache.analyze<DominatorTreeEval>(fd.get());
 
-    std::cout << "Preorder traversal order: " << *order << std::endl;
+    std::cout << "Preorder traversal order: ";
+    order->print(std::cout);
     fd->print(std::cout);
     return 0;
 }

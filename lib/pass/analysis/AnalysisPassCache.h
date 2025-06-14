@@ -2,6 +2,7 @@
 #include <array>
 #include <future>
 #include <memory>
+
 #include "AnalysisPass.h"
 
 class AnalysisPassCache final {
@@ -29,7 +30,7 @@ public:
         auto a = A::create(this, data);
         a.run();
         auto result = a.result();
-        auto ret = result.get();
+        const auto ret = result.get();
         pass_res.store(std::move(result), std::memory_order_release);
         return ret;
     }
