@@ -59,6 +59,14 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/analysis/dom/DominatorTreeEval.h
         lib/pass/analysis/dom/DominatorTree.cpp
         lib/pass/analysis/dom/DominatorTree.h
+        lib/asm/encoding.cpp
+        lib/asm/encoding.h
+        lib/asm/Assembler.cpp
+        lib/asm/Assembler.h
+        lib/asm/Register.h
+        lib/asm/Register.cpp
+        lib/asm/Address.cpp
+        lib/asm/Address.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
