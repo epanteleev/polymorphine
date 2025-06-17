@@ -67,6 +67,9 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/asm/Register.cpp
         lib/asm/Address.cpp
         lib/asm/Address.h
+        lib/asm/Instruction.h
+        lib/asm/Immediate.h
+        lib/asm/Visitor.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

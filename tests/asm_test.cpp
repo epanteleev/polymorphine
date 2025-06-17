@@ -1,10 +1,20 @@
 
+#include <iomanip>
+#include <iostream>
 #include <gtest/gtest.h>
 
 #include "asm/Assembler.h"
 
+void print_hex(const std::uint8_t* data, std::size_t size) {
+    std::cout << "Hex: ";
+    for (std::size_t i = 0; i < size; ++i)
+        std::cout << std::hex << std::setw(2) << std::setfill('0')
+                  << static_cast<int>(data[i]) << " ";
+    std::cout << std::dec << std::endl;
+}
+
 TEST(Asm, ret) {
-    Assembler a;
+    aasm::Assembler a;
     a.ret();
     std::uint8_t v[32];
     const auto size = a.to_byte_buffer(v);
@@ -13,7 +23,7 @@ TEST(Asm, ret) {
 }
 
 TEST(Asm, popq_reg) {
-    Assembler a;
+    aasm::Assembler a;
 
     static constexpr std::array codings = {
         0x58, // 0x58 is the opcode for POP AX
@@ -34,7 +44,7 @@ TEST(Asm, popq_reg) {
         0x41, 0x5F  // 0x41 + 0x0F is the opcode for POP R15
     };
 
-    for (const auto reg: gp_regs) {
+    for (const auto reg: aasm::gp_regs) {
         a.popq(reg);
     }
 
@@ -45,8 +55,8 @@ TEST(Asm, popq_reg) {
 }
 
 TEST(Asm, popq_addr) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::noreg(), 1, 0);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: popq (%rsp)
     a.popq(addr);
     std::uint8_t v[32]{};
@@ -58,8 +68,8 @@ TEST(Asm, popq_addr) {
 }
 
 TEST(Asm, popq_addr_with_displacement) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::noreg(), 1, 2);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
     // Generate: popq 0x1234(%rsi,%rbx,1)
     a.popq(addr);
     std::uint8_t v[32]{};
@@ -72,8 +82,8 @@ TEST(Asm, popq_addr_with_displacement) {
 }
 
 TEST(Asm, popq_addr_with_index) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::rdi(), 1, 0);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::rdi, 1, 0);
     // Generate: popq (%rsp,%rdi,1)
     a.popq(addr);
     std::uint8_t v[32]{};
@@ -86,8 +96,8 @@ TEST(Asm, popq_addr_with_index) {
 }
 
 TEST(Asm, popq_addr_with_index_and_displacement) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::rdi(), 1, 2);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::rdi, 1, 2);
     // Generate: popq 0x2(%rsp,%rdi,1)
     a.popq(addr);
     std::uint8_t v[32]{};
@@ -100,8 +110,8 @@ TEST(Asm, popq_addr_with_index_and_displacement) {
 }
 
 TEST(Asm, popq_addr_with_index_and_displacement2) {
-    Assembler a;
-    Address addr(GPReg::r15(), GPReg::rdi(), 1, 2);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::r15, aasm::rdi, 1, 2);
     // Generate: popq 0x2(%r15,%rdi,1)
     a.popq(addr);
     std::uint8_t v[32]{};
@@ -115,8 +125,8 @@ TEST(Asm, popq_addr_with_index_and_displacement2) {
 }
 
 TEST(Asm, popw_addr) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::noreg(), 1, 0);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: popw (%rsp)
     a.popw(addr);
     std::uint8_t v[32]{};
@@ -129,8 +139,8 @@ TEST(Asm, popw_addr) {
 }
 
 TEST(Asm, pushq_addr) {
-    Assembler a;
-    Address addr(GPReg::rsp(), GPReg::noreg(), 1, 0);
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: push (%rsp)
     a.pushq(addr);
     std::uint8_t v[32]{};
@@ -142,8 +152,8 @@ TEST(Asm, pushq_addr) {
 }
 
 TEST(Asm, movq_reg_reg) {
-    Assembler a;
-    a.movq(GPReg::rbx(), GPReg::rax());
+    aasm::Assembler a;
+    a.movq(aasm::rbx, aasm::rax);
     // Generate: movq %rbx, %rax
     std::uint8_t v[32]{};
     const auto size = a.to_byte_buffer(v);
@@ -154,8 +164,8 @@ TEST(Asm, movq_reg_reg) {
 }
 
 TEST(Asm, movq_reg_reg1) {
-    Assembler a;
-    a.movq(GPReg::r15(), GPReg::r14());
+    aasm::Assembler a;
+    a.movq(aasm::r15, aasm::r14);
     // Generate: movq %r15, %r14
     std::uint8_t v[32]{};
     const auto size = a.to_byte_buffer(v);
@@ -166,8 +176,8 @@ TEST(Asm, movq_reg_reg1) {
 }
 
 TEST(Asm, movq_reg_reg2) {
-    Assembler a;
-    a.movq(GPReg::rax(), GPReg::r14());
+    aasm::Assembler a;
+    a.movq(aasm::rax, aasm::r14);
     // Generate: movq %rax, %r14
     std::uint8_t v[32]{};
     const auto size = a.to_byte_buffer(v);
@@ -178,14 +188,53 @@ TEST(Asm, movq_reg_reg2) {
 }
 
 TEST(Asm, movq_reg_reg3) {
-    Assembler a;
-    a.movq(GPReg::r14(), GPReg::rbx());
+    aasm::Assembler a;
+    a.movq(aasm::r14, aasm::rbx);
     // Generate: movq %r14, %rbx
     std::uint8_t v[32]{};
     const auto size = a.to_byte_buffer(v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x4c);
     ASSERT_EQ(v[1], 0x89);
+    ASSERT_EQ(v[2], 0xf3);
+}
+
+TEST(Asm, movl_reg_reg3) {
+    aasm::Assembler a;
+    a.movl(aasm::r11, aasm::rdx);
+    // Generate: movl %r11d, %edx
+    std::uint8_t v[32]{};
+    const auto size = a.to_byte_buffer(v);
+
+    print_hex(v, 3);
+    ASSERT_EQ(size, 3);
+    ASSERT_EQ(v[0], 0x44);
+    ASSERT_EQ(v[1], 0x89);
+    ASSERT_EQ(v[2], 0xda);
+}
+
+TEST(Asm, movw_reg_reg3) {
+    aasm::Assembler a;
+    a.movw(aasm::r14, aasm::rbx);
+    // Generate: movw %r14w, %bx
+    std::uint8_t v[32]{};
+    const auto size = a.to_byte_buffer(v);
+    ASSERT_EQ(size, 4);
+    ASSERT_EQ(v[0], 0x66);
+    ASSERT_EQ(v[1], 0x44);
+    ASSERT_EQ(v[2], 0x89);
+    ASSERT_EQ(v[3], 0xf3);
+}
+
+TEST(Asm, movb_reg_reg3) {
+    aasm::Assembler a;
+    a.movb(aasm::r14, aasm::rbx);
+    // Generate: movb %r14b, %bl
+    std::uint8_t v[32]{};
+    const auto size = a.to_byte_buffer(v);
+    ASSERT_EQ(size, 3);
+    ASSERT_EQ(v[0], 0x44);
+    ASSERT_EQ(v[1], 0x88);
     ASSERT_EQ(v[2], 0xf3);
 }
 

@@ -283,8 +283,12 @@ struct code {
         val[0] = c;
     }
 
+    void emit8(std::uint8_t c) noexcept {
+        val[len++] = c;
+    }
+
     unsigned char val[15]{};
-    signed char len{};
+    std::uint8_t len{};
 };
 
 static constexpr auto PREFIX_OPERAND_SIZE = 0x66;

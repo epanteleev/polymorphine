@@ -3,31 +3,33 @@
 
 #include "Register.h"
 
-enum class AddressType: std::uint8_t {
-    ADDR_NORMAL,
-    ADDR_GLOBAL_OFFSET,
-    ADDR_PLT
-};
+namespace aasm {
+    enum class AddressType: std::uint8_t {
+        ADDR_NORMAL,
+        ADDR_GLOBAL_OFFSET,
+        ADDR_PLT
+    };
 
-class Address final {
+    class Address final {
 
-public:
-    explicit constexpr Address(GPReg base, GPReg index, unsigned scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
-        displacement(displacement),
-        base(base),
-        index(index),
-        scale(scale) {}
+    public:
+        explicit constexpr Address(GPReg base, GPReg index, unsigned scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
+            displacement(displacement),
+            base(base),
+            index(index),
+            scale(scale) {}
 
-    AddressType type;
+        AddressType type;
 
-    int displacement;
+        int displacement;
 
-    GPReg base;
-    GPReg index;
-    unsigned scale;
-};
+        GPReg base;
+        GPReg index;
+        unsigned scale;
+    };
 
 
-static constexpr std::uint8_t X(const Address& arg) {
-    return arg.index.is_64_bit_reg() << 1;
+    static constexpr std::uint8_t X(const Address& arg) {
+        return arg.index.is_64_bit_reg() << 1;
+    }
 }
