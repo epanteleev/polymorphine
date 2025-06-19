@@ -4,12 +4,13 @@
 #include <iosfwd>
 #include <span>
 
+#include "AbstractAssembler.h"
 #include "encoding.h"
 #include "Register.h"
 #include "Address.h"
 
 namespace aasm {
-    class Assembler final {
+    class Assembler final: public AbstractAssembler {
     public:
         /*
          * REX prefix contains bits [0, 1, 0, 0, W, R, X, B]
@@ -21,24 +22,24 @@ namespace aasm {
         static constexpr std::uint8_t REX = 0x40;
         static constexpr std::uint8_t REX_W = 0x48; // REX prefix for 64-bit operands
 
-        void ret();
+        void ret() override;
 
-        void popq(GPReg r);
-        void popw(GPReg r);
+        void popq(GPReg r) override;
+        void popw(GPReg r) override;
 
-        void popq(const Address& addr);
-        void popw(const Address& addr);
+        void popq(const Address& addr) override;
+        void popw(const Address& addr) override;
 
-        void pushq(GPReg r);
-        void pushw(GPReg r);
+        void pushq(GPReg r) override;
+        void pushw(GPReg r) override;
 
-        void pushq(const Address& addr);
-        void pushw(const Address& addr);
+        void pushq(const Address& addr) override;
+        void pushw(const Address& addr) override;
 
-        void movq(GPReg src, GPReg dest);
-        void movl(GPReg src, GPReg dest);
-        void movw(GPReg src, GPReg dest);
-        void movb(GPReg src, GPReg dest);
+        void movq(GPReg src, GPReg dest) override;
+        void movl(GPReg src, GPReg dest) override;
+        void movw(GPReg src, GPReg dest) override;
+        void movb(GPReg src, GPReg dest) override;
 
         void print_codes(std::ostream &os) const;
 

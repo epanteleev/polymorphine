@@ -5,7 +5,8 @@
 #include <ranges>
 #include <spanstream>
 
-#include "Visitor.h"
+#include "Instruction.h"
+
 
 namespace aasm {
     namespace {
@@ -109,7 +110,7 @@ namespace aasm {
         m_inst.emplace_back(opc::RET);
     }
 
-    void Assembler::popq(const GPReg r)  {
+    void Assembler::popq(const GPReg r) {
         auto& c = m_inst.emplace_back();
         emit_pop(c, r);
     }

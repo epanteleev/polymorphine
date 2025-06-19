@@ -283,8 +283,12 @@ struct code {
         val[0] = c;
     }
 
-    void emit8(std::uint8_t c) noexcept {
+    void emit8(const std::uint8_t c) noexcept {
         val[len++] = c;
+    }
+
+    std::uint8_t& last() {
+        return val[len - 1];
     }
 
     unsigned char val[15]{};
