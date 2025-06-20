@@ -4,8 +4,8 @@
 #include <vector>
 #include <iosfwd>
 
-#include "ir_frwd.h"
-#include "value/LocalValue.h"
+#include "../ir_frwd.h"
+#include "LocalValue.h"
 
 class ArgumentValue final {
 public:

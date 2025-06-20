@@ -1,5 +1,6 @@
 #include "Assembler.h"
 
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <ranges>
@@ -12,7 +13,7 @@ namespace aasm {
     namespace {
 
         void add_word_op_size(code& c) {
-            c.val[c.len++] = PREFIX_OPERAND_SIZE;
+            c.val[c.len++] = Assembler::PREFIX_OPERAND_SIZE;
         }
 
         int encode_modrm_sib_disp(code *c, unsigned int reg, const Address& addr) {
@@ -23,10 +24,10 @@ namespace aasm {
 
 
             /* SP is used as sentinel for SIB, and R12 overlaps. */
-            int has_sib = addr.index.code() || !addr.base.code() || reg3(addr.base) == reg3(SP) || addr.scale > 1;
+            int has_sib = addr.index.code() || !addr.base.code() || reg3(addr.base) == reg3(rsp) || addr.scale > 1;
 
             /* Explicit displacement must be used with BP or R13. */
-            int has_displacement = !addr.base.code() || addr.displacement || reg3(addr.base) == reg3(BP);
+            int has_displacement = !addr.base.code() || addr.displacement || reg3(addr.base) == reg3(rbp);
 
             /* ModR/M */
             c->val[c->len++] = (reg & 0x7) << 3 | (has_sib ? 4 : reg3(addr.base));
@@ -38,7 +39,7 @@ namespace aasm {
 
             /* SIB */
             if (has_sib) {
-                c->val[c->len] = addr.index.code() ? reg3(addr.index) : reg3(SP);
+                c->val[c->len] = addr.index.code() ? reg3(addr.index) : reg3(rsp);
                 c->val[c->len] = c->val[c->len] << 3;
                 c->val[c->len] |= (
                     addr.scale == 2 ? 1 :

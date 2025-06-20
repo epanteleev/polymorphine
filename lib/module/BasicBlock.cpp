@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "BasicBlock.h"
+#include "module/BasicBlock.h"
 #include "instruction/Terminator.h"
 #include "utility/Error.h"
 #include "value/LocalValue.h"
@@ -21,7 +21,7 @@ Terminator BasicBlock::last() const {
 
 void BasicBlock::print(std::ostream &os) const {
     print_short_name(os);
-    os << std::endl;
+    os << ':' << std::endl;
 
     for (const auto &inst : m_instructions) {
         os << "  ";
@@ -32,9 +32,9 @@ void BasicBlock::print(std::ostream &os) const {
 
 void BasicBlock::print_short_name(std::ostream &os) const {
     if (m_id == 0) {
-        os << "entry:";
+        os << "entry";
     } else {
-        os << 'L' << m_id << ":";
+        os << 'L' << m_id;
     }
 }
 

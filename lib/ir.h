@@ -1,7 +1,7 @@
 #pragma once
 
-#include "BasicBlock.h"
-#include "FunctionData.h"
+#include "module/BasicBlock.h"
+#include "module/FunctionData.h"
 #include "types/Type.h"
 #include "types/TypeMatchingRules.h"
 

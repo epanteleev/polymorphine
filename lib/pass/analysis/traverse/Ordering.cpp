@@ -1,6 +1,6 @@
 #include "Ordering.h"
 
-#include "BasicBlock.h"
+#include "../../../module/BasicBlock.h"
 
 std::ostream& operator<<(std::ostream &os, const Ordering& ordering) {
     os << '[';

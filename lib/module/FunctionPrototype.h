@@ -22,7 +22,7 @@ public:
     std::string_view name() const { return m_name; }
 
     void print(std::ostream &os) const;
-    void print(std::ostream &os, std::span<ArgumentValue> args) const;
+    void print(std::ostream &os, std::span<const ArgumentValue> args) const;
 
 private:
     const Type* m_ret_type;

@@ -1,6 +1,6 @@
 #pragma once
-#include "Instruction.h"
 
+#include "Instruction.h"
 
 class Store final: public Instruction {
 public:

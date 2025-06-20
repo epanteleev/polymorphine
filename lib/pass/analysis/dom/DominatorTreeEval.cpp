@@ -6,7 +6,7 @@
 #include <ranges>
 #include <unordered_map>
 
-#include "BasicBlock.h"
+#include "../../../module/BasicBlock.h"
 #include "pass/analysis/AnalysisPassCache.h"
 #include "pass/analysis/traverse/PostOrderTraverse.h"
 

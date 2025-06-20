@@ -41,7 +41,6 @@ public:
     }
 
     void print(std::ostream &os) const;
-
     void print_short_name(std::ostream &os) const;
 
 private:

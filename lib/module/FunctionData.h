@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 
-#include "ArgumentValue.h"
+#include "value/ArgumentValue.h"
 #include "BasicBlock.h"
 #include "utility/OrderedSet.h"
 #include "FunctionPrototype.h"
@@ -18,7 +18,7 @@ public:
         return m_basic_blocks.push_back<BasicBlock>(creator);
     }
 
-    void print(std::ostream& os);
+    void print(std::ostream& os) const;
 
     [[nodiscard]]
     BasicBlock* first() const {
@@ -38,6 +38,16 @@ public:
     [[nodiscard]]
     std::size_t size() const noexcept {
         return m_basic_blocks.size();
+    }
+
+    [[nodiscard]]
+    std::size_t id() const noexcept {
+        return m_id;
+    }
+
+    [[nodiscard]]
+    std::string_view name() const noexcept {
+        return m_prototype.name();
     }
 
 private:

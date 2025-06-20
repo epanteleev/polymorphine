@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "ArgumentValue.h"
+#include "value/ArgumentValue.h"
 #include "instruction/Instruction.h"
 
 void ArgumentValue::print(std::ostream &os) const {

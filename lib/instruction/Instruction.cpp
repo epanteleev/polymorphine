@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "Alloc.h"
-#include "BasicBlock.h"
-#include "Store.hpp"
+#include "module/BasicBlock.h"
+#include "Store.h"
 #include "utility/Error.h"
 #include "types/Type.h"
 #include "value/Value.h"

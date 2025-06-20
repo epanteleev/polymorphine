@@ -4,8 +4,8 @@ project(shlang_cpp)
 set(CMAKE_CXX_STANDARD 23)
 
 add_library(ckoof SHARED lib/types/Type.h
-        lib/BasicBlock.cpp
-        lib/BasicBlock.h
+        lib/module/BasicBlock.cpp
+        lib/module/BasicBlock.h
         lib/instruction/Instruction.cpp
         lib/instruction/Instruction.h
         lib/ir_frwd.h
@@ -15,17 +15,17 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/value/ValueMatcher.h
         lib/types/TypeMatchingRules.h
         lib/utility/OrderedSet.h
-        lib/InstructionVisitor.h
+        lib/instruction/InstructionVisitor.h
         lib/utility/Error.cpp
         lib/utility/Error.h
         lib/types/Type.cpp
         lib/types/TypeVisitor.h
-        lib/FunctionData.cpp
-        lib/FunctionData.h
-        lib/FunctionPrototype.h
-        lib/FunctionPrototype.cpp
-        lib/ArgumentValue.cpp
-        lib/ArgumentValue.h
+        lib/module/FunctionData.cpp
+        lib/module/FunctionData.h
+        lib/module/FunctionPrototype.h
+        lib/module/FunctionPrototype.cpp
+        lib/value/ArgumentValue.cpp
+        lib/value/ArgumentValue.h
         lib/instruction/Binary.h
         lib/instruction/ValueInstruction.h
         lib/instruction/Unary.h
@@ -39,7 +39,7 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/Terminator.cpp
         lib/instruction/TerminateInstruction.cpp
         lib/instruction/TerminateValueInstruction.cpp
-        lib/instruction/Store.hpp
+        lib/instruction/Store.h
         lib/instruction/Alloc.h
         lib/builder/FunctionBuilder.cpp
         lib/builder/FunctionBuilder.hpp
@@ -59,8 +59,6 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/analysis/dom/DominatorTreeEval.h
         lib/pass/analysis/dom/DominatorTree.cpp
         lib/pass/analysis/dom/DominatorTree.h
-        lib/asm/encoding.cpp
-        lib/asm/encoding.h
         lib/asm/Assembler.cpp
         lib/asm/Assembler.h
         lib/asm/Register.h
@@ -70,6 +68,9 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/asm/Instruction.h
         lib/asm/Immediate.h
         lib/asm/AbstractAssembler.h
+        lib/module/Module.h
+        lib/module/Module.cpp
+        lib/module/FunctionSet.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

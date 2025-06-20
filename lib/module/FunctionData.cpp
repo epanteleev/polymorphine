@@ -3,7 +3,7 @@
 #include <ranges>
 
 #include "FunctionData.h"
-#include "utility/Error.h"
+#include "../utility/Error.h"
 
 FunctionData::FunctionData(const std::size_t id, FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) :
     m_id(id),
@@ -25,7 +25,7 @@ FunctionData::FunctionData(const std::size_t id, FunctionPrototype &&proto, std:
 #endif
 }
 
-void FunctionData::print(std::ostream &os) {
+void FunctionData::print(std::ostream &os) const {
     os << "define ";
     m_prototype.print(os, m_args);
     os << " {";

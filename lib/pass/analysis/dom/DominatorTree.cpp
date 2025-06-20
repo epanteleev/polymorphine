@@ -2,7 +2,7 @@
 
 #include "DominatorTree.h"
 
-#include "BasicBlock.h"
+#include "../../../module/BasicBlock.h"
 
 void DominatorTree::print(std::ostream &os) const {
     os << '[';

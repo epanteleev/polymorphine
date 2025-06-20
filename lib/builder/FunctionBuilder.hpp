@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
 
-#include "FunctionData.h"
+#include "../module/FunctionData.h"
 #include "instruction/Alloc.h"
 #include "instruction/Binary.h"
 #include "instruction/Compare.h"
-#include "instruction/Store.hpp"
+#include "instruction/Store.h"
 #include "instruction/TerminateInstruction.h"
 #include "instruction/Unary.h"
 

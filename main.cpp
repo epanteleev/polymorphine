@@ -5,7 +5,7 @@
 #include "pass/analysis/AnalysisPassCache.h"
 #include "pass/analysis/dom/DominatorTreeEval.h"
 #include "pass/analysis/traverse/PostOrderTraverse.h"
-#include "pass/analysis/traverse/PreorderTraverse.h"
+#include "module/Module.h"
 
 
 std::unique_ptr<FunctionData> fib() {

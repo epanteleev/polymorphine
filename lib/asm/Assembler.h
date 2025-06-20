@@ -5,13 +5,32 @@
 #include <span>
 
 #include "AbstractAssembler.h"
-#include "encoding.h"
 #include "Register.h"
 #include "Address.h"
 
 namespace aasm {
+    struct code final {
+        code() = default;
+        explicit code(const std::uint8_t c): len(1) {
+            val[0] = c;
+        }
+
+        void emit8(const std::uint8_t c) noexcept {
+            val[len++] = c;
+        }
+
+        std::uint8_t& last() {
+            return val[len - 1];
+        }
+
+        unsigned char val[15]{};
+        std::uint8_t len{};
+    };
+
     class Assembler final: public AbstractAssembler {
     public:
+        static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
+
         /*
          * REX prefix contains bits [0, 1, 0, 0, W, R, X, B]
          * W: 1 if operands are 64 bit.
@@ -48,4 +67,9 @@ namespace aasm {
     private:
         std::deque<code> m_inst;
     };
+
+    template<typename T>
+    static constexpr bool in_byte_range(T arg) {
+        return arg >= -128 && arg <= 127;
+    }
 }

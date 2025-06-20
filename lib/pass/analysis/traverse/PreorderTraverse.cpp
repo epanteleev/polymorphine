@@ -1,8 +1,11 @@
 #include <stack>
 
 #include "PreorderTraverse.h"
-#include "BasicBlock.h"
-#include "FunctionData.h"
+
+#include <ranges>
+
+#include "../../../module/BasicBlock.h"
+#include "../../../module/FunctionData.h"
 #include "utility/Error.h"
 #include "instruction/TerminateInstruction.h"
 
