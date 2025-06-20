@@ -42,7 +42,7 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/Store.h
         lib/instruction/Alloc.h
         lib/builder/FunctionBuilder.cpp
-        lib/builder/FunctionBuilder.hpp
+        lib/builder/FunctionBuilder.h
         lib/instruction/Compare.cpp
         lib/instruction/Compare.h
         lib/pass/analysis/AnalysisPass.cpp
@@ -70,7 +70,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/asm/AbstractAssembler.h
         lib/module/Module.h
         lib/module/Module.cpp
-        lib/module/FunctionSet.h
+        lib/builder/ModuleBuilder.cpp
+        lib/builder/ModuleBuilder.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

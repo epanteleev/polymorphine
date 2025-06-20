@@ -4,7 +4,7 @@
 
 #include "../../../module/BasicBlock.h"
 
-void DominatorTree::print(std::ostream &os) const {
+std::ostream & DominatorTree::print(std::ostream &os) const {
     os << '[';
     for (auto& [k, v]: dominator_tree) {
         k->print_short_name(os);
@@ -17,4 +17,5 @@ void DominatorTree::print(std::ostream &os) const {
         os << " ";
     }
     os << ']';
+    return os;
 }

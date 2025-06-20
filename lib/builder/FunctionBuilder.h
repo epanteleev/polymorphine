@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "../module/FunctionData.h"
+#include "module/FunctionData.h"
 #include "instruction/Alloc.h"
 #include "instruction/Binary.h"
 #include "instruction/Compare.h"
@@ -14,10 +14,10 @@ class FunctionBuilder final {
     explicit FunctionBuilder(std::unique_ptr<FunctionData> functionData);
 
 public:
-    static FunctionBuilder make(std::size_t id, FunctionPrototype&& prototype, std::vector<ArgumentValue>&& args) noexcept;
+    static FunctionBuilder make(FunctionPrototype&& prototype, std::vector<ArgumentValue>&& args) noexcept;
 
     [[nodiscard]]
-    const ArgumentValue* arg(std::size_t index) const {
+    const ArgumentValue* arg(const std::size_t index) const {
         return m_fd->arg(index);
     }
 

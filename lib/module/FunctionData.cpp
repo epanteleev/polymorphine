@@ -5,8 +5,7 @@
 #include "FunctionData.h"
 #include "../utility/Error.h"
 
-FunctionData::FunctionData(const std::size_t id, FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) :
-    m_id(id),
+FunctionData::FunctionData(FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) :
     m_prototype(std::move(proto)),
     m_args(std::move(args)) {
 

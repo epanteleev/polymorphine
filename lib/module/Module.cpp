@@ -1,8 +1,11 @@
 #include "module/Module.h"
 
+#include <ranges>
 
-void Module::print(std::ostream &os) const {
-    for (auto& f : m_functions) {
-        f.print(os);
+std::ostream &Module::print(std::ostream &os) const {
+    for (const auto &f: m_functions | std::views::values) {
+        f->print(os);
     }
+
+    return os;
 }

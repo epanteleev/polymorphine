@@ -1,18 +1,21 @@
 #include <iostream>
 
-#include "builder/FunctionBuilder.hpp"
+#include "builder/FunctionBuilder.h"
+#include "builder/ModuleBuilder.h"
 #include "lib/ir.h"
 #include "pass/analysis/AnalysisPassCache.h"
 #include "pass/analysis/dom/DominatorTreeEval.h"
 #include "pass/analysis/traverse/PostOrderTraverse.h"
-#include "module/Module.h"
 
 
-std::unique_ptr<FunctionData> fib() {
+Module fib() {
+    ModuleBuilder builder;
+
     FunctionPrototype prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "fib");
-
     ArgumentValue arg(0, SignedIntegerType::i32());
-    auto data = FunctionBuilder::make(0, std::move(prototype), { std::move(arg) });
+
+    auto& data = *builder.make_function_builder(std::move(prototype), {arg});
+
     auto n = data.arg(0);
     auto ret_addr = data.alloc(SignedIntegerType::i32());
     auto n_addr = data.alloc(SignedIntegerType::i32());
@@ -82,7 +85,7 @@ std::unique_ptr<FunctionData> fib() {
 
     data.ret(v10);
 
-    return data.build();
+    return builder.build();
 }
 
 int main() {
@@ -93,13 +96,14 @@ int main() {
 
     FunctionPrototype proto(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "main");
     ArgumentValue arg(1, SignedIntegerType::i32());
-    auto fd = fib();
+    auto module = fib();
+    auto fd = module.find_function_data("fib").value();
 
     AnalysisPassCache cache;
-    auto order = cache.analyze<DominatorTreeEval>(fd.get());
+    const auto dominator_tree = cache.analyze<DominatorTreeEval>(fd);
 
-    std::cout << "Preorder traversal order: ";
-    order->print(std::cout);
-    fd->print(std::cout);
+    std::cout << "DomTree: ";
+    dominator_tree->print(std::cout) << std::endl;
+    module.print(std::cout) << std::endl;
     return 0;
 }

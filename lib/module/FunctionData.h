@@ -9,7 +9,8 @@
 
 class FunctionData final {
 public:
-    explicit FunctionData(std::size_t id, FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
+    explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
+
     BasicBlock* create_basic_block() {
         const auto creator = [this](std::size_t id) {
             return std::make_unique<BasicBlock>(id);
@@ -41,17 +42,11 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t id() const noexcept {
-        return m_id;
-    }
-
-    [[nodiscard]]
     std::string_view name() const noexcept {
         return m_prototype.name();
     }
 
 private:
-    std::size_t m_id;
     FunctionPrototype m_prototype;
     std::vector<ArgumentValue> m_args;
     OrderedSet<BasicBlock> m_basic_blocks;

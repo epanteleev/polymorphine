@@ -23,7 +23,7 @@ public:
         : dominator_tree(std::move(dominator_tree)) {}
 
 
-    void print(std::ostream& os) const;
+    std::ostream &print(std::ostream &os) const;
 
 private:
     std::unordered_map<BasicBlock*, std::unique_ptr<DominatorNode>> dominator_tree;
