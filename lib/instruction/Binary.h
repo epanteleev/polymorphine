@@ -21,12 +21,12 @@ public:
     }
 
     [[nodiscard]]
-    Value lhs() const {
+    const Value& lhs() const {
         return m_values.at(0);
     }
 
     [[nodiscard]]
-    Value rhs() const {
+    const Value& rhs() const {
         return m_values.at(1);
     }
 
@@ -36,13 +36,13 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static InstructionBuilder<Binary> add(const Value &lhs, const Value &rhs) {
-        return [&](std::size_t id, BasicBlock *bb) {
+        return [=](std::size_t id, BasicBlock *bb) {
             return std::make_unique<Binary>(id, bb, BinaryOp::Add, lhs, rhs);
         };
     }
 
     static InstructionBuilder<Binary> sub(const Value &lhs, const Value &rhs) {
-        return [&](std::size_t id, BasicBlock *bb) {
+        return [=](std::size_t id, BasicBlock *bb) {
             return std::make_unique<Binary>(id, bb, BinaryOp::Subtract, lhs, rhs);
         };
     }

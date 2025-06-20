@@ -17,6 +17,7 @@ class IVCall;
 class Store;
 class Alloc;
 class IcmpInstruction;
+class GetElementPtr;
 
 class BasicBlock;
 
@@ -41,3 +42,5 @@ enum class Error;
 class AnalysisPassCache;
 class AnalysisPass;
 class AnalysisPassResult;
+
+class FunctionBuilder;

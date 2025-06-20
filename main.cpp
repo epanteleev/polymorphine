@@ -1,20 +1,13 @@
 #include <iostream>
 
-#include "builder/FunctionBuilder.h"
-#include "builder/ModuleBuilder.h"
 #include "lib/ir.h"
-#include "pass/analysis/AnalysisPassCache.h"
-#include "pass/analysis/dom/DominatorTreeEval.h"
-#include "pass/analysis/traverse/PostOrderTraverse.h"
-
 
 Module fib() {
     ModuleBuilder builder;
-
     FunctionPrototype prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "fib");
-    ArgumentValue arg(0, SignedIntegerType::i32());
 
-    auto& data = *builder.make_function_builder(std::move(prototype), {arg});
+    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
 
     auto n = data.arg(0);
     auto ret_addr = data.alloc(SignedIntegerType::i32());
@@ -97,7 +90,7 @@ int main() {
     FunctionPrototype proto(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "main");
     ArgumentValue arg(1, SignedIntegerType::i32());
     auto module = fib();
-    auto fd = module.find_function_data("fib").value();
+    const auto fd = module.find_function_data("fib").value();
 
     AnalysisPassCache cache;
     const auto dominator_tree = cache.analyze<DominatorTreeEval>(fd);

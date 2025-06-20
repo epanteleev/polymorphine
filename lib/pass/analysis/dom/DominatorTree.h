@@ -22,7 +22,6 @@ public:
     explicit DominatorTree(std::unordered_map<BasicBlock*, std::unique_ptr<DominatorNode>> &&dominator_tree) noexcept
         : dominator_tree(std::move(dominator_tree)) {}
 
-
     std::ostream &print(std::ostream &os) const;
 
 private:

@@ -6,10 +6,9 @@
 #include <ranges>
 #include <unordered_map>
 
-#include "../../../module/BasicBlock.h"
+#include "module/BasicBlock.h"
 #include "pass/analysis/AnalysisPassCache.h"
 #include "pass/analysis/traverse/PostOrderTraverse.h"
-
 
 namespace {
     constexpr auto UNDEFINED = std::numeric_limits<std::size_t>::max();

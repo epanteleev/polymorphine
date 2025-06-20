@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "Alloc.h"
+#include "instruction/Alloc.h"
 #include "module/BasicBlock.h"
-#include "Store.h"
+#include "instruction/Store.h"
 #include "utility/Error.h"
 #include "types/Type.h"
 #include "value/Value.h"
@@ -14,6 +14,7 @@
 #include "instruction/TerminateInstruction.h"
 #include "instruction/TerminateValueInstruction.h"
 #include "instruction/Compare.h"
+#include "instruction/GetElementPtr.h"
 
 
 namespace {
@@ -139,6 +140,12 @@ namespace {
             icmp->type()->print(os);
             os << ' ' << icmpOpToString(icmp->predicate()) << ' ';
             os << icmp->lhs() << ", " << icmp->rhs();
+        }
+
+        void accept(GetElementPtr *gep) override {
+            os << '%' << gep->id() << " = gep ";
+            gep->access_type()->print(os);
+            os << ' ' << gep->pointer() << ", " << gep->index();
         }
 
         std::ostream& os;

@@ -72,6 +72,7 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/module/Module.cpp
         lib/builder/ModuleBuilder.cpp
         lib/builder/ModuleBuilder.h
+        lib/instruction/GetElementPtr.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
