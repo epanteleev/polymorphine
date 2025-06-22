@@ -10,6 +10,7 @@ class AnalysisPass;
 enum class AnalysisType {
     PreorderTraverse,
     PostorderTraverse,
+    BFSTraverse,
     DominatorTree,
     Max
 };

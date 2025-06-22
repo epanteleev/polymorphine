@@ -6,6 +6,10 @@
 
 #include "ir_frwd.h"
 
+template<typename T>
+concept IsTerminator = std::derived_from<T, TerminateInstruction> ||
+    std::derived_from<T, TerminateValueInstruction>;
+
 class Terminator final {
     explicit Terminator(TerminateInstruction * inst) noexcept;
     explicit Terminator(TerminateValueInstruction * inst) noexcept;
@@ -16,7 +20,7 @@ public:
 
     static std::expected<Terminator, Error> from(Instruction* inst) noexcept;
 
-    template<typename T>
+    template<IsTerminator T>
     [[nodiscard]]
     T* as() const noexcept {
         if constexpr (std::is_base_of_v<TerminateInstruction, T>) {

@@ -47,13 +47,11 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/instruction/Compare.h
         lib/pass/analysis/AnalysisPass.cpp
         lib/pass/analysis/AnalysisPass.h
-        lib/pass/analysis/traverse/PreorderTraverse.cpp
         lib/pass/analysis/traverse/PreorderTraverse.h
         lib/pass/analysis/traverse/Ordering.h
         lib/pass/analysis/traverse/Ordering.cpp
         lib/pass/analysis/AnalysisPassCache.cpp
         lib/pass/analysis/AnalysisPassCache.h
-        lib/pass/analysis/traverse/PostOrderTraverse.cpp
         lib/pass/analysis/traverse/PostOrderTraverse.h
         lib/pass/analysis/dom/DominatorTreeEval.cpp
         lib/pass/analysis/dom/DominatorTreeEval.h
@@ -73,6 +71,17 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/builder/ModuleBuilder.cpp
         lib/builder/ModuleBuilder.h
         lib/instruction/GetElementPtr.h
+        lib/pass/analysis/traverse/BFSOrderTraverse.h
+        lib/platform/lir/x64/AnyLIRInstruction.cpp
+        lib/platform/lir/x64/AnyLIRInstruction.h
+        lib/platform/lir/x64/Vreg.h
+        lib/platform/lir/x64/Chain.h
+        lib/platform/lir/x64/Chain.cpp
+        lib/platform/lir/x64/LIRCst.h
+        lib/platform/lir/x64/LIROperand.h
+        lib/platform/lir/x64/MachBlock.cpp
+        lib/platform/lir/x64/MachBlock.h
+        lib/platform/lir/x64/mach_frwd.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

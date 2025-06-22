@@ -3,7 +3,8 @@
 #include <ranges>
 
 #include "FunctionData.h"
-#include "../utility/Error.h"
+#include "utility/Error.h"
+#include "instruction/TerminateInstruction.h"
 
 FunctionData::FunctionData(FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) :
     m_prototype(std::move(proto)),
@@ -34,4 +35,17 @@ void FunctionData::print(std::ostream &os) const {
     }
     os << std::endl;
     os << "}" << std::endl;
+}
+
+BasicBlock * FunctionData::last() const {
+    const auto last_bb = m_basic_blocks.back();
+
+#ifdef ENABLE_ASSERTIONS
+    assertion(last_bb.has_value(), "invariant");
+    const auto last_inst = last_bb.value()->last();
+    assertion(last_inst.as<Return>() || last_inst.as<ReturnValue>(), "invariant");
+#endif
+
+    const auto ret = last_bb.value();
+    return ret;
 }

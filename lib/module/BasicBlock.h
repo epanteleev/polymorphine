@@ -11,8 +11,7 @@ class BasicBlock final {
 public:
     explicit BasicBlock(const std::size_t id): m_id(id) {}
 
-    template<typename U>
-    requires(std::convertible_to<U*, Instruction*>)
+    template<std::derived_from<Instruction> U>
     U* push_back(const InstructionBuilder<U>& fn) {
         auto creator = [&] (std::size_t id) {
             return fn(id, this);
@@ -20,7 +19,10 @@ public:
 
         auto inst = m_instructions.push_back<U>(creator);
         make_def_use_chain(inst);
-        make_edges(inst);
+        if constexpr (IsTerminator<U>) {
+            make_edges(inst);
+        }
+
         return inst;
     }
 
@@ -45,7 +47,13 @@ public:
 
 private:
     static void make_def_use_chain(Instruction* inst);
-    static void make_edges(Instruction* inst);
+
+    template<IsTerminator T>
+    static void make_edges(T *inst)  {
+        for (auto block: inst->successors()) {
+            block->m_predecessors.push_back(inst->owner());
+        }
+    }
 
 private:
     const std::size_t m_id;

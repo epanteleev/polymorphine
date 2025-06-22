@@ -48,14 +48,3 @@ void BasicBlock::make_def_use_chain(Instruction *inst) {
         local.value().add_user(inst);
     }
 }
-
-void BasicBlock::make_edges(Instruction *inst)  {
-    const auto term = Terminator::from(inst);
-    if (!term.has_value()) {
-        return;
-    }
-
-    for (auto block: term.value().targets()) {
-        block->m_predecessors.push_back(inst->owner());
-    }
-}

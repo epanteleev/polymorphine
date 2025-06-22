@@ -27,9 +27,7 @@ public:
     }
 
     [[nodiscard]]
-    BasicBlock* last() const {
-        return m_basic_blocks.end().get();
-    }
+    BasicBlock* last() const;
 
     [[nodiscard]]
     const ArgumentValue *arg(const std::size_t index) const {
