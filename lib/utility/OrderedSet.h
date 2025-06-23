@@ -4,6 +4,7 @@
 #include <optional>
 #include <memory>
 #include <vector>
+#include <functional>
 
 
 template<typename T>

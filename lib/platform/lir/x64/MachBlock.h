@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstddef>
-#include <deque>
 #include <span>
 #include <vector>
 
+#include "AnyLIRInstruction.h"
+#include "module/CodeBlock.h"
+#include "utility/OrderedSet.h"
 
 
 class MachBlock final {
@@ -13,12 +15,14 @@ public:
         : m_id(id) {}
 
     [[nodiscard]]
-std::size_t id() const { return m_id; }
+    std::size_t id() const { return m_id; }
 
+    [[nodiscard]]
+    LIRControlInstruction* last() const;
 
     [[nodiscard]]
     std::span<MachBlock* const> successors() const {
-        //return last().targets();
+        return last()->successors();
     }
 
     [[nodiscard]]
@@ -30,5 +34,7 @@ std::size_t id() const { return m_id; }
 private:
     const std::size_t m_id;
     std::vector<MachBlock *> m_predecessors;
-    std::deque<MachBlock> m_instructions;
+    OrderedSet<AnyLIRInstruction> m_instructions;
 };
+
+static_assert(CodeBlock<MachBlock>, "assumed to be");

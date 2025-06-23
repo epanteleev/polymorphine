@@ -2,17 +2,16 @@
 
 #include <vector>
 
-#include "ir_frwd.h"
-#include <iosfwd>
-
+#include "module/CodeBlock.h"
 #include "pass/analysis/AnalysisPass.h"
 
+template<CodeBlock BB>
 class Ordering final: public AnalysisPassResult {
 public:
-    using const_iterator = std::vector<BasicBlock*>::const_iterator;
+    using const_iterator = typename std::vector<BB*>::const_iterator;
 
     [[nodiscard]]
-    explicit Ordering(std::vector<BasicBlock*> &&ordering)
+    explicit Ordering(std::vector<BB*> &&ordering)
         : m_ordering(std::move(ordering)) {}
 
     [[nodiscard]]
@@ -24,9 +23,7 @@ public:
     std::size_t size() const noexcept { return m_ordering.size(); }
 
 private:
-    std::vector<BasicBlock*> m_ordering;
+    std::vector<BB*> m_ordering;
 };
-
-std::ostream& operator<<(std::ostream &os, const Ordering& ordering);
 
 

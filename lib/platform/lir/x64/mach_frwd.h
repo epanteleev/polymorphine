@@ -5,6 +5,7 @@ class MachBlock;
 
 class AnyLIRInstruction;
 class LIRInstruction;
+class LIRControlInstruction;
 
 
 class LIROperand;

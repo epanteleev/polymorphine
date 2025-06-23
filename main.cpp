@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "lib/ir.h"
+#include "lib/pass/analysis/Analysis.h"
 
 Module fib() {
     ModuleBuilder builder;
@@ -98,5 +99,12 @@ int main() {
     std::cout << "DomTree: ";
     dominator_tree->print(std::cout) << std::endl;
     module.print(std::cout) << std::endl;
+
+    const auto& bfs = *cache.analyze<BFSOrderTraverse>(fd);
+    std::cout << "BFS Order: ";
+    for (const auto bb : bfs) {
+        bb->print_short_name(std::cout);
+        std::cout << ' ';
+    }
     return 0;
 }

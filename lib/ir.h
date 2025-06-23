@@ -17,5 +17,5 @@
 
 
 #include "pass/analysis/AnalysisPassCache.h"
-#include "pass/analysis/dom/DominatorTreeEval.h"
-#include "pass/analysis/traverse/PostOrderTraverse.h"
+#include "pass/analysis/dom/DominatorTreeEvalBase.h"
+#include "pass/analysis/traverse/PostOrderTraverseBase.h"

@@ -8,8 +8,8 @@
 class AnalysisPass;
 
 enum class AnalysisType {
-    PreorderTraverse,
-    PostorderTraverse,
+    PreOrderTraverse,
+    PostOrderTraverse,
     BFSTraverse,
     DominatorTree,
     Max

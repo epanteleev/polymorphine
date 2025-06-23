@@ -3,6 +3,7 @@
 #include <vector>
 #include <iosfwd>
 
+#include "CodeBlock.h"
 #include "instruction/Instruction.h"
 #include "instruction/Terminator.h"
 #include "utility/OrderedSet.h"
@@ -60,3 +61,6 @@ private:
     std::vector<BasicBlock *> m_predecessors;
     OrderedSet<Instruction> m_instructions;
 };
+
+
+static_assert(CodeBlock<BasicBlock>, "assumed to be");

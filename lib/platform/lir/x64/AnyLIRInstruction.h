@@ -73,6 +73,12 @@ public:
         AnyLIRInstruction(id, bb, uses, {}),
         m_kind(kind) {}
 
+    [[nodiscard]]
+    std::span<MachBlock * const> successors() const noexcept {
+        return m_successors;
+    }
+
 private:
     LIRControlKind m_kind;
+    std::vector<MachBlock* > m_successors;
 };

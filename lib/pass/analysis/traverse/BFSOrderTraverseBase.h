@@ -8,17 +8,21 @@
 #include "pass/analysis/AnalysisPass.h"
 
 
-class BFSOrderTraverse final : public AnalysisPass {
-    explicit BFSOrderTraverse(const FunctionData *data) noexcept
+template<CodeBlock BB>
+class BFSOrderTraverseBase final : public AnalysisPass {
+public:
+    using result_type = Ordering<BB>;
+
+private:
+    explicit BFSOrderTraverseBase(const FunctionData *data) noexcept
         : AnalysisPass(data),
-          visited(m_data->size(), false),
-          m_order(data->size()) {}
+          visited(m_data->size(), false) {}
 
 public:
-    using result_type = Ordering;
     static constexpr auto analysis_kind = AnalysisType::BFSTraverse;
 
     void run() override {
+        m_order.reserve(m_data->size());
         visitBlock(m_data->first());
         while (!stack.empty()) {
             auto bbs = stack.top();
@@ -33,16 +37,16 @@ public:
         }
     }
 
-    std::shared_ptr<Ordering> result() noexcept {
-        return std::make_shared<Ordering>(std::move(m_order));
+    std::shared_ptr<result_type> result() noexcept {
+        return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static BFSOrderTraverse create(AnalysisPassCache *cache, const FunctionData *data) {
-        return BFSOrderTraverse(data);
+    static BFSOrderTraverseBase create(AnalysisPassCache *cache, const FunctionData *data) {
+        return BFSOrderTraverseBase(data);
     }
 
 private:
-    void visitBlock(BasicBlock *bb) {
+    void visitBlock(BB *bb) {
         visited[bb->id()] = true;
         m_order.push_back(bb);
         if (!bb->successors().empty()) {
@@ -51,7 +55,7 @@ private:
     }
 
     std::vector<bool> visited;
-    std::vector<BasicBlock *> m_order{};
-    std::stack<std::span<BasicBlock* const>> stack;
+    std::vector<BB *> m_order{};
+    std::stack<std::span<BB* const>> stack;
 };
 

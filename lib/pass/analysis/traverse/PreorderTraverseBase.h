@@ -7,21 +7,21 @@
 #include "Ordering.h"
 #include "pass/analysis/AnalysisPass.h"
 
-#include "module/BasicBlock.h"
 #include "module/FunctionData.h"
 
 
-class PreorderTraverse final : public AnalysisPass {
-    explicit PreorderTraverse(const FunctionData *data) noexcept
+template<CodeBlock BB>
+class PreorderTraverseBase final : public AnalysisPass {
+    explicit PreorderTraverseBase(const FunctionData *data) noexcept
         : AnalysisPass(data) {}
 
 public:
-    using result_type = Ordering;
-    static constexpr auto analysis_kind = AnalysisType::PreorderTraverse;
+    using result_type = Ordering<BB>;
+    static constexpr auto analysis_kind = AnalysisType::PreOrderTraverse;
 
     void run() override {
         std::vector visited(m_data->size(), false);
-        std::stack<BasicBlock*> stack;
+        std::stack<BB*> stack;
         stack.push(m_data->first());
 
         const auto exit = m_data->last();
@@ -44,14 +44,14 @@ public:
         m_order.push_back(exit);
     }
 
-    std::shared_ptr<Ordering> result() noexcept {
-        return std::make_shared<Ordering>(std::move(m_order));
+    std::shared_ptr<result_type> result() noexcept {
+        return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static PreorderTraverse create(AnalysisPassCache *cache, const FunctionData *data) {
-        return PreorderTraverse(data);
+    static PreorderTraverseBase create(AnalysisPassCache *cache, const FunctionData *data) {
+        return PreorderTraverseBase(data);
     }
 
 private:
-    std::vector<BasicBlock *> m_order{};
+    std::vector<BB *> m_order{};
 };
