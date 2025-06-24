@@ -1,6 +1,5 @@
 #include "Elf.h"
-
-#include <bits/ostream.h>
+#include <ostream>
 
 
 void elf_section_init(Elf64_Shdr* shdr, const char *name, int type, int flags, int link, int info, int addralign, int entsize) {

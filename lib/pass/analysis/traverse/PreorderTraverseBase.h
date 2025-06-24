@@ -38,7 +38,9 @@ public:
             visited[bb->id()] = true;
             m_order.push_back(bb);
 
-            stack.push_range(std::ranges::reverse_view(bb->successors()));
+            for (auto s: std::ranges::reverse_view(bb->successors())) {
+                stack.push(s);
+            }
         }
 
         m_order.push_back(exit);

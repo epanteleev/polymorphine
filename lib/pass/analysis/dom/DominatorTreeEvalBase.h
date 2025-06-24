@@ -8,7 +8,6 @@
 #include "DominatorTree.h"
 #include "pass/analysis/AnalysisPass.h"
 #include "ir_frwd.h"
-#include "module/BasicBlock.h"
 #include "pass/analysis/traverse/Ordering.h"
 #include "pass/analysis/traverse/PostOrderTraverseBase.h"
 
@@ -62,7 +61,7 @@ public:
 private:
     static constexpr auto UNDEFINED = std::numeric_limits<std::size_t>::max();
 
-    void enumeration_to_dom_map(const Ordering<BasicBlock>& ordering, const std::unordered_map<std::size_t, BasicBlock*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
+    void enumeration_to_dom_map(const Ordering<BB>& ordering, const std::unordered_map<std::size_t, BB*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
         for (const auto key: dominators | std::views::keys) {
             const auto block = index_to_block.at(key);
             dominator_tree[block] = std::make_unique<dom_node>(block);
@@ -118,7 +117,7 @@ private:
     }
 
     static std::unordered_map<BB*, std::size_t> indexing_blocks(Ordering<BB>& ordering) {
-        std::unordered_map<BasicBlock*, std::size_t> indexing;
+        std::unordered_map<BB*, std::size_t> indexing;
         for (auto [i, bb]: std::ranges::views::enumerate(ordering)) {
             indexing[bb] = i;
         }

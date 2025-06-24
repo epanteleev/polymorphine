@@ -4,9 +4,6 @@
 
 #include "ir_frwd.h"
 
-
-class AnalysisPass;
-
 enum class AnalysisType {
     PreOrderTraverse,
     PostOrderTraverse,

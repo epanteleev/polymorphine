@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "module/BasicBlock.h"
 #include "pass/analysis/AnalysisPass.h"
 
 
@@ -24,7 +23,7 @@ class DominatorTree final: public AnalysisPassResult {
 public:
     using dom_node = std::unique_ptr<DominatorNode<BB>>;
 
-    explicit DominatorTree(std::unordered_map<BasicBlock*, dom_node> &&dominator_tree) noexcept
+    explicit DominatorTree(std::unordered_map<BB*, dom_node> &&dominator_tree) noexcept
         : dominator_tree(std::move(dominator_tree)) {}
 
     std::ostream &print(std::ostream &os) const {
@@ -44,5 +43,5 @@ public:
     }
 
 private:
-    std::unordered_map<BasicBlock*, dom_node> dominator_tree;
+    std::unordered_map<BB*, dom_node> dominator_tree;
 };
