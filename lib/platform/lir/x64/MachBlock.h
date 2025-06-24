@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "AnyLIRInstruction.h"
-#include "module/CodeBlock.h"
+#include "pass/Constrains.h"
 #include "utility/OrderedSet.h"
 
 

@@ -1,4 +1,7 @@
 #include "MachBlock.h"
+
+#include <ostream>
+
 #include "AnyLIRInstruction.h"
 #include "utility/Error.h"
 

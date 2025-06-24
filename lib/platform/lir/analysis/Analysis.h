@@ -6,9 +6,10 @@
 #include "pass/analysis/traverse/PreorderTraverseBase.h"
 
 #include "platform/lir/x64/MachBlock.h"
+#include "platform/lir/x64/ObjFuncData.h"
 
 
-using BFSOrderTraverseMach = BFSOrderTraverseBase<MachBlock>;
-using PostOrderTraverse = PostOrderTraverseBase<MachBlock>;
-using PreorderTraverse = PreorderTraverseBase<MachBlock>;
-using DominatorTreeEval = DominatorTreeEvalBase<MachBlock>;
+using BFSOrderTraverseMach = BFSOrderTraverseBase<ObjFuncData>;
+using PostOrderTraverseMach = PostOrderTraverseBase<ObjFuncData>;
+using PreorderTraverseMach = PreorderTraverseBase<ObjFuncData>;
+using DominatorTreeEvalMach = DominatorTreeEvalBase<ObjFuncData>;

@@ -7,12 +7,12 @@
 #include "Ordering.h"
 #include "PreorderTraverseBase.h"
 #include "pass/analysis/AnalysisPass.h"
-#include "pass/analysis/AnalysisPassCache.h"
 
-template<CodeBlock BB>
+template<Function FD>
 class PostOrderTraverseBase final : public AnalysisPass {
 public:
-    using result_type = Ordering<BB>;
+    using basic_block = typename FD::code_block_type;
+    using result_type = Ordering<basic_block>;
 
 private:
     explicit PostOrderTraverseBase(const FunctionData *data, result_type &preorder) noexcept
@@ -31,13 +31,13 @@ public:
         return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static PostOrderTraverseBase create(AnalysisPassCache* cache, const FunctionData *data) {
-        auto preorder = cache->concurrent_analyze<PreorderTraverseBase<BB>>(data);
+    static PostOrderTraverseBase create(AnalysisPassCacheBase<FD>* cache, const FunctionData *data) {
+        auto preorder = cache->template concurrent_analyze<PreorderTraverseBase<FD>>(data);
         preorder.wait();
         return PostOrderTraverseBase(data, *preorder.get());
     }
 
 private:
-    std::vector<BB *> m_order{};
+    std::vector<basic_block *> m_order{};
     result_type &m_preorder;
 };

@@ -5,6 +5,14 @@
 
 class ObjFuncData final {
 public:
+    using code_block_type = MachBlock;
+
+    explicit ObjFuncData(std::string_view name) noexcept
+        : m_name(name), m_args({}) {}
+
+    ObjFuncData(std::string_view name, std::vector<VReg>&& args) noexcept
+        : m_name(name), m_args(std::move(args)) {}
+
     MachBlock* create_mach_block() {
         const auto creator = [this](std::size_t id) {
             return std::make_unique<MachBlock>(id);

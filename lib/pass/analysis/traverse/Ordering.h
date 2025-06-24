@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "module/CodeBlock.h"
+#include "pass/Constrains.h"
 #include "pass/analysis/AnalysisPass.h"
 
 template<CodeBlock BB>

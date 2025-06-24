@@ -3,7 +3,7 @@
 #include <vector>
 #include <iosfwd>
 
-#include "CodeBlock.h"
+#include "../pass/Constrains.h"
 #include "instruction/Instruction.h"
 #include "instruction/Terminator.h"
 #include "utility/OrderedSet.h"
@@ -41,6 +41,11 @@ public:
     [[nodiscard]]
     std::span<BasicBlock* const> predecessors() const {
         return m_predecessors;
+    }
+
+    [[nodiscard]]
+    const OrderedSet<Instruction>& instructions() const noexcept {
+        return m_instructions;
     }
 
     void print(std::ostream &os) const;

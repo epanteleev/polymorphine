@@ -8,10 +8,11 @@
 #include "pass/analysis/AnalysisPass.h"
 
 
-template<CodeBlock BB>
+template<Function FD>
 class BFSOrderTraverseBase final : public AnalysisPass {
 public:
-    using result_type = Ordering<BB>;
+    using basic_block = typename FD::code_block_type;
+    using result_type = Ordering<basic_block>;
 
 private:
     explicit BFSOrderTraverseBase(const FunctionData *data) noexcept
@@ -41,12 +42,12 @@ public:
         return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static BFSOrderTraverseBase create(AnalysisPassCache *cache, const FunctionData *data) {
+    static BFSOrderTraverseBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
         return BFSOrderTraverseBase(data);
     }
 
 private:
-    void visitBlock(BB *bb) {
+    void visitBlock(basic_block *bb) {
         visited[bb->id()] = true;
         m_order.push_back(bb);
         if (!bb->successors().empty()) {
@@ -55,7 +56,7 @@ private:
     }
 
     std::vector<bool> visited;
-    std::vector<BB *> m_order{};
-    std::stack<std::span<BB* const>> stack;
+    std::vector<basic_block *> m_order{};
+    std::stack<std::span<basic_block* const>> stack;
 };
 

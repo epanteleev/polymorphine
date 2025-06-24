@@ -5,10 +5,6 @@
 
 #include "utility/Error.h"
 
-void AnyLIRInstruction::print(std::ostream &os) const {
-    os << m_id << ":" << std::endl;
-}
-
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRInstKind::Add: visitor.add_i(out(0), in(0), in(1)); break;
@@ -32,12 +28,57 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.mov_i(in0.value(), in1.value());
             break;
         }
-        default: die("Unsupported instruction kind");
+        case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
+    }
+    die("unreachable");
+}
+
+void LIRBranch::visit(LIRVisitor &visitor) {
+    switch (m_kind) {
+        case LIRBranchKind::Je: visitor.je(succ(0), succ(1)); break;
+        case LIRBranchKind::Jg: visitor.jg(succ(0), succ(1)); break;
+        case LIRBranchKind::Jl: visitor.jl(succ(0), succ(1)); break;
+        case LIRBranchKind::Jmp: visitor.jmp(succ(0)); break;
+        case LIRBranchKind::Ret: visitor.ret(); break;
+        case LIRBranchKind::Jne: visitor.jne(succ(0), succ(1)); break;
+        case LIRBranchKind::Jge: visitor.jge(succ(0), succ(1)); break;
+        case LIRBranchKind::Jle: visitor.jle(succ(0), succ(1)); break;
     }
 }
 
-void LIRControlInstruction::visit(LIRVisitor &visitor) {
-    switch (m_kind) {
-        case LIRControlKind::Je: visitor.je(
+static std::vector<VReg> to_vregs_only(std::span<LIROperand const> inputs) {
+    std::vector<VReg> vregs;
+    for (const auto& in: inputs) {
+        const auto vreg = VReg::from(in);
+        assertion(vreg.has_value(), "invariant");
+        vregs.push_back(vreg.value());
     }
+    return vregs;
+}
+
+void LIRCall::visit(LIRVisitor &visitor) {
+    switch (m_kind) {
+        case LIRCallKind::Call: {
+            visitor.call(out(0), to_vregs_only(inputs()));
+            break;
+        }
+        case LIRCallKind::ICall: {
+            const auto pointer = VReg::from(in(0));
+            assertion(pointer.has_value(), "invariant");
+            visitor.icall(out(0), pointer.value(), to_vregs_only(inputs().subspan(1)));
+            break;
+        }
+        case LIRCallKind::IVCall: {
+            const auto pointer = VReg::from(in(0));
+            assertion(pointer.has_value(), "invariant");
+            visitor.ivcall(pointer.value(), to_vregs_only(inputs().subspan(1)));
+            break;
+        }
+        case LIRCallKind::VCall: visitor.vcall(to_vregs_only(inputs())); break;
+    }
+}
+
+
+void AnyLIRInstruction::print(std::ostream &os) const {
+    os << m_id << ":" << std::endl;
 }

@@ -2,6 +2,19 @@
 
 #include "lib/ir.h"
 #include "lib/pass/analysis/Analysis.h"
+#include "pass/analysis/AnalysisPassCache.h"
+
+Module ret_one() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
+
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+
+    data.ret(Value::i32(1));
+    return builder.build();
+}
+
 
 Module fib() {
     ModuleBuilder builder;
@@ -83,6 +96,9 @@ Module fib() {
 }
 
 int main() {
+    auto module0 = ret_one();
+    module0.print(std::cout) << std::endl;
+
     constexpr auto type = SignedIntegerType::i32();
     if (type->isa(signedType() && i32())) {
         std::cout << "Type is a signed integer type." << std::endl;

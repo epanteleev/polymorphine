@@ -10,18 +10,19 @@
 #include "module/FunctionData.h"
 
 
-template<CodeBlock BB>
+template<Function FD>
 class PreorderTraverseBase final : public AnalysisPass {
     explicit PreorderTraverseBase(const FunctionData *data) noexcept
         : AnalysisPass(data) {}
 
 public:
-    using result_type = Ordering<BB>;
+    using basic_block = typename FD::code_block_type;
+    using result_type = Ordering<basic_block>;
     static constexpr auto analysis_kind = AnalysisType::PreOrderTraverse;
 
     void run() override {
         std::vector visited(m_data->size(), false);
-        std::stack<BB*> stack;
+        std::stack<basic_block*> stack;
         stack.push(m_data->first());
 
         const auto exit = m_data->last();
@@ -50,10 +51,10 @@ public:
         return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static PreorderTraverseBase create(AnalysisPassCache *cache, const FunctionData *data) {
+    static PreorderTraverseBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
         return PreorderTraverseBase(data);
     }
 
 private:
-    std::vector<BB *> m_order{};
+    std::vector<basic_block *> m_order{};
 };

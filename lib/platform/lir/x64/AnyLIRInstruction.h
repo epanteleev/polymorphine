@@ -10,14 +10,14 @@
 
 class AnyLIRInstruction {
 public:
-    AnyLIRInstruction(const std::size_t id, MachBlock *bb, std::span<LIROperand> uses,
-                      const std::span<VReg> defs): m_id(id),
+    AnyLIRInstruction(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& uses,
+                      std::vector<VReg>&& defs): m_id(id),
                                                          m_owner(bb),
-                                                         m_du_chain(uses, defs) {}
+                                                         m_du_chain(std::move(uses), std::move(defs)) {}
 
     virtual ~AnyLIRInstruction() = default;
 
-    auto inputs() noexcept {
+    std::span<LIROperand const> inputs() noexcept {
         return m_du_chain.uses();
     }
 
@@ -60,13 +60,12 @@ enum class LIRInstKind: std::uint8_t {
     Neg,
     Not,
     Mov,
-    Call,
     Cmp,
 };
 
 class LIRInstruction final: public AnyLIRInstruction {
-    LIRInstruction(std::size_t id, MachBlock *bb, const LIRInstKind kind, std::span<LIROperand> uses, std::span<VReg> defs) :
-        AnyLIRInstruction(id, bb, uses, defs),
+    LIRInstruction(std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
+        AnyLIRInstruction(id, bb, std::move(uses), std::move(defs)),
         m_kind(kind) {}
 public:
     void visit(LIRVisitor &visitor) override;
@@ -75,10 +74,28 @@ private:
     LIRInstKind m_kind;
 };
 
-enum class LIRControlKind: std::uint8_t {
+class LIRControlInstruction: public AnyLIRInstruction {
+public:
+    explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, std::vector<VReg>&& defs, std::vector<LIROperand>&& uses, std::vector<MachBlock* >&& successors) :
+        AnyLIRInstruction(id, bb, std::move(uses), std::move(defs)),
+        m_successors(std::move(successors)) {}
+
+    [[nodiscard]]
+    std::span<MachBlock * const> successors() const noexcept {
+        return m_successors;
+    }
+
+    [[nodiscard]]
+    const MachBlock* succ(const std::size_t idx) const {
+        return m_successors.at(idx);
+    }
+
+private:
+    std::vector<MachBlock* > m_successors;
+};
+
+enum class LIRBranchKind: std::uint8_t {
     Jmp,
-    Jz,
-    Jnz,
     Je,
     Jne,
     Jg,
@@ -88,21 +105,37 @@ enum class LIRControlKind: std::uint8_t {
     Ret
 };
 
-class LIRControlInstruction final: public AnyLIRInstruction {
+class LIRBranch final: public LIRControlInstruction {
 public:
-    explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, const LIRControlKind kind, const std::span<LIROperand> uses) :
-        AnyLIRInstruction(id, bb, uses, {}),
+    explicit LIRBranch(const std::size_t id, MachBlock *bb, const LIRBranchKind kind, const LIROperand& condition,
+                       MachBlock *on_true, MachBlock *on_false) :
+        LIRControlInstruction(id, bb, {}, {condition}, {on_true, on_false}),
         m_kind(kind) {}
-
-    [[nodiscard]]
-    std::span<MachBlock * const> successors() const noexcept {
-        return m_successors;
-    }
-
 
     void visit(LIRVisitor &visitor) override;
 
 private:
-    LIRControlKind m_kind;
-    std::vector<MachBlock* > m_successors;
+    const LIRBranchKind m_kind;
+};
+
+enum class LIRCallKind: std::uint8_t {
+    VCall,
+    Call,
+    ICall,
+    IVCall,
+};
+
+class LIRCall final: public LIRControlInstruction {
+public:
+    explicit LIRCall(const std::size_t id, MachBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<VReg>&& defs, std::vector<LIROperand>&& operands,
+                       MachBlock *on_true, MachBlock *on_false) :
+        LIRControlInstruction(id, bb, std::move(defs), std::move(operands), {on_true, on_false}),
+        m_name(std::move(name)),
+        m_kind(kind) {}
+
+    void visit(LIRVisitor &visitor) override;
+
+private:
+    std::string m_name;
+    const LIRCallKind m_kind;
 };

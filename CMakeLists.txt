@@ -49,8 +49,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/analysis/AnalysisPass.h
         lib/pass/analysis/traverse/PreorderTraverseBase.h
         lib/pass/analysis/traverse/Ordering.h
-        lib/pass/analysis/AnalysisPassCache.cpp
-        lib/pass/analysis/AnalysisPassCache.h
+        lib/pass/analysis/AnalysisPassCacheBase.cpp
+        lib/pass/analysis/AnalysisPassCacheBase.h
         lib/pass/analysis/traverse/PostOrderTraverseBase.h
         lib/pass/analysis/dom/DominatorTreeEvalBase.h
         lib/pass/analysis/dom/DominatorTree.h
@@ -81,13 +81,18 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/mach_frwd.h
         lib/elf/Elf.cpp
         lib/elf/Elf.h
-        lib/module/CodeBlock.h
+        lib/pass/Constrains.h
         lib/pass/analysis/Analysis.h
         lib/platform/lir/analysis/Analysis.h
         lib/platform/lir/x64/ObjFuncData.cpp
         lib/platform/lir/x64/ObjFuncData.h
         lib/platform/lir/x64/LIRVisitor.h
         lib/platform/lir/x64/Vreg.cpp
+        lib/platform/lir/x64/ObjModule.cpp
+        lib/platform/lir/x64/ObjModule.h
+        lib/platform/lower/Lowering.cpp
+        lib/platform/lower/Lowering.h
+        lib/pass/analysis/AnalysisPassCache.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

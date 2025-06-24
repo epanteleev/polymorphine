@@ -1,5 +1,7 @@
 #include "ObjFuncData.h"
 
+#include <ostream>
+
 
 MachBlock * ObjFuncData::last() const {
     const auto last_bb = m_basic_blocks.back();

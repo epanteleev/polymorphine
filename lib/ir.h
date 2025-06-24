@@ -16,6 +16,6 @@
 #include "instruction/TerminateInstruction.h"
 
 
-#include "pass/analysis/AnalysisPassCache.h"
+#include "pass/analysis/AnalysisPassCacheBase.h"
 #include "pass/analysis/dom/DominatorTreeEvalBase.h"
 #include "pass/analysis/traverse/PostOrderTraverseBase.h"

@@ -16,24 +16,24 @@ public:
     virtual void shl_i(const VReg& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shr_i(const VReg& out, const LIROperand& in1, const LIROperand& in2) = 0;
 
+    virtual void cmp_i(const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void neg_i(const VReg& out, const LIROperand& in) = 0;
     virtual void not_i(const VReg& out, const LIROperand& in) = 0;
 
     virtual void mov_i(const VReg& out, const VReg& in) = 0;
 
-    virtual void jmp(MachBlock* bb) = 0;
-    virtual void jz(MachBlock* on_true, MachBlock* on_false) = 0;
-    virtual void je(MachBlock* on_true, MachBlock* on_false) = 0;
-    virtual void jl(MachBlock* on_true, MachBlock* on_false) = 0;
-    virtual void jg(MachBlock* on_true, MachBlock* on_false) = 0;
+    virtual void jmp(const MachBlock* bb) = 0;
+    virtual void je(const MachBlock* on_true, const MachBlock* on_false) = 0;
+    virtual void jne(const MachBlock* on_true, const MachBlock* on_false) = 0;
+    virtual void jl(const MachBlock* on_true, const MachBlock* on_false) = 0;
+    virtual void jle(const MachBlock* on_true, const MachBlock* on_false) = 0;
+    virtual void jg(const MachBlock* on_true, const MachBlock* on_false) = 0;
+    virtual void jge(const MachBlock* on_true, const MachBlock* on_false) = 0;
 
-    virtual void call(const VReg& out, const LIROperand& callee, std::span<const LIROperand> args) = 0;
-
-    virtual void push(const LIROperand& value) = 0;
-    virtual void pop(const VReg& out) = 0;
+    virtual void call(const VReg& out, std::span<VReg const> args) = 0;
+    virtual void vcall(std::span<VReg const> args) = 0;
+    virtual void icall(const VReg& out, const VReg& pointer, std::span<VReg const> args) = 0;
+    virtual void ivcall(const VReg& pointer, std::span<VReg const> args) = 0;
 
     virtual void ret() = 0;
-
-    virtual void accept(LIRInstruction *inst) = 0;
-
 };

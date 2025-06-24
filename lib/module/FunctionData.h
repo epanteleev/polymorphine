@@ -9,6 +9,8 @@
 
 class FunctionData final {
 public:
+    using code_block_type = BasicBlock;
+
     explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
 
     BasicBlock* create_basic_block() {
@@ -44,8 +46,16 @@ public:
         return m_prototype.name();
     }
 
+    [[nodiscard]]
+    const OrderedSet<BasicBlock>& basic_blocks() const noexcept {
+        return m_basic_blocks;
+    }
+
 private:
     FunctionPrototype m_prototype;
     std::vector<ArgumentValue> m_args;
     OrderedSet<BasicBlock> m_basic_blocks;
 };
+
+
+static_assert(Function<FunctionData>, "assumed to be");

@@ -12,9 +12,10 @@
 #include "pass/analysis/traverse/PostOrderTraverseBase.h"
 
 
-template<CodeBlock BB>
+template<Function FD>
 class DominatorTreeEvalBase final: public AnalysisPass {
 public:
+    using BB = typename FD::code_block_type;
     using order_type = Ordering<BB>;
     using dom_node = DominatorNode<BB>;
     using result_type = DominatorTree<BB>;
@@ -48,8 +49,8 @@ public:
         enumeration_to_dom_map(m_postorder, index_to_label, dominators);
     }
 
-    static DominatorTreeEvalBase create(AnalysisPassCache *cache, const FunctionData *data) {
-        auto post_order = cache->concurrent_analyze<PostOrderTraverseBase<BB>>(data);
+    static DominatorTreeEvalBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
+        auto post_order = cache->template concurrent_analyze<PostOrderTraverseBase<FD>>(data);
         post_order.wait();
         return {data, *post_order.get()};
     }

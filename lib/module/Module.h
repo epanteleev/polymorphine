@@ -23,6 +23,10 @@ public:
         return it->second.get();
     }
 
+    const std::unordered_map<std::string, std::unique_ptr<FunctionData>>& functions() const {
+        return m_functions;
+    }
+
     std::ostream &print(std::ostream &os) const;
 
 private:
