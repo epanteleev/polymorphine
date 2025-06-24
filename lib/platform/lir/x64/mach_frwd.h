@@ -9,3 +9,4 @@ class LIRControlInstruction;
 
 
 class LIROperand;
+class VReg;

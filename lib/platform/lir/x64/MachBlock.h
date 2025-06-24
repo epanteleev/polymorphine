@@ -30,6 +30,7 @@ public:
         return m_predecessors;
     }
 
+    void print(std::ostream &os) const;
 
 private:
     const std::size_t m_id;

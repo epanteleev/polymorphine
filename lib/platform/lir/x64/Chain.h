@@ -37,19 +37,34 @@ private:
     };
 
 public:
-    Chain(std::span<LIROperand> uses, std::span<LIRInstruction*> defs) noexcept:
+    Chain(std::span<LIROperand> uses, std::span<VReg> defs) noexcept:
         m_defs(defs.begin(), defs.end()),
         m_uses(uses.begin(), uses.end()) {}
 
     void add_use(const LIROperand& use);
 
-    void add_def(LIRInstruction* def);
+    void add_def(const VReg& def);
 
     InputIterator uses() {
         return {m_uses.begin(), m_uses.end()};
     }
 
+    [[nodiscard]]
+    const LIROperand& use(const std::size_t idx) const {
+        return m_uses.at(idx);
+    }
+
+    [[nodiscard]]
+    std::span<VReg const> defs() const {
+        return m_defs;
+    }
+
+    [[nodiscard]]
+    const VReg& def(const std::size_t idx) const {
+        return m_defs.at(idx);
+    }
+
 private:
-    std::vector<LIRInstruction* > m_defs;
+    std::vector<VReg> m_defs;
     std::vector<LIROperand> m_uses;
 };

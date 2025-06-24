@@ -10,3 +10,11 @@ LIRControlInstruction * MachBlock::last() const {
 
     return dynamic_cast<LIRControlInstruction*>(inst.value());
 }
+
+void MachBlock::print(std::ostream &os) const {
+    os << m_id << ":" << std::endl;
+    for (auto& inst: m_instructions) {
+        inst.print(os);
+        os << std::endl;
+    }
+}

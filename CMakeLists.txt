@@ -84,6 +84,10 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/module/CodeBlock.h
         lib/pass/analysis/Analysis.h
         lib/platform/lir/analysis/Analysis.h
+        lib/platform/lir/x64/ObjFuncData.cpp
+        lib/platform/lir/x64/ObjFuncData.h
+        lib/platform/lir/x64/LIRVisitor.h
+        lib/platform/lir/x64/Vreg.cpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
