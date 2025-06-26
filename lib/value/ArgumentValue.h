@@ -18,10 +18,10 @@ public:
         return m_type;
     }
 
-    void add_user(Instruction* user);
+    void add_user(const Instruction* user);
 
 private:
     std::size_t m_index;
     const NonTrivialType* m_type;
-    std::vector<Instruction*> m_used_in;
+    std::vector<const Instruction*> m_used_in;
 };

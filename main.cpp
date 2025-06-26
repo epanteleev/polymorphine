@@ -3,6 +3,7 @@
 #include "lib/ir.h"
 #include "lib/pass/analysis/Analysis.h"
 #include "pass/analysis/AnalysisPassCache.h"
+#include "platform/lower/Lowering.h"
 
 Module ret_one() {
     ModuleBuilder builder;
@@ -98,6 +99,11 @@ Module fib() {
 int main() {
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;
+
+    Lowering lower(module0);
+    lower.run();
+    auto result = lower.result();
+    result.print(std::cout) << std::endl;
 
     constexpr auto type = SignedIntegerType::i32();
     if (type->isa(signedType() && i32())) {

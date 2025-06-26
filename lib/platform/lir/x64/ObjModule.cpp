@@ -1,5 +1,4 @@
 
-#include <ostream>
 #include <ranges>
 #include "ObjModule.h"
 

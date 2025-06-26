@@ -1,21 +1,24 @@
 #pragma once
 
+#include <functional>
 #include <iosfwd>
+#include <memory>
 
 #include "LIROperand.h"
 #include "LIRVisitor.h"
 #include "platform/lir/x64/Chain.h"
 
 #include "mach_frwd.h"
+#include "platform/lower/VregBuilder.hpp"
 
-class AnyLIRInstruction {
+class LIRInstructionBase {
 public:
-    AnyLIRInstruction(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& uses,
+    LIRInstructionBase(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& uses,
                       std::vector<VReg>&& defs): m_id(id),
                                                          m_owner(bb),
                                                          m_du_chain(std::move(uses), std::move(defs)) {}
 
-    virtual ~AnyLIRInstruction() = default;
+    virtual ~LIRInstructionBase() = default;
 
     std::span<LIROperand const> inputs() noexcept {
         return m_du_chain.uses();
@@ -41,10 +44,17 @@ public:
     void print(std::ostream &os) const;
 
 protected:
+    void add_def(const VReg& def) {
+        m_du_chain.add_def(def);
+    }
+
     std::size_t m_id;
     MachBlock* m_owner;
     Chain m_du_chain;
 };
+
+template<typename T>
+using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, MachBlock*, VregBuilder&)>;
 
 
 enum class LIRInstKind: std::uint8_t {
@@ -60,24 +70,35 @@ enum class LIRInstKind: std::uint8_t {
     Neg,
     Not,
     Mov,
+    Copy,
     Cmp,
 };
 
-class LIRInstruction final: public AnyLIRInstruction {
-    LIRInstruction(std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
-        AnyLIRInstruction(id, bb, std::move(uses), std::move(defs)),
-        m_kind(kind) {}
+class LIRInstruction final: public LIRInstructionBase {
 public:
+    LIRInstruction(std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
+        LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
+        m_kind(kind) {}
+
     void visit(LIRVisitor &visitor) override;
 
+
+    static LIRInstBuilder<LIRInstruction> copy(const LIROperand& op) {
+        return [=](std::size_t id, MachBlock *bb, VregBuilder& builder) {
+            auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
+            const auto reg = builder.mk_vreg(op.size(), copy.get());
+            copy->add_def(reg);
+            return copy;
+        };
+    }
 private:
     LIRInstKind m_kind;
 };
 
-class LIRControlInstruction: public AnyLIRInstruction {
+class LIRControlInstruction: public LIRInstructionBase {
 public:
     explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, std::vector<VReg>&& defs, std::vector<LIROperand>&& uses, std::vector<MachBlock* >&& successors) :
-        AnyLIRInstruction(id, bb, std::move(uses), std::move(defs)),
+        LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
         m_successors(std::move(successors)) {}
 
     [[nodiscard]]
@@ -102,7 +123,6 @@ enum class LIRBranchKind: std::uint8_t {
     Jge,
     Jl,
     Jle,
-    Ret
 };
 
 class LIRBranch final: public LIRControlInstruction {
@@ -116,6 +136,20 @@ public:
 
 private:
     const LIRBranchKind m_kind;
+};
+
+class LIRReturn final: public LIRControlInstruction {
+public:
+    explicit LIRReturn(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& values) :
+        LIRControlInstruction(id, bb, {}, std::move(values), {}) {}
+
+    void visit(LIRVisitor &visitor) override;
+
+    static LIRInstBuilder<LIRReturn> ret(const LIROperand& value) {
+        return [=](std::size_t idx, MachBlock *bb, VregBuilder&) {
+            return std::make_unique<LIRReturn>(idx, bb, std::vector{value});
+        };
+    }
 };
 
 enum class LIRCallKind: std::uint8_t {

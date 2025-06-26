@@ -3,7 +3,7 @@
 #include <vector>
 #include <iosfwd>
 
-#include "../pass/Constrains.h"
+#include "pass/Constrains.h"
 #include "instruction/Instruction.h"
 #include "instruction/Terminator.h"
 #include "utility/OrderedSet.h"
@@ -28,7 +28,7 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t id() const { return m_id; }
+    std::size_t id() const noexcept { return m_id; }
 
     [[nodiscard]]
     Terminator last() const;
@@ -61,7 +61,6 @@ private:
         }
     }
 
-private:
     const std::size_t m_id;
     std::vector<BasicBlock *> m_predecessors;
     OrderedSet<Instruction> m_instructions;

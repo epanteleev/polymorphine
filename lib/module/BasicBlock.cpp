@@ -40,7 +40,7 @@ void BasicBlock::print_short_name(std::ostream &os) const {
 
 void BasicBlock::make_def_use_chain(Instruction *inst) {
     for (const auto& operand: inst->operands()) {
-        auto local = LocalValue::from(operand);
+        auto local = LocalValue::try_from(operand);
         if (!local.has_value()) {
             continue;
         }

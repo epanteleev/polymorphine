@@ -11,11 +11,11 @@ public:
     [[nodiscard]]
     const Type* type() const { return m_ty; }
 
-    void add_user(Instruction* user);
+    void add_user(const Instruction* user);
 
 protected:
     const Type* m_ty;
-    std::vector<Instruction*> m_users;
+    std::vector<const Instruction*> m_users;
 };
 
 class PhiInstruction final: public ValueInstruction {

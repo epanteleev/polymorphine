@@ -6,13 +6,13 @@
 #include "Vreg.h"
 
 class LIROperand final {
-    explicit LIROperand(LirCst operand) noexcept
-        : m_operand(operand) {}
-
-    explicit LIROperand(VReg operand) noexcept
-        : m_operand(operand) {}
-
 public:
+    LIROperand(LirCst operand) noexcept
+    : m_operand(operand) {}
+
+    LIROperand(VReg operand) noexcept
+        : m_operand(operand) {}
+
     [[nodiscard]]
     std::optional<LirCst> cst() const noexcept {
         if (std::holds_alternative<LirCst>(m_operand)) {
@@ -31,6 +31,13 @@ public:
         return std::nullopt;
     }
 
+    [[nodiscard]]
+    std::uint8_t size() const noexcept;
+
+    friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 private:
     std::variant<LirCst, VReg> m_operand;
 };
+
+
+std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;

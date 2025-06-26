@@ -20,7 +20,8 @@ public:
     virtual void neg_i(const VReg& out, const LIROperand& in) = 0;
     virtual void not_i(const VReg& out, const LIROperand& in) = 0;
 
-    virtual void mov_i(const VReg& out, const VReg& in) = 0;
+    virtual void mov_i(const VReg& in1, const VReg& in2) = 0;
+    virtual void copy_i(const VReg& out, const LIROperand& in) = 0;
 
     virtual void jmp(const MachBlock* bb) = 0;
     virtual void je(const MachBlock* on_true, const MachBlock* on_false) = 0;
@@ -35,5 +36,5 @@ public:
     virtual void icall(const VReg& out, const VReg& pointer, std::span<VReg const> args) = 0;
     virtual void ivcall(const VReg& pointer, std::span<VReg const> args) = 0;
 
-    virtual void ret() = 0;
+    virtual void ret(std::span<LIROperand const> ret_values) = 0;
 };

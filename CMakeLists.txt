@@ -69,8 +69,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/builder/ModuleBuilder.h
         lib/instruction/GetElementPtr.h
         lib/pass/analysis/traverse/BFSOrderTraverseBase.h
-        lib/platform/lir/x64/AnyLIRInstruction.cpp
-        lib/platform/lir/x64/AnyLIRInstruction.h
+        lib/platform/lir/x64/LIRInstructionBase.cpp
+        lib/platform/lir/x64/LIRInstructionBase.h
         lib/platform/lir/x64/Vreg.h
         lib/platform/lir/x64/Chain.h
         lib/platform/lir/x64/Chain.cpp
@@ -93,6 +93,13 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lower/Lowering.cpp
         lib/platform/lower/Lowering.h
         lib/pass/analysis/AnalysisPassCache.h
+        lib/platform/lower/VregBuilder.cpp
+        lib/platform/lower/VregBuilder.hpp
+        lib/platform/lir/x64/LIRArg.h
+        lib/platform/lir/x64/LIROperand.cpp
+        lib/platform/lir/x64/LIRCst.cpp
+        lib/platform/lir/x64/LIRArg.cpp
+        lib/platform/lir/x64/Utils.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

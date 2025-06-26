@@ -7,8 +7,8 @@
 #include "ir_frwd.h"
 
 template<typename T>
-concept IsLocalValueType = std::is_base_of_v<ValueInstruction, T> ||
-    std::is_same_v<T, ArgumentValue>;
+concept IsLocalValueType = std::derived_from<T, ValueInstruction> ||
+    std::derived_from<T, ArgumentValue>;
 
 class LocalValue final {
     explicit LocalValue(ArgumentValue* value) noexcept;
@@ -16,14 +16,14 @@ class LocalValue final {
 
 public:
     template <IsLocalValueType T>
-    [[nodiscard]] T get() const {
-        return std::get<T>(m_value);
+    [[nodiscard]] T* get() const {
+        return std::get<T*>(m_value);
     }
 
     template <IsLocalValueType T>
     [[nodiscard]]
-    bool is() const {
-        return std::holds_alternative<T>(m_value);
+    bool is() const noexcept {
+        return std::holds_alternative<T*>(m_value);
     }
 
     [[nodiscard]]
@@ -31,10 +31,17 @@ public:
         return m_type;
     }
 
+    bool operator==(const LocalValue& other) const noexcept;
+
     void add_user(Instruction* user);
 
     friend std::ostream& operator<<(std::ostream& os, const LocalValue& obj);
-    static std::expected<LocalValue, Error> from(const Value& value);
+    static std::expected<LocalValue, Error> try_from(const Value& value);
+
+    template <IsLocalValueType T>
+    static LocalValue from(const T* val) noexcept {
+        return LocalValue(const_cast<T*>(val));
+    }
 
 private:
     std::variant<

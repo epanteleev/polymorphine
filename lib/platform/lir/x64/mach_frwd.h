@@ -3,10 +3,12 @@
 
 class MachBlock;
 
-class AnyLIRInstruction;
+class LIRInstructionBase;
 class LIRInstruction;
 class LIRControlInstruction;
 
 
 class LIROperand;
 class VReg;
+class LIRArg;
+class VregBuilder;

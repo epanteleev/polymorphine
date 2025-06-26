@@ -13,7 +13,7 @@ LocalValue::LocalValue(ValueInstruction *value) noexcept:
     m_value(value),
     m_type(value->type()) {}
 
-std::expected<LocalValue, Error> LocalValue::from(const Value &value) {
+std::expected<LocalValue, Error> LocalValue::try_from(const Value &value) {
     const auto visit = [&]<typename T>(const T &val) -> std::expected<LocalValue, Error> {
         if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction*>) {
             return LocalValue(val);
@@ -23,6 +23,22 @@ std::expected<LocalValue, Error> LocalValue::from(const Value &value) {
     };
 
     return value.visit<std::expected<LocalValue, Error>>(visit);
+}
+
+bool LocalValue::operator==(const LocalValue &other) const noexcept {
+    if (&other == this) {
+        return true;
+    }
+
+    if (is<ArgumentValue>() && other.is<ArgumentValue>()) {
+        return get<ArgumentValue>() == other.get<ArgumentValue>();
+    }
+
+    if (is<ValueInstruction>() && other.is<ValueInstruction>()) {
+        return get<ValueInstruction>() == other.get<ValueInstruction>();
+    }
+
+    return false;
 }
 
 void LocalValue::add_user(Instruction* user) {

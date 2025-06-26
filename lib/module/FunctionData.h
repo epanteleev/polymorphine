@@ -37,6 +37,11 @@ public:
     }
 
     [[nodiscard]]
+    std::span<const ArgumentValue> args() const {
+        return m_args;
+    }
+
+    [[nodiscard]]
     std::size_t size() const noexcept {
         return m_basic_blocks.size();
     }

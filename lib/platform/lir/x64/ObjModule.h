@@ -11,8 +11,9 @@ public:
     explicit ObjModule(std::unordered_map<std::string, std::unique_ptr<ObjFuncData>>&& functions) noexcept:
         m_functions(std::move(functions)) {}
 
-    const ObjFuncData* add_function_data(std::string_view proto, std::vector<VReg>&& args) {
-        const auto& [fst, snd] = m_functions.emplace(proto, std::make_unique<ObjFuncData>(proto, std::move(args)));
+    const ObjFuncData* add_function_data(const std::string& proto, std::vector<LIRArg>&& args) {
+        auto name = std::string(proto);
+        const auto& [fst, snd] = m_functions.emplace(proto, std::make_unique<ObjFuncData>(std::move(name), std::move(args)));
         return fst->second.get();
     }
 

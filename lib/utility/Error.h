@@ -18,7 +18,7 @@ enum class Error {
 };
 
 
-#define die(msg) error::raise(std::source_location::current(), msg)
+#define die(...) error::raise(std::source_location::current(), std::format(__VA_ARGS__))
 #define assertion(condition, ...) error::assert0(condition, std::source_location::current(), std::format(__VA_ARGS__))
 
 #define ENABLE_ASSERTIONS
