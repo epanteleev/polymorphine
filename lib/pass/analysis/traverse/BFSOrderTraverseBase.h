@@ -42,7 +42,7 @@ public:
         return std::make_shared<result_type>(std::move(m_order));
     }
 
-    static BFSOrderTraverseBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
+    static BFSOrderTraverseBase create(AnalysisPassCacheBase<FD>*, const FunctionData *data) {
         return BFSOrderTraverseBase(data);
     }
 
@@ -59,4 +59,3 @@ private:
     std::vector<basic_block *> m_order{};
     std::stack<std::span<basic_block* const>> stack;
 };
-

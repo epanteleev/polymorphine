@@ -82,15 +82,14 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-
     static LIRInstBuilder<LIRInstruction> copy(const LIROperand& op) {
         return [=](std::size_t id, MachBlock *bb, VregBuilder& builder) {
             auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
-            const auto reg = builder.mk_vreg(op.size(), copy.get());
-            copy->add_def(reg);
+            copy->add_def(builder.mk_vreg(op.size(), copy.get()));
             return copy;
         };
     }
+
 private:
     LIRInstKind m_kind;
 };

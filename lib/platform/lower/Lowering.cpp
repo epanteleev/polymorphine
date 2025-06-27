@@ -77,7 +77,7 @@ private:
 
     void accept(ReturnValue *inst) override {
         const auto ret_val = get_mapping(inst->ret_value());
-        auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
+        const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
 
         m_bb->inst(LIRReturn::ret(copy->out(0)));
     }

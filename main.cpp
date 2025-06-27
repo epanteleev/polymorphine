@@ -105,28 +105,21 @@ int main() {
     auto result = lower.result();
     result.print(std::cout) << std::endl;
 
-    constexpr auto type = SignedIntegerType::i32();
-    if (type->isa(signedType() && i32())) {
-        std::cout << "Type is a signed integer type." << std::endl;
-    }
-
-    FunctionPrototype proto(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "main");
-    ArgumentValue arg(1, SignedIntegerType::i32());
     auto module = fib();
     const auto fd = module.find_function_data("fib").value();
 
     AnalysisPassCache cache;
-    const auto dominator_tree = cache.analyze<DominatorTreeEval>(fd);
 
-    std::cout << "DomTree: ";
-    dominator_tree->print(std::cout) << std::endl;
-    module.print(std::cout) << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    const auto& bfs = *cache.analyze<BFSOrderTraverse>(fd);
-    std::cout << "BFS Order: ";
-    for (const auto bb : bfs) {
-        bb->print_short_name(std::cout);
-        std::cout << ' ';
-    }
+
+    const auto loop = cache.analyze<LoopInfoEval>(fd);
+
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
+
+    std::cout << loop << std::endl;
     return 0;
 }

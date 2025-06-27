@@ -16,7 +16,7 @@ public:
         return ObjModule(std::move(m_obj_functions));
     }
 
-    static Lowering create(AnalysisPassCache& cache, Module &module) {
+    static Lowering create(AnalysisPassCache&, Module &module) {
         return Lowering(module);
     }
 

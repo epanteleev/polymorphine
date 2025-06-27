@@ -7,12 +7,6 @@
 #include "AnalysisPass.h"
 #include "pass/Constrains.h"
 
-
-class DummyAnalysisPassResult final: public AnalysisPassResult {
-public:
-    static std::shared_ptr<AnalysisPassResult> UNDER_EVAL;
-};
-
 template<Function FD>
 class AnalysisPassCacheBase final {
     constexpr static auto MAX_ANALYSIS_PASSES = static_cast<std::size_t>(AnalysisType::Max);
@@ -22,15 +16,19 @@ public:
     requires IsAnalysis<A>
     typename A::result_type* analyze(const FD* data) {
         constexpr auto idx = static_cast<std::size_t>(A::analysis_kind);
+
         auto& pass_res = m_passes[idx];
-        auto cached = pass_res.load(std::memory_order_acquire);
-        if (cached != nullptr && cached !=  DummyAnalysisPassResult::UNDER_EVAL) {
-            return static_cast<typename A::result_type*>(cached.get());
+        auto& flag = m_flags[idx];
+        if (flag.load(std::memory_order_relaxed) == 2) {
+            const auto res = pass_res.load(std::memory_order_relaxed);
+            return static_cast<typename A::result_type*>(res.get());
         }
 
-        while (!pass_res.compare_exchange_strong(cached,  DummyAnalysisPassResult::UNDER_EVAL, std::memory_order_acq_rel)) {
-            if (cached != nullptr) {
-                return static_cast<typename A::result_type*>(cached.get());
+        auto loaded_flag = flag.load(std::memory_order_relaxed);
+        while (!flag.compare_exchange_strong(loaded_flag, 1)) {
+            if (loaded_flag == 2) {
+                const auto res = pass_res.load(std::memory_order_relaxed);
+                return static_cast<typename A::result_type*>(res.get());
             }
 
             std::this_thread::yield();
@@ -40,7 +38,8 @@ public:
         a.run();
         auto result = a.result();
         const auto ret = result.get();
-        pass_res.store(std::move(result), std::memory_order_release);
+        pass_res.store(result, std::memory_order_release);
+        flag.store(2, std::memory_order_release);
         return ret;
     }
 
@@ -51,5 +50,6 @@ public:
     }
 
 private:
+    std::array<std::atomic<std::uint8_t>, MAX_ANALYSIS_PASSES> m_flags{};
     std::array<std::atomic<std::shared_ptr<AnalysisPassResult>>, MAX_ANALYSIS_PASSES> m_passes{};
 };

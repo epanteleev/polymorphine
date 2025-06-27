@@ -20,11 +20,73 @@ struct DominatorNode final {
 
 template<CodeBlock BB>
 class DominatorTree final: public AnalysisPassResult {
+    class DominatorNodeIterator final {
+    public:
+        explicit DominatorNodeIterator(DominatorNode<BB> *node):
+            m_dominator_node(node) {}
+
+        DominatorNodeIterator &operator++() {
+            m_dominator_node = m_dominator_node->idom;
+            return *this;
+        }
+
+        bool operator==(const DominatorNodeIterator &other) const {
+            return m_dominator_node == other.m_dominator_node;
+        }
+
+        bool operator!=(const DominatorNodeIterator &other) const {
+            return m_dominator_node != other.m_dominator_node;
+        }
+
+        DominatorNode<BB>* operator->() const {
+            return m_dominator_node;
+        }
+
+        DominatorNode<BB>* operator*() const {
+            return m_dominator_node;
+        }
+
+    private:
+        DominatorNode<BB>* m_dominator_node;
+    };
+
+    class Dominators final {
+    public:
+        explicit Dominators(DominatorNode<BB> *node):
+            m_dominator_node(node) {}
+
+        DominatorNodeIterator begin() const {
+            return DominatorNodeIterator(m_dominator_node);
+        }
+
+        DominatorNodeIterator end() const {
+            return DominatorNodeIterator(nullptr);
+        }
+
+    private:
+        DominatorNode<BB> *m_dominator_node;
+    };
+
+
 public:
     using dom_node = std::unique_ptr<DominatorNode<BB>>;
 
     explicit DominatorTree(std::unordered_map<BB*, dom_node> &&dominator_tree) noexcept
         : dominator_tree(std::move(dominator_tree)) {}
+
+    bool dominates(const BB* dominator, const BB* target) {
+        for (auto dom: dominators(target)) {
+            if (dom->m_me == dominator) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    Dominators dominators(const BB* target) const {
+        return Dominators(dominator_tree.at(const_cast<BB*>(target)).get());
+    }
 
     std::ostream &print(std::ostream &os) const {
         os << '[';
