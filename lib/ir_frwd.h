@@ -39,7 +39,6 @@ class FunctionData;
 
 enum class Error;
 
-class AnalysisPass;
 class AnalysisPassResult;
 
 class FunctionBuilder;

@@ -7,13 +7,12 @@
 
 #include "DominatorTree.h"
 #include "pass/analysis/AnalysisPass.h"
-#include "ir_frwd.h"
 #include "pass/analysis/traverse/Ordering.h"
 #include "pass/analysis/traverse/PostOrderTraverseBase.h"
 
 
 template<Function FD>
-class DominatorTreeEvalBase final: public AnalysisPass {
+class DominatorTreeEvalBase final {
 public:
     using basic_block = typename FD::code_block_type;
     using order_type = Ordering<basic_block>;
@@ -21,14 +20,13 @@ public:
     using result_type = DominatorTree<basic_block>;
 
 private:
-    DominatorTreeEvalBase(const FunctionData* data, order_type& postorder) noexcept
-        : AnalysisPass(data),
+    explicit DominatorTreeEvalBase(order_type& postorder) noexcept:
         m_postorder(postorder) {}
 
 public:
     static constexpr auto analysis_kind = AnalysisType::DominatorTree;
 
-    void run() override {
+    void run() {
         const auto blocks_indexes = indexing_blocks(m_postorder);
         const auto predecessor_map = calculate_incoming(m_postorder, blocks_indexes);
         auto dominators = initialize_dominators(m_postorder);
@@ -49,9 +47,9 @@ public:
         enumeration_to_dom_map(m_postorder, index_to_label, dominators);
     }
 
-    static DominatorTreeEvalBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
+    static DominatorTreeEvalBase create(AnalysisPassCacheBase<FD> *cache, const FD *data) {
         auto post_order = cache->template analyze<PostOrderTraverseBase<FD>>(data);
-        return {data, *post_order};
+        return DominatorTreeEvalBase(*post_order);
     }
 
     std::shared_ptr<result_type> result() noexcept {

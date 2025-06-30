@@ -19,25 +19,6 @@ Terminator BasicBlock::last() const {
     return term.value();
 }
 
-void BasicBlock::print(std::ostream &os) const {
-    print_short_name(os);
-    os << ':' << std::endl;
-
-    for (const auto &inst : m_instructions) {
-        os << "  ";
-        inst.print(os);
-        os << '\n';
-    }
-}
-
-void BasicBlock::print_short_name(std::ostream &os) const {
-    if (m_id == 0) {
-        os << "entry";
-    } else {
-        os << 'L' << m_id;
-    }
-}
-
 void BasicBlock::make_def_use_chain(Instruction *inst) {
     for (const auto& operand: inst->operands()) {
         auto local = LocalValue::try_from(operand);

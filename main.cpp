@@ -2,10 +2,8 @@
 
 #include "lib/ir.h"
 #include "lib/pass/analysis/Analysis.h"
-#include "pass/analysis/AnalysisPassCache.h"
 #include "platform/lower/Lowering.h"
 
-#include <execution>
 
 Module ret_one() {
     ModuleBuilder builder;
@@ -156,6 +154,10 @@ std::size_t async_based_solution() {
 }
 
 int main() {
+    auto module = fib();
+    const auto fd = module.find_function_data("fib").value();
+    fd->print(std::cout);
+
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;
 
@@ -164,11 +166,20 @@ int main() {
     const auto result = lower.result();
     result.print(std::cout) << std::endl;
 
+    auto obj_fun = result.find_function_data("ret_one").value();
+
+    AnalysisPassCacheMach cache;
+    const auto linear_scan = cache.analyze<LinearScanOrderMach>(obj_fun);
+    for (const auto mb: *linear_scan) {
+        mb->print_short_name(std::cout);
+    }
+
+    /*
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();
 
     std::cout << "'async_based_solution' average time: " << time1 << " ns"<< std::endl;
     std::cout << "'single_thread_solution' average time: " << time2 << " ns"<< std::endl;
-
+*/
     return 0;
 }

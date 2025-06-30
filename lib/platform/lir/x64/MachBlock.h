@@ -2,17 +2,16 @@
 
 #include <cstddef>
 #include <span>
-#include <vector>
 
+#include "base/BasicBlockBase.h"
 #include "LIRInstructionBase.h"
 #include "pass/Constrains.h"
 #include "utility/OrderedSet.h"
 
 
-class MachBlock final {
+class MachBlock final: public BasicBlockBase<MachBlock, LIRInstructionBase> {
 public:
-    explicit MachBlock(std::size_t id) noexcept
-        : m_id(id) {}
+    explicit MachBlock(const std::size_t id) noexcept: BasicBlockBase(id) {}
 
     template<std::derived_from<LIRInstructionBase> U>
     U* inst(const LIRInstBuilder<U>& fn) {
@@ -24,9 +23,6 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t id() const { return m_id; }
-
-    [[nodiscard]]
     LIRControlInstruction* last() const;
 
     [[nodiscard]]
@@ -34,18 +30,8 @@ public:
         return last()->successors();
     }
 
-    [[nodiscard]]
-    std::span<MachBlock* const> predecessors() const {
-        return m_predecessors;
-    }
-
-    void print(std::ostream &os) const;
-
 private:
-    const std::size_t m_id;
     VregBuilder m_builder;
-    std::vector<MachBlock *> m_predecessors;
-    OrderedSet<LIRInstructionBase> m_instructions;
 };
 
 static_assert(CodeBlock<MachBlock>, "assumed to be");

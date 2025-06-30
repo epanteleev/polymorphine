@@ -17,7 +17,7 @@ public:
         return fst->second.get();
     }
 
-    std::optional<ObjFuncData*> find_function_data(const std::string& name) {
+    std::optional<ObjFuncData*> find_function_data(const std::string& name) const {
         const auto& it = m_functions.find(name);
         if (it == m_functions.end()) {
             return std::nullopt;

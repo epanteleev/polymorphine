@@ -11,9 +11,9 @@ class LoopBlock final {
 public:
     using iterator = typename std::unordered_set<BB*>::iterator;
 
-    LoopBlock(const BB* header, const BB* exit, std::unordered_set<BB*>&& body):
-        m_header(header),
+    LoopBlock(const BB* exit, const BB* enter, std::unordered_set<BB*>&& body):
         m_exit(exit),
+        m_enter(enter),
         m_body(std::move(body)) {}
 
     auto begin() const {
@@ -24,9 +24,19 @@ public:
         return m_body.end();
     }
 
+    [[nodiscard]]
+    const BB* exit() const noexcept {
+        return m_exit;
+    }
+
+    [[nodiscard]]
+    const BB* enter() const noexcept {
+        return m_enter;
+    }
+
 private:
-    const BB* m_header;
     const BB* m_exit;
+    const BB* m_enter;
     const std::unordered_set<BB*> m_body;
 };
 
@@ -36,6 +46,16 @@ public:
     explicit LoopInfoBase(std::unordered_map<BB*, std::vector<LoopBlock<BB>>>&& loops):
         m_loops(std::move(loops)) {}
 
+    [[nodiscard]]
+    std::span<LoopBlock<BB> const> loops(BB* header) const {
+        const auto loop = m_loops.find(header);
+        if (loop == m_loops.end()) {
+            return {};
+        }
+
+        return loop->second;
+    }
+
 private:
-    std::unordered_map<BB*, std::vector<LoopBlock<BB>>> m_loops;
+    const std::unordered_map<BB*, std::vector<LoopBlock<BB>>> m_loops;
 };

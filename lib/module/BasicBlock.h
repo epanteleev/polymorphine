@@ -1,16 +1,14 @@
 #pragma once
 
-#include <vector>
-#include <iosfwd>
-
+#include "base/BasicBlockBase.h"
 #include "pass/Constrains.h"
 #include "instruction/Instruction.h"
 #include "instruction/Terminator.h"
-#include "utility/OrderedSet.h"
 
-class BasicBlock final {
+
+class BasicBlock final: public BasicBlockBase<BasicBlock, Instruction> {
 public:
-    explicit BasicBlock(const std::size_t id): m_id(id) {}
+    explicit BasicBlock(const std::size_t id): BasicBlockBase(id) {}
 
     template<std::derived_from<Instruction> U>
     U* push_back(const InstructionBuilder<U>& fn) {
@@ -28,28 +26,12 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t id() const noexcept { return m_id; }
-
-    [[nodiscard]]
     Terminator last() const;
 
     [[nodiscard]]
     std::span<BasicBlock* const> successors() const {
         return last().targets();
     }
-
-    [[nodiscard]]
-    std::span<BasicBlock* const> predecessors() const {
-        return m_predecessors;
-    }
-
-    [[nodiscard]]
-    const OrderedSet<Instruction>& instructions() const noexcept {
-        return m_instructions;
-    }
-
-    void print(std::ostream &os) const;
-    void print_short_name(std::ostream &os) const;
 
 private:
     static void make_def_use_chain(Instruction* inst);
@@ -60,10 +42,6 @@ private:
             block->m_predecessors.push_back(inst->owner());
         }
     }
-
-    const std::size_t m_id;
-    std::vector<BasicBlock *> m_predecessors;
-    OrderedSet<Instruction> m_instructions;
 };
 
 
