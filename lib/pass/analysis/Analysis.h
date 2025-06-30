@@ -13,8 +13,8 @@ using PreorderTraverse = PreorderTraverseBase<FunctionData>;
 using DominatorTreeEval = DominatorTreeEvalBase<FunctionData>;
 using LoopInfoEval = LoopInfoEvalBase<FunctionData>;
 
-static_assert(IsAnalysis<BFSOrderTraverse>);
-static_assert(IsAnalysis<PostOrderTraverse>);
-static_assert(IsAnalysis<PreorderTraverse>);
-static_assert(IsAnalysis<DominatorTreeEval>);
-static_assert(IsAnalysis<LoopInfoEval>);
+static_assert(Analysis<BFSOrderTraverse>);
+static_assert(Analysis<PostOrderTraverse>);
+static_assert(Analysis<PreorderTraverse>);
+static_assert(Analysis<DominatorTreeEval>);
+static_assert(Analysis<LoopInfoEval>);

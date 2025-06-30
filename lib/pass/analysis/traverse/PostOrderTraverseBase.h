@@ -32,9 +32,8 @@ public:
     }
 
     static PostOrderTraverseBase create(AnalysisPassCacheBase<FD>* cache, const FunctionData *data) {
-        auto preorder = cache->template concurrent_analyze<PreorderTraverseBase<FD>>(data);
-        preorder.wait();
-        return PostOrderTraverseBase(data, *preorder.get());
+        auto preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
+        return PostOrderTraverseBase(data, *preorder);
     }
 
 private:

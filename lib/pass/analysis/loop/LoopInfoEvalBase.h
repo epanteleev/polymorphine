@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LoopDataBase.h"
+#include "LoopInfoBase.h"
 #include "pass/analysis/AnalysisPass.h"
 #include "pass/analysis/AnalysisPassCacheBase.h"
 #include "pass/analysis/dom/DominatorTreeEvalBase.h"
@@ -11,7 +11,7 @@ template<Function FD>
 class LoopInfoEvalBase final : public AnalysisPass {
 public:
     using basic_block = typename FD::code_block_type;
-    using result_type = LoopDataBase<basic_block>;
+    using result_type = LoopInfoBase<basic_block>;
 
 private:
     LoopInfoEvalBase(const FunctionData *data, DominatorTree<basic_block>& dominator_tree, Ordering<basic_block>& postorder):
@@ -81,13 +81,10 @@ public:
     }
 
     static LoopInfoEvalBase create(AnalysisPassCacheBase<FD>* cache, const FunctionData *data) {
-        auto dominator_tree_future = cache->template concurrent_analyze<DominatorTreeEvalBase<FD>>(data);
-        auto postorder_future = cache->template concurrent_analyze<PostOrderTraverseBase<FD>>(data);
+        auto dominator_tree = cache->template analyze<DominatorTreeEvalBase<FD>>(data);
+        auto postorder = cache->template analyze<PostOrderTraverseBase<FD>>(data);
 
-        dominator_tree_future.wait();
-        postorder_future.wait();
-
-        return LoopInfoEvalBase(data, *dominator_tree_future.get(), *postorder_future.get());
+        return LoopInfoEvalBase(data, *dominator_tree, *postorder);
     }
 
     std::shared_ptr<result_type> result() noexcept {

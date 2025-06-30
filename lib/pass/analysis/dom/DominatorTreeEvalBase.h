@@ -50,9 +50,8 @@ public:
     }
 
     static DominatorTreeEvalBase create(AnalysisPassCacheBase<FD> *cache, const FunctionData *data) {
-        auto post_order = cache->template concurrent_analyze<PostOrderTraverseBase<FD>>(data);
-        post_order.wait();
-        return {data, *post_order.get()};
+        auto post_order = cache->template analyze<PostOrderTraverseBase<FD>>(data);
+        return {data, *post_order};
     }
 
     std::shared_ptr<result_type> result() noexcept {

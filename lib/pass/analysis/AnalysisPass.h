@@ -19,7 +19,7 @@ public:
 };
 
 template <typename A>
-concept IsAnalysis = std::derived_from<A, AnalysisPass> && requires(A a)
+concept Analysis = std::derived_from<A, AnalysisPass> && requires(A a)
 {
     typename A::result_type;
     typename A::basic_block;

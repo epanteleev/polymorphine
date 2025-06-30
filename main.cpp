@@ -5,6 +5,8 @@
 #include "pass/analysis/AnalysisPassCache.h"
 #include "platform/lower/Lowering.h"
 
+#include <execution>
+
 Module ret_one() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
@@ -96,30 +98,77 @@ Module fib() {
     return builder.build();
 }
 
+std::size_t single_thread_solution() {
+    auto module = fib();
+    const auto fd = module.find_function_data("fib").value();
+
+    std::size_t sum{};
+
+    for (int i = 0; i < 2000; i++) {
+        AnalysisPassCache cache;
+
+        auto start = std::chrono::steady_clock::now();
+
+        auto dom_tree = cache.analyze<DominatorTreeEval>(fd);
+        auto bfs = cache.analyze<BFSOrderTraverse>(fd);
+        auto postorder = cache.analyze<PostOrderTraverse>(fd);
+
+        auto end = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum += duration.count();
+
+        std::cout << dom_tree << std::endl;
+        std::cout << bfs << std::endl;
+        std::cout << postorder << std::endl;
+    }
+
+    return sum / 2000;
+}
+
+std::size_t async_based_solution() {
+    auto module = fib();
+    const auto fd = module.find_function_data("fib").value();
+
+    std::size_t sum{};
+
+    for (int i = 0; i < 2000; i++) {
+        AnalysisPassCache cache;
+        auto start = std::chrono::steady_clock::now();
+
+        auto dom_tree = cache.concurrent_analyze<DominatorTreeEval>(fd);
+        auto bfs = cache.concurrent_analyze<BFSOrderTraverse>(fd);
+        auto postorder = cache.concurrent_analyze<PostOrderTraverse>(fd);
+
+        const auto res = dom_tree.get();
+        auto res_bfs = bfs.get();
+        auto res_postorder = postorder.get();
+
+        auto end = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum += duration.count();
+
+        std::cout << res << std::endl;
+        std::cout << res_bfs << std::endl;
+        std::cout << res_postorder << std::endl;
+    }
+
+    return sum / 2000;
+}
+
 int main() {
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;
 
     Lowering lower(module0);
     lower.run();
-    auto result = lower.result();
+    const auto result = lower.result();
     result.print(std::cout) << std::endl;
 
-    auto module = fib();
-    const auto fd = module.find_function_data("fib").value();
+    const auto time1 = async_based_solution();
+    const auto time2 = single_thread_solution();
 
-    AnalysisPassCache cache;
+    std::cout << "'async_based_solution' average time: " << time1 << " ns"<< std::endl;
+    std::cout << "'single_thread_solution' average time: " << time2 << " ns"<< std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
-
-
-    const auto loop = cache.analyze<LoopInfoEval>(fd);
-
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
-
-    std::cout << loop << std::endl;
     return 0;
 }

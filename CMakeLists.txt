@@ -101,7 +101,7 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/LIRArg.cpp
         lib/platform/lir/x64/Utils.h
         lib/pass/analysis/loop/LoopInfoEvalBase.h
-        lib/pass/analysis/loop/LoopDataBase.h
+        lib/pass/analysis/loop/LoopInfoBase.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
