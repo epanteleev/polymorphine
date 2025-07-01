@@ -31,11 +31,27 @@ public:
                 auto loop_body = get_loop_body(bb, p);
                 const auto exit = get_exit_block(loop_body);
                 const auto enter = get_enter_block(bb, loop_body);
-                std::vector<LoopBlock<basic_block>> vec;
-                vec.emplace_back(exit, enter, std::move(loop_body));
-                m_loops.emplace(bb, std::move(vec));
+                add_loop_block(bb, exit, enter, std::move(loop_body));
             }
         }
+    }
+
+    std::shared_ptr<result_type> result() noexcept {
+        return std::make_shared<result_type>(std::move(m_loops));
+    }
+
+    static LoopInfoEvalBase create(AnalysisPassCacheBase<FD>* cache, const FD *data) {
+        auto dominator_tree = cache->template analyze<DominatorTreeEvalBase<FD>>(data);
+        auto postorder = cache->template analyze<PostOrderTraverseBase<FD>>(data);
+
+        return {*dominator_tree, *postorder};
+    }
+
+private:
+    template <typename ...Args>
+    void add_loop_block(const basic_block* bb, Args&&... loop_block_args) {
+        auto entry = m_loops.insert_or_assign(bb, std::vector<LoopBlock<basic_block>>{});
+        entry.first->second.emplace_back(std::forward<Args>(loop_block_args)...);
     }
 
     std::unordered_set<const basic_block*> get_loop_body(const basic_block* header, const basic_block* predecessor) {
@@ -88,18 +104,6 @@ public:
         die("unreachable");
     }
 
-    static LoopInfoEvalBase create(AnalysisPassCacheBase<FD>* cache, const FD *data) {
-        auto dominator_tree = cache->template analyze<DominatorTreeEvalBase<FD>>(data);
-        auto postorder = cache->template analyze<PostOrderTraverseBase<FD>>(data);
-
-        return {*dominator_tree, *postorder};
-    }
-
-    std::shared_ptr<result_type> result() noexcept {
-        return std::make_shared<result_type>(std::move(m_loops));
-    }
-
-private:
     DominatorTree<basic_block>& m_dominator_tree;
     Ordering<basic_block>& m_postorder;
     std::unordered_map<const basic_block*, std::vector<LoopBlock<basic_block>>> m_loops;

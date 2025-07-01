@@ -159,6 +159,7 @@ int main() {
 
     AnalysisPassCache cache0;
     auto loop = cache0.analyze<LoopInfoEval>(fd);
+    std::cout << *loop << std::endl;
 
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;

@@ -25,12 +25,14 @@ public:
         return m_instructions;
     }
 
-    void print_short_name(std::ostream &os) const {
+    std::ostream &print_short_name(std::ostream &os) const {
         if (m_id == 0) {
             os << "entry";
         } else {
             os << 'L' << m_id;
         }
+
+        return os;
     }
 
     void print(std::ostream &os) const {
