@@ -56,7 +56,7 @@ public:
                 continue;
             }
 
-            if (auto res = loop_body.emplace(bb); !res.second) {
+            if (auto res = loop_body.emplace(bb); res.second) {
                 continue;
             }
 

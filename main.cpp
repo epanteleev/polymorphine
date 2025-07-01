@@ -158,6 +158,9 @@ int main() {
     const auto fd = module.find_function_data("fib").value();
     fd->print(std::cout);
 
+    AnalysisPassCache cache0;
+    auto loop = cache0.analyze<LoopInfoEval>(fd);
+
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;
 
