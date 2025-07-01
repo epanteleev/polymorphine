@@ -1,5 +1,6 @@
 
 #include "platform/lir/x64/LIRInstructionBase.h"
+#include "platform/lir/x64/MachBlock.h"
 
 #include <ostream>
 #include <ranges>
@@ -38,6 +39,14 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
         }
         case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
     }
+}
+
+LIRInstBuilder<LIRInstruction> LIRInstruction::copy(const LIROperand &op)  {
+    return [=](std::size_t id, MachBlock *bb, VregBuilder& builder) {
+        auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
+        copy->add_def(builder.mk_vreg(op.size(), bb->id(), copy.get()));
+        return copy;
+    };
 }
 
 void LIRBranch::visit(LIRVisitor &visitor) {

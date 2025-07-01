@@ -8,8 +8,7 @@
 #include "LIRVisitor.h"
 #include "platform/lir/x64/Chain.h"
 
-#include "mach_frwd.h"
-#include "platform/lower/VregBuilder.hpp"
+#include "platform/lir/x64/lower/VregBuilder.hpp"
 
 class LIRInstructionBase {
 public:
@@ -56,7 +55,6 @@ protected:
 template<typename T>
 using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, MachBlock*, VregBuilder&)>;
 
-
 enum class LIRInstKind: std::uint8_t {
     Add,
     Sub,
@@ -82,13 +80,7 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRInstruction> copy(const LIROperand& op) {
-        return [=](std::size_t id, MachBlock *bb, VregBuilder& builder) {
-            auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
-            copy->add_def(builder.mk_vreg(op.size(), copy.get()));
-            return copy;
-        };
-    }
+    static LIRInstBuilder<LIRInstruction> copy(const LIROperand& op);
 
 private:
     LIRInstKind m_kind;

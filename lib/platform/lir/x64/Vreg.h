@@ -13,11 +13,19 @@ class VReg final {
         Inst
     };
 
-    VReg(std::uint8_t size, std::uint32_t index, LIRArg *def): m_size(size), m_index(index), m_type(Op::Arg) {
+    VReg(std::uint8_t size, std::uint32_t index, std::uint32_t bb_idx, LIRArg *def):
+        m_size(size),
+        m_index(index),
+        m_bb_idx(bb_idx),
+        m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    VReg(std::uint8_t size, std::uint32_t index, LIRInstruction *def): m_size(size), m_index(index), m_type(Op::Inst) {
+    VReg(std::uint8_t size, std::uint32_t index, std::uint32_t bb_idx, LIRInstruction *def):
+        m_size(size),
+        m_index(index),
+        m_bb_idx(bb_idx),
+        m_type(Op::Inst) {
         m_variant.m_inst = def;
     }
 
@@ -45,12 +53,12 @@ public:
         return m_size;
     }
 
-    static VReg reg(std::uint32_t index, LIRArg* def) noexcept {
-        return {def->size(), index, def};
+    static VReg reg(std::uint32_t index, std::uint32_t bb_idx, LIRArg* def) noexcept {
+        return {def->size(), index, bb_idx, def};
     }
 
-    static VReg reg(std::uint8_t size, std::uint32_t index, LIRInstruction* def) noexcept {
-        return {size, index, def};
+    static VReg reg(std::uint8_t size, std::uint32_t index, std::uint32_t bb_idx, LIRInstruction* def) noexcept {
+        return {size, index, bb_idx, def};
     }
 
     static std::expected<VReg, Error> from(const LIROperand& op);
@@ -60,7 +68,7 @@ public:
 private:
     std::uint8_t m_size;
     std::uint32_t m_index;
-    std::uint32_t m_bb_idx{};
+    std::uint32_t m_bb_idx;
     Op m_type;
     union {
         LIRArg* m_arg;

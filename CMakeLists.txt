@@ -83,17 +83,17 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/elf/Elf.h
         lib/pass/Constrains.h
         lib/pass/analysis/Analysis.h
-        lib/platform/lir/analysis/Analysis.h
+        lib/platform/lir/x64/analysis/Analysis.h
         lib/platform/lir/x64/ObjFuncData.cpp
         lib/platform/lir/x64/ObjFuncData.h
         lib/platform/lir/x64/LIRVisitor.h
         lib/platform/lir/x64/Vreg.cpp
         lib/platform/lir/x64/ObjModule.cpp
         lib/platform/lir/x64/ObjModule.h
-        lib/platform/lower/Lowering.cpp
-        lib/platform/lower/Lowering.h
-        lib/platform/lower/VregBuilder.cpp
-        lib/platform/lower/VregBuilder.hpp
+        lib/platform/lir/x64/lower/Lowering.cpp
+        lib/platform/lir/x64/lower/Lowering.h
+        lib/platform/lir/x64/lower/VregBuilder.cpp
+        lib/platform/lir/x64/lower/VregBuilder.hpp
         lib/platform/lir/x64/LIRArg.h
         lib/platform/lir/x64/LIROperand.cpp
         lib/platform/lir/x64/LIRCst.cpp
@@ -103,6 +103,15 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/analysis/loop/LoopInfoBase.h
         lib/pass/analysis/traverse/LinearScanOrderBase.h
         lib/base/BasicBlockBase.h
+        lib/platform/lir/x64/lower/FunctionLower.cpp
+        lib/platform/lir/x64/lower/FunctionLower.h
+        lib/value/LocalValueMap.h
+        lib/platform/lir/x64/codegen/Codegen.cpp
+        lib/platform/lir/x64/codegen/Codegen.hpp
+        lib/platform/lir/x64/analysis/regalloc/LinearScan.h
+        lib/platform/lir/x64/analysis/regalloc/RegisterAllocation.h
+        lib/platform/lir/x64/analysis/liveness/LivenessAnalysis.h
+        lib/platform/lir/x64/analysis/liveness/LiveInfo.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

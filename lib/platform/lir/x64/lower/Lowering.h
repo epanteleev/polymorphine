@@ -2,7 +2,6 @@
 
 #include "module/Module.h"
 #include "pass/analysis/Analysis.h"
-#include "platform/lir/analysis/Analysis.h"
 #include "platform/lir/x64/ObjModule.h"
 
 

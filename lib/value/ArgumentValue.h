@@ -20,8 +20,13 @@ public:
 
     void add_user(const Instruction* user);
 
+    [[nodiscard]]
+    std::size_t index() const noexcept {
+        return m_index;
+    }
+
 private:
-    std::size_t m_index;
+    const std::size_t m_index;
     const NonTrivialType* m_type;
     std::vector<const Instruction*> m_used_in;
 };

@@ -1,29 +1,13 @@
-#include "Lowering.h"
-
+#pragma once
 #include <ranges>
 
 #include "VregBuilder.hpp"
 #include "instruction/TerminateInstruction.h"
 #include "value/LocalValue.h"
 #include "platform/lir/x64/LIRInstructionBase.h"
-
-struct HashLocalVal final {
-    [[nodiscard]]
-    size_t operator()(const LocalValue& val) const noexcept {
-        if (val.is<ArgumentValue>()) {
-            return reinterpret_cast<std::size_t>(val.get<ArgumentValue>());
-        }
-        if (val.is<ValueInstruction>()) {
-            return reinterpret_cast<std::size_t>(val.get<ValueInstruction>());
-        }
-
-        die("wrong variant");
-    }
-};
-
-struct LocalValEqualTo final {
-    bool operator()(const LocalValue& x, const LocalValue& y) const { return x == y; }
-};
+#include "platform/lir/x64/ObjFuncData.h"
+#include "module/FunctionData.h"
+#include "value/LocalValueMap.h"
 
 
 class FunctionLower final: public Visitor {
@@ -32,13 +16,13 @@ public:
         : m_obj_function(obj_function), m_function(function) {}
 
     void run() {
+        m_bb = m_obj_function.first();
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
-            auto vreg = m_builder.mk_vreg(&lir_arg);
+            auto vreg = m_builder.mk_vreg(m_bb->id(), &lir_arg);
             m_mapping.emplace(local, vreg);
         }
 
-        m_bb = m_obj_function.first();
         for (const auto &bb: m_function.basic_blocks()) {
             for (const auto &inst: bb.instructions()) {
                 const_cast<Instruction&>(inst).visit(*this); //TODO remove const_cast
@@ -111,28 +95,13 @@ private:
     }
 
     void accept(GetElementPtr *gep) override {
-        
+
     }
 
     ObjFuncData& m_obj_function;
     const FunctionData& m_function;
     MachBlock* m_bb{};
-    std::unordered_map<LocalValue, VReg, HashLocalVal, LocalValEqualTo> m_mapping;
+    LocalValueMap<VReg> m_mapping;
     VregBuilder m_builder{};
 };
 
-
-void Lowering::run() {
-    for (const auto &func: m_module.functions() | std::views::values) {
-        std::vector<LIRArg> args;
-        for (auto [idx, varg]: std::ranges::views::enumerate(func->args())) {
-            args.emplace_back(idx, varg.type()->size_of());
-        }
-
-        auto obj_func = std::make_unique<ObjFuncData>(func->name(), std::move(args));
-        FunctionLower lower(*obj_func.get(), *func);
-        lower.run();
-
-        m_obj_functions.emplace(func->name(), std::move(obj_func));
-    }
-}

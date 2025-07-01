@@ -2,7 +2,8 @@
 
 #include "lib/ir.h"
 #include "lib/pass/analysis/Analysis.h"
-#include "platform/lower/Lowering.h"
+#include "platform/lir/x64/analysis/Analysis.h"
+#include "platform/lir/x64/lower/Lowering.h"
 
 Module ret_one() {
     ModuleBuilder builder;

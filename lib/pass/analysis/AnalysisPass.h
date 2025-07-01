@@ -9,6 +9,8 @@ enum class AnalysisType {
     LinearScanOrderTraverse,
     DominatorTree,
     LoopNestedForest,
+    LinearScan,
+    LivenessAnalysis,
     Max
 };
 
