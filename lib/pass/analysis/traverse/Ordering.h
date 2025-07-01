@@ -7,10 +7,10 @@
 template<CodeBlock BB>
 class Ordering final: public AnalysisPassResult {
 public:
-    using const_iterator = typename std::vector<BB*>::const_iterator;
+    using const_iterator = typename std::vector<const BB*>::const_iterator;
 
     [[nodiscard]]
-    explicit Ordering(std::vector<BB*> &&ordering)
+    explicit Ordering(std::vector<const BB*> &&ordering)
         : m_ordering(std::move(ordering)) {}
 
     [[nodiscard]]
@@ -22,7 +22,7 @@ public:
     std::size_t size() const noexcept { return m_ordering.size(); }
 
 private:
-    std::vector<BB*> m_ordering;
+    std::vector<const BB*> m_ordering;
 };
 
 

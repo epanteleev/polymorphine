@@ -38,11 +38,11 @@ public:
         }
     }
 
-    std::unordered_set<basic_block*> get_loop_body(basic_block* header, basic_block* predecessor) {
-        std::unordered_set<basic_block*> loop_body;
+    std::unordered_set<const basic_block*> get_loop_body(const basic_block* header, const basic_block* predecessor) {
+        std::unordered_set<const basic_block*> loop_body;
         loop_body.insert(predecessor);
 
-        std::stack<basic_block*> worklist;
+        std::stack<const basic_block*> worklist;
         worklist.push(predecessor);
         while (!worklist.empty()) {
             const auto bb = worklist.top();
@@ -68,7 +68,7 @@ public:
         return loop_body;
     }
 
-    basic_block* get_exit_block(const std::unordered_set<basic_block*>& body) {
+    const basic_block* get_exit_block(const std::unordered_set<const basic_block*>& body) const {
         for (auto bb : body) {
             for (auto s: bb->successors()) {
                 if (!body.contains(s)) {
@@ -80,7 +80,7 @@ public:
         die("unreachable");
     }
 
-    basic_block* get_enter_block(basic_block* header, const std::unordered_set<basic_block*>& body) {
+    basic_block* get_enter_block(const basic_block* header, const std::unordered_set<const basic_block*>& body) {
         for (auto s: header->successors()) {
             if (body.contains(s)) return s;
         }
@@ -102,5 +102,5 @@ public:
 private:
     DominatorTree<basic_block>& m_dominator_tree;
     Ordering<basic_block>& m_postorder;
-    std::unordered_map<basic_block*, std::vector<LoopBlock<basic_block>>> m_loops;
+    std::unordered_map<const basic_block*, std::vector<LoopBlock<basic_block>>> m_loops;
 };

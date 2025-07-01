@@ -71,5 +71,5 @@ public:
 private:
     const FD* m_data;
     const LoopInfoBase<basic_block>* m_loop_info;
-    std::vector<basic_block *> m_order{};
+    std::vector<const basic_block *> m_order{};
 };

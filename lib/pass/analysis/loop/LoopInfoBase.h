@@ -11,7 +11,7 @@ class LoopBlock final {
 public:
     using iterator = typename std::unordered_set<BB*>::iterator;
 
-    LoopBlock(const BB* exit, const BB* enter, std::unordered_set<BB*>&& body):
+    LoopBlock(const BB* exit, const BB* enter, std::unordered_set<const BB*>&& body):
         m_exit(exit),
         m_enter(enter),
         m_body(std::move(body)) {}
@@ -37,13 +37,13 @@ public:
 private:
     const BB* m_exit;
     const BB* m_enter;
-    const std::unordered_set<BB*> m_body;
+    const std::unordered_set<const BB*> m_body;
 };
 
 template<CodeBlock BB>
 class LoopInfoBase final: public AnalysisPassResult {
 public:
-    explicit LoopInfoBase(std::unordered_map<BB*, std::vector<LoopBlock<BB>>>&& loops):
+    explicit LoopInfoBase(std::unordered_map<const BB*, std::vector<LoopBlock<BB>>>&& loops):
         m_loops(std::move(loops)) {}
 
     [[nodiscard]]
@@ -57,5 +57,5 @@ public:
     }
 
 private:
-    const std::unordered_map<BB*, std::vector<LoopBlock<BB>>> m_loops;
+    const std::unordered_map<const BB*, std::vector<LoopBlock<BB>>> m_loops;
 };

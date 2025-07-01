@@ -16,11 +16,11 @@ std::expected<VReg, Error> VReg::from(const LIROperand &op) {
 
 std::ostream & operator<<(std::ostream &os, const VReg &op) noexcept {
     if (auto arg_opt = op.arg(); arg_opt.has_value()) {
-        os << "arg " << size_prefix(op.size()) << '[' << op.m_index << "]";
+        os << "arg " << '[' << op.m_index << '\'' << size_prefix(op.size()) << ']';
         return os;
     }
     if (auto inst = op.inst(); inst.has_value()) {
-        os << size_prefix(op.size()) << '[' << op.m_index << "]";
+        os << op.m_bb_idx << 'x' << op.m_index << '\'' << size_prefix(op.size());
         return os;
     }
 

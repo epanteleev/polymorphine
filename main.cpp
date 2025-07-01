@@ -4,7 +4,6 @@
 #include "lib/pass/analysis/Analysis.h"
 #include "platform/lower/Lowering.h"
 
-
 Module ret_one() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
@@ -15,7 +14,6 @@ Module ret_one() {
     data.ret(Value::i32(1));
     return builder.build();
 }
-
 
 Module fib() {
     ModuleBuilder builder;

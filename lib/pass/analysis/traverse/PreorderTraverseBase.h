@@ -56,5 +56,5 @@ public:
 
 private:
     const FD *m_data;
-    std::vector<basic_block *> m_order{};
+    std::vector<const basic_block *> m_order{};
 };

@@ -10,11 +10,11 @@
 
 template<CodeBlock BB>
 struct DominatorNode final {
-    explicit DominatorNode(BB *me):
+    explicit DominatorNode(const BB *me):
         m_me(me) {}
 
     DominatorNode *idom{};
-    BB *m_me;
+    const BB *m_me;
     std::vector<DominatorNode *> children{};
 };
 
@@ -71,7 +71,7 @@ class DominatorTree final: public AnalysisPassResult {
 public:
     using dom_node = std::unique_ptr<DominatorNode<BB>>;
 
-    explicit DominatorTree(std::unordered_map<BB*, dom_node> &&dominator_tree) noexcept
+    explicit DominatorTree(std::unordered_map<const BB*, dom_node> &&dominator_tree) noexcept
         : dominator_tree(std::move(dominator_tree)) {}
 
     bool dominates(const BB* dominator, const BB* target) {
@@ -105,5 +105,5 @@ public:
     }
 
 private:
-    std::unordered_map<BB*, dom_node> dominator_tree;
+    std::unordered_map<const BB*, dom_node> dominator_tree;
 };

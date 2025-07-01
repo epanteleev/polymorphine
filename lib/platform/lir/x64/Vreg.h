@@ -8,17 +8,24 @@
 #include "utility/Error.h"
 
 class VReg final {
-    template<typename T>
-    VReg(std::uint8_t size, std::uint32_t index, T def):
-        m_size(size),
-        m_index(index),
-        m_def(def) {}
+    enum class Op: std::uint8_t {
+        Arg,
+        Inst
+    };
+
+    VReg(std::uint8_t size, std::uint32_t index, LIRArg *def): m_size(size), m_index(index), m_type(Op::Arg) {
+        m_variant.m_arg = def;
+    }
+
+    VReg(std::uint8_t size, std::uint32_t index, LIRInstruction *def): m_size(size), m_index(index), m_type(Op::Inst) {
+        m_variant.m_inst = def;
+    }
 
 public:
     [[nodiscard]]
     std::optional<LIRArg*> arg() const noexcept {
-        if (std::holds_alternative<LIRArg*>(m_def)) {
-            return std::get<LIRArg*>(m_def);
+        if (m_type == Op::Arg) {
+            return m_variant.m_arg;
         }
 
         return std::nullopt;
@@ -26,8 +33,8 @@ public:
 
     [[nodiscard]]
     std::optional<LIRInstruction*> inst() const noexcept {
-        if (std::holds_alternative<LIRInstruction*>(m_def)) {
-            return std::get<LIRInstruction*>(m_def);
+        if (m_type == Op::Inst) {
+            return m_variant.m_inst;
         }
 
         return std::nullopt;
@@ -53,7 +60,12 @@ public:
 private:
     std::uint8_t m_size;
     std::uint32_t m_index;
-    std::variant<LIRInstruction*, LIRArg* > m_def;
+    std::uint32_t m_bb_idx{};
+    Op m_type;
+    union {
+        LIRArg* m_arg;
+        LIRInstruction* m_inst;
+    } m_variant{};
 };
 
 std::ostream& operator<<(std::ostream& os, const VReg& op) noexcept;

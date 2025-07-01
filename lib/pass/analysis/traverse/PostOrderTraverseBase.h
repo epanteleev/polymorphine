@@ -36,6 +36,6 @@ public:
     }
 
 private:
-    std::vector<basic_block *> m_order{};
+    std::vector<const basic_block *> m_order{};
     result_type &m_preorder;
 };
