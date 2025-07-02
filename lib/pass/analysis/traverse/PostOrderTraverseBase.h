@@ -26,8 +26,8 @@ public:
         std::ranges::reverse_copy(m_preorder, std::begin(m_order));
     }
 
-    std::shared_ptr<result_type> result() noexcept {
-        return std::make_shared<result_type>(std::move(m_order));
+    std::unique_ptr<result_type> result() noexcept {
+        return std::make_unique<result_type>(std::move(m_order));
     }
 
     static PostOrderTraverseBase create(AnalysisPassCacheBase<FD>* cache, const FD *data) {

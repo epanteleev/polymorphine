@@ -12,7 +12,7 @@ public:
 
     }
 
-    std::shared_ptr<result_type> result() noexcept {
+    std::unique_ptr<result_type> result() noexcept {
         return {};
     }
 

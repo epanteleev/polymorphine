@@ -5,10 +5,8 @@
 #include <memory>
 
 #include "AnalysisPass.h"
-#include "pass/Constrains.h"
 
-
-template<Function FD>
+template<typename FD>
 class AnalysisPassCacheBase final {
     constexpr static auto MAX_ANALYSIS_PASSES = static_cast<std::size_t>(AnalysisType::Max);
 
@@ -39,5 +37,5 @@ public:
 
 private:
     std::array<std::mutex, MAX_ANALYSIS_PASSES> m_mutexes{};
-    std::array<std::shared_ptr<AnalysisPassResult>, MAX_ANALYSIS_PASSES> m_passes{};
+    std::array<std::unique_ptr<AnalysisPassResult>, MAX_ANALYSIS_PASSES> m_passes{};
 };

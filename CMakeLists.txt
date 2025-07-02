@@ -84,7 +84,6 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/pass/Constrains.h
         lib/pass/analysis/Analysis.h
         lib/platform/lir/x64/analysis/Analysis.h
-        lib/platform/lir/x64/ObjFuncData.cpp
         lib/platform/lir/x64/ObjFuncData.h
         lib/platform/lir/x64/LIRVisitor.h
         lib/platform/lir/x64/Vreg.cpp
@@ -107,11 +106,12 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/lower/FunctionLower.h
         lib/value/LocalValueMap.h
         lib/platform/lir/x64/codegen/Codegen.cpp
-        lib/platform/lir/x64/codegen/Codegen.hpp
+        lib/platform/lir/x64/codegen/Codegen.h
         lib/platform/lir/x64/analysis/regalloc/LinearScan.h
         lib/platform/lir/x64/analysis/regalloc/RegisterAllocation.h
         lib/platform/lir/x64/analysis/liveness/LivenessAnalysis.h
         lib/platform/lir/x64/analysis/liveness/LiveInfo.h
+        lib/base/FunctionDataBase.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

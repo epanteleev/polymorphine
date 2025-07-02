@@ -1,8 +1,8 @@
-
 #include <gtest/gtest.h>
+
 #include "instruction/Binary.h"
 #include "value/LocalValue.h"
-#include "../lib/value/ArgumentValue.h"
+#include "value/ArgumentValue.h"
 
 static_assert(IsLocalValueType<ArgumentValue>, "sanity check");
 static_assert(IsLocalValueType<ValueInstruction>, "sanity check");

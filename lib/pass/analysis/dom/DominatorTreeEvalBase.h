@@ -52,8 +52,8 @@ public:
         return DominatorTreeEvalBase(*post_order);
     }
 
-    std::shared_ptr<result_type> result() noexcept {
-        return std::make_shared<result_type>(std::move(dominator_tree));
+    std::unique_ptr<result_type> result() noexcept {
+        return std::make_unique<result_type>(std::move(dominator_tree));
     }
 
 private:

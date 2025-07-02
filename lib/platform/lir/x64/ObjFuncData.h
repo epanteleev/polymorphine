@@ -1,15 +1,16 @@
 #pragma once
-#include <utility>
 
 #include "MachBlock.h"
 #include "Vreg.h"
+#include "base/FunctionDataBase.h"
 
 
-class ObjFuncData final {
+class ObjFuncData final: public FunctionDataBase<MachBlock, LIRArg> {
 public:
-    using code_block_type = MachBlock;
-
-    ObjFuncData(std::string_view name, std::vector<LIRArg>&& args) noexcept;
+    ObjFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept: FunctionDataBase(std::move(args)),
+                                                                             m_name(name) {
+        create_mach_block();
+    }
 
     MachBlock* create_mach_block() {
         const auto creator = [this](std::size_t id) {
@@ -20,33 +21,20 @@ public:
     }
 
     [[nodiscard]]
-    std::span<LIRArg const> args() const noexcept {
-        return m_args;
-    }
-
-    [[nodiscard]]
-    MachBlock* first() const {
-        return m_basic_blocks.begin().get();
-    }
-
-    [[nodiscard]]
-    MachBlock* last() const;
-
-
-    [[nodiscard]]
-    std::size_t size() const noexcept {
-        return m_basic_blocks.size();
-    }
-
-    [[nodiscard]]
     std::string_view name() const noexcept {
         return m_name;
     }
 
-    void print(std::ostream &os) const;
+    void print(std::ostream &os) const {
+        os << m_name << '(';
+        for (auto& arg : m_args) {
+            os << " " << arg;
+        }
+        os << ") ";
+        print_blocks(os);
+    }
 
 private:
     std::string m_name;
     std::vector<LIRArg> m_args;
-    OrderedSet<MachBlock> m_basic_blocks;
 };

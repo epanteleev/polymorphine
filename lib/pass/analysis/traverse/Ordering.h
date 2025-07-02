@@ -21,6 +21,8 @@ public:
     [[nodiscard]]
     std::size_t size() const noexcept { return m_ordering.size(); }
 
+    const BB* operator[](std::size_t i) const noexcept { return m_ordering[i]; }
+
 private:
     std::vector<const BB*> m_ordering;
 };

@@ -36,8 +36,8 @@ public:
         }
     }
 
-    std::shared_ptr<result_type> result() noexcept {
-        return std::make_shared<result_type>(std::move(m_loops));
+    std::unique_ptr<result_type> result() noexcept {
+        return std::make_unique<result_type>(std::move(m_loops));
     }
 
     static LoopInfoEvalBase create(AnalysisPassCacheBase<FD>* cache, const FD *data) {

@@ -2,7 +2,9 @@
 
 #include "Vreg.h"
 
+#include "LIRInstructionBase.h"
 #include "LIROperand.h"
+#include "MachBlock.h"
 #include "Utils.h"
 
 std::expected<VReg, Error> VReg::from(const LIROperand &op) {
@@ -15,12 +17,13 @@ std::expected<VReg, Error> VReg::from(const LIROperand &op) {
 }
 
 std::ostream & operator<<(std::ostream &os, const VReg &op) noexcept {
+    const auto idx = static_cast<std::size_t>(op.m_index);
     if (auto arg_opt = op.arg(); arg_opt.has_value()) {
-        os << "arg " << '[' << op.m_index << '\'' << size_prefix(op.size()) << ']';
+        os << "arg " << '[' << idx << '\'' << size_prefix(op.size()) << ']';
         return os;
     }
-    if (auto inst = op.inst(); inst.has_value()) {
-        os << op.m_bb_idx << 'x' << op.m_index << '\'' << size_prefix(op.size());
+    if (const auto inst = op.inst(); inst.has_value()) {
+        os << inst.value()->owner()->id() << 'x' << idx << '\'' << size_prefix(op.size());
         return os;
     }
 

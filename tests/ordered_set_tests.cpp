@@ -1,7 +1,7 @@
 #include <ranges>
 #include <gtest/gtest.h>
 
-#include "../lib/utility/OrderedSet.h"
+#include "utility/OrderedSet.h"
 
 template<typename T>
 struct Elem {

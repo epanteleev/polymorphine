@@ -18,7 +18,7 @@ public:
 
     [[nodiscard]]
     const ArgumentValue* arg(const std::size_t index) const {
-        return m_fd->arg(index);
+        return &m_fd->arg(index);
     }
 
     [[nodiscard]]

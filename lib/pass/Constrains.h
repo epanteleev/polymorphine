@@ -13,5 +13,5 @@ concept CodeBlock = requires(T t)
 template<typename T>
 concept Function = requires(T t)
 {
-      typename T::code_block_type;
+      t.last();
 };

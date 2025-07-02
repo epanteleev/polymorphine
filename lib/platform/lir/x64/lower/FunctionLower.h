@@ -1,7 +1,7 @@
 #pragma once
+
 #include <ranges>
 
-#include "VregBuilder.hpp"
 #include "instruction/TerminateInstruction.h"
 #include "value/LocalValue.h"
 #include "platform/lir/x64/LIRInstructionBase.h"
@@ -17,10 +17,11 @@ public:
 
     void run() {
         m_bb = m_obj_function.first();
+        std::size_t idx{};
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
-            auto vreg = m_builder.mk_vreg(m_bb->id(), &lir_arg);
-            m_mapping.emplace(local, vreg);
+            m_mapping.emplace(local, VReg(arg.type()->size_of(), idx, &lir_arg));
+            idx += 1;
         }
 
         for (const auto &bb: m_function.basic_blocks()) {
@@ -102,6 +103,5 @@ private:
     const FunctionData& m_function;
     MachBlock* m_bb{};
     LocalValueMap<VReg> m_mapping;
-    VregBuilder m_builder{};
 };
 

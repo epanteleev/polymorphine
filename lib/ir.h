@@ -15,7 +15,4 @@
 #include "instruction/Unary.h"
 #include "instruction/TerminateInstruction.h"
 
-
-#include "pass/analysis/AnalysisPassCacheBase.h"
-#include "pass/analysis/dom/DominatorTreeEvalBase.h"
-#include "pass/analysis/traverse/PostOrderTraverseBase.h"
+#include "pass/analysis/Analysis.h"

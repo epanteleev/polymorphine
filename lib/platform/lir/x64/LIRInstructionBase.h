@@ -42,6 +42,11 @@ public:
 
     void print(std::ostream &os) const;
 
+    [[nodiscard]]
+    const MachBlock* owner() const noexcept {
+        return m_owner;
+    }
+
 protected:
     void add_def(const VReg& def) {
         m_du_chain.add_def(def);
