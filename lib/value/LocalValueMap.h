@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include "instruction/ValueInstruction.h"
 #include "utility/Error.h"
@@ -28,3 +29,5 @@ struct LocalValEqualTo final {
 
 template <typename V>
 using LocalValueMap = std::unordered_map<LocalValue, V, HashLocalVal, LocalValEqualTo>;
+
+using LocalValueSet = std::unordered_set<LocalValue, HashLocalVal, LocalValEqualTo>;

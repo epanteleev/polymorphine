@@ -78,6 +78,11 @@ public:
         return loop->second;
     }
 
+    [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_loops.size();
+    }
+
     template<CodeBlock BB_>
     friend std::ostream& operator<<(std::ostream& os, const LoopInfoBase<BB_>& info);
 

@@ -5,34 +5,36 @@
 #include "pass/Constrains.h"
 #include "utility/OrderedSet.h"
 
+
 template<CodeBlock BB, typename Arg>
 class FunctionDataBase {
 public:
     using code_block_type = BB;
+    using arg_type = Arg;
 
-    explicit FunctionDataBase(std::vector<Arg>&& args) :
+    explicit FunctionDataBase(std::vector<arg_type>&& args) :
         m_args(std::move(args)) {}
 
     virtual ~FunctionDataBase() = default;
 
     [[nodiscard]]
-    BB* first() const {
+    code_block_type* first() const {
         return m_basic_blocks.begin().get();
     }
 
     [[nodiscard]]
-    BB* last() const {
+    code_block_type* last() const {
         const auto last_bb = m_basic_blocks.back();
         return last_bb.value();
     }
 
     [[nodiscard]]
-    const Arg& arg(const std::size_t index) const {
+    const arg_type& arg(const std::size_t index) const {
         return m_args[index];
     }
 
     [[nodiscard]]
-    std::span<const Arg> args() const {
+    std::span<const arg_type> args() const {
         return m_args;
     }
 
@@ -56,6 +58,10 @@ protected:
         return os;
     }
 
-    std::vector<Arg> m_args;
-    OrderedSet<BB> m_basic_blocks;
+    std::vector<arg_type> m_args;
+    OrderedSet<code_block_type> m_basic_blocks;
 };
+
+
+template<typename T>
+concept Function = std::derived_from<T, FunctionDataBase<typename T::code_block_type, typename T::arg_type>>;

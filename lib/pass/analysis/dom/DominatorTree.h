@@ -84,8 +84,9 @@ public:
         return false;
     }
 
+    /** @return strict dominators **/
     Dominators dominators(const BB* target) const {
-        return Dominators(dominator_tree.at(const_cast<BB*>(target)).get());
+        return Dominators(dominator_tree.at(const_cast<BB*>(target)).get()->idom);
     }
 
     std::ostream &print(std::ostream &os) const {

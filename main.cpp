@@ -5,6 +5,8 @@
 #include "platform/lir/x64/analysis/Analysis.h"
 #include "platform/lir/x64/lower/Lowering.h"
 
+#include "platform/lir/x64/analysis/liveness/LivenessAnalysis.h"
+
 Module ret_one() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
@@ -177,6 +179,7 @@ int main() {
         mb->print_short_name(std::cout);
     }
 
+    auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
     /*
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();

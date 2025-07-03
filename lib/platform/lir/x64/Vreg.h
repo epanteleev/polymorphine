@@ -48,6 +48,23 @@ public:
         return m_size;
     }
 
+    [[nodiscard]]
+    std::uint8_t index() const noexcept {
+        return m_index;
+    }
+
+    bool operator==(const VReg &rhs) const noexcept {
+        if (this == &rhs) {
+            return true;
+        }
+
+        return m_size == rhs.m_size &&
+               m_index == rhs.m_index &&
+               m_type == rhs.m_type &&
+               m_variant.m_arg == rhs.
+               m_variant.m_arg;
+    }
+
     static VReg reg(std::uint8_t index, LIRArg* def) noexcept {
         return {def->size(), index, def};
     }

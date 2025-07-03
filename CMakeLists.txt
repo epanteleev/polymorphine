@@ -112,6 +112,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/analysis/liveness/LivenessAnalysis.h
         lib/platform/lir/x64/analysis/liveness/LiveInfo.h
         lib/base/FunctionDataBase.h
+        lib/platform/lir/x64/Matcher.h
+        lib/platform/lir/x64/VRegMap.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

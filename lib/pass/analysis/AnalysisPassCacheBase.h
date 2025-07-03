@@ -5,8 +5,9 @@
 #include <memory>
 
 #include "AnalysisPass.h"
+#include "base/FunctionDataBase.h"
 
-template<typename FD>
+template<Function FD>
 class AnalysisPassCacheBase final {
     constexpr static auto MAX_ANALYSIS_PASSES = static_cast<std::size_t>(AnalysisType::Max);
 

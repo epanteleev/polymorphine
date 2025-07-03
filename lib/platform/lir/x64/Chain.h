@@ -17,7 +17,8 @@ public:
 
     void add_def(const VReg& def);
 
-    std::span<LIROperand const> uses() {
+    [[nodiscard]]
+    std::span<LIROperand const> uses() const noexcept {
         return m_uses;
     }
 

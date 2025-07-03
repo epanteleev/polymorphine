@@ -1,5 +1,6 @@
 #pragma once
 
+#include "liveness/LivenessAnalysis.h"
 #include "pass/analysis/dom/DominatorTreeEvalBase.h"
 #include "pass/analysis/traverse/BFSOrderTraverseBase.h"
 #include "pass/analysis/traverse/LinearScanOrderBase.h"
@@ -21,7 +22,7 @@ static_assert(Analysis<PostOrderTraverseMach>);
 static_assert(Analysis<PreorderTraverseMach>);
 static_assert(Analysis<DominatorTreeEvalMach>);
 static_assert(Analysis<LinearScanOrderMach>);
-
 static_assert(Analysis<LinearScan>);
+static_assert(Analysis<LivenessAnalysis>);
 
 using AnalysisPassCacheMach = AnalysisPassCacheBase<ObjFuncData>;

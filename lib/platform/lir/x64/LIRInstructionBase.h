@@ -19,7 +19,8 @@ public:
 
     virtual ~LIRInstructionBase() = default;
 
-    std::span<LIROperand const> inputs() noexcept {
+    [[nodiscard]]
+    std::span<LIROperand const> inputs() const noexcept {
         return m_du_chain.uses();
     }
 
@@ -47,6 +48,13 @@ public:
         return m_owner;
     }
 
+
+    template<typename Fn>
+    [[nodiscard]]
+    bool isa(const Fn& matcher) const noexcept {
+        return matcher(this);
+    }
+
 protected:
     void add_def(const VReg& def) {
         m_du_chain.add_def(def);
@@ -72,6 +80,7 @@ enum class LIRInstKind: std::uint8_t {
     Shr,
     Neg,
     Not,
+    ParallelCopy,
     Mov,
     Copy,
     Cmp,
@@ -87,8 +96,13 @@ public:
 
     static LIRInstBuilder<LIRInstruction> copy(const LIROperand& op);
 
+    [[nodiscard]]
+    LIRInstKind kind() const noexcept {
+        return m_kind;
+    }
+
 private:
-    LIRInstKind m_kind;
+    const LIRInstKind m_kind;
 };
 
 class LIRControlInstruction: public LIRInstructionBase {
