@@ -79,8 +79,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/MachBlock.cpp
         lib/platform/lir/x64/MachBlock.h
         lib/platform/lir/x64/mach_frwd.h
-        lib/elf/Elf.cpp
-        lib/elf/Elf.h
+        lib/asm/elf/Elf.cpp
+        lib/asm/elf/Elf.h
         lib/pass/Constrains.h
         lib/pass/analysis/Analysis.h
         lib/platform/lir/x64/analysis/Analysis.h

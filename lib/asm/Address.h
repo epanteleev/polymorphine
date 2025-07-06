@@ -13,7 +13,7 @@ namespace aasm {
     class Address final {
 
     public:
-        explicit constexpr Address(GPReg base, GPReg index, std::uint8_t scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
+        explicit constexpr Address(const GPReg base, const GPReg index, std::uint8_t scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
             displacement(displacement),
             base(base),
             index(index),

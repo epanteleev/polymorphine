@@ -7,7 +7,6 @@
 #include "LIROperand.h"
 #include "LIRVisitor.h"
 #include "platform/lir/x64/Chain.h"
-
 #include "platform/lir/x64/lower/VregBuilder.hpp"
 
 class LIRInstructionBase {
@@ -88,7 +87,7 @@ enum class LIRInstKind: std::uint8_t {
 
 class LIRInstruction final: public LIRInstructionBase {
 public:
-    LIRInstruction(std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
+    LIRInstruction(const std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
         LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
         m_kind(kind) {}
 

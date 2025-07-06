@@ -8,5 +8,4 @@ std::ostream & ObjModule::print(std::ostream &os) const {
     }
 
     return os;
-
 }

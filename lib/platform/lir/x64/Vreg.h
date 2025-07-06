@@ -25,6 +25,7 @@ public:
         m_variant.m_inst = def;
     }
 
+public:
     [[nodiscard]]
     std::optional<const LIRArg*> arg() const noexcept {
         if (m_type == Op::Arg) {
