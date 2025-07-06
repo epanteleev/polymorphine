@@ -42,9 +42,9 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
 }
 
 LIRInstBuilder<LIRInstruction> LIRInstruction::copy(const LIROperand &op)  {
-    return [=](std::size_t id, MachBlock *bb, VregBuilder& builder) {
+    return [=](std::size_t id, MachBlock *bb) {
         auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
-        copy->add_def(builder.mk_vreg(op.size(), copy.get()));
+        copy->add_def(VReg(op.size(), 0, copy.get()));
         return copy;
     };
 }

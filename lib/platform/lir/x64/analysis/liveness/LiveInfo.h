@@ -19,8 +19,8 @@ public:
     }
 
 private:
-    VRegSet m_live_in;
-    VRegSet m_live_out;
+    const VRegSet m_live_in;
+    const VRegSet m_live_out;
 };
 
 

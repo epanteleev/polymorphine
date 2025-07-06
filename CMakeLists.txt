@@ -72,8 +72,6 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/LIRInstructionBase.cpp
         lib/platform/lir/x64/LIRInstructionBase.h
         lib/platform/lir/x64/Vreg.h
-        lib/platform/lir/x64/Chain.h
-        lib/platform/lir/x64/Chain.cpp
         lib/platform/lir/x64/LIRCst.h
         lib/platform/lir/x64/LIROperand.h
         lib/platform/lir/x64/MachBlock.cpp
@@ -91,8 +89,6 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/ObjModule.h
         lib/platform/lir/x64/lower/Lowering.cpp
         lib/platform/lir/x64/lower/Lowering.h
-        lib/platform/lir/x64/lower/VregBuilder.cpp
-        lib/platform/lir/x64/lower/VregBuilder.hpp
         lib/platform/lir/x64/LIRArg.h
         lib/platform/lir/x64/LIROperand.cpp
         lib/platform/lir/x64/LIRCst.cpp

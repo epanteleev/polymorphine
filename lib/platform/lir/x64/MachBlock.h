@@ -16,7 +16,7 @@ public:
     template<std::derived_from<LIRInstructionBase> U>
     U* inst(const LIRInstBuilder<U>& fn) {
         auto creator = [&] (const std::size_t id) {
-            return fn(id, this, m_builder);
+            return fn(id, this);
         };
 
         return m_instructions.push_back<U>(creator);
@@ -29,9 +29,6 @@ public:
     std::span<MachBlock* const> successors() const {
         return last()->successors();
     }
-
-private:
-    VregBuilder m_builder;
 };
 
 static_assert(CodeBlock<MachBlock>, "assumed to be");

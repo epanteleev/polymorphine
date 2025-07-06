@@ -6,36 +6,35 @@
 
 #include "LIROperand.h"
 #include "LIRVisitor.h"
-#include "platform/lir/x64/Chain.h"
-#include "platform/lir/x64/lower/VregBuilder.hpp"
 
 class LIRInstructionBase {
 public:
-    LIRInstructionBase(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& uses,
-                      std::vector<VReg>&& defs): m_id(id),
-                                                         m_owner(bb),
-                                                         m_du_chain(std::move(uses), std::move(defs)) {}
+    LIRInstructionBase(const std::size_t id, MachBlock *bb, std::vector<LIROperand> &&uses,
+                       std::vector<VReg> &&defs): m_id(id),
+                                                  m_owner(bb),
+                                                  m_defs(defs),
+                                                  m_uses(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;
 
     [[nodiscard]]
     std::span<LIROperand const> inputs() const noexcept {
-        return m_du_chain.uses();
+        return m_uses;
     }
 
     [[nodiscard]]
-    auto outputs() const noexcept {
-        return m_du_chain.defs();
+    std::span<VReg const> outputs() const noexcept {
+        return m_defs;
     }
 
     [[nodiscard]]
     const VReg& out(const std::size_t idx) const {
-        return m_du_chain.def(idx);
+        return m_defs.at(idx);
     }
 
     [[nodiscard]]
     const LIROperand& in(const std::size_t idx) const {
-        return m_du_chain.use(idx);
+        return m_uses.at(idx);
     }
 
     virtual void visit(LIRVisitor& visitor) = 0;
@@ -56,16 +55,17 @@ public:
 
 protected:
     void add_def(const VReg& def) {
-        m_du_chain.add_def(def);
+        m_defs.push_back(def);
     }
 
     std::size_t m_id;
     MachBlock* m_owner;
-    Chain m_du_chain;
+    std::vector<VReg> m_defs;
+    std::vector<LIROperand> m_uses;
 };
 
 template<typename T>
-using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, MachBlock*, VregBuilder&)>;
+using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, MachBlock*)>;
 
 enum class LIRInstKind: std::uint8_t {
     Add,
@@ -155,7 +155,7 @@ public:
     void visit(LIRVisitor &visitor) override;
 
     static LIRInstBuilder<LIRReturn> ret(const LIROperand& value) {
-        return [=](std::size_t idx, MachBlock *bb, VregBuilder&) {
+        return [=](std::size_t idx, MachBlock *bb) {
             return std::make_unique<LIRReturn>(idx, bb, std::vector{value});
         };
     }
