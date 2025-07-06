@@ -1,6 +1,9 @@
 #pragma once
-#include <cstdint>
 
+#include <cstdint>
+#include <ostream>
+
+#include "Common.h"
 #include "Register.h"
 
 namespace aasm {
@@ -11,13 +14,34 @@ namespace aasm {
     };
 
     class Address final {
-
     public:
         explicit constexpr Address(const GPReg base, const GPReg index, std::uint8_t scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
             displacement(displacement),
             base(base),
             index(index),
             scale(scale) {}
+
+
+        std::ostream& operator<<(std::ostream& os) const {
+            if (displacement != 0) {
+                os << displacement;
+            }
+            os << '(';
+            if (base.code()) {
+                os << base.name(8);
+            }
+            if (index.code()) {
+                if (base.code()) {
+                    os << ',';
+                }
+                os << index.name(8);
+                if (scale != 1) {
+                    os << ',' << static_cast<int>(scale);
+                }
+            }
+
+            return os;
+        }
 
         AddressType type;
 

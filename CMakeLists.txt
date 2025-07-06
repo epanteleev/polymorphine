@@ -110,6 +110,8 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/base/FunctionDataBase.h
         lib/platform/lir/x64/Matcher.h
         lib/platform/lir/x64/VRegMap.h
+        lib/asm/CPUInstruction.h
+        lib/asm/Common.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

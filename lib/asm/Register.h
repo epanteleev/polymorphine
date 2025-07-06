@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <array>
 #include <optional>
+#include <string_view>
 
 namespace aasm {
     class GPReg final {
@@ -44,6 +45,9 @@ namespace aasm {
         }
 
         static constexpr GPReg noreg() noexcept { return GPReg(RegEncoding::NONE); }
+
+        [[nodiscard]]
+        std::string_view name(std::size_t size) const noexcept;
 
     private:
         RegEncoding m_code;
