@@ -23,6 +23,11 @@ namespace aasm {
             return val[len - 1];
         }
 
+        [[nodiscard]]
+        std::size_t length() const noexcept {
+            return len;
+        }
+
         unsigned char val[15]{};
         std::uint8_t len{};
     };

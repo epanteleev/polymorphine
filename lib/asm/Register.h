@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include <optional>
 
 namespace aasm {
     class GPReg final {
@@ -29,7 +30,13 @@ namespace aasm {
         constexpr explicit GPReg(const RegEncoding code) noexcept: m_code(code) {}
 
         [[nodiscard]]
-        constexpr std::uint8_t code() const noexcept { return static_cast<uint8_t>(m_code); }
+        constexpr std::optional<std::uint8_t> code() const noexcept {
+            if (m_code == RegEncoding::NONE) {
+                return std::nullopt;
+            }
+
+            return static_cast<uint8_t>(m_code)-1;
+        }
 
         [[nodiscard]]
         constexpr bool is_64_bit_reg() const noexcept {
@@ -79,6 +86,6 @@ namespace aasm {
     }
 
     static constexpr std::uint8_t reg3(const GPReg arg) noexcept {
-        return (arg.code() - 1) & 0x7;
+        return arg.code().value() & 0x7;
     }
 }

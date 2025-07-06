@@ -10,30 +10,25 @@
 
 namespace aasm {
     namespace {
-
         void add_word_op_size(code& c) {
-            c.val[c.len++] = Assembler::PREFIX_OPERAND_SIZE;
+            c.emit8(Assembler::PREFIX_OPERAND_SIZE);
         }
 
         int encode_modrm_sib_disp(code *c, unsigned int reg, const Address& addr) {
-            const int len = c->len;
-
-            //  assert(!addr.sym);
-            // assert(addr.base || !addr.displacement);
-
-
+            const auto len = c->length();
             /* SP is used as sentinel for SIB, and R12 overlaps. */
-            int has_sib = addr.index.code() || !addr.base.code() || reg3(addr.base) == reg3(rsp) || addr.scale > 1;
+            const auto has_sib = addr.index.code() || !addr.base.code() || reg3(addr.base) == reg3(rsp) || addr.scale > 1;
 
             /* Explicit displacement must be used with BP or R13. */
-            int has_displacement = !addr.base.code() || addr.displacement || reg3(addr.base) == reg3(rbp);
+            const auto has_displacement = !addr.base.code() || addr.displacement || reg3(addr.base) == reg3(rbp);
 
             /* ModR/M */
-            c->val[c->len++] = (reg & 0x7) << 3 | (has_sib ? 4 : reg3(addr.base));
+            c->emit8((reg & 0x7) << 3 | (has_sib ? 4 : reg3(addr.base)));
             if (!in_byte_range(addr.displacement)) {
-                c->val[c->len - 1] |= 0x80;
+                c->last() |= 0x80;
+
             } else if (has_displacement && addr.base.code()) {
-                c->val[c->len - 1] |= 0x40;
+                c->last() |= 0x40;
             }
 
             /* SIB */
@@ -60,37 +55,35 @@ namespace aasm {
         }
 
         void emit_pop(code& c, const GPReg r) {
-            const auto rex = Assembler::REX | B(r);
-            if (rex != Assembler::REX) {
-                c.val[c.len++] = rex;
+            if (const auto rex = Assembler::REX | B(r); rex != Assembler::REX) {
+                c.emit8(rex);
             } else {
-                c.val[c.len++] = opc::POP_R + reg3(r);
+                c.emit8(opc::POP_R + reg3(r));
             }
         }
 
         void emit_pop(code& c, const Address& addr) {
             unsigned char rex = Assembler::REX | X(addr) | B(addr.base);
             if (rex != Assembler::REX) {
-                c.val[c.len++] = rex;
+                c.emit8(rex);
             }
 
-            c.val[c.len++] = opc::POP_M; // POP instruction opcode
+            c.emit8(opc::POP_M);
             encode_modrm_sib_disp(&c, 0, addr); // Updated function call
         }
 
         void emit_push(code& c, const GPReg r) {
             const auto rex = Assembler::REX | B(r);
             if (rex != Assembler::REX) {
-                c.val[c.len++] = rex;
+                c.emit8(rex);
             } else {
-                c.val[c.len++] = opc::PUSH_R + reg3(r); // PUSH instruction opcode
+                c.emit8(opc::PUSH_R + reg3(r));
             }
         }
 
         void emit_push(code& c, const Address& addr) {
-            unsigned char rex = Assembler::REX | X(addr) | B(addr.base);
-            if (rex != Assembler::REX) {
-                c.val[c.len++] = rex;
+            if (const auto rex = Assembler::REX | X(addr) | B(addr.base); rex != Assembler::REX) {
+                c.emit8(rex);
             }
 
             c.emit8(opc::PUSH_M);
@@ -163,7 +156,7 @@ namespace aasm {
         auto &c = m_inst.emplace_back();
         c.emit8(REX | B(dest) | R(src));
         c.emit8(opc::MOV_RR);
-        c.val[c.len++] = 0xC0 | reg3(src) << 3 | reg3(dest);
+        c.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
     }
 
     void Assembler::movw(const GPReg src, const GPReg dest) {
