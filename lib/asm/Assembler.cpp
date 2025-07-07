@@ -5,55 +5,12 @@
 #include <ranges>
 #include <spanstream>
 
+#include "CPUInstruction.h"
 #include "Instruction.h"
 
 
 namespace aasm {
     namespace {
-        void add_word_op_size(code& c) {
-            c.emit8(Assembler::PREFIX_OPERAND_SIZE);
-        }
-
-        int encode_modrm_sib_disp(code *c, unsigned int reg, const Address& addr) {
-            const auto len = c->length();
-            /* SP is used as sentinel for SIB, and R12 overlaps. */
-            const auto has_sib = addr.index.code() || !addr.base.code() || reg3(addr.base) == reg3(rsp) || addr.scale > 1;
-
-            /* Explicit displacement must be used with BP or R13. */
-            const auto has_displacement = !addr.base.code() || addr.displacement || reg3(addr.base) == reg3(rbp);
-
-            /* ModR/M */
-            c->emit8((reg & 0x7) << 3 | (has_sib ? 4 : reg3(addr.base)));
-            if (!in_byte_range(addr.displacement)) {
-                c->last() |= 0x80;
-
-            } else if (has_displacement && addr.base.code()) {
-                c->last() |= 0x40;
-            }
-
-            /* SIB */
-            if (has_sib) {
-                c->val[c->len] = addr.index.code() ? reg3(addr.index) : reg3(rsp);
-                c->val[c->len] = c->val[c->len] << 3;
-                c->val[c->len] |= (
-                    addr.scale == 2 ? 1 :
-                    addr.scale == 4 ? 2 :
-                    addr.scale == 8 ? 3 : 0) << 6;
-                c->val[c->len] |= addr.base.code() ? reg3(addr.base) : 5;
-                c->len++;
-            }
-
-            /* Displacement */
-            if (!in_byte_range(addr.displacement) || !addr.base.code()) {
-                std::memcpy(&c->val[c->len], &addr.displacement, 4);
-                c->len += 4;
-            } else if (has_displacement) {
-                c->val[c->len++] = addr.displacement;
-            }
-
-            return c->len - len;
-        }
-
         void emit_pop(code& c, const GPReg r) {
             if (const auto rex = Assembler::REX | B(r); rex != Assembler::REX) {
                 c.emit8(rex);
@@ -69,7 +26,7 @@ namespace aasm {
             }
 
             c.emit8(opc::POP_M);
-            encode_modrm_sib_disp(&c, 0, addr); // Updated function call
+            addr.encode(c, 0);
         }
 
         void emit_push(code& c, const GPReg r) {
@@ -87,7 +44,7 @@ namespace aasm {
             }
 
             c.emit8(opc::PUSH_M);
-            encode_modrm_sib_disp(&c, 6, addr); // Updated function call
+            addr.encode(c, 6);
         }
 
         void emit_mov(code& c, std::uint8_t rex_w, const GPReg src, const GPReg dest) {

@@ -19,12 +19,15 @@ namespace aasm {
             val[len++] = c;
         }
 
-        std::uint8_t& last() {
-            return val[len - 1];
+        void emit32(const std::uint32_t c) noexcept {
+            val[len++] = (c >> 24) & 0xFF;
+            val[len++] = (c >> 16) & 0xFF;
+            val[len++] = (c >> 8) & 0xFF;
+            val[len++] = c & 0xFF;
         }
 
         [[nodiscard]]
-        std::size_t length() const noexcept {
+        std::size_t size() const noexcept {
             return len;
         }
 
@@ -72,9 +75,4 @@ namespace aasm {
     private:
         std::deque<code> m_inst;
     };
-
-    template<typename T>
-    static constexpr bool in_byte_range(T arg) {
-        return arg >= -128 && arg <= 127;
-    }
 }

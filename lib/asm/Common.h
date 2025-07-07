@@ -22,6 +22,11 @@ namespace aasm {
     }
 
     template<typename T>
+    static constexpr bool in_byte_range(T arg) {
+        return arg >= -128 && arg <= 127;
+    }
+
+    template<typename T>
     concept CodeBuffer = requires(T t) {
         { t.emit8(std::declval<std::uint8_t>()) };
         { t.size() } -> std::same_as<std::size_t>;
