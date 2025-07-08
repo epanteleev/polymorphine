@@ -62,7 +62,6 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/asm/Address.h
         lib/asm/Instruction.h
         lib/asm/Immediate.h
-        lib/asm/AbstractAssembler.h
         lib/module/Module.h
         lib/module/Module.cpp
         lib/builder/ModuleBuilder.cpp

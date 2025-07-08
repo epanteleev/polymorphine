@@ -1,157 +1,46 @@
 #include "Assembler.h"
 
-#include <algorithm>
 #include <cstring>
 #include <ranges>
-#include <spanstream>
 
 #include "CPUInstruction.h"
 #include "Instruction.h"
 
 
 namespace aasm {
-    namespace {
-        void emit_pop(code& c, const GPReg r) {
-            if (const auto rex = Assembler::REX | B(r); rex != Assembler::REX) {
-                c.emit8(rex);
-            } else {
-                c.emit8(opc::POP_R + reg3(r));
-            }
+    class Buff final {
+    public:
+        Buff(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
+
+        void emit8(std::uint8_t opcode) {
+            m_buffer[m_size++] = opcode;
         }
 
-        void emit_pop(code& c, const Address& addr) {
-            unsigned char rex = Assembler::REX | X(addr) | B(addr.base);
-            if (rex != Assembler::REX) {
-                c.emit8(rex);
-            }
-
-            c.emit8(opc::POP_M);
-            addr.encode(c, 0);
+        void emit32(const std::uint32_t c) noexcept {
+            m_buffer[m_size++] = (c >> 24) & 0xFF;
+            m_buffer[m_size++] = (c >> 16) & 0xFF;
+            m_buffer[m_size++] = (c >> 8) & 0xFF;
+            m_buffer[m_size++] = c & 0xFF;
         }
 
-        void emit_push(code& c, const GPReg r) {
-            const auto rex = Assembler::REX | B(r);
-            if (rex != Assembler::REX) {
-                c.emit8(rex);
-            } else {
-                c.emit8(opc::PUSH_R + reg3(r));
-            }
+        [[nodiscard]]
+        std::size_t size() const noexcept {
+            return m_size;
         }
 
-        void emit_push(code& c, const Address& addr) {
-            if (const auto rex = Assembler::REX | X(addr) | B(addr.base); rex != Assembler::REX) {
-                c.emit8(rex);
-            }
+    private:
+        std::span<std::uint8_t> m_buffer;
+        std::size_t m_size{};
+    };
 
-            c.emit8(opc::PUSH_M);
-            addr.encode(c, 6);
-        }
-
-        void emit_mov(code& c, std::uint8_t rex_w, const GPReg src, const GPReg dest) {
-            c.emit8(Assembler::REX | B(dest) | rex_w | R(src));
-            c.emit8(opc::MOV_RR);
-            c.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-        }
-    }
-
-
-    void Assembler::ret() {
-        // Ret - return from function
-        m_inst.emplace_back(opc::RET);
-    }
-
-    void Assembler::popq(const GPReg r) {
-        auto& c = m_inst.emplace_back();
-        emit_pop(c, r);
-    }
-
-    void Assembler::popw(const GPReg r) {
-        auto& c = m_inst.emplace_back();
-        add_word_op_size(c);
-        emit_pop(c, r);
-    }
-
-    void Assembler::popq(const Address& addr) {
-        auto& c = m_inst.emplace_back();
-        emit_pop(c, addr);
-    }
-
-    void Assembler::popw(const Address &addr) {
-        auto& c = m_inst.emplace_back();
-        add_word_op_size(c);
-        emit_pop(c, addr);
-    }
-
-    void Assembler::pushq(const GPReg r) {
-        auto& c = m_inst.emplace_back();
-        emit_push(c, r);
-    }
-
-    void Assembler::pushw(const GPReg r) {
-        auto& c = m_inst.emplace_back();
-        add_word_op_size(c);
-        emit_push(c, r);
-    }
-
-    void Assembler::pushq(const Address &addr) {
-        auto &c = m_inst.emplace_back();
-        emit_push(c, addr);
-    }
-
-    void Assembler::pushw(const Address &addr) {
-        auto &c = m_inst.emplace_back();
-        add_word_op_size(c);
-        emit_push(c, addr);
-    }
-
-    void Assembler::movq(const GPReg src, const GPReg dest) {
-        auto &c = m_inst.emplace_back();
-        emit_mov(c, REX_W, src, dest);
-    }
-
-    void Assembler::movl(const GPReg src, const GPReg dest) {
-        auto &c = m_inst.emplace_back();
-        c.emit8(REX | B(dest) | R(src));
-        c.emit8(opc::MOV_RR);
-        c.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-    }
-
-    void Assembler::movw(const GPReg src, const GPReg dest) {
-        auto& c = m_inst.emplace_back();
-        add_word_op_size(c);
-        emit_mov(c, 0, src, dest);
-    }
-
-    void Assembler::movb(const GPReg src, const GPReg dest) {
-        auto &c = m_inst.emplace_back();
-        c.emit8(REX | B(dest) | R(src));
-        c.emit8(opc::MOV_RR_8);
-        c.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-    }
-
-    void Assembler::print_codes(std::ostream &os) const {
-        for (const auto& c : m_inst) {
-            for (const auto i : std::views::iota(0U, c.len)) {
-                os << std::hex << static_cast<int>(c.val[i]) << ' ';
-            }
-
-            os << std::endl;
-        }
-    }
+    static_assert(CodeBuffer<Buff>);
 
     std::size_t Assembler::to_byte_buffer(std::span<std::uint8_t> buffer) const {
-        std::size_t size = 0;
-        auto it = buffer.begin();
-        for (const auto& c : m_inst) {
-            if (it + c.len > buffer.end()) {
-                return size;
-            }
-
-            std::copy_n(c.val, c.len, it);
-            it += c.len;
-            size += c.len;
+        Buff buff{buffer};
+        for (auto& inst: m_instructions) {
+            inst.emit(buff);
         }
 
-        return size;
+        return buff.size();
     }
 }

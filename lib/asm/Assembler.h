@@ -4,9 +4,9 @@
 #include <iosfwd>
 #include <span>
 
-#include "AbstractAssembler.h"
 #include "Register.h"
 #include "Address.h"
+#include "CPUInstruction.h"
 
 namespace aasm {
     struct code final {
@@ -35,7 +35,7 @@ namespace aasm {
         std::uint8_t len{};
     };
 
-    class Assembler final: public AbstractAssembler {
+    class Assembler final {
     public:
         static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
 
@@ -49,30 +49,40 @@ namespace aasm {
         static constexpr std::uint8_t REX = 0x40;
         static constexpr std::uint8_t REX_W = 0x48; // REX prefix for 64-bit operands
 
-        void ret() override;
+        void ret() {
+            m_instructions.emplace_back(Ret());
+        }
 
-        void popq(GPReg r) override;
-        void popw(GPReg r) override;
+        void pop(std::size_t size, const GPReg r) {
+            m_instructions.emplace_back(PopR(size, r));
+        }
 
-        void popq(const Address& addr) override;
-        void popw(const Address& addr) override;
+        void pop(std::size_t size, const Address& addr) {
+            m_instructions.emplace_back(PopM(size, addr));
+        }
 
-        void pushq(GPReg r) override;
-        void pushw(GPReg r) override;
+        void push(std::size_t size, const GPReg r) {
+            m_instructions.emplace_back(PushR(size, r));
+        }
 
-        void pushq(const Address& addr) override;
-        void pushw(const Address& addr) override;
+        void push(std::size_t size, const Address& addr) {
+            m_instructions.emplace_back(PushM(size, addr));
+        }
 
-        void movq(GPReg src, GPReg dest) override;
-        void movl(GPReg src, GPReg dest) override;
-        void movw(GPReg src, GPReg dest) override;
-        void movb(GPReg src, GPReg dest) override;
+        void mov(std::size_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(MovRR(size, src, dst));
+        }
 
-        void print_codes(std::ostream &os) const;
+        void print_codes(std::ostream &os) const {
+            for (auto& instruction: m_instructions) {
+                os << instruction << std::endl;
+            }
+        }
 
         [[nodiscard]]
         std::size_t to_byte_buffer(std::span<std::uint8_t> buffer) const;
     private:
-        std::deque<code> m_inst;
+        std::deque<X64Instruction> m_instructions;
+        //std::deque<code> m_inst;
     };
 }
