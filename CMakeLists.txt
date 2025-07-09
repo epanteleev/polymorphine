@@ -112,6 +112,10 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/asm/Common.h
         lib/platform/lir/x64/analysis/intervals/LiveIntervalsEval.h
         lib/platform/lir/x64/analysis/intervals/LiveIntervals.h
+        lib/platform/lir/x64/instruction/LIRControlInstruction.h
+        lib/platform/lir/x64/instruction/LIRControlInstruction.cpp
+        lib/platform/lir/x64/instruction/LIRInstruction.cpp
+        lib/platform/lir/x64/instruction/LIRInstruction.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

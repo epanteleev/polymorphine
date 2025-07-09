@@ -7,6 +7,7 @@
 #include "../instruction/LIRInstructionBase.h"
 #include "../module/ObjFuncData.h"
 #include "module/FunctionData.h"
+#include "platform/lir/x64/instruction/LIRInstruction.h"
 #include "value/LocalValueMap.h"
 
 

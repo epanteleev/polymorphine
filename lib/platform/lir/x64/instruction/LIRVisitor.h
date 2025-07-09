@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../mach_frwd.h"
+#include "platform/lir/x64/mach_frwd.h"
 
 class LIRVisitor {
 public:

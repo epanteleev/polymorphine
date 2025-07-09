@@ -2,9 +2,9 @@
 
 #include "Vreg.h"
 
-#include "../instruction/LIRInstructionBase.h"
 #include "LIROperand.h"
 #include "../module/MachBlock.h"
+#include "platform/lir/x64/instruction/LIRInstruction.h"
 
 static char size_prefix(std::size_t size) {
     switch (size) {

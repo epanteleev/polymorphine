@@ -5,6 +5,7 @@
 
 #include "base/BasicBlockBase.h"
 #include "../instruction/LIRInstructionBase.h"
+#include "../instruction/LIRControlInstruction.h"
 #include "pass/Constrains.h"
 #include "utility/OrderedSet.h"
 

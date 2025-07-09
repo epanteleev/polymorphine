@@ -1,7 +1,7 @@
 #pragma once
 
+#include "LIRInstruction.h"
 #include "LIRInstructionBase.h"
-#include "../mach_frwd.h"
 
 
 namespace x64::matchers {

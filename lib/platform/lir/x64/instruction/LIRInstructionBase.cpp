@@ -4,120 +4,10 @@
 #include "LIRInstructionBase.h"
 #include "../module/MachBlock.h"
 
-#include "utility/Error.h"
-
-void LIRInstruction::visit(LIRVisitor &visitor) {
-    switch (m_kind) {
-        case LIRInstKind::Add: visitor.add_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Sub: visitor.sub_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Mul: visitor.mul_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Div: visitor.div_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::And: visitor.and_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Or:  visitor.or_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Xor: visitor.xor_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Shl: visitor.shl_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Shr: visitor.shr_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Neg: visitor.neg_i(out(0), in(0)); break;
-        case LIRInstKind::Not: visitor.not_i(out(0), in(0)); break;
-        case LIRInstKind::Mov: {
-            const auto in0 = VReg::try_from(in(0));
-            assertion(in0.has_value(), "invariant");
-
-            const auto in1 = VReg::try_from(in(1));
-            assertion(in1.has_value(), "invariant");
-
-            visitor.mov_i(in0.value(), in1.value());
-            break;
-        }
-        case LIRInstKind::Copy: {
-            const auto out1 = VReg::try_from(out(0));
-            assertion(out1.has_value(), "invariant");
-
-            visitor.copy_i(out1.value(), in(0));
-            break;
-        }
-        case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
-        case LIRInstKind::ParallelCopy: {
-            const auto out0 = VReg::try_from(out(0));
-            assertion(out0.has_value(), "invariant");
-
-            std::vector<VReg> inputs;
-            inputs.reserve(m_uses.size());
-            for (auto& use: m_uses) {
-                auto vreg = VReg::try_from(use);
-                if (!vreg.has_value()) {
-                    continue;
-                }
-
-                inputs.push_back(vreg.value());
-            }
-
-            visitor.parallel_copy(out0.value(), inputs);
-        }
-    }
-}
-
-LIRInstBuilder<LIRInstruction> LIRInstruction::copy(const LIROperand &op)  {
-    return [=](std::size_t id, MachBlock *bb) {
-        auto copy = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Copy, std::vector{op}, std::vector<VReg>{});
-        copy->add_def(VReg(op.size(), 0, copy.get()));
-        return copy;
-    };
-}
-
-void LIRBranch::visit(LIRVisitor &visitor) {
-    switch (m_kind) {
-        case LIRBranchKind::Je: visitor.je(succ(0), succ(1)); break;
-        case LIRBranchKind::Jg: visitor.jg(succ(0), succ(1)); break;
-        case LIRBranchKind::Jl: visitor.jl(succ(0), succ(1)); break;
-        case LIRBranchKind::Jmp: visitor.jmp(succ(0)); break;
-        case LIRBranchKind::Jne: visitor.jne(succ(0), succ(1)); break;
-        case LIRBranchKind::Jge: visitor.jge(succ(0), succ(1)); break;
-        case LIRBranchKind::Jle: visitor.jle(succ(0), succ(1)); break;
-    }
-}
-
-void LIRReturn::visit(LIRVisitor &visitor) {
-    visitor.ret(inputs());
-}
-
-static std::vector<VReg> to_vregs_only(std::span<LIROperand const> inputs) {
-    std::vector<VReg> vregs;
-    for (const auto& in: inputs) {
-        const auto vreg = VReg::try_from(in);
-        assertion(vreg.has_value(), "invariant");
-        vregs.push_back(vreg.value());
-    }
-    return vregs;
-}
-
-void LIRCall::visit(LIRVisitor &visitor) {
-    switch (m_kind) {
-        case LIRCallKind::Call: {
-            visitor.call(out(0), to_vregs_only(inputs()));
-            break;
-        }
-        case LIRCallKind::ICall: {
-            const auto pointer = VReg::try_from(in(0));
-            assertion(pointer.has_value(), "invariant");
-            visitor.icall(out(0), pointer.value(), to_vregs_only(inputs().subspan(1)));
-            break;
-        }
-        case LIRCallKind::IVCall: {
-            const auto pointer = VReg::try_from(in(0));
-            assertion(pointer.has_value(), "invariant");
-            visitor.ivcall(pointer.value(), to_vregs_only(inputs().subspan(1)));
-            break;
-        }
-        case LIRCallKind::VCall: visitor.vcall(to_vregs_only(inputs())); break;
-    }
-}
-
-
 namespace {
-    class LIRInsructionPrinter final: public LIRVisitor {
+    class LIRInstructionPrinter final: public LIRVisitor {
     public:
-        explicit LIRInsructionPrinter(std::ostream& os): m_os(os) {}
+        explicit LIRInstructionPrinter(std::ostream& os): m_os(os) {}
 
     private:
         void add_i(const VReg &out, const LIROperand &in1, const LIROperand &in2) override {
@@ -224,7 +114,7 @@ namespace {
 }
 
 void LIRInstructionBase::print(std::ostream &os) const {
-    LIRInsructionPrinter printer(os);
+    LIRInstructionPrinter printer(os);
     const auto me = const_cast<LIRInstructionBase*>(this);
     me->visit(printer);
 }
