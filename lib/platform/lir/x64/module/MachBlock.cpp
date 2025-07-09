@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-#include "LIRInstructionBase.h"
+#include "../instruction/LIRInstructionBase.h"
 #include "utility/Error.h"
 
 LIRControlInstruction * MachBlock::last() const {

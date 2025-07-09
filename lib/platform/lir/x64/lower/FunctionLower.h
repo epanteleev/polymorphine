@@ -4,8 +4,8 @@
 
 #include "instruction/TerminateInstruction.h"
 #include "value/LocalValue.h"
-#include "platform/lir/x64/LIRInstructionBase.h"
-#include "platform/lir/x64/ObjFuncData.h"
+#include "../instruction/LIRInstructionBase.h"
+#include "../module/ObjFuncData.h"
 #include "module/FunctionData.h"
 #include "value/LocalValueMap.h"
 

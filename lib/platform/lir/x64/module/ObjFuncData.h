@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MachBlock.h"
-#include "Vreg.h"
+#include "../operand/Vreg.h"
 #include "base/FunctionDataBase.h"
 
 

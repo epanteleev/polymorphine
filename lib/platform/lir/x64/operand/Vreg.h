@@ -3,7 +3,7 @@
 #include <expected>
 
 #include "LIRArg.h"
-#include "mach_frwd.h"
+#include "../mach_frwd.h"
 #include "utility/Error.h"
 
 class VReg final {
@@ -74,7 +74,7 @@ public:
         return {size, index, def};
     }
 
-    static std::expected<VReg, Error> from(const LIROperand& op);
+    static std::expected<VReg, Error> try_from(const LIROperand& op);
 
     friend std::ostream& operator<<(std::ostream& os, const VReg& op) noexcept;
 

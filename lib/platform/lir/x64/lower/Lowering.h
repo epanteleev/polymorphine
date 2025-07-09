@@ -2,7 +2,7 @@
 
 #include "module/Module.h"
 #include "pass/analysis/Analysis.h"
-#include "platform/lir/x64/ObjModule.h"
+#include "../module/ObjModule.h"
 
 
 class Lowering final {

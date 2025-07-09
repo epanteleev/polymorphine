@@ -68,31 +68,30 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/builder/ModuleBuilder.h
         lib/instruction/GetElementPtr.h
         lib/pass/analysis/traverse/BFSOrderTraverseBase.h
-        lib/platform/lir/x64/LIRInstructionBase.cpp
-        lib/platform/lir/x64/LIRInstructionBase.h
-        lib/platform/lir/x64/Vreg.h
-        lib/platform/lir/x64/LIRCst.h
-        lib/platform/lir/x64/LIROperand.h
-        lib/platform/lir/x64/MachBlock.cpp
-        lib/platform/lir/x64/MachBlock.h
+        lib/platform/lir/x64/instruction/LIRInstructionBase.cpp
+        lib/platform/lir/x64/instruction/LIRInstructionBase.h
+        lib/platform/lir/x64/operand/Vreg.h
+        lib/platform/lir/x64/operand/LIRCst.h
+        lib/platform/lir/x64/operand/LIROperand.h
+        lib/platform/lir/x64/module/MachBlock.cpp
+        lib/platform/lir/x64/module/MachBlock.h
         lib/platform/lir/x64/mach_frwd.h
         lib/asm/elf/Elf.cpp
         lib/asm/elf/Elf.h
         lib/pass/Constrains.h
         lib/pass/analysis/Analysis.h
         lib/platform/lir/x64/analysis/Analysis.h
-        lib/platform/lir/x64/ObjFuncData.h
-        lib/platform/lir/x64/LIRVisitor.h
-        lib/platform/lir/x64/Vreg.cpp
-        lib/platform/lir/x64/ObjModule.cpp
-        lib/platform/lir/x64/ObjModule.h
+        lib/platform/lir/x64/module/ObjFuncData.h
+        lib/platform/lir/x64/instruction/LIRVisitor.h
+        lib/platform/lir/x64/operand/Vreg.cpp
+        lib/platform/lir/x64/module/ObjModule.cpp
+        lib/platform/lir/x64/module/ObjModule.h
         lib/platform/lir/x64/lower/Lowering.cpp
         lib/platform/lir/x64/lower/Lowering.h
-        lib/platform/lir/x64/LIRArg.h
-        lib/platform/lir/x64/LIROperand.cpp
-        lib/platform/lir/x64/LIRCst.cpp
-        lib/platform/lir/x64/LIRArg.cpp
-        lib/platform/lir/x64/Utils.h
+        lib/platform/lir/x64/operand/LIRArg.h
+        lib/platform/lir/x64/operand/LIROperand.cpp
+        lib/platform/lir/x64/operand/LIRCst.cpp
+        lib/platform/lir/x64/operand/LIRArg.cpp
         lib/pass/analysis/loop/LoopInfoEvalBase.h
         lib/pass/analysis/loop/LoopInfoBase.h
         lib/pass/analysis/traverse/LinearScanOrderBase.h
@@ -107,10 +106,12 @@ add_library(ckoof SHARED lib/types/Type.h
         lib/platform/lir/x64/analysis/liveness/LivenessAnalysis.h
         lib/platform/lir/x64/analysis/liveness/LiveInfo.h
         lib/base/FunctionDataBase.h
-        lib/platform/lir/x64/Matcher.h
-        lib/platform/lir/x64/VRegMap.h
+        lib/platform/lir/x64/instruction/Matcher.h
+        lib/platform/lir/x64/operand/VRegMap.h
         lib/asm/CPUInstruction.h
         lib/asm/Common.h
+        lib/platform/lir/x64/analysis/intervals/LiveIntervalsEval.h
+        lib/platform/lir/x64/analysis/intervals/LiveIntervals.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

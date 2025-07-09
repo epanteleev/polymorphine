@@ -264,7 +264,7 @@ namespace aasm {
     class X64Instruction final {
     public:
         template<typename I>
-        explicit X64Instruction(I &&i) noexcept:
+        explicit X64Instruction(I&& i) noexcept:
             m_inst(std::forward<I>(i)) {}
 
         friend std::ostream & operator<<(std::ostream &os, const X64Instruction &inst);

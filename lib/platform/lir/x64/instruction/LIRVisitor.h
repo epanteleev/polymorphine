@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mach_frwd.h"
+#include "../mach_frwd.h"
 
 class LIRVisitor {
 public:
@@ -15,6 +15,7 @@ public:
     virtual void xor_i(const VReg& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shl_i(const VReg& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shr_i(const VReg& out, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void parallel_copy(const VReg& out, std::span<VReg const> inputs) = 0;
 
     virtual void cmp_i(const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void neg_i(const VReg& out, const LIROperand& in) = 0;

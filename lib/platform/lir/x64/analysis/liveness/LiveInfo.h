@@ -1,7 +1,7 @@
 #pragma once
 #include "pass/analysis/AnalysisPass.h"
-#include "platform/lir/x64/MachBlock.h"
-#include "platform/lir/x64/VRegMap.h"
+#include "../../module/MachBlock.h"
+#include "../../operand/VRegMap.h"
 
 
 class LiveInfo final {

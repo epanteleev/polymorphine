@@ -65,9 +65,7 @@ namespace aasm {
         }
 
         AddressType type;
-
         int displacement;
-
         GPReg base;
         GPReg index;
         std::uint8_t scale;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "intervals/LiveIntervalsEval.h"
 #include "liveness/LivenessAnalysis.h"
 #include "pass/analysis/dom/DominatorTreeEvalBase.h"
 #include "pass/analysis/traverse/BFSOrderTraverseBase.h"
@@ -7,7 +8,7 @@
 #include "pass/analysis/traverse/PostOrderTraverseBase.h"
 #include "pass/analysis/traverse/PreorderTraverseBase.h"
 
-#include "platform/lir/x64/ObjFuncData.h"
+#include "../module/ObjFuncData.h"
 #include "platform/lir/x64/analysis/regalloc/LinearScan.h"
 
 
@@ -24,5 +25,6 @@ static_assert(Analysis<DominatorTreeEvalMach>);
 static_assert(Analysis<LinearScanOrderMach>);
 static_assert(Analysis<LinearScan>);
 static_assert(Analysis<LivenessAnalysis>);
+static_assert(Analysis<LiveIntervalsEval>);
 
 using AnalysisPassCacheMach = AnalysisPassCacheBase<ObjFuncData>;

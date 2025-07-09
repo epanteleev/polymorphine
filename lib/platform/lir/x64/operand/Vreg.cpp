@@ -2,12 +2,21 @@
 
 #include "Vreg.h"
 
-#include "LIRInstructionBase.h"
+#include "../instruction/LIRInstructionBase.h"
 #include "LIROperand.h"
-#include "MachBlock.h"
-#include "Utils.h"
+#include "../module/MachBlock.h"
 
-std::expected<VReg, Error> VReg::from(const LIROperand &op) {
+static char size_prefix(std::size_t size) {
+    switch (size) {
+        case 1: return 'b';
+        case 2: return 'w';
+        case 4: return 'l';
+        case 8: return 'q';
+        default: die("wrong size {}", size);
+    }
+}
+
+std::expected<VReg, Error> VReg::try_from(const LIROperand &op) {
     const auto vreg = op.vreg();
     if (!vreg.has_value()) {
         return std::unexpected(Error::BadCastError);

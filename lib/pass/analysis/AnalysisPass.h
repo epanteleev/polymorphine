@@ -11,6 +11,7 @@ enum class AnalysisType {
     LoopNestedForest,
     LinearScan,
     LivenessAnalysis,
+    LiveIntervalsEval,
     Max
 };
 
@@ -26,4 +27,5 @@ concept Analysis = requires(A a)
     typename A::basic_block;
     A::analysis_kind;
     a.run();
+    a.result();
 };

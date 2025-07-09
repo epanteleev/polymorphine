@@ -2,10 +2,10 @@
 
 #include "LiveInfo.h"
 #include "pass/analysis/AnalysisPassCacheBase.h"
-#include "platform/lir/x64/MachBlock.h"
-#include "platform/lir/x64/Matcher.h"
-#include "platform/lir/x64/ObjFuncData.h"
-#include "platform/lir/x64/VRegMap.h"
+#include "../../module/MachBlock.h"
+#include "../../instruction/Matcher.h"
+#include "../../module/ObjFuncData.h"
+#include "../../operand/VRegMap.h"
 
 
 class LivenessAnalysis final {
@@ -97,7 +97,7 @@ private:
             for (const auto& inst: bb->instructions()) {
                 if (!inst.isa(parallel_copy())) {
                     for (auto in: inst.inputs()) {
-                        const auto vreg = VReg::from(in);
+                        const auto vreg = VReg::try_from(in);
                         if (!vreg.has_value()) {
                             continue;
                         }

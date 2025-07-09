@@ -4,7 +4,7 @@
 #include <span>
 
 #include "base/BasicBlockBase.h"
-#include "LIRInstructionBase.h"
+#include "../instruction/LIRInstructionBase.h"
 #include "pass/Constrains.h"
 #include "utility/OrderedSet.h"
 

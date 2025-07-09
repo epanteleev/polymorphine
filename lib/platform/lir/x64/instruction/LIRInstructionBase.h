@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <memory>
 
-#include "LIROperand.h"
+#include "../operand/LIROperand.h"
 #include "LIRVisitor.h"
 
 class LIRInstructionBase {
