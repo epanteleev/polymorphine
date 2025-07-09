@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-#include "pass/Constrains.h"
+#include "Constrains.h"
 #include "utility/OrderedSet.h"
 
 

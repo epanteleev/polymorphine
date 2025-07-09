@@ -1,0 +1,30 @@
+#pragma once
+
+#include "mir/instruction/ValueInstruction.h"
+
+class GetElementPtr final: public ValueInstruction {
+public:
+    GetElementPtr(const std::size_t id, BasicBlock *bb, const NonTrivialType* basic_type, const Value &pointer, const Value &index):
+        ValueInstruction(id, bb, PointerType::ptr(), {pointer, index}),
+        m_basic_type(basic_type) {}
+
+    [[nodiscard]]
+    const Value &pointer() const {
+        return m_values.at(0);
+    }
+
+    [[nodiscard]]
+    const Value &index() const {
+        return m_values.at(1);
+    }
+
+    [[nodiscard]]
+    const NonTrivialType* access_type() const {
+        return m_basic_type;
+    }
+
+    void visit(Visitor &visitor) override { visitor.accept(this); }
+
+private:
+    const NonTrivialType* m_basic_type;
+};

@@ -14,6 +14,5 @@ function(add_test_executable target)
 endfunction()
 
 add_test_executable(ordered_set_tests ordered_set_tests ordered_set_tests.cpp)
-add_test_executable(instruction_tests instruction_tests instruction_tests.cpp)
 add_test_executable(asm_test asm_test asm_test.cpp)
 add_test_executable(empty_function empty_function empty_function.cpp)

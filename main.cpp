@@ -1,11 +1,7 @@
 #include <iostream>
 
-#include "lib/ir.h"
-#include "lib/pass/analysis/Analysis.h"
-#include "platform/lir/x64/analysis/Analysis.h"
-#include "platform/lir/x64/lower/Lowering.h"
-
-#include "platform/lir/x64/analysis/liveness/LivenessAnalysis.h"
+#include "mir/mir.h"
+#include "lir/x64/lir.h"
 
 Module ret_one() {
     ModuleBuilder builder;

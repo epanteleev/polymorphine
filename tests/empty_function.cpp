@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ir.h>
+#include <mir/mir.h>
 
 static Module ret_one() {
     ModuleBuilder builder;

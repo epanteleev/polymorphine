@@ -3,119 +3,117 @@ project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_library(ckoof SHARED lib/types/Type.h
-        lib/module/BasicBlock.cpp
-        lib/module/BasicBlock.h
-        lib/instruction/Instruction.cpp
-        lib/instruction/Instruction.h
-        lib/ir_frwd.h
-        lib/value/Value.cpp
-        lib/value/Value.h
-        lib/types/TypeMatcher.h
-        lib/value/ValueMatcher.h
-        lib/types/TypeMatchingRules.h
+add_library(ckoof SHARED lib/mir/types/Type.h
+        lib/mir/module/BasicBlock.cpp
+        lib/mir/module/BasicBlock.h
+        lib/mir/instruction/Instruction.cpp
+        lib/mir/instruction/Instruction.h
+        lib/mir/mir_frwd.h
+        lib/mir/value/Value.cpp
+        lib/mir/value/Value.h
+        lib/mir/types/TypeMatcher.h
+        lib/mir/value/ValueMatcher.h
+        lib/mir/types/TypeMatchingRules.h
         lib/utility/OrderedSet.h
-        lib/instruction/InstructionVisitor.h
+        lib/mir/instruction/InstructionVisitor.h
         lib/utility/Error.cpp
         lib/utility/Error.h
-        lib/types/Type.cpp
-        lib/types/TypeVisitor.h
-        lib/module/FunctionData.cpp
-        lib/module/FunctionData.h
-        lib/module/FunctionPrototype.h
-        lib/module/FunctionPrototype.cpp
-        lib/value/ArgumentValue.cpp
-        lib/value/ArgumentValue.h
-        lib/instruction/Binary.h
-        lib/instruction/ValueInstruction.h
-        lib/instruction/Unary.h
-        lib/instruction/TerminateValueInstruction.h
-        lib/instruction/TerminateInstruction.h
-        lib/ir.h
-        lib/value/LocalValue.h
-        lib/value/LocalValue.cpp
-        lib/instruction/ValueInstruction.cpp
-        lib/instruction/Terminator.h
-        lib/instruction/Terminator.cpp
-        lib/instruction/TerminateInstruction.cpp
-        lib/instruction/TerminateValueInstruction.cpp
-        lib/instruction/Store.h
-        lib/instruction/Alloc.h
-        lib/builder/FunctionBuilder.cpp
-        lib/builder/FunctionBuilder.h
-        lib/instruction/Compare.cpp
-        lib/instruction/Compare.h
-        lib/pass/analysis/AnalysisPass.cpp
-        lib/pass/analysis/AnalysisPass.h
-        lib/pass/analysis/traverse/PreorderTraverseBase.h
-        lib/pass/analysis/traverse/Ordering.h
-        lib/pass/analysis/AnalysisPassCacheBase.cpp
-        lib/pass/analysis/AnalysisPassCacheBase.h
-        lib/pass/analysis/traverse/PostOrderTraverseBase.h
-        lib/pass/analysis/dom/DominatorTreeEvalBase.h
-        lib/pass/analysis/dom/DominatorTree.h
+        lib/mir/types/Type.cpp
+        lib/mir/types/TypeVisitor.h
+        lib/mir/module/FunctionData.cpp
+        lib/mir/module/FunctionData.h
+        lib/mir/module/FunctionPrototype.h
+        lib/mir/module/FunctionPrototype.cpp
+        lib/mir/value/ArgumentValue.cpp
+        lib/mir/value/ArgumentValue.h
+        lib/mir/instruction/Binary.h
+        lib/mir/instruction/ValueInstruction.h
+        lib/mir/instruction/Unary.h
+        lib/mir/instruction/TerminateValueInstruction.h
+        lib/mir/instruction/TerminateInstruction.h
+        lib/mir/mir.h
+        lib/mir/value/LocalValue.h
+        lib/mir/value/LocalValue.cpp
+        lib/mir/instruction/ValueInstruction.cpp
+        lib/mir/instruction/Terminator.h
+        lib/mir/instruction/Terminator.cpp
+        lib/mir/instruction/TerminateInstruction.cpp
+        lib/mir/instruction/TerminateValueInstruction.cpp
+        lib/mir/instruction/Store.h
+        lib/mir/instruction/Alloc.h
+        lib/mir/builder/FunctionBuilder.cpp
+        lib/mir/builder/FunctionBuilder.h
+        lib/mir/instruction/Compare.cpp
+        lib/mir/instruction/Compare.h
+        lib/base/analysis/AnalysisPass.h
+        lib/base/analysis/traverse/PreorderTraverseBase.h
+        lib/base/analysis/traverse/Ordering.h
+        lib/base/analysis/AnalysisPassCacheBase.h
+        lib/base/analysis/traverse/PostOrderTraverseBase.h
+        lib/base/analysis/dom/DominatorTreeEvalBase.h
+        lib/base/analysis/dom/DominatorTree.h
         lib/asm/Assembler.cpp
         lib/asm/Assembler.h
         lib/asm/Register.h
         lib/asm/Register.cpp
-        lib/asm/Address.cpp
         lib/asm/Address.h
         lib/asm/Instruction.h
         lib/asm/Immediate.h
-        lib/module/Module.h
-        lib/module/Module.cpp
-        lib/builder/ModuleBuilder.cpp
-        lib/builder/ModuleBuilder.h
-        lib/instruction/GetElementPtr.h
-        lib/pass/analysis/traverse/BFSOrderTraverseBase.h
-        lib/platform/lir/x64/instruction/LIRInstructionBase.cpp
-        lib/platform/lir/x64/instruction/LIRInstructionBase.h
-        lib/platform/lir/x64/operand/Vreg.h
-        lib/platform/lir/x64/operand/LIRCst.h
-        lib/platform/lir/x64/operand/LIROperand.h
-        lib/platform/lir/x64/module/MachBlock.cpp
-        lib/platform/lir/x64/module/MachBlock.h
-        lib/platform/lir/x64/mach_frwd.h
+        lib/mir/module/Module.h
+        lib/mir/module/Module.cpp
+        lib/mir/builder/ModuleBuilder.cpp
+        lib/mir/builder/ModuleBuilder.h
+        lib/mir/instruction/GetElementPtr.h
+        lib/base/analysis/traverse/BFSOrderTraverseBase.h
+        lib/lir/x64/instruction/LIRInstructionBase.cpp
+        lib/lir/x64/instruction/LIRInstructionBase.h
+        lib/lir/x64/operand/Vreg.h
+        lib/lir/x64/operand/LIRCst.h
+        lib/lir/x64/operand/LIROperand.h
+        lib/lir/x64/module/MachBlock.cpp
+        lib/lir/x64/module/MachBlock.h
+        lib/lir/x64/lir_frwd.h
         lib/asm/elf/Elf.cpp
         lib/asm/elf/Elf.h
-        lib/pass/Constrains.h
-        lib/pass/analysis/Analysis.h
-        lib/platform/lir/x64/analysis/Analysis.h
-        lib/platform/lir/x64/module/ObjFuncData.h
-        lib/platform/lir/x64/instruction/LIRVisitor.h
-        lib/platform/lir/x64/operand/Vreg.cpp
-        lib/platform/lir/x64/module/ObjModule.cpp
-        lib/platform/lir/x64/module/ObjModule.h
-        lib/platform/lir/x64/lower/Lowering.cpp
-        lib/platform/lir/x64/lower/Lowering.h
-        lib/platform/lir/x64/operand/LIRArg.h
-        lib/platform/lir/x64/operand/LIROperand.cpp
-        lib/platform/lir/x64/operand/LIRCst.cpp
-        lib/platform/lir/x64/operand/LIRArg.cpp
-        lib/pass/analysis/loop/LoopInfoEvalBase.h
-        lib/pass/analysis/loop/LoopInfoBase.h
-        lib/pass/analysis/traverse/LinearScanOrderBase.h
+        lib/base/Constrains.h
+        lib/mir/analysis/Analysis.h
+        lib/lir/x64/analysis/Analysis.h
+        lib/lir/x64/module/ObjFuncData.h
+        lib/lir/x64/instruction/LIRVisitor.h
+        lib/lir/x64/operand/Vreg.cpp
+        lib/lir/x64/module/ObjModule.cpp
+        lib/lir/x64/module/ObjModule.h
+        lib/lir/x64/lower/Lowering.cpp
+        lib/lir/x64/lower/Lowering.h
+        lib/lir/x64/operand/LIRArg.h
+        lib/lir/x64/operand/LIROperand.cpp
+        lib/lir/x64/operand/LIRCst.cpp
+        lib/lir/x64/operand/LIRArg.cpp
+        lib/base/analysis/loop/LoopInfoEvalBase.h
+        lib/base/analysis/loop/LoopInfoBase.h
+        lib/base/analysis/traverse/LinearScanOrderBase.h
         lib/base/BasicBlockBase.h
-        lib/platform/lir/x64/lower/FunctionLower.cpp
-        lib/platform/lir/x64/lower/FunctionLower.h
-        lib/value/LocalValueMap.h
-        lib/platform/lir/x64/codegen/Codegen.cpp
-        lib/platform/lir/x64/codegen/Codegen.h
-        lib/platform/lir/x64/analysis/regalloc/LinearScan.h
-        lib/platform/lir/x64/analysis/regalloc/RegisterAllocation.h
-        lib/platform/lir/x64/analysis/liveness/LivenessAnalysis.h
-        lib/platform/lir/x64/analysis/liveness/LiveInfo.h
+        lib/lir/x64/lower/FunctionLower.cpp
+        lib/lir/x64/lower/FunctionLower.h
+        lib/mir/value/LocalValueMap.h
+        lib/lir/x64/codegen/Codegen.cpp
+        lib/lir/x64/codegen/Codegen.h
+        lib/lir/x64/analysis/regalloc/LinearScan.h
+        lib/lir/x64/analysis/regalloc/RegisterAllocation.h
+        lib/lir/x64/analysis/liveness/LivenessAnalysis.h
+        lib/lir/x64/analysis/liveness/LiveInfo.h
         lib/base/FunctionDataBase.h
-        lib/platform/lir/x64/instruction/Matcher.h
-        lib/platform/lir/x64/operand/VRegMap.h
+        lib/lir/x64/instruction/Matcher.h
+        lib/lir/x64/operand/VRegMap.h
         lib/asm/CPUInstruction.h
         lib/asm/Common.h
-        lib/platform/lir/x64/analysis/intervals/LiveIntervalsEval.h
-        lib/platform/lir/x64/analysis/intervals/LiveIntervals.h
-        lib/platform/lir/x64/instruction/LIRControlInstruction.h
-        lib/platform/lir/x64/instruction/LIRControlInstruction.cpp
-        lib/platform/lir/x64/instruction/LIRInstruction.cpp
-        lib/platform/lir/x64/instruction/LIRInstruction.h
+        lib/lir/x64/analysis/intervals/LiveIntervalsEval.h
+        lib/lir/x64/analysis/intervals/LiveIntervals.h
+        lib/lir/x64/instruction/LIRControlInstruction.h
+        lib/lir/x64/instruction/LIRControlInstruction.cpp
+        lib/lir/x64/instruction/LIRInstruction.cpp
+        lib/lir/x64/instruction/LIRInstruction.h
+        lib/lir/x64/lir.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
