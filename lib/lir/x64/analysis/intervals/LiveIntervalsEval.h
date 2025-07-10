@@ -45,7 +45,7 @@ private:
         const auto& live_out = m_liveness.live_out(begin);
         const auto size = begin->size();
         for (const auto& arg: m_obj_func_data.args()) {
-            const auto vreg = VReg::from(&arg);
+            const auto vreg = LIRVReg::from(&arg);
             std::unordered_map<const MachBlock*, Interval> intervals;
             if (live_out.contains(vreg)) {
                 intervals.emplace(begin, Interval(0, size));
@@ -97,7 +97,7 @@ private:
             for (const auto& inst: bb->instructions()) {
                 inst_number += 1;
                 for (const auto& in: inst.inputs()) {
-                    const auto vreg_opt = VReg::try_from(in);
+                    const auto vreg_opt = LIRVReg::try_from(in);
                     if (!vreg_opt.has_value()) {
                         continue;
                     }
@@ -118,5 +118,5 @@ private:
     const ObjFuncData& m_obj_func_data;
     const LivenessAnalysisInfo& m_liveness;
     const Ordering<MachBlock>& m_ordering;
-    VRegMap<std::unordered_map<const MachBlock*, Interval>> m_intervals{};
+    LIRVRegMap<std::unordered_map<const MachBlock*, Interval>> m_intervals{};
 };

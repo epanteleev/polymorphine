@@ -22,7 +22,7 @@ enum class LIRInstKind: std::uint8_t {
 
 class LIRInstruction final: public LIRInstructionBase {
 public:
-    LIRInstruction(const std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<VReg>&& defs) :
+    LIRInstruction(const std::size_t id, MachBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses, std::vector<LIRVReg>&& defs) :
         LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
         m_kind(kind) {}
 

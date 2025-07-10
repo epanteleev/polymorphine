@@ -1,0 +1,24 @@
+#pragma once
+
+#include "base/analysis/AnalysisPass.h"
+
+
+class FixedRegisters final: public AnalysisPassResult {
+public:
+    explicit FixedRegisters(LIRVRegSet&& rax_set) noexcept:
+        m_rax_set(rax_set) {}
+
+    friend std::ostream& operator<<(std::ostream& os, const FixedRegisters& regs);
+
+private:
+    const LIRVRegSet m_rax_set;
+};
+
+inline std::ostream & operator<<(std::ostream &os, const FixedRegisters &regs) {
+    os << "rax: ";
+    for (const auto &reg : regs.m_rax_set) {
+        os << reg << " ";
+    }
+
+    return os;
+}

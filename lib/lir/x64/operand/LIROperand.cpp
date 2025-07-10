@@ -3,7 +3,7 @@
 
 std::uint8_t LIROperand::size() const noexcept {
     const auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, LirCst> || std::is_same_v<T, VReg>) {
+        if constexpr (std::is_same_v<T, LirCst> || std::is_same_v<T, LIRVReg>) {
             return val.size();
         } else {
             static_assert(false, "Unsupported type in Value variant");

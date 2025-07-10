@@ -3,14 +3,14 @@
 #include <variant>
 
 #include "LIRCst.h"
-#include "Vreg.h"
+#include "LIRVReg.h"
 
 class LIROperand final {
 public:
     LIROperand(LirCst operand) noexcept
     : m_operand(operand) {}
 
-    LIROperand(VReg operand) noexcept
+    LIROperand(LIRVReg operand) noexcept
         : m_operand(operand) {}
 
     [[nodiscard]]
@@ -23,9 +23,9 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<VReg> vreg() const noexcept {
-        if (std::holds_alternative<VReg>(m_operand)) {
-            return std::get<VReg>(m_operand);
+    std::optional<LIRVReg> vreg() const noexcept {
+        if (std::holds_alternative<LIRVReg>(m_operand)) {
+            return std::get<LIRVReg>(m_operand);
         }
 
         return std::nullopt;
@@ -36,7 +36,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 private:
-    std::variant<LirCst, VReg> m_operand;
+    std::variant<LirCst, LIRVReg> m_operand;
 };
 
 

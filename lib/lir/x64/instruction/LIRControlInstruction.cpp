@@ -24,14 +24,14 @@ void LIRCall::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRCallKind::ICall: {
-            const auto pointer = VReg::try_from(in(0));
+            const auto pointer = LIRVReg::try_from(in(0));
             assertion(pointer.has_value(), "invariant");
             const auto vregs = to_vregs_only(inputs().subspan(1));
             visitor.icall(def(0), pointer.value(), vregs);
             break;
         }
         case LIRCallKind::IVCall: {
-            const auto pointer = VReg::try_from(in(0));
+            const auto pointer = LIRVReg::try_from(in(0));
             assertion(pointer.has_value(), "invariant");
             const auto vregs = to_vregs_only(inputs().subspan(1));
             visitor.ivcall(pointer.value(), vregs);

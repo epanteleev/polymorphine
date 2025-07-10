@@ -6,26 +6,25 @@
 #include "lir/x64/lir_frwd.h"
 #include "utility/Error.h"
 
-class VReg final {
+class LIRVReg final {
     enum class Op: std::uint8_t {
         Arg,
         Inst
     };
 
 public:
-    VReg(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
+    LIRVReg(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
                                                               m_index(index),
                                                               m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    VReg(std::uint8_t size, std::uint8_t index, const LIRInstruction *def): m_size(size),
+    LIRVReg(std::uint8_t size, std::uint8_t index, const LIRInstruction *def): m_size(size),
                                                                       m_index(index),
                                                                       m_type(Op::Inst) {
         m_variant.m_inst = def;
     }
 
-public:
     [[nodiscard]]
     std::optional<const LIRArg*> arg() const noexcept {
         if (m_type == Op::Arg) {
@@ -54,7 +53,7 @@ public:
         return m_index;
     }
 
-    bool operator==(const VReg &rhs) const noexcept {
+    bool operator==(const LIRVReg &rhs) const noexcept {
         if (this == &rhs) {
             return true;
         }
@@ -66,17 +65,17 @@ public:
                m_variant.m_arg;
     }
 
-    static VReg from(const LIRArg* def) noexcept {
+    static LIRVReg from(const LIRArg* def) noexcept {
         return {def->size(), static_cast<std::uint8_t>(def->index()), def};
     }
 
-    static VReg reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {
+    static LIRVReg reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {
         return {size, index, def};
     }
 
-    static std::expected<VReg, Error> try_from(const LIROperand& op);
+    static std::expected<LIRVReg, Error> try_from(const LIROperand& op);
 
-    friend std::ostream& operator<<(std::ostream& os, const VReg& op) noexcept;
+    friend std::ostream& operator<<(std::ostream& os, const LIRVReg& op) noexcept;
 
 private:
     std::uint8_t m_size;
@@ -88,4 +87,4 @@ private:
     } m_variant{};
 };
 
-std::ostream& operator<<(std::ostream& os, const VReg& op) noexcept;
+std::ostream& operator<<(std::ostream& os, const LIRVReg& op) noexcept;

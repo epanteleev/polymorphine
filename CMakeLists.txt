@@ -67,7 +67,7 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/base/analysis/traverse/BFSOrderTraverseBase.h
         lib/lir/x64/instruction/LIRInstructionBase.cpp
         lib/lir/x64/instruction/LIRInstructionBase.h
-        lib/lir/x64/operand/Vreg.h
+        lib/lir/x64/operand/LIRVReg.h
         lib/lir/x64/operand/LIRCst.h
         lib/lir/x64/operand/LIROperand.h
         lib/lir/x64/module/MachBlock.cpp
@@ -80,7 +80,7 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/lir/x64/analysis/Analysis.h
         lib/lir/x64/module/ObjFuncData.h
         lib/lir/x64/instruction/LIRVisitor.h
-        lib/lir/x64/operand/Vreg.cpp
+        lib/lir/x64/operand/LIRVReg.cpp
         lib/lir/x64/module/ObjModule.cpp
         lib/lir/x64/module/ObjModule.h
         lib/lir/x64/lower/Lowering.cpp
@@ -89,8 +89,6 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/lir/x64/operand/LIROperand.cpp
         lib/lir/x64/operand/LIRCst.cpp
         lib/lir/x64/operand/LIRArg.cpp
-        lib/base/analysis/loop/LoopInfoEvalBase.h
-        lib/base/analysis/loop/LoopInfoBase.h
         lib/base/BasicBlockBase.h
         lib/lir/x64/lower/FunctionLower.cpp
         lib/lir/x64/lower/FunctionLower.h
@@ -103,7 +101,7 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/lir/x64/analysis/liveness/LiveInfo.h
         lib/base/FunctionDataBase.h
         lib/lir/x64/instruction/Matcher.h
-        lib/lir/x64/operand/VRegMap.h
+        lib/lir/x64/operand/LIRVRegMap.h
         lib/asm/CPUInstruction.h
         lib/asm/Common.h
         lib/lir/x64/analysis/intervals/LiveIntervalsEval.h
@@ -113,6 +111,8 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/lir/x64/instruction/LIRInstruction.cpp
         lib/lir/x64/instruction/LIRInstruction.h
         lib/lir/x64/lir.h
+        lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
+        lib/lir/x64/analysis/regalloc/FixedRegisters.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

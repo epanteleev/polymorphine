@@ -10,6 +10,7 @@ enum class AnalysisType {
     LinearScan,
     LivenessAnalysis,
     LiveIntervalsEval,
+    FixedRegisters,
     Max
 };
 

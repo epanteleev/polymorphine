@@ -10,6 +10,7 @@
 
 #include "lir/x64/module/ObjFuncData.h"
 #include "lir/x64/analysis/regalloc/LinearScan.h"
+#include "regalloc/FixedRegistersEval.h"
 
 
 using BFSOrderTraverseMach = BFSOrderTraverseBase<ObjFuncData>;
@@ -24,5 +25,6 @@ static_assert(Analysis<DominatorTreeEvalMach>);
 static_assert(Analysis<LinearScan>);
 static_assert(Analysis<LivenessAnalysis>);
 static_assert(Analysis<LiveIntervalsEval>);
+static_assert(Analysis<FixedRegistersEval>);
 
 using AnalysisPassCacheMach = AnalysisPassCacheBase<ObjFuncData>;

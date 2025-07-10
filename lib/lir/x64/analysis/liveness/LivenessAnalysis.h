@@ -5,7 +5,7 @@
 #include "lir/x64/module/MachBlock.h"
 #include "lir/x64/instruction/Matcher.h"
 #include "lir/x64/module/ObjFuncData.h"
-#include "lir/x64/operand/VRegMap.h"
+#include "lir/x64/operand/LIRVRegMap.h"
 
 
 class LivenessAnalysis final {
@@ -26,7 +26,7 @@ public:
         auto changed = false;
         do {
             for (const auto& bb: m_ordering) {
-                VRegSet live_out;
+                LIRVRegSet live_out;
                 for (const auto succ: bb->successors()) {
                     // live_out = b.live_out ∪ succ.live_in
                     const auto live_in_succ = m_liveness.find(succ);
@@ -65,7 +65,7 @@ private:
     /**
      * Performs: b.live_out = b.live_out ∪ new_live_out
      */
-    bool add_all_live_out(const basic_block* bb, const VRegSet& new_live_out) {
+    bool add_all_live_out(const basic_block* bb, const LIRVRegSet& new_live_out) {
         auto& live_out_bb = m_liveness.at(bb).second;
         auto changed = false;
         for (const auto& succ: new_live_out) {
@@ -78,11 +78,11 @@ private:
     /**
     * Performs: live_in = (b.live_out – b.live_kill) ∪ b.live_gen
     */
-    void compute_new_live_in(const basic_block* bb, VRegSet&& new_live_out) {
-        VRegSet live_in(std::move(new_live_out));
+    void compute_new_live_in(const basic_block* bb, LIRVRegSet&& new_live_out) {
+        LIRVRegSet live_in(std::move(new_live_out));
         const auto& kill_gen = m_kill_gen_set.at(bb);
 
-        auto predicate = [&](const VReg& reg) -> bool {
+        auto predicate = [&](const LIRVReg& reg) -> bool {
             return kill_gen.first.contains(reg);
         };
         std::erase_if(live_in, predicate);
@@ -91,13 +91,13 @@ private:
 
     void compute_local_live_set() {
         for (const auto bb: m_ordering) {
-            VRegSet gen;
-            VRegSet kill;
+            LIRVRegSet gen;
+            LIRVRegSet kill;
 
             for (const auto& inst: bb->instructions()) {
                 if (!inst.isa(parallel_copy())) {
                     for (auto in: inst.inputs()) {
-                        const auto vreg = VReg::try_from(in);
+                        const auto vreg = LIRVReg::try_from(in);
                         if (!vreg.has_value()) {
                             continue;
                         }
@@ -121,11 +121,11 @@ private:
 
     void setup_liveness() {
         for (const auto& bb: m_ordering) {
-            m_liveness.emplace(bb, std::pair<VRegSet, VRegSet>{});
+            m_liveness.emplace(bb, std::pair<LIRVRegSet, LIRVRegSet>{});
         }
     }
 
     const Ordering<MachBlock>& m_ordering;
-    std::unordered_map<const basic_block*, std::pair<VRegSet, VRegSet>> m_kill_gen_set{};
-    std::unordered_map<const basic_block*, std::pair<VRegSet, VRegSet>> m_liveness{};
+    std::unordered_map<const basic_block*, std::pair<LIRVRegSet, LIRVRegSet>> m_kill_gen_set{};
+    std::unordered_map<const basic_block*, std::pair<LIRVRegSet, LIRVRegSet>> m_liveness{};
 };
