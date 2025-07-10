@@ -110,7 +110,7 @@ private:
                     }
                 }
 
-                for (const auto& out: inst.outputs()) {
+                for (const auto& out: inst.defs()) {
                     kill.insert(out);
                 }
             }

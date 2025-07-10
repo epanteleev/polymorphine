@@ -20,14 +20,14 @@ void LIRReturn::visit(LIRVisitor &visitor) {
 void LIRCall::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRCallKind::Call: {
-            visitor.call(out(0), to_vregs_only(inputs()));
+            visitor.call(def(0), to_vregs_only(inputs()));
             break;
         }
         case LIRCallKind::ICall: {
             const auto pointer = VReg::try_from(in(0));
             assertion(pointer.has_value(), "invariant");
             const auto vregs = to_vregs_only(inputs().subspan(1));
-            visitor.icall(out(0), pointer.value(), vregs);
+            visitor.icall(def(0), pointer.value(), vregs);
             break;
         }
         case LIRCallKind::IVCall: {

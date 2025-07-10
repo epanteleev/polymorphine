@@ -2,17 +2,17 @@
 
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
-        case LIRInstKind::Add: visitor.add_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Sub: visitor.sub_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Mul: visitor.mul_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Div: visitor.div_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::And: visitor.and_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Or:  visitor.or_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Xor: visitor.xor_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Shl: visitor.shl_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Shr: visitor.shr_i(out(0), in(0), in(1)); break;
-        case LIRInstKind::Neg: visitor.neg_i(out(0), in(0)); break;
-        case LIRInstKind::Not: visitor.not_i(out(0), in(0)); break;
+        case LIRInstKind::Add: visitor.add_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Sub: visitor.sub_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Mul: visitor.mul_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Div: visitor.div_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::And: visitor.and_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Or:  visitor.or_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Xor: visitor.xor_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Shl: visitor.shl_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
+        case LIRInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
+        case LIRInstKind::Not: visitor.not_i(def(0), in(0)); break;
         case LIRInstKind::Mov: {
             const auto in0 = VReg::try_from(in(0));
             assertion(in0.has_value(), "invariant");
@@ -24,7 +24,7 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRInstKind::Copy: {
-            const auto out1 = VReg::try_from(out(0));
+            const auto out1 = VReg::try_from(def(0));
             assertion(out1.has_value(), "invariant");
 
             visitor.copy_i(out1.value(), in(0));
@@ -32,7 +32,7 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
         }
         case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
         case LIRInstKind::ParallelCopy: {
-            const auto out0 = VReg::try_from(out(0));
+            const auto out0 = VReg::try_from(def(0));
             assertion(out0.has_value(), "invariant");
 
             const auto vregs = to_vregs_only(inputs());

@@ -169,6 +169,8 @@ int main() {
 
     AnalysisPassCacheMach cache;
     auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
+    auto liveintervals = cache.analyze<LiveIntervalsEval>(obj_fun);
+    std::cout << *liveintervals << std::endl;
     /*
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();

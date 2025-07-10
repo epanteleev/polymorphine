@@ -12,11 +12,11 @@ public:
         m_live_in(std::move(live_in)),
         m_live_out(std::move(live_out)) {}
 
-    auto live_in() const noexcept {
+    const VRegSet& live_in() const noexcept {
         return m_live_in;
     }
 
-    auto live_out() const noexcept {
+    const VRegSet& live_out() const noexcept {
         return m_live_out;
     }
 
@@ -30,6 +30,14 @@ class LivenessAnalysisInfo final: public AnalysisPassResult {
 public:
     explicit LivenessAnalysisInfo(std::unordered_map<const MachBlock*, LiveInfo>&& liveness) noexcept:
         m_liveness(std::move(liveness)) {}
+
+    const VRegSet& live_in(const MachBlock* bb) const noexcept {
+        return m_liveness.at(bb).live_in();
+    }
+
+    const VRegSet& live_out(const MachBlock* bb) const noexcept {
+        return m_liveness.at(bb).live_out();
+    }
 
 private:
     std::unordered_map<const MachBlock*, LiveInfo> m_liveness;

@@ -66,8 +66,8 @@ public:
                m_variant.m_arg;
     }
 
-    static VReg reg(std::uint8_t index, LIRArg* def) noexcept {
-        return {def->size(), index, def};
+    static VReg from(const LIRArg* def) noexcept {
+        return {def->size(), static_cast<std::uint8_t>(def->index()), def};
     }
 
     static VReg reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {

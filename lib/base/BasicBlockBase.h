@@ -1,8 +1,11 @@
 #pragma once
+
 #include <span>
 #include <vector>
 #include <ostream>
+#include <utility>
 
+#include "utility/Error.h"
 #include "utility/OrderedSet.h"
 
 template<typename Derived, typename Inst>
@@ -23,6 +26,13 @@ public:
     [[nodiscard]]
     const OrderedSet<Inst>& instructions() const noexcept {
         return m_instructions;
+    }
+
+    [[nodiscard]]
+    std::uint32_t size() const noexcept {
+        const auto size = m_instructions.size();
+        assertion(std::in_range<std::uint32_t>(size), "size={} is out of range", size);
+        return size;
     }
 
     std::ostream &print_short_name(std::ostream &os) const {

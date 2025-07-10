@@ -23,12 +23,12 @@ public:
     }
 
     [[nodiscard]]
-    std::span<VReg const> outputs() const noexcept {
+    std::span<VReg const> defs() const noexcept {
         return m_defs;
     }
 
     [[nodiscard]]
-    const VReg& out(const std::size_t idx) const {
+    const VReg& def(const std::size_t idx) const {
         return m_defs.at(idx);
     }
 
