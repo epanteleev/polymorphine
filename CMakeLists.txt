@@ -3,7 +3,8 @@ project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_library(ckoof SHARED lib/mir/types/Type.h
+add_library(ckoof SHARED
+        lib/mir/types/Type.h
         lib/mir/module/BasicBlock.cpp
         lib/mir/module/BasicBlock.h
         lib/mir/instruction/Instruction.cpp
@@ -52,7 +53,6 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/base/analysis/traverse/PostOrderTraverseBase.h
         lib/base/analysis/dom/DominatorTreeEvalBase.h
         lib/base/analysis/dom/DominatorTree.h
-        lib/asm/Assembler.cpp
         lib/asm/Assembler.h
         lib/asm/Register.h
         lib/asm/Register.cpp

@@ -9,14 +9,14 @@
 #include "Common.h"
 
 namespace aasm {
-    template<CodeBuffer C>
-    static void add_word_op_size(C& c) {
-        c.emit8(constants::PREFIX_OPERAND_SIZE);
+    template<CodeBuffer Buffer>
+    static void add_word_op_size(Buffer& buffer) {
+        buffer.emit8(constants::PREFIX_OPERAND_SIZE);
     }
 
     class PopR final {
     public:
-        PopR(std::uint8_t size, GPReg reg) noexcept
+        PopR(const std::uint8_t size, const GPReg reg) noexcept
             : m_size(size), m_reg(reg) {}
 
         friend std::ostream& operator<<(std::ostream& os, const PopR& popr);
@@ -126,8 +126,7 @@ namespace aasm {
 
         template<CodeBuffer C>
         void emit_push(C& c) const {
-            const auto rex = constants::REX | B(m_reg);
-            if (rex != constants::REX) {
+            if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
                 c.emit8(rex);
             } else {
                 c.emit8(PUSH_R + reg3(m_reg));
@@ -264,14 +263,13 @@ namespace aasm {
     class X64Instruction final {
     public:
         template<typename I>
-        explicit X64Instruction(I&& i) noexcept:
-            m_inst(std::forward<I>(i)) {}
+        explicit X64Instruction(I&& i) noexcept: m_inst(std::forward<I>(i)) {}
 
-        friend std::ostream & operator<<(std::ostream &os, const X64Instruction &inst);
+        friend std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
-            const auto visitor = [&](const auto& var) {
+        void emit(Buffer &buffer) const {
+            const auto visitor = [&](const auto &var) {
                 var.emit(buffer);
             };
 
@@ -282,8 +280,8 @@ namespace aasm {
         std::variant<PopR, PopM, PushR, PushM, Ret, MovRR> m_inst;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const X64Instruction &inst) {
-        const auto visitor = [&](const auto& var) {
+    inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {
+        const auto visitor = [&](const auto &var) {
             os << var;
         };
 

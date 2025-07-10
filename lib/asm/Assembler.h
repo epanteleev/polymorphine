@@ -2,39 +2,12 @@
 
 #include <deque>
 #include <iosfwd>
-#include <span>
 
 #include "Register.h"
 #include "Address.h"
 #include "CPUInstruction.h"
 
 namespace aasm {
-    struct code final {
-        code() = default;
-        explicit code(const std::uint8_t c): len(1) {
-            val[0] = c;
-        }
-
-        void emit8(const std::uint8_t c) noexcept {
-            val[len++] = c;
-        }
-
-        void emit32(const std::uint32_t c) noexcept {
-            val[len++] = (c >> 24) & 0xFF;
-            val[len++] = (c >> 16) & 0xFF;
-            val[len++] = (c >> 8) & 0xFF;
-            val[len++] = c & 0xFF;
-        }
-
-        [[nodiscard]]
-        std::size_t size() const noexcept {
-            return len;
-        }
-
-        unsigned char val[15]{};
-        std::uint8_t len{};
-    };
-
     class Assembler final {
     public:
         static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
@@ -53,23 +26,23 @@ namespace aasm {
             m_instructions.emplace_back(Ret());
         }
 
-        void pop(std::size_t size, const GPReg r) {
+        void pop(const std::size_t size, const GPReg r) {
             m_instructions.emplace_back(PopR(size, r));
         }
 
-        void pop(std::size_t size, const Address& addr) {
+        void pop(const std::size_t size, const Address& addr) {
             m_instructions.emplace_back(PopM(size, addr));
         }
 
-        void push(std::size_t size, const GPReg r) {
+        void push(const std::size_t size, const GPReg r) {
             m_instructions.emplace_back(PushR(size, r));
         }
 
-        void push(std::size_t size, const Address& addr) {
+        void push(const std::size_t size, const Address& addr) {
             m_instructions.emplace_back(PushM(size, addr));
         }
 
-        void mov(std::size_t size, const GPReg src, const GPReg dst) {
+        void mov(const std::size_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(MovRR(size, src, dst));
         }
 
@@ -79,10 +52,14 @@ namespace aasm {
             }
         }
 
-        [[nodiscard]]
-        std::size_t to_byte_buffer(std::span<std::uint8_t> buffer) const;
+        template<CodeBuffer Buffer>
+        void emit(Buffer& buffer) const {
+            for (const auto& instruction: m_instructions) {
+                instruction.emit(buffer);
+            }
+        }
+
     private:
         std::deque<X64Instruction> m_instructions;
-        //std::deque<code> m_inst;
     };
 }
