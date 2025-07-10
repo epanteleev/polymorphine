@@ -57,7 +57,7 @@ public:
     }
 
     static LivenessAnalysis create(AnalysisPassCacheBase<ObjFuncData> *cache, const ObjFuncData *data) {
-        auto ordering = cache->analyze<LinearScanOrderBase<ObjFuncData>>(data);
+        auto ordering = cache->analyze<PreorderTraverseBase<ObjFuncData>>(data);
         return LivenessAnalysis(*ordering);
     }
 

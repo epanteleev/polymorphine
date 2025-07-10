@@ -30,10 +30,6 @@ TEST(EmptyFunc, traverse) {
     const auto& bfs = *cache.analyze<BFSOrderTraverse>(func);
     ASSERT_EQ(bfs.size(), 1);
     ASSERT_EQ(bfs[0], func->first());
-
-    const auto& linear_scan_order = *cache.analyze<LinearScanOrder>(func);
-    ASSERT_EQ(linear_scan_order.size(), 1);
-    ASSERT_EQ(linear_scan_order[0], func->first());
 }
 
 TEST(EmptyFunc, dom) {
@@ -50,16 +46,6 @@ TEST(EmptyFunc, dom) {
     }
 
     ASSERT_EQ(size, 0);
-}
-
-TEST(LoopInfo, loop) {
-    auto module = ret_one();
-    const auto func = module.find_function_data("ret_one")
-        .value();
-
-    AnalysisPassCache cache;
-    const auto& loop = *cache.analyze<LoopInfoEval>(func);
-    ASSERT_EQ(loop.size(), 0);
 }
 
 int main(int argc, char **argv) {

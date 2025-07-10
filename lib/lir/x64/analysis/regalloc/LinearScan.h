@@ -17,7 +17,7 @@ public:
     }
 
     static LinearScan create(AnalysisPassCacheBase<ObjFuncData> *cache, const ObjFuncData *data) {
-        const auto loop_info = cache->analyze<LoopInfoEvalBase<ObjFuncData>>(data);
+        const auto loop_info = cache->analyze<PreorderTraverseBase<ObjFuncData>>(data);
         return {};
     }
 };

@@ -156,8 +156,6 @@ int main() {
     fd->print(std::cout);
 
     AnalysisPassCache cache0;
-    auto loop = cache0.analyze<LoopInfoEval>(fd);
-    std::cout << *loop << std::endl;
 
     auto module0 = ret_one();
     module0.print(std::cout) << std::endl;
@@ -170,11 +168,6 @@ int main() {
     auto obj_fun = result.find_function_data("ret_one").value();
 
     AnalysisPassCacheMach cache;
-    const auto linear_scan = cache.analyze<LinearScanOrderMach>(obj_fun);
-    for (const auto mb: *linear_scan) {
-        mb->print_short_name(std::cout);
-    }
-
     auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
     /*
     const auto time1 = async_based_solution();

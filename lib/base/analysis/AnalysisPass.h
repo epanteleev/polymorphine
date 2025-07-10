@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../../mir/mir_frwd.h"
-
 enum class AnalysisType {
     PreOrderTraverse,
     PostOrderTraverse,

@@ -91,7 +91,6 @@ add_library(ckoof SHARED lib/mir/types/Type.h
         lib/lir/x64/operand/LIRArg.cpp
         lib/base/analysis/loop/LoopInfoEvalBase.h
         lib/base/analysis/loop/LoopInfoBase.h
-        lib/base/analysis/traverse/LinearScanOrderBase.h
         lib/base/BasicBlockBase.h
         lib/lir/x64/lower/FunctionLower.cpp
         lib/lir/x64/lower/FunctionLower.h
