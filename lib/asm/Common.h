@@ -12,16 +12,6 @@ namespace aasm {
         static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
     }
 
-    static char prefix_size(std::uint8_t size) {
-        switch (size) {
-            case 1: return 'b';
-            case 2: return 'w';
-            case 4: return 'l';
-            case 8: return 'q';
-            default: die("Invalid size for prefix: {}", size);
-        }
-    }
-
     template<typename T>
     static constexpr bool in_byte_range(T arg) {
         return arg >= -128 && arg <= 127;

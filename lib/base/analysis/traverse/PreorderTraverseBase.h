@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <stack>
+#include <ranges>
 
 #include "Ordering.h"
 #include "base/analysis/AnalysisPass.h"

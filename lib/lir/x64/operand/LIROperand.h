@@ -1,17 +1,18 @@
 #pragma once
 #include <optional>
+#include <sstream>
 #include <variant>
 
 #include "LIRCst.h"
-#include "LIRVReg.h"
+#include "LIRVal.h"
 
 class LIROperand final {
 public:
-    LIROperand(LirCst operand) noexcept
-    : m_operand(operand) {}
+    LIROperand(LirCst operand) noexcept:
+        m_operand(operand) {}
 
-    LIROperand(LIRVReg operand) noexcept
-        : m_operand(operand) {}
+    LIROperand(LIRVal operand) noexcept:
+        m_operand(operand) {}
 
     [[nodiscard]]
     std::optional<LirCst> cst() const noexcept {
@@ -23,9 +24,9 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<LIRVReg> vreg() const noexcept {
-        if (std::holds_alternative<LIRVReg>(m_operand)) {
-            return std::get<LIRVReg>(m_operand);
+    std::optional<LIRVal> vreg() const noexcept {
+        if (std::holds_alternative<LIRVal>(m_operand)) {
+            return std::get<LIRVal>(m_operand);
         }
 
         return std::nullopt;
@@ -36,7 +37,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 private:
-    std::variant<LirCst, LIRVReg> m_operand;
+    std::variant<LirCst, LIRVal> m_operand;
 };
 
 

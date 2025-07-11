@@ -6,25 +6,25 @@
 #include "lir/x64/lir_frwd.h"
 #include "utility/Error.h"
 
-class LIRVReg final {
+class LIRVal final {
     enum class Op: std::uint8_t {
         Arg,
         Inst
     };
 
-public:
-    LIRVReg(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
-                                                              m_index(index),
-                                                              m_type(Op::Arg) {
+    LIRVal(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
+                                                          m_index(index),
+                                                          m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    LIRVReg(std::uint8_t size, std::uint8_t index, const LIRInstruction *def): m_size(size),
+    LIRVal(std::uint8_t size, std::uint8_t index, const LIRInstruction *def): m_size(size),
                                                                       m_index(index),
                                                                       m_type(Op::Inst) {
         m_variant.m_inst = def;
     }
 
+public:
     [[nodiscard]]
     std::optional<const LIRArg*> arg() const noexcept {
         if (m_type == Op::Arg) {
@@ -43,6 +43,14 @@ public:
         return std::nullopt;
     }
 
+    template<typename T>
+    void visit(const T& visitor) const {
+        switch (m_type) {
+            case Op::Arg: visitor(*m_variant.m_arg); break;
+            case Op::Inst: visitor(*m_variant.m_inst); break;
+        }
+    }
+
     [[nodiscard]]
     std::uint8_t size() const noexcept {
         return m_size;
@@ -53,7 +61,7 @@ public:
         return m_index;
     }
 
-    bool operator==(const LIRVReg &rhs) const noexcept {
+    bool operator==(const LIRVal &rhs) const noexcept {
         if (this == &rhs) {
             return true;
         }
@@ -65,17 +73,17 @@ public:
                m_variant.m_arg;
     }
 
-    static LIRVReg from(const LIRArg* def) noexcept {
+    static LIRVal from(const LIRArg* def) noexcept {
         return {def->size(), static_cast<std::uint8_t>(def->index()), def};
     }
 
-    static LIRVReg reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {
+    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {
         return {size, index, def};
     }
 
-    static std::expected<LIRVReg, Error> try_from(const LIROperand& op);
+    static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
-    friend std::ostream& operator<<(std::ostream& os, const LIRVReg& op) noexcept;
+    friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
 
 private:
     std::uint8_t m_size;
@@ -87,4 +95,4 @@ private:
     } m_variant{};
 };
 
-std::ostream& operator<<(std::ostream& os, const LIRVReg& op) noexcept;
+std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;

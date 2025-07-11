@@ -10,29 +10,29 @@ namespace {
         explicit LIRInstructionPrinter(std::ostream& os): m_os(os) {}
 
     private:
-        void add_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {
+        void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
             m_os << "add_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
-        void sub_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void mul_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void div_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void div_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void and_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void or_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void xor_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void shl_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void shr_i(const LIRVReg &out, const LIROperand &in1, const LIROperand &in2) override {
+        void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
 
         }
 
-        void parallel_copy(const LIRVReg &out, std::span<LIRVReg const> inputs) override {
+        void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {
 
         }
 
@@ -40,19 +40,19 @@ namespace {
 
         }
 
-        void neg_i(const LIRVReg &out, const LIROperand &in) override {
+        void neg_i(const LIRVal &out, const LIROperand &in) override {
 
         }
 
-        void not_i(const LIRVReg &out, const LIROperand &in) override {
+        void not_i(const LIRVal &out, const LIROperand &in) override {
 
         }
 
-        void mov_i(const LIRVReg &out, const LIRVReg &in) override {
+        void mov_i(const LIRVal &out, const LIRVal &in) override {
 
         }
 
-        void copy_i(const LIRVReg &out, const LIROperand &in) override {
+        void copy_i(const LIRVal &out, const LIROperand &in) override {
             m_os << "copy_i out(" << out << ") in(" << in << ')';
         }
 
@@ -84,19 +84,19 @@ namespace {
 
         }
 
-        void call(const LIRVReg &out, std::span<LIRVReg const> args) override {
+        void call(const LIRVal &out, std::span<LIRVal const> args) override {
 
         }
 
-        void vcall(std::span<LIRVReg const> args) override {
+        void vcall(std::span<LIRVal const> args) override {
 
         }
 
-        void icall(const LIRVReg &out, const LIRVReg &pointer, std::span<LIRVReg const> args) override {
+        void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override {
 
         }
 
-        void ivcall(const LIRVReg &pointer, std::span<LIRVReg const> args) override {
+        void ivcall(const LIRVal &pointer, std::span<LIRVal const> args) override {
 
         }
 

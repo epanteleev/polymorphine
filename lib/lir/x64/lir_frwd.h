@@ -7,6 +7,9 @@ class LIRInstruction;
 class LIRControlInstruction;
 
 class LIROperand;
-class LIRVReg;
+class LIRVal;
 class LIRArg;
+class LirCst;
 class VregBuilder;
+
+class GPVReg;

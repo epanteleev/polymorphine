@@ -2,6 +2,7 @@
 
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
+#include "lir/x64/codegen/MachFunctionCodegen.h"
 
 Module ret_one() {
     ModuleBuilder builder;
@@ -171,6 +172,14 @@ int main() {
     auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
     auto liveintervals = cache.analyze<LiveIntervalsEval>(obj_fun);
     std::cout << *liveintervals << std::endl;
+
+    auto register_alloc = cache.analyze<LinearScan>(obj_fun);
+    std::cout << *register_alloc << std::endl;
+
+    auto mach_codegen = MachFunctionCodegen::create(&cache, obj_fun);
+    mach_codegen.run();
+    auto mach = mach_codegen.result();
+    mach.print_codes(std::cout);
     /*
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();

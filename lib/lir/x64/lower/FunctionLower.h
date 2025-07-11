@@ -21,7 +21,7 @@ public:
         std::size_t idx{};
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
-            m_mapping.emplace(local, LIRVReg(arg.type()->size_of(), idx, &lir_arg));
+            m_mapping.emplace(local, LIRVal::from(&lir_arg));
             idx += 1;
         }
 
@@ -103,6 +103,6 @@ private:
     ObjFuncData& m_obj_function;
     const FunctionData& m_function;
     MachBlock* m_bb{};
-    LocalValueMap<LIRVReg> m_mapping;
+    LocalValueMap<LIRVal> m_mapping;
 };
 

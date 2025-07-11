@@ -41,7 +41,7 @@ public:
         return std::make_unique<result_type>(std::move(m_order));
     }
 
-    static BFSOrderTraverseBase create(AnalysisPassCacheBase<FD>*, const FunctionData *data) {
+    static BFSOrderTraverseBase create(AnalysisPassCacheBase<FD>*, const FD *data) {
         return BFSOrderTraverseBase(data);
     }
 

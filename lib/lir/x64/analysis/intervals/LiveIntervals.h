@@ -2,7 +2,7 @@
 
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/module/MachBlock.h"
-#include "lir/x64/operand/LIRVRegMap.h"
+#include "lir/x64/operand/LIRValMap.h"
 
 class Interval final {
 public:
@@ -33,13 +33,13 @@ inline std::ostream& operator<<(std::ostream& os, const Interval& interval) {
 
 class LiveIntervals final: public AnalysisPassResult {
 public:
-    explicit LiveIntervals(LIRVRegMap<std::unordered_map<const MachBlock*, Interval>>&& intervals) noexcept:
+    explicit LiveIntervals(LIRValMap<std::unordered_map<const MachBlock*, Interval>>&& intervals) noexcept:
         m_intervals(std::move(intervals)) {}
 
     friend std::ostream& operator<<(std::ostream& os, const LiveIntervals& intervals);
 
 private:
-    LIRVRegMap<std::unordered_map<const MachBlock*, Interval>> m_intervals{};
+    LIRValMap<std::unordered_map<const MachBlock*, Interval>> m_intervals{};
 };
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervals &intervals) {

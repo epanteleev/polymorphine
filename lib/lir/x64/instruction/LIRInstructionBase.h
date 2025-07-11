@@ -10,7 +10,7 @@
 class LIRInstructionBase {
 public:
     LIRInstructionBase(const std::size_t id, MachBlock *bb, std::vector<LIROperand> &&uses,
-                       std::vector<LIRVReg> &&defs): m_id(id),
+                       std::vector<LIRVal> &&defs): m_id(id),
                                                   m_owner(bb),
                                                   m_defs(defs),
                                                   m_uses(std::move(uses)) {}
@@ -23,12 +23,12 @@ public:
     }
 
     [[nodiscard]]
-    std::span<LIRVReg const> defs() const noexcept {
+    std::span<LIRVal const> defs() const noexcept {
         return m_defs;
     }
 
     [[nodiscard]]
-    const LIRVReg& def(const std::size_t idx) const {
+    const LIRVal& def(const std::size_t idx) const {
         return m_defs.at(idx);
     }
 
@@ -53,15 +53,15 @@ public:
     }
 
 protected:
-    void add_def(const LIRVReg& def) {
+    void add_def(const LIRVal& def) {
         m_defs.push_back(def);
     }
 
-    static std::vector<LIRVReg> to_vregs_only(std::span<LIROperand const> inputs) {
-        std::vector<LIRVReg> vregs;
+    static std::vector<LIRVal> to_vregs_only(std::span<LIROperand const> inputs) {
+        std::vector<LIRVal> vregs;
         vregs.reserve(inputs.size());
         for (const auto& in: inputs) {
-            const auto vreg = LIRVReg::try_from(in);
+            const auto vreg = LIRVal::try_from(in);
             assertion(vreg.has_value(), "invariant");
             vregs.push_back(vreg.value());
         }
@@ -70,7 +70,7 @@ protected:
 
     std::size_t m_id;
     MachBlock* m_owner;
-    std::vector<LIRVReg> m_defs;
+    std::vector<LIRVal> m_defs;
     std::vector<LIROperand> m_uses;
 };
 

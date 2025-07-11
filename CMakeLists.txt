@@ -67,7 +67,7 @@ add_library(ckoof SHARED
         lib/base/analysis/traverse/BFSOrderTraverseBase.h
         lib/lir/x64/instruction/LIRInstructionBase.cpp
         lib/lir/x64/instruction/LIRInstructionBase.h
-        lib/lir/x64/operand/LIRVReg.h
+        lib/lir/x64/operand/LIRVal.h
         lib/lir/x64/operand/LIRCst.h
         lib/lir/x64/operand/LIROperand.h
         lib/lir/x64/module/MachBlock.cpp
@@ -80,7 +80,7 @@ add_library(ckoof SHARED
         lib/lir/x64/analysis/Analysis.h
         lib/lir/x64/module/ObjFuncData.h
         lib/lir/x64/instruction/LIRVisitor.h
-        lib/lir/x64/operand/LIRVReg.cpp
+        lib/lir/x64/operand/LIRVal.cpp
         lib/lir/x64/module/ObjModule.cpp
         lib/lir/x64/module/ObjModule.h
         lib/lir/x64/lower/Lowering.cpp
@@ -101,7 +101,7 @@ add_library(ckoof SHARED
         lib/lir/x64/analysis/liveness/LiveInfo.h
         lib/base/FunctionDataBase.h
         lib/lir/x64/instruction/Matcher.h
-        lib/lir/x64/operand/LIRVRegMap.h
+        lib/lir/x64/operand/LIRValMap.h
         lib/asm/CPUInstruction.h
         lib/asm/Common.h
         lib/lir/x64/analysis/intervals/LiveIntervalsEval.h
@@ -113,6 +113,15 @@ add_library(ckoof SHARED
         lib/lir/x64/lir.h
         lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
         lib/lir/x64/analysis/regalloc/FixedRegisters.h
+        lib/lir/x64/asm/GPVReg.h
+        lib/lir/x64/asm/MacroAssembler.h
+        lib/lir/x64/codegen/MachFunctionCodegen.cpp
+        lib/lir/x64/codegen/MachFunctionCodegen.h
+        lib/lir/x64/asm/visitors/GPUnaryVisitor.h
+        lib/lir/x64/asm/visitors/GPUnaryVisitor.cpp
+        lib/lir/x64/asm/GPOp.h
+        lib/lir/x64/codegen/emitters/CopyGPEmit.h
+        lib/lir/x64/codegen/emitters/CopyGPEmit.cpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

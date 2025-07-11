@@ -29,6 +29,11 @@ public:
         die("unreachable");
     }
 
+    [[nodiscard]]
+    std::int64_t value() const noexcept {
+        return m_value;
+    }
+
     static constexpr LirCst imm8(std::int64_t value) noexcept {
         return {value, Kind::Int8};
     }

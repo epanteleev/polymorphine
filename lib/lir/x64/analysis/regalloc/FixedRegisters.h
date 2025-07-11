@@ -5,16 +5,21 @@
 
 class FixedRegisters final: public AnalysisPassResult {
 public:
-    explicit FixedRegisters(LIRVRegSet&& rax_set) noexcept:
+    explicit FixedRegisters(LIRValSet&& rax_set) noexcept:
         m_rax_set(rax_set) {}
 
     friend std::ostream& operator<<(std::ostream& os, const FixedRegisters& regs);
 
+    [[nodiscard]]
+    const LIRValSet& rax_set() const noexcept {
+        return m_rax_set;
+    }
+
 private:
-    const LIRVRegSet m_rax_set;
+    const LIRValSet m_rax_set;
 };
 
-inline std::ostream & operator<<(std::ostream &os, const FixedRegisters &regs) {
+inline std::ostream& operator<<(std::ostream &os, const FixedRegisters &regs) {
     os << "rax: ";
     for (const auto &reg : regs.m_rax_set) {
         os << reg << " ";

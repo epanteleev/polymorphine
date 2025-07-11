@@ -9,7 +9,7 @@
 
 class LIRControlInstruction: public LIRInstructionBase {
 public:
-    explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, std::vector<LIRVReg>&& defs, std::vector<LIROperand>&& uses, std::vector<MachBlock* >&& successors) :
+    explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& uses, std::vector<MachBlock* >&& successors) :
         LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
         m_successors(std::move(successors)) {}
 
@@ -73,7 +73,7 @@ enum class LIRCallKind: std::uint8_t {
 
 class LIRCall final: public LIRControlInstruction {
 public:
-    explicit LIRCall(const std::size_t id, MachBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIRVReg>&& defs, std::vector<LIROperand>&& operands,
+    explicit LIRCall(const std::size_t id, MachBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& operands,
                        MachBlock *on_true, MachBlock *on_false) :
         LIRControlInstruction(id, bb, std::move(defs), std::move(operands), {on_true, on_false}),
         m_name(std::move(name)),

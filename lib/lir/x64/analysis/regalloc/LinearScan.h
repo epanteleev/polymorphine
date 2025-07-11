@@ -18,11 +18,11 @@ private:
 
 public:
     void run() {
-
+        allocate_fixed_registers();
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return {};
+        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation));
     }
 
     static LinearScan create(AnalysisPassCacheBase<ObjFuncData> *cache, const ObjFuncData *data) {
@@ -32,7 +32,16 @@ public:
     }
 
 private:
+
+    void allocate_fixed_registers() {
+        for (const auto& rax_reg: m_fixed_registers.rax_set()) {
+            m_reg_allocation.emplace(rax_reg, aasm::rax);
+        }
+    }
+
     const ObjFuncData& m_obj_func_data;
     const Ordering<MachBlock>& m_ordering;
     const FixedRegisters& m_fixed_registers;
+
+    LIRValMap<GPVReg> m_reg_allocation{};
 };
