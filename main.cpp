@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 
 #include "mir/mir.h"
@@ -179,7 +180,7 @@ int main() {
     auto mach_codegen = MachFunctionCodegen::create(&cache, obj_fun);
     mach_codegen.run();
     auto mach = mach_codegen.result();
-    mach.print_mnemonics(std::cout);
+    std::cout << mach;
 
     /*
     const auto time1 = async_based_solution();

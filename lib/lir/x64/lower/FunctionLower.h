@@ -13,11 +13,12 @@
 
 class FunctionLower final: public Visitor {
 public:
-    FunctionLower(ObjFuncData &obj_function, const FunctionData &function) noexcept
-        : m_obj_function(obj_function), m_function(function) {}
+    FunctionLower(ObjFuncData &obj_function, const FunctionData &function) noexcept:
+        m_obj_function(obj_function),
+        m_function(function),
+        m_bb(m_obj_function.first()) {}
 
     void run() {
-        m_bb = m_obj_function.first();
         std::size_t idx{};
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
@@ -64,7 +65,6 @@ private:
     void accept(ReturnValue *inst) override {
         const auto ret_val = get_mapping(inst->ret_value());
         const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
-
         m_bb->inst(LIRReturn::ret(copy->def(0)));
     }
 
@@ -102,7 +102,7 @@ private:
 
     ObjFuncData& m_obj_function;
     const FunctionData& m_function;
-    MachBlock* m_bb{};
+    MachBlock* m_bb;
     LocalValueMap<LIRVal> m_mapping;
 };
 

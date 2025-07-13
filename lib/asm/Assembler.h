@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <iomanip>
 #include <iosfwd>
 
 #include "Register.h"
@@ -55,11 +56,7 @@ namespace aasm {
             m_instructions.emplace_back(MovRI(size, src, dst));
         }
 
-        void print_mnemonics(std::ostream &os) const {
-            for (auto& instruction: m_instructions) {
-                os << instruction << std::endl;
-            }
-        }
+        friend std::ostream &operator<<(std::ostream &os, const Assembler &assembler);
 
         template<CodeBuffer Buffer>
         void emit(Buffer& buffer) const {
@@ -71,4 +68,14 @@ namespace aasm {
     private:
         std::deque<X64Instruction> m_instructions;
     };
+
+    inline std::ostream & operator<<(std::ostream &os, const Assembler &assembler) {
+        const auto pretty_print = static_cast<int>(os.width());
+        const auto fill = os.fill();
+        for (auto& instruction: assembler.m_instructions) {
+            os << std::setfill(fill) << std::setw(pretty_print) << instruction << std::endl;
+        }
+
+        return os;
+    }
 }

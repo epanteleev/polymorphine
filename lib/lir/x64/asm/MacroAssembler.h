@@ -33,9 +33,7 @@ public:
         m_asm.mov(size, src, dst);
     }
 
-    void print_mnemonics(std::ostream &os) const {
-        m_asm.print_mnemonics(os);
-    }
+    friend std::ostream& operator<<(std::ostream& os, const MacroAssembler& masm);
 
     template<typename  Buffer>
     void emit(Buffer& buffer) const {
@@ -45,3 +43,7 @@ public:
 private:
     aasm::Assembler m_asm{};
 };
+
+inline std::ostream & operator<<(std::ostream &os, const MacroAssembler& masm) {
+    return os << masm.m_asm;
+}

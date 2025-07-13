@@ -18,7 +18,7 @@ class LirCst final {
 
 public:
     [[nodiscard]]
-    std::uint8_t size() const noexcept {
+    constexpr std::uint8_t size() const noexcept {
         switch (m_kind) {
             case Kind::Int8: return 1;
             case Kind::Int16: return 2;
@@ -30,7 +30,7 @@ public:
     }
 
     [[nodiscard]]
-    std::int64_t value() const noexcept {
+    constexpr std::int64_t value() const noexcept {
         return m_value;
     }
 

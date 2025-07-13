@@ -1,6 +1,6 @@
 #pragma once
+
 #include <optional>
-#include <sstream>
 #include <variant>
 
 #include "LIRCst.h"
@@ -8,14 +8,14 @@
 
 class LIROperand final {
 public:
-    LIROperand(LirCst operand) noexcept:
+    constexpr LIROperand(LirCst operand) noexcept:
         m_operand(operand) {}
 
-    LIROperand(LIRVal operand) noexcept:
+    constexpr LIROperand(LIRVal operand) noexcept:
         m_operand(operand) {}
 
     [[nodiscard]]
-    std::optional<LirCst> cst() const noexcept {
+    constexpr std::optional<LirCst> cst() const noexcept {
         if (std::holds_alternative<LirCst>(m_operand)) {
             return std::get<LirCst>(m_operand);
         }
@@ -33,7 +33,17 @@ public:
     }
 
     [[nodiscard]]
-    std::uint8_t size() const noexcept;
+    constexpr std::uint8_t size() const noexcept {
+        const auto visitor = [&]<typename T>(const T &val) {
+            if constexpr (std::is_same_v<T, LirCst> || std::is_same_v<T, LIRVal>) {
+                return val.size();
+            } else {
+                static_assert(false, "Unsupported type in Value variant");
+            }
+        };
+
+        return std::visit(visitor, m_operand);
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 private:
