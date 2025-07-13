@@ -2,7 +2,7 @@
 
 #include <mir/mir.h>
 
-static Module ret_one() {
+static Module ret_constant() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
 
@@ -14,7 +14,7 @@ static Module ret_one() {
 }
 
 TEST(EmptyFunc, traverse) {
-    auto module = ret_one();
+    auto module = ret_constant();
     const auto func = module.find_function_data("ret_one")
         .value();
 
@@ -33,7 +33,7 @@ TEST(EmptyFunc, traverse) {
 }
 
 TEST(EmptyFunc, dom) {
-    auto module = ret_one();
+    auto module = ret_constant();
     const auto func = module.find_function_data("ret_one")
         .value();
 

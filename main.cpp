@@ -8,7 +8,7 @@
 #include "lir/x64/codegen/Codegen.h"
 #include "lir/x64/codegen/MachFunctionCodegen.h"
 
-Module ret_one() {
+Module ret_constant() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
 
@@ -162,7 +162,7 @@ int main() {
 
     AnalysisPassCache cache0;
 
-    auto module0 = ret_one();
+    auto module0 = ret_constant();
     module0.print(std::cout) << std::endl;
 
     Lowering lower(module0);

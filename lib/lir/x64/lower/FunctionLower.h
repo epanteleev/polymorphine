@@ -34,9 +34,7 @@ public:
     }
 
 private:
-    LIROperand get_mapping(const Value& val) {
-        return LirCst::imm32(1);
-    }
+    LIROperand get_mapping(const Value& val);
 
     void accept(Binary *inst) override {
 

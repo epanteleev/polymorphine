@@ -45,7 +45,7 @@ public:
     static JitCodeBlob assembly(const ObjModule& masm);
 
 private:
-    static constexpr std::uint8_t PAGE_SIZE = 4096;
+    static constexpr auto PAGE_SIZE = 4096;
 
     class SizeEvaluator final {
     public:

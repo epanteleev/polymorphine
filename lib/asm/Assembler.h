@@ -76,9 +76,8 @@ namespace aasm {
 
     inline std::ostream & operator<<(std::ostream &os, const Assembler &assembler) {
         const auto pretty_print = static_cast<int>(os.width());
-        const auto fill = os.fill();
         for (auto& instruction: assembler.m_instructions) {
-            os << std::setfill(fill) << std::setw(pretty_print) << instruction << std::endl;
+            os << std::setw(pretty_print) << ' ' << instruction << std::endl;
         }
 
         return os;

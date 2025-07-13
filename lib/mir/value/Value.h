@@ -46,8 +46,20 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Value& obj);
 
+    constexpr static Value i8(std::int8_t value) noexcept {
+        return {value, SignedIntegerType::i8()};
+    }
+
+    constexpr static Value u8(std::uint8_t value) noexcept {
+        return {value, UnsignedIntegerType::u8()};
+    }
+
     constexpr static Value i32(int value) noexcept {
         return {value, SignedIntegerType::i32()};
+    }
+
+    constexpr static Value i64(std::int64_t value) noexcept {
+        return {value, SignedIntegerType::i64()};
     }
 
 private:

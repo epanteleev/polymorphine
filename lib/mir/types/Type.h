@@ -11,8 +11,9 @@ class Type {
 public:
     virtual ~Type() = default;
 
+    template<typename T>
     [[nodiscard]]
-    bool isa(const TypeMatcher &matcher) const {
+    bool isa(const T &matcher) const {
         return matcher(this);
     }
 
@@ -61,15 +62,35 @@ public:
 class IntegerType : public PrimitiveType {};
 
 class UnsignedIntegerType final: public IntegerType {
-    explicit UnsignedIntegerType(const std::size_t size) : m_size(size) {}
+    constexpr explicit UnsignedIntegerType(const std::size_t size) : m_size(size) {}
 
 public:
     [[nodiscard]]
-    std::size_t size_of() const override {
+    constexpr std::size_t size_of() const override {
         return m_size;
     }
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
+
+    static consteval const UnsignedIntegerType * u8() noexcept {
+        static constexpr UnsignedIntegerType u8_instance(1);
+        return &u8_instance;
+    }
+
+    static consteval const UnsignedIntegerType *u16() noexcept {
+        static constexpr UnsignedIntegerType u16_instance(2);
+        return &u16_instance;
+    }
+
+    static consteval const UnsignedIntegerType *u32() noexcept {
+        static constexpr UnsignedIntegerType u32_instance(4);
+        return &u32_instance;
+    }
+
+    static consteval const UnsignedIntegerType *u64() noexcept {
+        static constexpr UnsignedIntegerType u64_instance(8);
+        return &u64_instance;
+    }
 
 private:
     std::size_t m_size;

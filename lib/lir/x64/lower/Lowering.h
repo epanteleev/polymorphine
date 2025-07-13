@@ -8,7 +8,7 @@
 
 class Lowering final {
 public:
-    explicit Lowering(Module &module) noexcept
+    explicit Lowering(const Module &module) noexcept
         : m_module(module) {}
 
     void run();
@@ -17,11 +17,11 @@ public:
         return LIRModule(std::move(m_obj_functions));
     }
 
-    static Lowering create(AnalysisPassCache&, Module &module) {
+    static Lowering create(AnalysisPassCache&, const Module &module) {
         return Lowering(module);
     }
 
 private:
-    Module& m_module;
+    const Module& m_module;
     std::unordered_map<std::string, std::unique_ptr<LIRFuncData>> m_obj_functions;
 };
