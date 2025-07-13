@@ -2,7 +2,7 @@
 
 #include "base/analysis/AnalysisPass.h"
 
-#include "lir/x64/module/MachBlock.h"
+#include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRValMap.h"
 
 
@@ -28,17 +28,17 @@ private:
 
 class LivenessAnalysisInfo final: public AnalysisPassResult {
 public:
-    explicit LivenessAnalysisInfo(std::unordered_map<const MachBlock*, LiveInfo>&& liveness) noexcept:
+    explicit LivenessAnalysisInfo(std::unordered_map<const LIRBlock*, LiveInfo>&& liveness) noexcept:
         m_liveness(std::move(liveness)) {}
 
-    const LIRValSet& live_in(const MachBlock* bb) const noexcept {
+    const LIRValSet& live_in(const LIRBlock* bb) const noexcept {
         return m_liveness.at(bb).live_in();
     }
 
-    const LIRValSet& live_out(const MachBlock* bb) const noexcept {
+    const LIRValSet& live_out(const LIRBlock* bb) const noexcept {
         return m_liveness.at(bb).live_out();
     }
 
 private:
-    std::unordered_map<const MachBlock*, LiveInfo> m_liveness;
+    std::unordered_map<const LIRBlock*, LiveInfo> m_liveness;
 };

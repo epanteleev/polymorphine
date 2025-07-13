@@ -9,22 +9,22 @@
 
 class LIRControlInstruction: public LIRInstructionBase {
 public:
-    explicit LIRControlInstruction(const std::size_t id, MachBlock *bb, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& uses, std::vector<MachBlock* >&& successors) :
+    explicit LIRControlInstruction(const std::size_t id, LIRBlock *bb, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& uses, std::vector<LIRBlock* >&& successors) :
         LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
         m_successors(std::move(successors)) {}
 
     [[nodiscard]]
-    std::span<MachBlock * const> successors() const noexcept {
+    std::span<LIRBlock * const> successors() const noexcept {
         return m_successors;
     }
 
     [[nodiscard]]
-    const MachBlock* succ(const std::size_t idx) const {
+    const LIRBlock* succ(const std::size_t idx) const {
         return m_successors.at(idx);
     }
 
 private:
-    std::vector<MachBlock* > m_successors;
+    std::vector<LIRBlock* > m_successors;
 };
 
 enum class LIRBranchKind: std::uint8_t {
@@ -39,8 +39,8 @@ enum class LIRBranchKind: std::uint8_t {
 
 class LIRBranch final: public LIRControlInstruction {
 public:
-    explicit LIRBranch(const std::size_t id, MachBlock *bb, const LIRBranchKind kind, const LIROperand& condition,
-                       MachBlock *on_true, MachBlock *on_false) :
+    explicit LIRBranch(const std::size_t id, LIRBlock *bb, const LIRBranchKind kind, const LIROperand& condition,
+                       LIRBlock *on_true, LIRBlock *on_false) :
         LIRControlInstruction(id, bb, {}, {condition}, {on_true, on_false}),
         m_kind(kind) {}
 
@@ -52,13 +52,13 @@ private:
 
 class LIRReturn final: public LIRControlInstruction {
 public:
-    explicit LIRReturn(const std::size_t id, MachBlock *bb, std::vector<LIROperand>&& values) :
+    explicit LIRReturn(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& values) :
         LIRControlInstruction(id, bb, {}, std::move(values), {}) {}
 
     void visit(LIRVisitor &visitor) override;
 
     static LIRInstBuilder<LIRReturn> ret(const LIROperand& value) {
-        return [=](std::size_t idx, MachBlock *bb) {
+        return [=](std::size_t idx, LIRBlock *bb) {
             return std::make_unique<LIRReturn>(idx, bb, std::vector{value});
         };
     }
@@ -73,8 +73,8 @@ enum class LIRCallKind: std::uint8_t {
 
 class LIRCall final: public LIRControlInstruction {
 public:
-    explicit LIRCall(const std::size_t id, MachBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& operands,
-                       MachBlock *on_true, MachBlock *on_false) :
+    explicit LIRCall(const std::size_t id, LIRBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& operands,
+                       LIRBlock *on_true, LIRBlock *on_false) :
         LIRControlInstruction(id, bb, std::move(defs), std::move(operands), {on_true, on_false}),
         m_name(std::move(name)),
         m_kind(kind) {}

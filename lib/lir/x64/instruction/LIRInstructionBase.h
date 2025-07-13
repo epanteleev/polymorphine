@@ -9,7 +9,7 @@
 
 class LIRInstructionBase {
 public:
-    LIRInstructionBase(const std::size_t id, MachBlock *bb, std::vector<LIROperand> &&uses,
+    LIRInstructionBase(const std::size_t id, LIRBlock *bb, std::vector<LIROperand> &&uses,
                        std::vector<LIRVal> &&defs): m_id(id),
                                                   m_owner(bb),
                                                   m_defs(defs),
@@ -42,7 +42,7 @@ public:
     void print(std::ostream &os) const;
 
     [[nodiscard]]
-    const MachBlock* owner() const noexcept {
+    const LIRBlock* owner() const noexcept {
         return m_owner;
     }
 
@@ -69,10 +69,10 @@ protected:
     }
 
     std::size_t m_id;
-    MachBlock* m_owner;
+    LIRBlock* m_owner;
     std::vector<LIRVal> m_defs;
     std::vector<LIROperand> m_uses;
 };
 
 template<typename T>
-using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, MachBlock*)>;
+using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, LIRBlock*)>;

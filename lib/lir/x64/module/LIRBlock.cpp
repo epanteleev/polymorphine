@@ -1,11 +1,11 @@
-#include "MachBlock.h"
+#include "LIRBlock.h"
 
 #include <ostream>
 
 #include "../instruction/LIRInstructionBase.h"
 #include "utility/Error.h"
 
-LIRControlInstruction * MachBlock::last() const {
+LIRControlInstruction * LIRBlock::last() const {
     const auto inst = m_instructions.back();
     if (!inst.has_value()) {
         die("no instruction found");

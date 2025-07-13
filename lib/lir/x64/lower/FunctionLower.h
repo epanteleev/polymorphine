@@ -8,12 +8,12 @@
 #include "mir/value/LocalValueMap.h"
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
-#include "lir/x64/module/ObjFuncData.h"
+#include "lir/x64/module/LIRFuncData.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 
 class FunctionLower final: public Visitor {
 public:
-    FunctionLower(ObjFuncData &obj_function, const FunctionData &function) noexcept:
+    FunctionLower(LIRFuncData &obj_function, const FunctionData &function) noexcept:
         m_obj_function(obj_function),
         m_function(function),
         m_bb(m_obj_function.first()) {}
@@ -100,9 +100,9 @@ private:
 
     }
 
-    ObjFuncData& m_obj_function;
+    LIRFuncData& m_obj_function;
     const FunctionData& m_function;
-    MachBlock* m_bb;
+    LIRBlock* m_bb;
     LocalValueMap<LIRVal> m_mapping;
 };
 

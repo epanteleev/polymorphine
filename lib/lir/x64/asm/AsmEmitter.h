@@ -3,7 +3,7 @@
 #include "asm/Assembler.h"
 
 
-class MacroAssembler final {
+class AsmEmitter final {
 public:
     void ret() {
         m_asm.ret();
@@ -33,17 +33,22 @@ public:
         m_asm.mov(size, src, dst);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const MacroAssembler& masm);
+    friend std::ostream& operator<<(std::ostream& os, const AsmEmitter& masm);
 
     template<typename  Buffer>
     void emit(Buffer& buffer) const {
         m_asm.emit(buffer);
     }
 
+    [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_asm.size();
+    }
+
 private:
     aasm::Assembler m_asm{};
 };
 
-inline std::ostream & operator<<(std::ostream &os, const MacroAssembler& masm) {
+inline std::ostream & operator<<(std::ostream &os, const AsmEmitter& masm) {
     return os << masm.m_asm;
 }

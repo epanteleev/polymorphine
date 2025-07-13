@@ -1,8 +1,8 @@
 
 #include <ranges>
-#include "ObjModule.h"
+#include "LIRModule.h"
 
-std::ostream & ObjModule::print(std::ostream &os) const {
+std::ostream & LIRModule::print(std::ostream &os) const {
     for (const auto &f: m_functions | std::views::values) {
         f->print(os);
     }

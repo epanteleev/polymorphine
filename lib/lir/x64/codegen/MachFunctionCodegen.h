@@ -4,13 +4,13 @@
 
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/GPOp.h"
-#include "lir/x64/asm/MacroAssembler.h"
+#include "lir/x64/asm/AsmEmitter.h"
 #include "lir/x64/instruction/LIRVisitor.h"
-#include "lir/x64/module/ObjFuncData.h"
+#include "lir/x64/module/LIRFuncData.h"
 
 
 class MachFunctionCodegen final: public LIRVisitor {
-    explicit MachFunctionCodegen(const ObjFuncData &data,
+    explicit MachFunctionCodegen(const LIRFuncData &data,
                                  const RegisterAllocation &reg_allocation) noexcept:
         m_data(data),
         m_reg_allocation(reg_allocation) {}
@@ -24,11 +24,11 @@ public:
         }
     }
 
-    MacroAssembler result() noexcept {
+    AsmEmitter result() noexcept {
         return std::move(m_as);
     }
 
-    static MachFunctionCodegen create(AnalysisPassCacheMach* cache, const ObjFuncData* data) {
+    static MachFunctionCodegen create(AnalysisPassCacheMach* cache, const LIRFuncData* data) {
         const auto register_allocation = cache->analyze<LinearScan>(data);
 
         return MachFunctionCodegen(*data, *register_allocation);
@@ -94,31 +94,31 @@ private:
 
     void copy_i(const LIRVal &out, const LIROperand &in) override;
 
-    void jmp(const MachBlock *bb) override {
+    void jmp(const LIRBlock *bb) override {
 
     }
 
-    void je(const MachBlock *on_true, const MachBlock *on_false) override {
+    void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
-    void jne(const MachBlock *on_true, const MachBlock *on_false) override {
+    void jne(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
-    void jl(const MachBlock *on_true, const MachBlock *on_false) override {
+    void jl(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
-    void jle(const MachBlock *on_true, const MachBlock *on_false) override {
+    void jle(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
-    void jg(const MachBlock *on_true, const MachBlock *on_false) override {
+    void jg(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
-    void jge(const MachBlock *on_true, const MachBlock *on_false) override {
+    void jge(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
     }
 
@@ -144,7 +144,7 @@ private:
 
     void ret(std::span<LIRVal const> ret_values) override;
 
-    const ObjFuncData& m_data;
+    const LIRFuncData& m_data;
     const RegisterAllocation& m_reg_allocation;
-    MacroAssembler m_as{};
+    AsmEmitter m_as{};
 };

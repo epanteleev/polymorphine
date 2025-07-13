@@ -12,9 +12,9 @@
 #include "utility/OrderedSet.h"
 
 
-class MachBlock final: public BasicBlockBase<MachBlock, LIRInstructionBase> {
+class LIRBlock final: public BasicBlockBase<LIRBlock, LIRInstructionBase> {
 public:
-    explicit MachBlock(const std::size_t id) noexcept: BasicBlockBase(id) {}
+    explicit LIRBlock(const std::size_t id) noexcept: BasicBlockBase(id) {}
 
     template<std::derived_from<LIRInstructionBase> U>
     U* inst(const LIRInstBuilder<U>& fn) {
@@ -29,9 +29,9 @@ public:
     LIRControlInstruction* last() const;
 
     [[nodiscard]]
-    std::span<MachBlock* const> successors() const {
+    std::span<LIRBlock* const> successors() const {
         return last()->successors();
     }
 };
 
-static_assert(CodeBlock<MachBlock>, "assumed to be");
+static_assert(CodeBlock<LIRBlock>, "assumed to be");

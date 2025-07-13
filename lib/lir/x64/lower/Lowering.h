@@ -3,7 +3,7 @@
 #include "mir/module/Module.h"
 #include "mir/analysis/Analysis.h"
 
-#include "lir/x64/module/ObjModule.h"
+#include "lir/x64/module/LIRModule.h"
 
 
 class Lowering final {
@@ -13,8 +13,8 @@ public:
 
     void run();
 
-    ObjModule result() {
-        return ObjModule(std::move(m_obj_functions));
+    LIRModule result() {
+        return LIRModule(std::move(m_obj_functions));
     }
 
     static Lowering create(AnalysisPassCache&, Module &module) {
@@ -23,5 +23,5 @@ public:
 
 private:
     Module& m_module;
-    std::unordered_map<std::string, std::unique_ptr<ObjFuncData>> m_obj_functions;
+    std::unordered_map<std::string, std::unique_ptr<LIRFuncData>> m_obj_functions;
 };

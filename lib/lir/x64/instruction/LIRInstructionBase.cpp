@@ -2,7 +2,7 @@
 #include <ranges>
 
 #include "LIRInstructionBase.h"
-#include "../module/MachBlock.h"
+#include "../module/LIRBlock.h"
 
 namespace {
     class LIRInstructionPrinter final: public LIRVisitor {
@@ -56,31 +56,31 @@ namespace {
             m_os << "copy_i out(" << out << ") in(" << in << ')';
         }
 
-        void jmp(const MachBlock *bb) override {
+        void jmp(const LIRBlock *bb) override {
 
         }
 
-        void je(const MachBlock *on_true, const MachBlock *on_false) override {
+        void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 
-        void jne(const MachBlock *on_true, const MachBlock *on_false) override {
+        void jne(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 
-        void jl(const MachBlock *on_true, const MachBlock *on_false) override {
+        void jl(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 
-        void jle(const MachBlock *on_true, const MachBlock *on_false) override {
+        void jle(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 
-        void jg(const MachBlock *on_true, const MachBlock *on_false) override {
+        void jg(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 
-        void jge(const MachBlock *on_true, const MachBlock *on_false) override {
+        void jge(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
         }
 

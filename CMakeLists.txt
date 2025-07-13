@@ -69,19 +69,19 @@ add_library(ckoof SHARED
         lib/lir/x64/operand/LIRVal.h
         lib/lir/x64/operand/LIRCst.h
         lib/lir/x64/operand/LIROperand.h
-        lib/lir/x64/module/MachBlock.cpp
-        lib/lir/x64/module/MachBlock.h
+        lib/lir/x64/module/LIRBlock.cpp
+        lib/lir/x64/module/LIRBlock.h
         lib/lir/x64/lir_frwd.h
         lib/asm/elf/Elf.cpp
         lib/asm/elf/Elf.h
         lib/base/Constrains.h
         lib/mir/analysis/Analysis.h
         lib/lir/x64/analysis/Analysis.h
-        lib/lir/x64/module/ObjFuncData.h
+        lib/lir/x64/module/LIRFuncData.h
         lib/lir/x64/instruction/LIRVisitor.h
         lib/lir/x64/operand/LIRVal.cpp
-        lib/lir/x64/module/ObjModule.cpp
-        lib/lir/x64/module/ObjModule.h
+        lib/lir/x64/module/LIRModule.cpp
+        lib/lir/x64/module/LIRModule.h
         lib/lir/x64/lower/Lowering.cpp
         lib/lir/x64/lower/Lowering.h
         lib/lir/x64/operand/LIRArg.h
@@ -113,7 +113,7 @@ add_library(ckoof SHARED
         lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
         lib/lir/x64/analysis/regalloc/FixedRegisters.h
         lib/lir/x64/asm/GPVReg.h
-        lib/lir/x64/asm/MacroAssembler.h
+        lib/lir/x64/asm/AsmEmitter.h
         lib/lir/x64/codegen/MachFunctionCodegen.cpp
         lib/lir/x64/codegen/MachFunctionCodegen.h
         lib/lir/x64/asm/visitors/GPUnaryVisitor.h
@@ -121,6 +121,11 @@ add_library(ckoof SHARED
         lib/lir/x64/asm/GPOp.h
         lib/lir/x64/codegen/emitters/CopyGPEmit.h
         lib/lir/x64/codegen/emitters/CopyGPEmit.cpp
+        lib/lir/x64/asm/jit/JitAssembler.h
+        lib/lir/x64/asm/ObjModule.h
+        lib/lir/x64/asm/jit/JitCodeBlob.h
+        lib/lir/x64/asm/jit/JitAssembler.cpp
+        lib/lir/x64/asm/jit/JitCodeBlob.cpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/analysis/AnalysisPass.h"
+#include "base/Constrains.h"
 
 template<CodeBlock BB>
 struct DominatorNode final {

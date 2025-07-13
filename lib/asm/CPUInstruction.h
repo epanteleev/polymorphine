@@ -10,7 +10,7 @@
 
 namespace aasm {
     template<CodeBuffer Buffer>
-    static void add_word_op_size(Buffer& buffer) {
+    static constexpr void add_word_op_size(Buffer& buffer) {
         buffer.emit8(constants::PREFIX_OPERAND_SIZE);
     }
 
@@ -26,13 +26,13 @@ namespace aasm {
 
     class PopR final {
     public:
-        PopR(const std::uint8_t size, const GPReg reg) noexcept
+        constexpr PopR(const std::uint8_t size, const GPReg reg) noexcept
             : m_size(size), m_reg(reg) {}
 
         friend std::ostream& operator<<(std::ostream& os, const PopR& popr);
 
         template<CodeBuffer C>
-        void emit(C &c) const {
+        constexpr void emit(C &c) const {
             switch (m_size) {
                 case 8: emit_pop(c); break;
                 case 2: {
@@ -48,7 +48,7 @@ namespace aasm {
         static constexpr std::uint8_t POP_R = 0x58;
 
         template<CodeBuffer C>
-        void emit_pop(C& c) const {
+        constexpr void emit_pop(C& c) const {
             if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
                 c.emit8(rex);
             }
@@ -66,14 +66,14 @@ namespace aasm {
 
     class PopM final {
     public:
-        PopM(std::uint8_t size, const Address& addr) noexcept:
+        constexpr PopM(std::uint8_t size, const Address& addr) noexcept:
             m_size(size),
             m_addr(addr) {}
 
         friend std::ostream& operator<<(std::ostream& os, const PopM& popm);
 
         template<CodeBuffer C>
-        void emit(C &c) const {
+        constexpr void emit(C &c) const {
             switch (m_size) {
                 case 8: emit_pop(c);
                     break;
@@ -90,7 +90,7 @@ namespace aasm {
         static constexpr std::uint8_t POP_M = 0x8F;
 
         template<CodeBuffer C>
-        void emit_pop(C& c) const noexcept {
+        constexpr void emit_pop(C& c) const noexcept {
             unsigned char rex = constants::REX | X(m_addr) | B(m_addr.base);
             if (rex != constants::REX) {
                 c.emit8(rex);
@@ -110,13 +110,13 @@ namespace aasm {
 
     class PushR final {
     public:
-        explicit PushR(std::uint8_t size, const GPReg reg)
+        explicit constexpr PushR(std::uint8_t size, const GPReg reg)
             : m_size(size), m_reg(reg) {}
 
         friend std::ostream& operator<<(std::ostream &os, const PushR& pushr);
 
         template <CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             switch (m_size) {
                 case 8: {
                     emit_push(buffer);
@@ -135,7 +135,7 @@ namespace aasm {
         static constexpr std::uint8_t PUSH_R = 0x50;
 
         template<CodeBuffer C>
-        void emit_push(C& c) const {
+        constexpr void emit_push(C& c) const {
             if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
                 c.emit8(rex);
             }
@@ -152,14 +152,14 @@ namespace aasm {
 
     class PushM final {
     public:
-        explicit PushM(const std::uint8_t size, const Address& addr) noexcept:
+        explicit constexpr PushM(const std::uint8_t size, const Address& addr) noexcept:
             m_addr(addr),
             m_size(size) {}
 
         friend std::ostream& operator<<(std::ostream &os, const PushM& pushm);
 
         template<CodeBuffer buffer>
-        void emit(buffer& c) const {
+        constexpr void emit(buffer& c) const {
             switch (m_size) {
                 case 8: {
                     emit_push(c);
@@ -178,7 +178,7 @@ namespace aasm {
         static constexpr std::uint8_t PUSH_M = 0xFF;
 
         template<CodeBuffer C>
-        void emit_push(C& c) const noexcept {
+        constexpr void emit_push(C& c) const noexcept {
             unsigned char rex = constants::REX | X(m_addr) | B(m_addr.base);
             if (rex != constants::REX) {
                 c.emit8(rex);
@@ -198,13 +198,13 @@ namespace aasm {
 
     class PushI final {
     public:
-        PushI(const std::int64_t imm, const std::uint8_t size) noexcept:
+        constexpr PushI(const std::int64_t imm, const std::uint8_t size) noexcept:
             m_imm(imm), m_size(size) {}
 
         friend std::ostream& operator<<(std::ostream &os, const PushI& pushi);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             switch (m_size) {
                 case 4: {
                     buffer.emit8(PUSH_IMM);
@@ -235,18 +235,18 @@ namespace aasm {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const PushI &pushi) {
-        return os << "push" << prefix_size(pushi.m_size) << ' ' << pushi.m_imm;
+        return os << "push" << prefix_size(pushi.m_size) << " $" << pushi.m_imm;
     }
 
     class MovRR final {
     public:
-        explicit MovRR(std::uint8_t size, const GPReg& src, const GPReg& dest) noexcept:
+        explicit constexpr MovRR(std::uint8_t size, const GPReg& src, const GPReg& dest) noexcept:
             m_size(size), m_src(src), m_dest(dest) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovRR& movrr);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             switch (m_size) {
                 case 8: {
                     emit_mov(buffer, constants::REX_W);
@@ -274,14 +274,14 @@ namespace aasm {
         static constexpr std::uint8_t MOV_RR_8 = 0x88;
 
         template<CodeBuffer Buffer>
-        void emit_mov(Buffer& buffer, const std::uint8_t rex_w) const {
+        constexpr void emit_mov(Buffer& buffer, const std::uint8_t rex_w) const {
             buffer.emit8(constants::REX | B(m_dest) | rex_w | R(m_src));
             buffer.emit8(MOV_RR);
             buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dest));
         }
 
         template<CodeBuffer Buffer>
-        void emit_mov_byte(Buffer& buffer) const {
+        constexpr void emit_mov_byte(Buffer& buffer) const {
             buffer.emit8(constants::REX | B(m_dest) | R(m_src));
             buffer.emit8(MOV_RR_8);
             buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dest));
@@ -298,13 +298,13 @@ namespace aasm {
 
     class MovRI final {
     public:
-        MovRI(std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
+        constexpr MovRI(std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
             m_size(size), m_src(src), m_dest(dest) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovRI &movri);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_RI_8 = 0xB0;
             static constexpr std::uint8_t MOV_RI = 0xB8;
             switch (m_size) {
@@ -355,7 +355,7 @@ namespace aasm {
             os << "mov";
         }
 
-        return os << prefix_size(movri.m_size) << ' ' << movri.m_src << ", %" << movri.m_dest.name(movri.m_size);
+        return os << prefix_size(movri.m_size) << " $" << movri.m_src << ", %" << movri.m_dest.name(movri.m_size);
     }
 
     class Ret final {
@@ -363,7 +363,7 @@ namespace aasm {
         friend std::ostream& operator<<(std::ostream &os, const Ret& ret);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t RET = 0xC3;
             buffer.emit8(RET);
         }
@@ -376,12 +376,12 @@ namespace aasm {
     class X64Instruction final {
     public:
         template<typename I>
-        explicit X64Instruction(I&& i) noexcept: m_inst(std::forward<I>(i)) {}
+        explicit constexpr X64Instruction(I&& i) noexcept: m_inst(std::forward<I>(i)) {}
 
         friend std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer &buffer) const {
+        constexpr void emit(Buffer &buffer) const {
             const auto visitor = [&](const auto &var) {
                 var.emit(buffer);
             };

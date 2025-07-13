@@ -1,23 +1,23 @@
 #pragma once
 
-#include "MachBlock.h"
+#include "LIRBlock.h"
 #include "../operand/LIRVal.h"
 #include "base/FunctionDataBase.h"
 
 
-class ObjFuncData final: public FunctionDataBase<MachBlock, LIRArg> {
+class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {
 public:
-    ObjFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept: FunctionDataBase(std::move(args)),
+    LIRFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept: FunctionDataBase(std::move(args)),
                                                                              m_name(name) {
         create_mach_block();
     }
 
-    MachBlock* create_mach_block() {
+    LIRBlock* create_mach_block() {
         const auto creator = [this](std::size_t id) {
-            return std::make_unique<MachBlock>(id);
+            return std::make_unique<LIRBlock>(id);
         };
 
-        return m_basic_blocks.push_back<MachBlock>(creator);
+        return m_basic_blocks.push_back<LIRBlock>(creator);
     }
 
     [[nodiscard]]

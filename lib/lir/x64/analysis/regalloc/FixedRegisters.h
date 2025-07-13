@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/analysis/AnalysisPass.h"
+#include "lir/x64/operand/LIRValMap.h"
 
 
 class FixedRegisters final: public AnalysisPassResult {

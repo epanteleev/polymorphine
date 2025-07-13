@@ -3,6 +3,9 @@
 
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
+
+#include "lib/lir/x64/asm/jit/JitAssembler.h"
+#include "lir/x64/codegen/Codegen.h"
 #include "lir/x64/codegen/MachFunctionCodegen.h"
 
 Module ret_one() {
@@ -177,10 +180,15 @@ int main() {
     auto register_alloc = cache.analyze<LinearScan>(obj_fun);
     std::cout << *register_alloc << std::endl;
 
-    auto mach_codegen = MachFunctionCodegen::create(&cache, obj_fun);
-    mach_codegen.run();
-    auto mach = mach_codegen.result();
-    std::cout << mach;
+    Codegen codegen(result);
+    codegen.run();
+    const auto mach = codegen.result();
+
+    const auto buffer = JitAssembler::assembly(mach);
+
+    const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
+    const auto res = fn();
+    std::cout << "Result of 'ret_one': " << res << std::endl;
 
     /*
     const auto time1 = async_based_solution();

@@ -2,17 +2,17 @@
 
 #include "FixedRegisters.h"
 #include "base/analysis/AnalysisPassCacheBase.h"
-#include "lir/x64/module/MachBlock.h"
-#include "lir/x64/module/ObjFuncData.h"
+#include "lir/x64/module/LIRBlock.h"
+#include "lir/x64/module/LIRFuncData.h"
 
 class FixedRegistersEval final {
 public:
     using result_type = FixedRegisters;
-    using basic_block = MachBlock;
+    using basic_block = LIRBlock;
     static constexpr auto analysis_kind = AnalysisType::FixedRegisters;
 
 private:
-    explicit FixedRegistersEval(const ObjFuncData &obj_func_data) noexcept:
+    explicit FixedRegistersEval(const LIRFuncData &obj_func_data) noexcept:
         m_obj_func_data(obj_func_data){}
 
 public:
@@ -29,7 +29,7 @@ public:
         return std::make_unique<FixedRegisters>(std::move(m_rax_set));
     }
 
-    static FixedRegistersEval create(AnalysisPassCacheBase<ObjFuncData> *, const ObjFuncData *data) {
+    static FixedRegistersEval create(AnalysisPassCacheBase<LIRFuncData> *, const LIRFuncData *data) {
         return FixedRegistersEval(*data);
     }
 
@@ -74,19 +74,19 @@ private:
 
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void jmp(const MachBlock *bb) override {}
+        void jmp(const LIRBlock *bb) override {}
 
-        void je(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void je(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void jne(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void jne(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void jl(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void jl(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void jle(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void jle(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void jg(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void jg(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void jge(const MachBlock *on_true, const MachBlock *on_false) override {}
+        void jge(const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
         void call(const LIRVal &out, std::span<LIRVal const> args) override {}
 
@@ -106,7 +106,7 @@ private:
         LIRValSet& m_rax_set;
     };
 
-    const ObjFuncData& m_obj_func_data;
+    const LIRFuncData& m_obj_func_data;
     LIRValSet m_rax_set{};
 };
 

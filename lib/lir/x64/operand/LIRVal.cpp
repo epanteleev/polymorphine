@@ -3,7 +3,7 @@
 #include "LIRVal.h"
 #include "LIROperand.h"
 
-#include "lir/x64/module/MachBlock.h"
+#include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 
 static char size_prefix(std::size_t size) {

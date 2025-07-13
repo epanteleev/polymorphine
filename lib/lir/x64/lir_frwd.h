@@ -1,6 +1,6 @@
 #pragma once
 
-class MachBlock;
+class LIRBlock;
 
 class LIRInstructionBase;
 class LIRInstruction;

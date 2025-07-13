@@ -4,20 +4,20 @@
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/analysis/liveness/LiveInfo.h"
 #include "lir/x64/analysis/liveness/LivenessAnalysis.h"
-#include "lir/x64/module/MachBlock.h"
-#include "lir/x64/module/ObjFuncData.h"
+#include "lir/x64/module/LIRBlock.h"
+#include "lir/x64/module/LIRFuncData.h"
 
 
 class LiveIntervalsEval final {
 public:
     using result_type = LiveIntervals;
-    using basic_block = MachBlock;
+    using basic_block = LIRBlock;
     static constexpr auto analysis_kind = AnalysisType::LiveIntervalsEval;
 
 private:
-    explicit LiveIntervalsEval(const ObjFuncData &obj_func_data,
+    explicit LiveIntervalsEval(const LIRFuncData &obj_func_data,
                                const LivenessAnalysisInfo &liveness,
-                               const Ordering<MachBlock> &ordering) noexcept: m_obj_func_data(obj_func_data),
+                               const Ordering<LIRBlock> &ordering) noexcept: m_obj_func_data(obj_func_data),
                                                                               m_liveness(liveness),
                                                                               m_ordering(ordering) {}
 
@@ -32,9 +32,9 @@ public:
         return std::make_unique<LiveIntervals>(std::move(m_intervals));
     }
 
-    static LiveIntervalsEval create(AnalysisPassCacheBase<ObjFuncData> *cache, const ObjFuncData *data) {
+    static LiveIntervalsEval create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto liveness = cache->analyze<LivenessAnalysis>(data);
-        const auto preorder = cache->analyze<PreorderTraverseBase<ObjFuncData>>(data);
+        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
 
         return LiveIntervalsEval(*data, *liveness, *preorder);
     }
@@ -46,7 +46,7 @@ private:
         const auto size = begin->size();
         for (const auto& arg: m_obj_func_data.args()) {
             const auto vreg = LIRVal::from(&arg);
-            std::unordered_map<const MachBlock*, Interval> intervals;
+            std::unordered_map<const LIRBlock*, Interval> intervals;
             if (live_out.contains(vreg)) {
                 intervals.emplace(begin, Interval(0, size));
             } else {
@@ -65,7 +65,7 @@ private:
                 inst_number += 1;
 
                 for (const auto& def: inst.defs()) {
-                    std::unordered_map<const MachBlock*, Interval> intervals;
+                    std::unordered_map<const LIRBlock*, Interval> intervals;
                     if (live_out.contains(def)) {
                         intervals.emplace(bb, Interval(inst_number, start + bb->size()));
                     } else {
@@ -115,8 +115,8 @@ private:
         }
     }
 
-    const ObjFuncData& m_obj_func_data;
+    const LIRFuncData& m_obj_func_data;
     const LivenessAnalysisInfo& m_liveness;
-    const Ordering<MachBlock>& m_ordering;
-    LIRValMap<std::unordered_map<const MachBlock*, Interval>> m_intervals{};
+    const Ordering<LIRBlock>& m_ordering;
+    LIRValMap<std::unordered_map<const LIRBlock*, Interval>> m_intervals{};
 };

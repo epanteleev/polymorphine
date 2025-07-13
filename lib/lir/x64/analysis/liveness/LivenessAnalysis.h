@@ -4,20 +4,20 @@
 #include "base/analysis/AnalysisPassCacheBase.h"
 #include "base/analysis/traverse/PreorderTraverseBase.h"
 
-#include "lir/x64/module/MachBlock.h"
+#include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/instruction/Matcher.h"
-#include "lir/x64/module/ObjFuncData.h"
+#include "lir/x64/module/LIRFuncData.h"
 #include "lir/x64/operand/LIRValMap.h"
 
 
 class LivenessAnalysis final {
 public:
     using result_type = LivenessAnalysisInfo;
-    using basic_block = MachBlock;
+    using basic_block = LIRBlock;
     static constexpr auto analysis_kind = AnalysisType::LivenessAnalysis;
 
 private:
-    explicit LivenessAnalysis(const Ordering<MachBlock> &ordering):
+    explicit LivenessAnalysis(const Ordering<LIRBlock> &ordering):
         m_ordering(ordering) {}
 
 public:
@@ -50,7 +50,7 @@ public:
 
 
     std::unique_ptr<result_type> result() noexcept {
-        std::unordered_map<const MachBlock*, LiveInfo> liveness;
+        std::unordered_map<const LIRBlock*, LiveInfo> liveness;
         for (auto& [bb, live_info] : m_liveness) {
             liveness.emplace(bb, LiveInfo(std::move(live_info.first), std::move(live_info.second)));
         }
@@ -58,8 +58,8 @@ public:
         return std::make_unique<result_type>(std::move(liveness));
     }
 
-    static LivenessAnalysis create(AnalysisPassCacheBase<ObjFuncData> *cache, const ObjFuncData *data) {
-        auto ordering = cache->analyze<PreorderTraverseBase<ObjFuncData>>(data);
+    static LivenessAnalysis create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
+        auto ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         return LivenessAnalysis(*ordering);
     }
 
@@ -127,7 +127,7 @@ private:
         }
     }
 
-    const Ordering<MachBlock>& m_ordering;
+    const Ordering<LIRBlock>& m_ordering;
     std::unordered_map<const basic_block*, std::pair<LIRValSet, LIRValSet>> m_kill_gen_set{};
     std::unordered_map<const basic_block*, std::pair<LIRValSet, LIRValSet>> m_liveness{};
 };
