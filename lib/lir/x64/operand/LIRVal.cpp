@@ -19,7 +19,7 @@ static char size_prefix(std::size_t size) {
 std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
     const auto vreg = op.vreg();
     if (!vreg.has_value()) {
-        return std::unexpected(Error::BadCastError);
+        return std::unexpected(Error::CastError);
     }
 
     return vreg.value();

@@ -37,5 +37,5 @@ public:
     virtual void icall(const LIRVal& out, const LIRVal& pointer, std::span<LIRVal const> args) = 0;
     virtual void ivcall(const LIRVal& pointer, std::span<LIRVal const> args) = 0;
 
-    virtual void ret(std::span<LIROperand const> ret_values) = 0;
+    virtual void ret(std::span<LIRVal const> ret_values) = 0;
 };

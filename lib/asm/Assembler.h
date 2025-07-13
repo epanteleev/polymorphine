@@ -42,11 +42,20 @@ namespace aasm {
             m_instructions.emplace_back(PushM(size, addr));
         }
 
+        void push(const std::size_t size, const std::int32_t value) {
+            assertion(in_size_range(value, size), "Value {} is not in range for size {}", value, size);
+            m_instructions.emplace_back(PushI(value, size));
+        }
+
         void mov(const std::size_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(MovRR(size, src, dst));
         }
 
-        void print_codes(std::ostream &os) const {
+        void mov(const std::size_t size, const std::int64_t src, const GPReg dst) {
+            m_instructions.emplace_back(MovRI(size, src, dst));
+        }
+
+        void print_mnemonics(std::ostream &os) const {
             for (auto& instruction: m_instructions) {
                 os << instruction << std::endl;
             }

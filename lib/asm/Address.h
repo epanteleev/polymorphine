@@ -36,7 +36,7 @@ namespace aasm {
             std::uint8_t modrm = ((reg & 0x7) << 3) | (has_sib ? 4 : reg3(base));
 
             // Set Mod bits according to displacement presence and range
-            if (!in_byte_range(displacement)) {
+            if (!std::in_range<std::int8_t>(displacement)) {
                 // 0b10: 32-bit displacement
                 modrm |= 0x80;
             } else if (has_displacement && base.code()) {
@@ -57,7 +57,7 @@ namespace aasm {
             }
 
             /* Displacement */
-            if (!in_byte_range(displacement) || !base.code()) {
+            if (!std::in_range<int8_t>(displacement) || !base.code()) {
                 c.emit32(displacement);
             } else if (has_displacement) {
                 c.emit8(displacement);

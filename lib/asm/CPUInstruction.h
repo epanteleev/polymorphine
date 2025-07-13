@@ -51,9 +51,9 @@ namespace aasm {
         void emit_pop(C& c) const {
             if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
                 c.emit8(rex);
-            } else {
-                c.emit8(POP_R + reg3(m_reg));
             }
+
+            c.emit8(POP_R + reg3(m_reg));
         }
 
         std::uint8_t m_size;
@@ -138,9 +138,8 @@ namespace aasm {
         void emit_push(C& c) const {
             if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
                 c.emit8(rex);
-            } else {
-                c.emit8(PUSH_R + reg3(m_reg));
             }
+            c.emit8(PUSH_R + reg3(m_reg));
         }
 
         std::uint8_t m_size;
@@ -195,6 +194,48 @@ namespace aasm {
 
     inline std::ostream & operator<<(std::ostream &os, const PushM &pushm) {
         return os << "push" << prefix_size(pushm.m_size) << ' ' << pushm.m_addr;
+    }
+
+    class PushI final {
+    public:
+        PushI(const std::int64_t imm, const std::uint8_t size) noexcept:
+            m_imm(imm), m_size(size) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const PushI& pushi);
+
+        template<CodeBuffer Buffer>
+        void emit(Buffer& buffer) const {
+            switch (m_size) {
+                case 4: {
+                    buffer.emit8(PUSH_IMM);
+                    buffer.emit32(static_cast<std::int32_t>(m_imm));
+                    break;
+                }
+                case 2: {
+                    add_word_op_size(buffer);
+                    buffer.emit8(PUSH_IMM);
+                    buffer.emit16(static_cast<std::int16_t>(m_imm));
+                    break;
+                }
+                case 1: {
+                    buffer.emit8(PUSH_IMM_8);
+                    buffer.emit8(static_cast<std::int8_t>(m_imm));
+                    break;
+                }
+                default: die("Invalid size for pop instruction: {}", m_size);
+            }
+        }
+
+    private:
+        static constexpr std::uint8_t PUSH_IMM = 0x68;
+        static constexpr std::uint8_t PUSH_IMM_8 = 0x6A;
+
+        std::int64_t m_imm;
+        std::uint8_t m_size;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const PushI &pushi) {
+        return os << "push" << prefix_size(pushi.m_size) << ' ' << pushi.m_imm;
     }
 
     class MovRR final {
@@ -255,6 +296,68 @@ namespace aasm {
         return os << "mov" << prefix_size(movrr.m_size) << ' ' << movrr.m_src.name(movrr.m_size) << ", " << movrr.m_dest.name(movrr.m_size);
     }
 
+    class MovRI final {
+    public:
+        MovRI(std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
+            m_size(size), m_src(src), m_dest(dest) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const MovRI &movri);
+
+        template<CodeBuffer Buffer>
+        void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t MOV_RI_8 = 0xB0;
+            static constexpr std::uint8_t MOV_RI = 0xB8;
+            switch (m_size) {
+                case 8: {
+                    buffer.emit8(constants::REX | B(m_dest) | constants::REX_W);
+                    buffer.emit8(MOV_RI | reg3(m_dest));
+                    buffer.emit64(m_src);
+                    break;
+                }
+                case 4: {
+                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
+                        buffer.emit8(rex);
+                    }
+                    buffer.emit8(MOV_RI | reg3(m_dest));
+                    buffer.emit32(static_cast<std::int32_t>(m_src));
+                    break;
+                }
+                case 2: {
+                    add_word_op_size(buffer);
+                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
+                        buffer.emit8(rex);
+                    }
+                    buffer.emit8(MOV_RI | reg3(m_dest));
+                    buffer.emit16(static_cast<std::int16_t>(m_src));
+                    break;
+                }
+                case 1: {
+                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
+                        buffer.emit8(rex);
+                    }
+                    buffer.emit8(MOV_RI_8 | reg3(m_dest));
+                    buffer.emit8(static_cast<std::int8_t>(m_src));
+                    break;
+                }
+                default: die("Invalid size for mov instruction: {}", m_size);
+            }
+        }
+    private:
+        std::uint8_t m_size;
+        std::int64_t m_src;
+        GPReg m_dest;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const MovRI &movri) {
+        if (movri.m_size == 8) {
+            os << "movabs";
+        } else {
+            os << "mov";
+        }
+
+        return os << prefix_size(movri.m_size) << ' ' << movri.m_src << ", %" << movri.m_dest.name(movri.m_size);
+    }
+
     class Ret final {
     public:
         friend std::ostream& operator<<(std::ostream &os, const Ret& ret);
@@ -287,7 +390,12 @@ namespace aasm {
         }
 
     private:
-        std::variant<PopR, PopM, PushR, PushM, Ret, MovRR> m_inst;
+        std::variant<
+            PopR, PopM,
+            PushR, PushM, PushI,
+            Ret,
+            MovRR, MovRI
+        > m_inst;
     };
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {

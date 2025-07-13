@@ -1,5 +1,6 @@
 #pragma once
 #include <variant>
+#include <expected>
 
 #include "asm/Address.h"
 #include "asm/Register.h"
@@ -18,6 +19,15 @@ public:
     template<typename T>
     void visit(const T& visitor) const {
         std::visit(visitor, m_reg);
+    }
+
+    [[nodiscard]]
+    std::expected<aasm::GPReg, Error> as_gp_reg() const noexcept {
+        if (const auto reg = std::get_if<aasm::GPReg>(&m_reg)) {
+            return *reg;
+        }
+
+        return std::unexpected(Error::CastError);
     }
 
 private:

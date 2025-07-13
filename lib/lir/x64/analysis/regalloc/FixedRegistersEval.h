@@ -96,10 +96,11 @@ private:
 
         void ivcall(const LIRVal &pointer, std::span<LIRVal const> args) override {}
 
-        void ret(std::span<const LIROperand> ret_values) override {
-            const auto& op = ret_values[0];
-            const auto vreg = LIRVal::try_from(op);
-            m_rax_set.insert(vreg.value());
+        void ret(const std::span<const LIRVal> ret_values) override {
+            if (ret_values.size() == 1) {
+                m_rax_set.insert(ret_values[0]);
+            }
+
         }
 
         LIRValSet& m_rax_set;

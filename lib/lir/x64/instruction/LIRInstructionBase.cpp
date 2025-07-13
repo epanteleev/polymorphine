@@ -100,7 +100,7 @@ namespace {
 
         }
 
-        void ret(std::span<LIROperand const> ret_values) override {
+        void ret(std::span<LIRVal const> ret_values) override {
             m_os << "ret " << "in[";
             for (auto [idx, v_ret]: std::ranges::views::enumerate(ret_values)) {
                 if (idx != 0) m_os << ", ";

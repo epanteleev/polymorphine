@@ -36,7 +36,9 @@ public:
 
 private:
     [[nodiscard]]
-    GPOp convert(const LIROperand &val) const;
+    GPOp convert_to_gp_op(const LIROperand &val) const;
+
+    aasm::GPReg convert_to_gp_reg(const LIRVal &val) const;
 
     void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
 
@@ -140,9 +142,7 @@ private:
 
     }
 
-    void ret(std::span<LIROperand const> ret_values) override {
-
-    }
+    void ret(std::span<LIRVal const> ret_values) override;
 
     const ObjFuncData& m_data;
     const RegisterAllocation& m_reg_allocation;

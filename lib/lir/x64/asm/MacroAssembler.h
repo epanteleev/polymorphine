@@ -29,8 +29,12 @@ public:
         m_asm.mov(size, src, dst);
     }
 
-    void print_codes(std::ostream &os) const {
-        m_asm.print_codes(os);
+    void copy(const std::size_t size, const std::int64_t src, const aasm::GPReg dst) {
+        m_asm.mov(size, src, dst);
+    }
+
+    void print_mnemonics(std::ostream &os) const {
+        m_asm.print_mnemonics(os);
     }
 
     template<typename  Buffer>

@@ -14,7 +14,8 @@ void LIRBranch::visit(LIRVisitor &visitor) {
 }
 
 void LIRReturn::visit(LIRVisitor &visitor) {
-    visitor.ret(inputs());
+    const auto ret_values = to_vregs_only(inputs());
+    visitor.ret(ret_values);
 }
 
 void LIRCall::visit(LIRVisitor &visitor) {

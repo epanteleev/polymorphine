@@ -41,7 +41,8 @@ namespace aasm {
 
         [[nodiscard]]
         constexpr bool is_64_bit_reg() const noexcept {
-            return code() >= static_cast<uint8_t>(RegEncoding::R8) && code() <= static_cast<uint8_t>(RegEncoding::R15);
+            const auto coding = static_cast<uint8_t>(m_code);
+            return coding >= static_cast<uint8_t>(RegEncoding::R8) && coding <= static_cast<uint8_t>(RegEncoding::R15);
         }
 
         bool operator==(const GPReg & rbp) const = default;

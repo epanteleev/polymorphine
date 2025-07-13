@@ -179,7 +179,8 @@ int main() {
     auto mach_codegen = MachFunctionCodegen::create(&cache, obj_fun);
     mach_codegen.run();
     auto mach = mach_codegen.result();
-    mach.print_codes(std::cout);
+    mach.print_mnemonics(std::cout);
+
     /*
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();

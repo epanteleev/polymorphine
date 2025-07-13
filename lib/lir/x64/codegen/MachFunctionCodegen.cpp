@@ -2,7 +2,7 @@
 
 #include "emitters/CopyGPEmit.h"
 
-GPOp MachFunctionCodegen::convert(const LIROperand &val) const {
+GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
     }
@@ -13,7 +13,25 @@ GPOp MachFunctionCodegen::convert(const LIROperand &val) const {
     die("Invalid LIROperand");
 }
 
+aasm::GPReg MachFunctionCodegen::convert_to_gp_reg(const LIRVal &val) const {
+    const auto allocation = m_reg_allocation[val];
+    const auto gp_reg = allocation.as_gp_reg();
+    assertion(gp_reg.has_value(), "Invalid GPVReg for LIRVal");
+    return gp_reg.value();
+}
+
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
-    CopyGPEmit::emit(m_as, out.size(), out_reg, convert(in));
+    CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
+}
+
+void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
+#ifdef ENABLE_ASSERTIONS
+    const auto values_num = ret_values.size();
+    if (values_num == 1) {
+        const auto ret_val = convert_to_gp_reg(ret_values[0]);
+        assertion(ret_val == aasm::rax, "Return value must be in rax register");
+    }
+#endif
+    m_as.ret();
 }
