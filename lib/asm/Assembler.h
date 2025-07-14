@@ -6,7 +6,7 @@
 
 #include "Register.h"
 #include "Address.h"
-#include "CPUInstruction.h"
+#include "instruction/CPUInstruction.h"
 
 namespace aasm {
     class Assembler final {

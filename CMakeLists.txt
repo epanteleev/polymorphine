@@ -101,7 +101,7 @@ add_library(ckoof SHARED
         lib/base/FunctionDataBase.h
         lib/lir/x64/instruction/Matcher.h
         lib/lir/x64/operand/LIRValMap.h
-        lib/asm/CPUInstruction.h
+        lib/asm/instruction/CPUInstruction.h
         lib/asm/Common.h
         lib/lir/x64/analysis/intervals/LiveIntervalsEval.h
         lib/lir/x64/analysis/intervals/LiveIntervals.h
@@ -128,6 +128,10 @@ add_library(ckoof SHARED
         lib/lir/x64/asm/jit/JitCodeBlob.cpp
         lib/lir/x64/analysis/regalloc/ArgumentAllocator.h
         lib/lir/x64/analysis/regalloc/CallConv.h
+        lib/asm/instruction/Pop.h
+        lib/asm/instruction/Push.h
+        lib/asm/instruction/Mov.h
+        lib/asm/instruction/Ret.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

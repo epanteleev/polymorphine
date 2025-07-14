@@ -5,7 +5,6 @@
 
 #include "lir/x64/asm/jit/JitAssembler.h"
 #include "lir/x64/codegen/Codegen.h"
-#include "lir/x64/codegen/MachFunctionCodegen.h"
 
 static JitCodeBlob do_jit_compilation(const Module& module) {
     Lowering lower(module);
@@ -14,9 +13,8 @@ static JitCodeBlob do_jit_compilation(const Module& module) {
 
     Codegen codegen(result);
     codegen.run();
-    const auto obj_module = codegen.result();
 
-    return JitAssembler::assembly(obj_module);
+    return JitAssembler::assembly(codegen.result());
 }
 
 static Module ret_i32(const std::int32_t value) {
@@ -64,14 +62,13 @@ static Module ret_i8_u8(const std::int8_t value) {
     {
         FunctionPrototype prototype(SignedIntegerType::i8(), {}, "ret_i8");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        auto& data = *fn_builder.value();
+        const auto& data = *fn_builder.value();
         data.ret(Value::i8(value));
     }
-
     {
         FunctionPrototype prototype(UnsignedIntegerType::u8(), {}, "ret_u8");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        auto& data = *fn_builder.value();
+        const auto& data = *fn_builder.value();
         data.ret(Value::u8(value));
     }
 

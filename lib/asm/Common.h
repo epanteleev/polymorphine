@@ -37,4 +37,19 @@ namespace aasm {
     constexpr bool is_in_range(const T& size, const std::integer_sequence<std::size_t, I...>) {
         return ((size == I) || ...);
     }
+
+    template<CodeBuffer Buffer>
+    static constexpr void add_word_op_size(Buffer& buffer) {
+        buffer.emit8(constants::PREFIX_OPERAND_SIZE);
+    }
+
+    static char prefix_size(std::uint8_t size) {
+        switch (size) {
+            case 1: return 'b';
+            case 2: return 'w';
+            case 4: return 'l';
+            case 8: return 'q';
+            default: die("Invalid size for prefix: {}", size);
+        }
+    }
 }
