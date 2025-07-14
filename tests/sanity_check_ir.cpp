@@ -7,6 +7,18 @@
 #include "lir/x64/codegen/Codegen.h"
 #include "lir/x64/codegen/MachFunctionCodegen.h"
 
+static JitCodeBlob do_jit_compilation(const Module& module) {
+    Lowering lower(module);
+    lower.run();
+    const auto result = lower.result();
+
+    Codegen codegen(result);
+    codegen.run();
+    const auto obj_module = codegen.result();
+
+    return JitAssembler::assembly(obj_module);
+}
+
 static Module ret_i32(const std::int32_t value) {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
@@ -16,6 +28,15 @@ static Module ret_i32(const std::int32_t value) {
 
     data.ret(Value::i32(value));
     return builder.build();
+}
+
+TEST(SanityCheck, ret_i32) {
+    for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
+        const auto buffer = do_jit_compilation(ret_i32(i));
+        const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
+        const auto res = fn();
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
 }
 
 static Module ret_i64(const std::int64_t value) {
@@ -29,6 +50,14 @@ static Module ret_i64(const std::int64_t value) {
     return builder.build();
 }
 
+TEST(SanityCheck, ret_i64) {
+    for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
+        const auto buffer = do_jit_compilation(ret_i64(i));
+        const auto fn = reinterpret_cast<long(*)()>(buffer.code_start("ret_one").value());
+        const auto res = fn();
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
 
 static Module ret_i8_u8(const std::int8_t value) {
     ModuleBuilder builder;
@@ -49,38 +78,6 @@ static Module ret_i8_u8(const std::int8_t value) {
     return builder.build();
 }
 
-
-static JitCodeBlob do_jit_compilation(const Module& module) {
-    Lowering lower(module);
-    lower.run();
-    const auto result = lower.result();
-
-    Codegen codegen(result);
-    codegen.run();
-    const auto obj_module = codegen.result();
-
-    return JitAssembler::assembly(obj_module);
-}
-
-
-TEST(SanityCheck, ret_i32) {
-    for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
-        const auto buffer = do_jit_compilation(ret_i32(i));
-        const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
-        const auto res = fn();
-        ASSERT_EQ(res, i) << "Failed for value: " << i;
-    }
-}
-
-TEST(SanityCheck, ret_i64) {
-    for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
-        const auto buffer = do_jit_compilation(ret_i64(i));
-        const auto fn = reinterpret_cast<long(*)()>(buffer.code_start("ret_one").value());
-        const auto res = fn();
-        ASSERT_EQ(res, i) << "Failed for value: " << i;
-    }
-}
-
 TEST(SanityCheck, ret_i8_u8) {
     for (const auto i: {0, 1, -1, 42, -42, 100, -100, INT8_MAX, INT8_MIN}) {
         const auto buffer = do_jit_compilation(ret_i8_u8(static_cast<std::int8_t>(i)));
@@ -90,6 +87,26 @@ TEST(SanityCheck, ret_i8_u8) {
         const auto res_u8 = fn_u8();
         ASSERT_EQ(res_i8, i) << "Failed for i8 value: " << i;
         ASSERT_EQ(res_u8, static_cast<std::uint8_t>(i)) << "Failed for u8 value: " << i;
+    }
+}
+
+static Module ret_i32_arg() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "ret_i32");
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto arg0 = data.arg(0);
+    data.ret(arg0);
+
+    return builder.build();
+}
+
+TEST(SanityCheck, ret_i32_arg) {
+    const auto buffer = do_jit_compilation(ret_i32_arg());
+    const auto fn = reinterpret_cast<int(*)(int)>(buffer.code_start("ret_i32").value());
+    for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
     }
 }
 

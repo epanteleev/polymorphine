@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ranges>
+
 #include "LIRBlock.h"
 #include "../operand/LIRVal.h"
 #include "base/FunctionDataBase.h"
@@ -7,8 +9,8 @@
 
 class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {
 public:
-    LIRFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept: FunctionDataBase(std::move(args)),
-                                                                             m_name(name) {
+    LIRFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept:
+        FunctionDataBase(std::move(args)), m_name(name) {
         create_mach_block();
     }
 
@@ -25,6 +27,16 @@ public:
         return m_name;
     }
 
+    [[nodiscard]]
+    LIRVal arg(const std::size_t index) const {
+        return LIRVal::from(&m_args[index]);
+    }
+
+    [[nodiscard]]
+    auto args() const {
+        return m_args | std::views::transform([](const auto &arg) { return LIRVal::from(&arg); } );
+    }
+
     void print(std::ostream &os) const {
         os << m_name << '(';
         for (auto& arg : m_args) {
@@ -36,5 +48,4 @@ public:
 
 private:
     std::string m_name;
-    std::vector<LIRArg> m_args;
 };

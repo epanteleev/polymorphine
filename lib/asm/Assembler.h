@@ -11,18 +11,6 @@
 namespace aasm {
     class Assembler final {
     public:
-        static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
-
-        /*
-         * REX prefix contains bits [0, 1, 0, 0, W, R, X, B]
-         * W: 1 if operands are 64 bit.
-         * R: Extension of ModRM reg field (most significant bit)
-         * X: Extension of SIB index field
-         * B: Extension of ModRM r/m field, SIB base field, or Opcode reg field
-         */
-        static constexpr std::uint8_t REX = 0x40;
-        static constexpr std::uint8_t REX_W = 0x48; // REX prefix for 64-bit operands
-
         constexpr void ret() {
             m_instructions.emplace_back(Ret());
         }

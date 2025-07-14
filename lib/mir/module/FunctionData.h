@@ -13,6 +13,16 @@ class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
 public:
     explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
 
+    [[nodiscard]]
+    const ArgumentValue& arg(const std::size_t index) const {
+        return m_args[index];
+    }
+
+    [[nodiscard]]
+    std::span<const ArgumentValue> args() const {
+        return m_args;
+    }
+
     BasicBlock* create_basic_block() {
         const auto creator = [this](std::size_t id) {
             return std::make_unique<BasicBlock>(id);

@@ -2,28 +2,33 @@
 
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/operand/LIRValMap.h"
+#include "lir/x64/asm/GPVReg.h"
 
 
 class FixedRegisters final: public AnalysisPassResult {
 public:
-    explicit FixedRegisters(LIRValSet&& rax_set) noexcept:
-        m_rax_set(rax_set) {}
+    using const_iterator = LIRValMap<GPVReg>::const_iterator;
+
+    explicit FixedRegisters(LIRValMap<GPVReg>&& rax_map) noexcept:
+        m_reg_map(rax_map) {}
 
     friend std::ostream& operator<<(std::ostream& os, const FixedRegisters& regs);
 
-    [[nodiscard]]
-    const LIRValSet& rax_set() const noexcept {
-        return m_rax_set;
+    const_iterator begin() const noexcept {
+        return m_reg_map.begin();
+    }
+
+    const_iterator end() const noexcept {
+        return m_reg_map.end();
     }
 
 private:
-    const LIRValSet m_rax_set;
+    const LIRValMap<GPVReg> m_reg_map;
 };
 
 inline std::ostream& operator<<(std::ostream &os, const FixedRegisters &regs) {
-    os << "rax: ";
-    for (const auto &reg : regs.m_rax_set) {
-        os << reg << " ";
+    for (const auto& [val, reg] : regs.m_reg_map) {
+        os << val << "-> " << reg;
     }
 
     return os;

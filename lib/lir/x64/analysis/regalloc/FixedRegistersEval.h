@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ArgumentAllocator.h"
+#include "CallConv.h"
 #include "FixedRegisters.h"
 #include "base/analysis/AnalysisPassCacheBase.h"
 #include "lir/x64/module/LIRBlock.h"
@@ -17,16 +19,12 @@ private:
 
 public:
     void run() {
-        for (const auto& bb: m_obj_func_data.basic_blocks()) {
-            for (const auto& inst: bb.instructions()) {
-                LIRInstTraverse traverser(m_rax_set);
-                traverser.run(inst);
-            }
-        }
+        handle_argument_values();
+        handle_basic_blocks();
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<FixedRegisters>(std::move(m_rax_set));
+        return std::make_unique<FixedRegisters>(std::move(m_reg_map));
     }
 
     static FixedRegistersEval create(AnalysisPassCacheBase<LIRFuncData> *, const LIRFuncData *data) {
@@ -34,10 +32,26 @@ public:
     }
 
 private:
+    void handle_argument_values() {
+        ArgumentAllocator arguments(call_conv::GP_ARGUMENT_REGISTERS);
+        for (const auto& arg: m_obj_func_data.args()) {
+            m_reg_map.emplace(arg, arguments.get_reg());
+        }
+    }
+
+    void handle_basic_blocks() {
+        for (const auto& bb: m_obj_func_data.basic_blocks()) {
+            for (const auto& inst: bb.instructions()) {
+                LIRInstTraverse traverser(m_reg_map);
+                traverser.run(inst);
+            }
+        }
+    }
+
     class LIRInstTraverse final: public LIRVisitor {
     public:
-        explicit LIRInstTraverse(LIRValSet& vreg_rax) noexcept:
-            m_rax_set(vreg_rax) {}
+        explicit LIRInstTraverse(LIRValMap<GPVReg>& vreg_rax) noexcept:
+            m_reg_map(vreg_rax) {}
 
         void run(const LIRInstructionBase& inst) {
             const_cast<LIRInstructionBase&>(inst).visit(*this);
@@ -98,15 +112,14 @@ private:
 
         void ret(const std::span<const LIRVal> ret_values) override {
             if (ret_values.size() == 1) {
-                m_rax_set.insert(ret_values[0]);
+                m_reg_map.emplace(ret_values[0], aasm::rax);
             }
-
         }
 
-        LIRValSet& m_rax_set;
+        LIRValMap<GPVReg>& m_reg_map;
     };
 
     const LIRFuncData& m_obj_func_data;
-    LIRValSet m_rax_set{};
+    LIRValMap<GPVReg> m_reg_map{};
 };
 

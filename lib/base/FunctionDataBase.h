@@ -29,16 +29,6 @@ public:
     }
 
     [[nodiscard]]
-    const arg_type& arg(const std::size_t index) const {
-        return m_args[index];
-    }
-
-    [[nodiscard]]
-    std::span<const arg_type> args() const {
-        return m_args;
-    }
-
-    [[nodiscard]]
     std::size_t size() const noexcept {
         return m_basic_blocks.size();
     }

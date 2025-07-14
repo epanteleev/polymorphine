@@ -126,6 +126,8 @@ add_library(ckoof SHARED
         lib/lir/x64/asm/jit/JitCodeBlob.h
         lib/lir/x64/asm/jit/JitAssembler.cpp
         lib/lir/x64/asm/jit/JitCodeBlob.cpp
+        lib/lir/x64/analysis/regalloc/ArgumentAllocator.h
+        lib/lir/x64/analysis/regalloc/CallConv.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
@@ -142,3 +144,4 @@ target_link_libraries(shlang_cpp PRIVATE ckoof)
 
 enable_testing()
 add_subdirectory(tests)
+

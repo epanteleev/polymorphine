@@ -1,8 +1,8 @@
 #pragma once
+
 #include "FixedRegisters.h"
 #include "FixedRegistersEval.h"
 #include "RegisterAllocation.h"
-
 
 class LinearScan final {
 public:
@@ -32,10 +32,9 @@ public:
     }
 
 private:
-
     void allocate_fixed_registers() {
-        for (const auto& rax_reg: m_fixed_registers.rax_set()) {
-            m_reg_allocation.emplace(rax_reg, aasm::rax);
+        for (const auto& [lir, rax_reg]: m_fixed_registers) {
+            m_reg_allocation.emplace(lir, rax_reg);
         }
     }
 

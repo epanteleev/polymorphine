@@ -69,8 +69,7 @@ public:
         return m_size == rhs.m_size &&
                m_index == rhs.m_index &&
                m_type == rhs.m_type &&
-               m_variant.m_arg == rhs.
-               m_variant.m_arg;
+               m_variant.m_arg == rhs.m_variant.m_arg;
     }
 
     static LIRVal from(const LIRArg* def) noexcept {

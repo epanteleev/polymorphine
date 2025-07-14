@@ -19,11 +19,9 @@ public:
         m_bb(m_obj_function.first()) {}
 
     void run() {
-        std::size_t idx{};
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
-            m_mapping.emplace(local, LIRVal::from(&lir_arg));
-            idx += 1;
+            m_mapping.emplace(local, lir_arg);
         }
 
         for (const auto &bb: m_function.basic_blocks()) {

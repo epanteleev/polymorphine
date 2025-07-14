@@ -44,15 +44,14 @@ private:
         const auto begin = m_obj_func_data.first();
         const auto& live_out = m_liveness.live_out(begin);
         const auto size = begin->size();
-        for (const auto& arg: m_obj_func_data.args()) {
-            const auto vreg = LIRVal::from(&arg);
+        for (const auto arg: m_obj_func_data.args()) {
             std::unordered_map<const LIRBlock*, Interval> intervals;
-            if (live_out.contains(vreg)) {
+            if (live_out.contains(arg)) {
                 intervals.emplace(begin, Interval(0, size));
             } else {
                 intervals.emplace(begin, Interval(0, 0));
             }
-            m_intervals.emplace(vreg, std::move(intervals));
+            m_intervals.emplace(arg, std::move(intervals));
         }
     }
 
