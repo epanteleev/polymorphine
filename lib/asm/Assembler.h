@@ -3,6 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include <iosfwd>
+#include <ranges>
 
 #include "Register.h"
 #include "Address.h"
@@ -44,6 +45,14 @@ namespace aasm {
             m_instructions.emplace_back(MovRI(size, src, dst));
         }
 
+        constexpr void mov(const std::size_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(MovMR(size, src, dst));
+        }
+
+        constexpr void mov(const std::size_t size, const Address& src, GPReg dst) {
+            m_instructions.emplace_back(MovRM(size, src, dst));
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Assembler &assembler);
 
         template<CodeBuffer Buffer>
@@ -64,8 +73,15 @@ namespace aasm {
 
     inline std::ostream & operator<<(std::ostream &os, const Assembler &assembler) {
         const auto pretty_print = static_cast<int>(os.width());
-        for (auto& instruction: assembler.m_instructions) {
-            os << std::setw(pretty_print) << ' ' << instruction << std::endl;
+        for (const auto& [idx, instruction]: std::ranges::enumerate_view(assembler.m_instructions)) {
+            if (idx > 0) {
+                os << std::endl;
+            }
+            if (pretty_print > 0) {
+                os << std::setw(pretty_print) << ' ' << instruction;
+            } else {
+                os << instruction;
+            }
         }
 
         return os;

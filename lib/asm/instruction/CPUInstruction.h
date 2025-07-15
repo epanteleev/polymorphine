@@ -32,7 +32,7 @@ namespace aasm {
             PopR, PopM,
             PushR, PushM, PushI,
             Ret,
-            MovRR, MovRI
+            MovRR, MovRI, MovMR, MovRM
         > m_inst;
     };
 

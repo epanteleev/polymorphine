@@ -15,7 +15,7 @@ namespace aasm {
 
     class Address final {
     public:
-        explicit constexpr Address(const GPReg base, const GPReg index, std::uint8_t scale = 1, int displacement = 0): type(AddressType::ADDR_NORMAL),
+        explicit constexpr Address(const GPReg base, const GPReg index, std::uint8_t scale = 1, const std::int32_t displacement = 0): type(AddressType::ADDR_NORMAL),
             displacement(displacement),
             base(base),
             index(index),
@@ -65,7 +65,7 @@ namespace aasm {
         }
 
         AddressType type;
-        int displacement;
+        std::int32_t displacement;
         GPReg base;
         GPReg index;
         std::uint8_t scale;
@@ -77,17 +77,18 @@ namespace aasm {
         }
         os << '(';
         if (addr.base.code()) {
-            os << addr.base.name(8);
+            os << '%' << addr.base.name(8);
         }
         if (addr.index.code()) {
             if (addr.base.code()) {
                 os << ',';
             }
-            os << addr.index.name(8);
+            os << '%' << addr.index.name(8);
             if (addr.scale != 1) {
-                os << ',' << static_cast<int>(addr.scale);
+                os << ',' << static_cast<std::int32_t>(addr.scale);
             }
         }
+        os << ')';
 
         return os;
     }

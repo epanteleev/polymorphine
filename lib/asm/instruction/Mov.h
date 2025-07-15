@@ -1,4 +1,5 @@
 #pragma once
+#include "asm/Register.h"
 
 namespace aasm {
     class MovRR final {
@@ -119,5 +120,112 @@ namespace aasm {
         }
 
         return os << prefix_size(movri.m_size) << " $" << movri.m_src << ", %" << movri.m_dest.name(movri.m_size);
+    }
+
+    class MovMR final {
+    public:
+        constexpr MovMR(std::uint8_t size, const GPReg src, const Address& dst) noexcept:
+            m_size(size), m_src(src), m_dest(dst) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const MovMR &movmr);
+
+        template<CodeBuffer Buffer>
+        constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t MOV_MR = 0x89;
+            static constexpr std::uint8_t MOV_MR_8 = 0x88;
+            switch (m_size) {
+                case 1: {
+                    const auto reg = constants::REX | R(m_src) | X(m_dest) | B(m_dest.base);
+                    if (reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_MR_8);
+                    m_dest.encode(buffer, reg3(m_src));
+                    break;
+                }
+                case 2: add_word_op_size(buffer);
+                case 4: {
+                    const auto reg = constants::REX | R(m_src) | X(m_dest) | B(m_dest.base);
+                    if (reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_MR);
+                    m_dest.encode(buffer, reg3(m_src));
+                    break;
+                }
+                case 8: {
+                    buffer.emit8(constants::REX_W | R(m_src) | X(m_dest) | B(m_dest.base));
+                    buffer.emit8(MOV_MR);
+                    m_dest.encode(buffer, reg3(m_src));
+                    break;
+                }
+                default: die("Invalid size for mov instruction: {}", m_size);
+            }
+        }
+
+    private:
+        std::uint8_t m_size;
+        const GPReg m_src;
+        const Address m_dest;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const MovMR &movmr) {
+        return os << "mov" << prefix_size(movmr.m_size) << " %" << movmr.m_src.name(8) << ", " << movmr.m_dest;
+    }
+
+    class MovRM final {
+    public:
+        constexpr MovRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dest(dst) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const MovRM &movrm);
+
+        template<CodeBuffer Buffer>
+        constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t MOV_RM = 0x8B;
+            static constexpr std::uint8_t MOV_RM_8 = 0x8A;
+            switch (m_size) {
+                case 1: {
+                    const auto reg = constants::REX | R(m_dest) | X(m_src) | B(m_src.base);
+                    if (reg != constants::REX || is_special_byte_reg(m_dest)) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_RM_8);
+                    m_src.encode(buffer, reg3(m_dest));
+                    break;
+                }
+                case 2: add_word_op_size(buffer);
+                case 4: {
+                    const auto reg = constants::REX | R(m_dest) | X(m_src) | B(m_src.base);
+                    if (reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_RM);
+                    m_src.encode(buffer, reg3(m_dest));
+                    break;
+                }
+                case 8: {
+                    buffer.emit8(constants::REX_W | R(m_dest) | X(m_src) | B(m_src.base));
+                    buffer.emit8(MOV_RM);
+                    m_src.encode(buffer, reg3(m_dest));
+                    break;
+                }
+                default: die("Invalid size for mov instruction: {}", m_size);
+            }
+        }
+    private:
+        std::uint8_t m_size;
+        const Address m_src;
+        const GPReg m_dest;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const MovRM &movrm) {
+        return os << "mov" << prefix_size(movrm.m_size) << " " << movrm.m_src << ", %" << movrm.m_dest.name(movrm.m_size);
     }
 }

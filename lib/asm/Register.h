@@ -95,4 +95,8 @@ namespace aasm {
     static constexpr std::uint8_t reg3(const GPReg arg) noexcept {
         return arg.code().value() & 0x7;
     }
+
+    static constexpr bool is_special_byte_reg(const GPReg arg) {
+        return arg == rsi || arg == rdi;
+    }
 }

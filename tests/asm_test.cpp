@@ -400,6 +400,104 @@ TEST(Asm, movq_imm_reg2) {
     }
 }
 
+TEST(Asm, movb_reg_mem1) {
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
+    a.mov(1, aasm::rbx, addr);
+    // Generate: movb %bl, 2(%rsp)
+    std::uint8_t v[32]{};
+    const auto size = to_byte_buffer(a, v);
+    std::vector codes = {0x88,0x5c,0x24,0x02};
+    ASSERT_EQ(size, codes.size());
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
+    }
+}
+
+TEST(Asm, movw_reg_mem1) {
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::rdi, 1, 2);
+    a.mov(2, aasm::rsi, addr);
+    // Generate: movw %si, 2(%rsp, %rdi)
+    std::uint8_t v[32]{};
+    const auto size = to_byte_buffer(a, v);
+    const std::vector codes = {0x66, 0x89, 0x74, 0x3c, 0x02};
+    ASSERT_EQ(size, codes.size());
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
+    }
+}
+
+TEST(Asm, movl_reg_mem1) {
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsp, aasm::rdi, 8, INT8_MAX);
+    a.mov(4, aasm::rdi, addr);
+    // Generate: movl %edi, 127(%rsp, %rdi, 8)
+    std::uint8_t v[32]{};
+    const auto size = to_byte_buffer(a, v);
+    const std::vector codes = {0x89, 0x7c, 0xfc, 0x7f};
+    ASSERT_EQ(size, codes.size());
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
+    }
+}
+
+TEST(Asm, movq_reg_mem1) {
+    aasm::Assembler a;
+    aasm::Address addr(aasm::rsi, aasm::rdi, 8, INT32_MAX);
+    a.mov(8, aasm::rdi, addr);
+    // Generate: movq %rdi, 2147483647(%rsi, %rdi, 8)
+    std::uint8_t v[32]{};
+    const auto size = to_byte_buffer(a, v);
+    const std::vector codes = {0x48, 0x89, 0xbc, 0xfe, 0xff, 0xff, 0xff, 0x7f};
+    ASSERT_EQ(size, codes.size());
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
+    }
+}
+
+std::string make_string(const aasm::Assembler &a) {
+    std::ostringstream os;
+    os << a;
+    return os.str();
+}
+
+TEST(Asm, mov_mem_reg2) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40, 0x8a, 0x36},
+        {0x66,0x8b,0x36},
+        {0x8b,0x36},
+        {0x48,0x8b,0x36}
+    };
+
+    std::vector<std::string> names = {
+        "movb (%rsi), %sil",
+        "movw (%rsi), %si",
+        "movl (%rsi), %esi",
+        "movq (%rsi), %rsi",
+    };
+
+    for (auto scale : std::views::iota(0U, codes.size())) {
+        const auto op_size = 1 << scale;
+
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
+        a.mov(op_size, addr, aasm::rsi);
+
+        std::uint8_t v[32]{};
+        const auto size = to_byte_buffer(a, v);
+        auto& code = codes[scale];
+
+        ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
+        for (std::size_t i = 0; i < code.size(); ++i) {
+            ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
+        }
+
+        auto& name = names[scale];
+        ASSERT_EQ(name, make_string(a)) << "Mismatch at scale=" << scale;
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
