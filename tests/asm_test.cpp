@@ -73,7 +73,7 @@ TEST(Asm, popq_reg) {
         0x5A, // 0x5A is the opcode for POP DX
         0x5B, // 0x5B is the opcode for POP BX
         0x5C, // 0x5C is the opcode for POP SP
-        0x5D, // 0x5D is the opcode for POP BP
+        0x5D, // 0x5D is the opcode for POP BPstd::uint8_t v[32]{};
         0x5E, // 0x5E is the opcode for POP SI
         0x5F, // 0x5F is the opcode for POP DI
         0x41, 0x58, // 0x41 + 0x08 is the opcode for POP R8

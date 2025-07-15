@@ -3,7 +3,7 @@
 namespace aasm {
     class PushR final {
     public:
-        explicit constexpr PushR(std::uint8_t size, const GPReg reg)
+        explicit constexpr PushR(const std::uint8_t size, const GPReg reg)
             : m_size(size), m_reg(reg) {}
 
         friend std::ostream& operator<<(std::ostream &os, const PushR& pushr);

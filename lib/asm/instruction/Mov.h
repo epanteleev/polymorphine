@@ -29,7 +29,7 @@ namespace aasm {
                     emit_mov_byte(buffer);
                     break;
                 }
-                default:  die("Invalid size for mov instruction: {}", m_size);
+                default: die("Invalid size for mov instruction: {}", m_size);
             }
         }
 
@@ -144,7 +144,7 @@ namespace aasm {
                     m_dest.encode(buffer, reg3(m_src));
                     break;
                 }
-                case 2: add_word_op_size(buffer);
+                case 2: add_word_op_size(buffer); [[fallthrough]];
                 case 4: {
                     const auto reg = constants::REX | R(m_src) | X(m_dest) | B(m_dest.base);
                     if (reg != constants::REX) {
@@ -199,7 +199,7 @@ namespace aasm {
                     m_src.encode(buffer, reg3(m_dest));
                     break;
                 }
-                case 2: add_word_op_size(buffer);
+                case 2: add_word_op_size(buffer); [[fallthrough]];
                 case 4: {
                     const auto reg = constants::REX | R(m_dest) | X(m_src) | B(m_src.base);
                     if (reg != constants::REX) {
@@ -232,7 +232,7 @@ namespace aasm {
 
     class MovMI final {
     public:
-        constexpr MovMI(const std::uint8_t size, const std::int64_t src, const Address& dst) noexcept:
+        constexpr MovMI(const std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
             m_src(src),
             m_dest(dst),
             m_size(size) {}
@@ -279,7 +279,7 @@ namespace aasm {
                     buffer.emit8(constants::REX_W | X(m_dest) | B(m_dest.base));
                     buffer.emit8(MOV_MI);
                     m_dest.encode(buffer, 0);
-                    buffer.emit32(checked_cast<std::int32_t>(m_src));
+                    buffer.emit32(m_src);
                     break;
                 }
                 default: die("Invalid size for mov instruction: {}", m_size);
@@ -287,7 +287,7 @@ namespace aasm {
         }
 
     private:
-        const std::int64_t m_src;
+        const std::int32_t m_src;
         const Address m_dest;
         std::uint8_t m_size;
     };

@@ -132,6 +132,7 @@ add_library(ckoof SHARED
         lib/asm/instruction/Push.h
         lib/asm/instruction/Mov.h
         lib/asm/instruction/Ret.h
+        lib/asm/SizeEvaluator.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

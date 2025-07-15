@@ -45,7 +45,7 @@ namespace aasm {
             return coding >= static_cast<uint8_t>(RegEncoding::R8) && coding <= static_cast<uint8_t>(RegEncoding::R15);
         }
 
-        bool operator==(const GPReg & rbp) const = default;
+        constexpr bool operator==(const GPReg & rbp) const = default;
 
         static constexpr GPReg noreg() noexcept { return GPReg(RegEncoding::NONE); }
 

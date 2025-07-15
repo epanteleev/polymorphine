@@ -44,12 +44,13 @@ namespace aasm {
     }
 
     template<std::integral To, std::integral From >
-    static To checked_cast(const From & from) {
+    constexpr static To checked_cast(const From & from) {
         To result = To( from );
         assertion(From(result) == from, "Checked cast failed: {} cannot be safely converted. Result is {}", from, result);
         return result;
     }
 
+    [[maybe_unused]]
     static char prefix_size(std::uint8_t size) {
         switch (size) {
             case 1: return 'b';

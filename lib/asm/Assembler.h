@@ -16,44 +16,43 @@ namespace aasm {
             m_instructions.emplace_back(Ret());
         }
 
-        constexpr void pop(const std::size_t size, const GPReg r) {
+        constexpr void pop(const std::uint8_t size, const GPReg r) {
             m_instructions.emplace_back(PopR(size, r));
         }
 
-        constexpr void pop(const std::size_t size, const Address& addr) {
+        constexpr void pop(const std::uint8_t size, const Address& addr) {
             m_instructions.emplace_back(PopM(size, addr));
         }
 
-        constexpr void push(const std::size_t size, const GPReg r) {
+        constexpr void push(const std::uint8_t size, const GPReg r) {
             m_instructions.emplace_back(PushR(size, r));
         }
 
-        constexpr void push(const std::size_t size, const Address& addr) {
+        constexpr void push(const std::uint8_t size, const Address& addr) {
             m_instructions.emplace_back(PushM(size, addr));
         }
 
-        constexpr void push(const std::size_t size, const std::int32_t value) {
-            assertion(in_size_range(value, size), "Value {} is not in range for size {}", value, size);
+        constexpr void push(const std::uint8_t size, const std::int32_t value) {
             m_instructions.emplace_back(PushI(value, size));
         }
 
-        constexpr void mov(const std::size_t size, const GPReg src, const GPReg dst) {
+        constexpr void mov(const std::uint8_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(MovRR(size, src, dst));
         }
 
-        constexpr void mov(const std::size_t size, const std::int64_t src, const GPReg dst) {
+        constexpr void mov(const std::uint8_t size, const std::int64_t src, const GPReg dst) {
             m_instructions.emplace_back(MovRI(size, src, dst));
         }
 
-        constexpr void mov(const std::size_t size, const GPReg src, const Address& dst) {
+        constexpr void mov(const std::uint8_t size, const GPReg src, const Address& dst) {
             m_instructions.emplace_back(MovMR(size, src, dst));
         }
 
-        constexpr void mov(const std::size_t size, const Address& src, GPReg dst) {
+        constexpr void mov(const std::uint8_t size, const Address& src, GPReg dst) {
             m_instructions.emplace_back(MovRM(size, src, dst));
         }
 
-        constexpr void mov(const std::size_t size, const std::int64_t src, const Address& dst) {
+        constexpr void mov(const std::uint8_t size, const std::int32_t src, const Address& dst) {
             m_instructions.emplace_back(MovMI(size, src, dst));
         }
 

@@ -42,37 +42,10 @@ public:
         return m_buffer;
     }
 
-    static JitCodeBlob assembly(const ObjModule& masm);
+    static JitCodeBlob assembly(const ObjModule& module);
 
 private:
     static constexpr auto PAGE_SIZE = 4096;
-
-    class SizeEvaluator final {
-    public:
-        void emit8(const std::int8_t) noexcept { m_size++; }
-        void emit16(const std::int16_t) noexcept { m_size += 2; }
-        void emit32(const std::int32_t) noexcept { m_size += 4; }
-        void emit64(const std::int64_t) noexcept { m_size += 8; }
-
-        [[nodiscard]]
-        std::size_t size() const noexcept {
-            return m_size;
-        }
-
-        static std::size_t eval(const ObjModule& masm) {
-            std::size_t acc = 0;
-            for (const auto& emitter : masm.emitters() | std::views::values) {
-                SizeEvaluator size_evaluator;
-                emitter.emit(size_evaluator);
-                acc += size_evaluator.size();
-            }
-
-            return acc;
-        }
-
-    private:
-        std::size_t m_size{};
-    };
 
     std::uint8_t* m_buffer;
     std::size_t m_size{0};
