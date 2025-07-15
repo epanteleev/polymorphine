@@ -456,10 +456,31 @@ TEST(Asm, movq_reg_mem1) {
     }
 }
 
-std::string make_string(const aasm::Assembler &a) {
+static std::string make_string(const aasm::Assembler &a) {
     std::ostringstream os;
     os << a;
     return os.str();
+}
+
+
+static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t)) {
+    ASSERT_EQ(codes.size(), names.size());
+    ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
+
+    for (auto scale : std::views::iota(0U, codes.size())) {
+        aasm::Assembler a = fn(1 << scale);
+        std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
+        const auto size = to_byte_buffer(a, v);
+        auto& code = codes[scale];
+
+        ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
+        for (std::size_t i = 0; i < code.size(); ++i) {
+            ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
+        }
+
+        auto& name = names[scale];
+        ASSERT_EQ(name, make_string(a)) << "Mismatch at scale=" << scale;
+    }
 }
 
 TEST(Asm, mov_mem_reg2) {
@@ -477,25 +498,38 @@ TEST(Asm, mov_mem_reg2) {
         "movq (%rsi), %rsi",
     };
 
-    for (auto scale : std::views::iota(0U, codes.size())) {
-        const auto op_size = 1 << scale;
-
+    const auto generator = [](const std::uint8_t size) {
         aasm::Assembler a;
         aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
-        a.mov(op_size, addr, aasm::rsi);
+        a.mov(size, addr, aasm::rsi);
+        return a;
+    };
 
-        std::uint8_t v[32]{};
-        const auto size = to_byte_buffer(a, v);
-        auto& code = codes[scale];
+    check_bytes(codes, names, generator);
+}
 
-        ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
-        for (std::size_t i = 0; i < code.size(); ++i) {
-            ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
-        }
+TEST(Asm, mov_mem_imm1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0xc6,0x06,0x12},
+        {0x66,0xc7,0x06,0x12,0x00},
+        {0xc7,0x06,0x12,0x00,0x00,0x00},
+        {0x48,0xc7,0x06,0x12,0x00,0x00,0x00}
+    };
+    std::vector<std::string> names = {
+        "movb $18, (%rsi)",
+        "movw $18, (%rsi)",
+        "movl $18, (%rsi)",
+        "movq $18, (%rsi)"
+    };
 
-        auto& name = names[scale];
-        ASSERT_EQ(name, make_string(a)) << "Mismatch at scale=" << scale;
-    }
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
+        a.mov(size, 0x12, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
 }
 
 int main(int argc, char **argv) {

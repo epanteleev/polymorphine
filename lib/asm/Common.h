@@ -43,6 +43,13 @@ namespace aasm {
         buffer.emit8(constants::PREFIX_OPERAND_SIZE);
     }
 
+    template<std::integral To, std::integral From >
+    static To checked_cast(const From & from) {
+        To result = To( from );
+        assertion(From(result) == from, "Checked cast failed: {} cannot be safely converted. Result is {}", from, result);
+        return result;
+    }
+
     static char prefix_size(std::uint8_t size) {
         switch (size) {
             case 1: return 'b';

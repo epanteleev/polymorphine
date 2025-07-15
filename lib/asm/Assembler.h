@@ -53,6 +53,10 @@ namespace aasm {
             m_instructions.emplace_back(MovRM(size, src, dst));
         }
 
+        constexpr void mov(const std::size_t size, const std::int64_t src, const Address& dst) {
+            m_instructions.emplace_back(MovMI(size, src, dst));
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Assembler &assembler);
 
         template<CodeBuffer Buffer>

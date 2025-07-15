@@ -83,7 +83,7 @@ namespace aasm {
                         buffer.emit8(rex);
                     }
                     buffer.emit8(MOV_RI | reg3(m_dest));
-                    buffer.emit32(static_cast<std::int32_t>(m_src));
+                    buffer.emit32(checked_cast<std::int32_t>(m_src));
                     break;
                 }
                 case 2: {
@@ -92,7 +92,7 @@ namespace aasm {
                         buffer.emit8(rex);
                     }
                     buffer.emit8(MOV_RI | reg3(m_dest));
-                    buffer.emit16(static_cast<std::int16_t>(m_src));
+                    buffer.emit16(checked_cast<std::int16_t>(m_src));
                     break;
                 }
                 case 1: {
@@ -100,7 +100,7 @@ namespace aasm {
                         buffer.emit8(rex);
                     }
                     buffer.emit8(MOV_RI_8 | reg3(m_dest));
-                    buffer.emit8(static_cast<std::int8_t>(m_src));
+                    buffer.emit8(checked_cast<std::int8_t>(m_src));
                     break;
                 }
                 default: die("Invalid size for mov instruction: {}", m_size);
@@ -178,8 +178,8 @@ namespace aasm {
     class MovRM final {
     public:
         constexpr MovRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
-            m_size(size),
             m_src(src),
+            m_size(size),
             m_dest(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovRM &movrm);
@@ -219,13 +219,80 @@ namespace aasm {
                 default: die("Invalid size for mov instruction: {}", m_size);
             }
         }
+
     private:
-        std::uint8_t m_size;
         const Address m_src;
+        std::uint8_t m_size;
         const GPReg m_dest;
     };
 
     inline std::ostream & operator<<(std::ostream &os, const MovRM &movrm) {
         return os << "mov" << prefix_size(movrm.m_size) << " " << movrm.m_src << ", %" << movrm.m_dest.name(movrm.m_size);
+    }
+
+    class MovMI final {
+    public:
+        constexpr MovMI(const std::uint8_t size, const std::int64_t src, const Address& dst) noexcept:
+            m_src(src),
+            m_dest(dst),
+            m_size(size) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const MovMI &movrm);
+
+        template<CodeBuffer Buffer>
+        constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t MOV_MI = 0xC7;
+            static constexpr std::uint8_t MOV_MI_8 = 0xC6;
+            switch (m_size) {
+                case 1: {
+                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_MI_8);
+                    m_dest.encode(buffer, 0);
+                    buffer.emit8(checked_cast<std::int8_t>(m_src));
+                    break;
+                }
+                case 2: {
+                    add_word_op_size(buffer);
+                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_MI);
+                    m_dest.encode(buffer, 0);
+                    buffer.emit16(checked_cast<std::int16_t>(m_src));
+                    break;
+                }
+                case 4: {
+                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
+                        buffer.emit8(reg);
+                    }
+
+                    buffer.emit8(MOV_MI);
+                    m_dest.encode(buffer, 0);
+                    buffer.emit32(checked_cast<std::int32_t>(m_src));
+                    break;
+                }
+                case 8: {
+                    buffer.emit8(constants::REX_W | X(m_dest) | B(m_dest.base));
+                    buffer.emit8(MOV_MI);
+                    m_dest.encode(buffer, 0);
+                    buffer.emit32(checked_cast<std::int32_t>(m_src));
+                    break;
+                }
+                default: die("Invalid size for mov instruction: {}", m_size);
+            }
+        }
+
+    private:
+        const std::int64_t m_src;
+        const Address m_dest;
+        std::uint8_t m_size;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const MovMI &movrm) {
+        return os << "mov" << prefix_size(movrm.m_size) << " $" << movrm.m_src << ", " << movrm.m_dest;
     }
 }

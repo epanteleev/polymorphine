@@ -101,18 +101,18 @@ namespace aasm {
             switch (m_size) {
                 case 4: {
                     buffer.emit8(PUSH_IMM);
-                    buffer.emit32(static_cast<std::int32_t>(m_imm));
+                    buffer.emit32(checked_cast<std::int32_t>(m_imm));
                     break;
                 }
                 case 2: {
                     add_word_op_size(buffer);
                     buffer.emit8(PUSH_IMM);
-                    buffer.emit16(static_cast<std::int16_t>(m_imm));
+                    buffer.emit16(checked_cast<std::int16_t>(m_imm));
                     break;
                 }
                 case 1: {
                     buffer.emit8(PUSH_IMM_8);
-                    buffer.emit8(static_cast<std::int8_t>(m_imm));
+                    buffer.emit8(checked_cast<std::int8_t>(m_imm));
                     break;
                 }
                 default: die("Invalid size for pop instruction: {}", m_size);
