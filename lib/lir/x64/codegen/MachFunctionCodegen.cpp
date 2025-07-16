@@ -1,5 +1,6 @@
 #include "MachFunctionCodegen.h"
 
+#include "emitters/AddIntEmit.h"
 #include "emitters/CopyGPEmit.h"
 
 GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
@@ -18,6 +19,13 @@ aasm::GPReg MachFunctionCodegen::convert_to_gp_reg(const LIRVal &val) const {
     const auto gp_reg = allocation.as_gp_reg();
     assertion(gp_reg.has_value(), "Invalid GPVReg for LIRVal");
     return gp_reg.value();
+}
+
+void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+    AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {

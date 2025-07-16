@@ -3,6 +3,8 @@
 #include "FixedRegisters.h"
 #include "FixedRegistersEval.h"
 #include "RegisterAllocation.h"
+#include "lir/x64/analysis/intervals/LiveIntervals.h"
+#include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 
 class LinearScan final {
 public:
@@ -11,14 +13,16 @@ public:
     static constexpr auto analysis_kind = AnalysisType::LinearScan;
 
 private:
-    LinearScan(const LIRFuncData &obj_func_data, const Ordering<LIRBlock> &m_ordering, const FixedRegisters& fixed_registers) noexcept:
+    LinearScan(const LIRFuncData &obj_func_data, const FixedRegisters& fixed_registers, const LiveIntervals& intervals) noexcept:
         m_obj_func_data(obj_func_data),
-        m_ordering(m_ordering),
-        m_fixed_registers(fixed_registers) {}
+        m_fixed_registers(fixed_registers),
+        m_intervals(intervals) {}
 
 public:
     void run() {
         allocate_fixed_registers();
+        setup_unhandled_intervals();
+        do_register_allocation();
     }
 
     std::unique_ptr<result_type> result() noexcept {
@@ -26,9 +30,10 @@ public:
     }
 
     static LinearScan create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         const auto fixed_registers = cache->analyze<FixedRegistersEval>(data);
-        return {*data, *preorder, *fixed_registers};
+        const auto intervals = cache->analyze<LiveIntervalsEval>(data);
+
+        return {*data, *fixed_registers, *intervals};
     }
 
 private:
@@ -38,9 +43,44 @@ private:
         }
     }
 
+    void setup_unhandled_intervals() {
+        m_unhandled_intervals.reserve(m_intervals.intervals().size());
+        for (auto& [lir_val, intervals]: m_intervals.intervals()) {
+            for (auto interval: intervals) {
+                m_unhandled_intervals.emplace_back(interval, lir_val);
+            }
+        }
+
+        const auto ordering = [](const IntervalEntry& a, const IntervalEntry& b) -> bool {
+            return a.m_interval.start() < b.m_interval.start();
+        };
+
+        std::ranges::sort(m_unhandled_intervals, ordering);
+    }
+
+    void do_register_allocation() {
+        for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
+            m_reg_allocation.try_emplace(vreg, aasm::rcx);
+
+        }
+    }
+
+    struct IntervalEntry final {
+        IntervalEntry(const Interval& interval, const LIRVal vreg) noexcept:
+            m_interval(interval),
+            m_vreg(vreg) {}
+
+        Interval m_interval;
+        LIRVal m_vreg;
+    };
+
     const LIRFuncData& m_obj_func_data;
-    const Ordering<LIRBlock>& m_ordering;
     const FixedRegisters& m_fixed_registers;
+    const LiveIntervals& m_intervals;
 
     LIRValMap<GPVReg> m_reg_allocation{};
+
+    std::vector<IntervalEntry> m_unhandled_intervals{};
+    std::vector<IntervalEntry> m_unactive_intervals{};
+    std::vector<IntervalEntry> m_active_intervals{};
 };

@@ -168,7 +168,7 @@ int main() {
     Lowering lower(module0);
     lower.run();
     const auto result = lower.result();
-    result.print(std::cout) << std::endl;
+    std::cout << result << std::endl;
 
     auto obj_fun = result.find_function_data("ret_one").value();
 

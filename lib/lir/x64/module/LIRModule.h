@@ -26,10 +26,10 @@ public:
         return m_functions | std::views::values;
     }
 
-    [[nodiscard]]
-
-    std::ostream &print(std::ostream &os) const;
+    friend std::ostream& operator<<(std::ostream &os, const LIRModule &module);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<LIRFuncData>> m_functions;
 };
+
+std::ostream & operator<<(std::ostream &os, const LIRModule &module);

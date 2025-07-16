@@ -3,7 +3,6 @@
 #include "asm/Address.h"
 
 #include "lir/x64/lir_frwd.h"
-#include "lir/x64/asm/GPOp.h"
 
 
 class GPUnaryVisitor {

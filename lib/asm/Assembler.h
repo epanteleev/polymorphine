@@ -56,6 +56,10 @@ namespace aasm {
             m_instructions.emplace_back(MovMI(size, src, dst));
         }
 
+        constexpr void add(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(AddRR(size, src, dst));
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Assembler &assembler);
 
         template<CodeBuffer Buffer>

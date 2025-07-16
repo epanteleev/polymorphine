@@ -19,6 +19,10 @@ public:
         m_end = std::max(m_end, end);
     }
 
+    [[nodiscard]]
+    std::uint32_t start() const noexcept {
+        return m_start;
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Interval& interval);
 
@@ -33,22 +37,28 @@ inline std::ostream& operator<<(std::ostream& os, const Interval& interval) {
 
 class LiveIntervals final: public AnalysisPassResult {
 public:
-    explicit LiveIntervals(LIRValMap<std::unordered_map<const LIRBlock*, Interval>>&& intervals) noexcept:
+    explicit LiveIntervals(LIRValMap<std::vector<Interval>>&& intervals) noexcept:
         m_intervals(std::move(intervals)) {}
 
     friend std::ostream& operator<<(std::ostream& os, const LiveIntervals& intervals);
 
+    std::span<Interval const> intervals(const LIRVal& val) const noexcept {
+        return m_intervals.at(val);
+    }
+
+    const LIRValMap<std::vector<Interval>>& intervals() const noexcept {
+        return m_intervals;
+    }
+
 private:
-    LIRValMap<std::unordered_map<const LIRBlock*, Interval>> m_intervals{};
+    LIRValMap<std::vector<Interval>> m_intervals{};
 };
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervals &intervals) {
     for (const auto& [vreg, intervals] : intervals.m_intervals) {
         os << vreg << " -> ";
-        for (const auto& [bb, interval]: intervals) {
-            os << "{ ";
-            bb->print_short_name(os);
-            os << ": " << interval << " }";
+        for (const auto& interval: intervals) {
+            os << interval << " ";
         }
     }
 

@@ -133,6 +133,11 @@ add_library(ckoof SHARED
         lib/asm/instruction/Mov.h
         lib/asm/instruction/Ret.h
         lib/asm/SizeEvaluator.h
+        lib/asm/instruction/Add.h
+        lib/lir/x64/asm/visitors/GPBinaryVisitor.cpp
+        lib/lir/x64/asm/visitors/GPBinaryVisitor.h
+        lib/lir/x64/codegen/emitters/AddIntEmit.cpp
+        lib/lir/x64/codegen/emitters/AddIntEmit.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

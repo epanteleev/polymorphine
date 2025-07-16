@@ -6,15 +6,22 @@
 #include "lir/x64/asm/jit/JitAssembler.h"
 #include "lir/x64/codegen/Codegen.h"
 
-static JitCodeBlob do_jit_compilation(const Module& module) {
+static JitCodeBlob do_jit_compilation(const Module& module, bool verbose = false) {
     Lowering lower(module);
     lower.run();
     const auto result = lower.result();
+    if (verbose) {
+        std::cout << result << std::endl;
+    }
 
     Codegen codegen(result);
     codegen.run();
+    const auto obj = codegen.result();
+    if (verbose) {
+        std::cout << obj << std::endl;
+    }
 
-    return JitAssembler::assembly(codegen.result());
+    return JitAssembler::assembly(obj);
 }
 
 static Module ret_i32(const std::int32_t value) {
@@ -104,6 +111,45 @@ TEST(SanityCheck, ret_i32_arg) {
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
         const auto res = fn(i);
         ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
+
+static Module add_i32_args(const NonTrivialType* ty) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(ty, {ty, ty}, "add");
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto arg0 = data.arg(0);
+    const auto arg1 = data.arg(1);
+    const auto add = data.add(arg0, arg1);
+    data.ret(add);
+
+    return builder.build();
+}
+
+TEST(SanityCheck, add_i32_args) {
+    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()), true);
+    const auto fn = reinterpret_cast<int(*)(int, int)>(buffer.code_start("add").value());
+
+    std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
+    for (const auto i: values) {
+        for (const auto j: values) {
+            const auto res = fn(i, j);
+            ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
+        }
+    }
+}
+
+TEST(SanityCheck, add_i64_args) {
+    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i64()), true);
+    const auto fn = reinterpret_cast<long(*)(long, long)>(buffer.code_start("add").value());
+
+    std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
+    for (const auto i: values) {
+        for (const auto j: values) {
+            const auto res = fn(i, j);
+            ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
+        }
     }
 }
 

@@ -29,7 +29,18 @@ public:
     }
 
     std::unique_ptr<LiveIntervals> result() {
-        return std::make_unique<LiveIntervals>(std::move(m_intervals));
+        LIRValMap<std::vector<Interval>> all_intervals;
+        for (auto& [vreg, intervals]: m_intervals) {
+            std::vector<Interval> intervals_for_vreg;
+            intervals_for_vreg.reserve(intervals.size());
+            for (const auto &interval: intervals | std::views::values) {
+                intervals_for_vreg.emplace_back(interval);
+            }
+
+            all_intervals.emplace(vreg, std::move(intervals_for_vreg));
+        }
+
+        return std::make_unique<LiveIntervals>(std::move(all_intervals));
     }
 
     static LiveIntervalsEval create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
@@ -105,9 +116,9 @@ private:
                     auto& live_range = m_intervals.at(vreg);
                     auto interval = live_range.find(bb);
                     if (interval == live_range.end()) {
-                        live_range.emplace(bb, Interval(start, start + bb->size()));
+                        live_range.emplace(bb, Interval(start, inst_number));
                     } else {
-                        interval->second.propagate(start + bb->size());
+                        interval->second.propagate(inst_number);
                     }
                 }
             }

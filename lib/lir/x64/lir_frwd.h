@@ -13,3 +13,4 @@ class LirCst;
 class VregBuilder;
 
 class GPVReg;
+class GPOp;

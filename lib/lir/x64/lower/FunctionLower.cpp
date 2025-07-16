@@ -1,5 +1,6 @@
 #include "FunctionLower.h"
 
+#include "mir/instruction/Binary.h"
 #include "mir/types/TypeMatchingRules.h"
 
 template<std::integral T>
@@ -42,4 +43,23 @@ LIROperand FunctionLower::get_mapping(const Value &val) {
     };
 
     return val.visit<LIROperand>(visitor);
+}
+
+void FunctionLower::accept(Binary *inst) {
+    switch (inst->op()) {
+        case BinaryOp::Add: {
+            const auto lhs = get_mapping(inst->lhs());
+            const auto rhs = get_mapping(inst->rhs());
+            const auto add = m_bb->inst(LIRInstruction::add(lhs, rhs));
+            m_mapping.emplace(LocalValue::from(inst), add->def(0));
+            break;
+        }
+        default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));
+    }
+}
+
+void FunctionLower::accept(ReturnValue *inst) {
+    const auto ret_val = get_mapping(inst->ret_value());
+    const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
+    m_bb->inst(LIRReturn::ret(copy->def(0)));
 }

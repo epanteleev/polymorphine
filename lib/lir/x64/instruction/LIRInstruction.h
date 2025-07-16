@@ -36,6 +36,14 @@ public:
         };
     }
 
+    static LIRInstBuilder<LIRInstruction> add(const LIROperand &lhs, const LIROperand &rhs) {
+        return [=](std::size_t id, LIRBlock *bb) {
+            auto add = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Add, std::vector{lhs, rhs}, std::vector<LIRVal>{});
+            add->add_def(LIRVal::reg(lhs.size(), 0, add.get()));
+            return add;
+        };
+    }
+
     [[nodiscard]]
     LIRInstKind kind() const noexcept {
         return m_kind;

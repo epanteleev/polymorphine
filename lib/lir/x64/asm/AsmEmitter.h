@@ -33,6 +33,10 @@ public:
         m_asm.mov(size, src, dst);
     }
 
+    void add(const std::uint8_t size, const aasm::GPReg src, const aasm::GPReg dst) {
+        m_asm.add(size, src, dst);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const AsmEmitter& masm);
 
     template<typename  Buffer>

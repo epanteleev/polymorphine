@@ -2,8 +2,8 @@
 #include <ranges>
 #include "LIRModule.h"
 
-std::ostream & LIRModule::print(std::ostream &os) const {
-    for (const auto &f: m_functions | std::views::values) {
+std::ostream & operator<<(std::ostream &os, const LIRModule &module) {
+    for (const auto &f: module.m_functions | std::views::values) {
         f->print(os);
     }
 

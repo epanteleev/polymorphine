@@ -2,12 +2,12 @@
 
 #include <ostream>
 
-#include "utility/Error.h"
 #include "asm/Common.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"
 #include "Ret.h"
+#include "Add.h"
 
 
 namespace aasm {
@@ -32,7 +32,8 @@ namespace aasm {
             PopR, PopM,
             PushR, PushM, PushI,
             Ret,
-            MovRR, MovRI, MovMR, MovRM, MovMI
+            MovRR, MovRI, MovMR, MovRM, MovMI,
+            AddRR
         > m_inst;
     };
 

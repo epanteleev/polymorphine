@@ -532,6 +532,52 @@ TEST(Asm, mov_mem_imm1) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, add_reg_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x00,0xc7},
+        {0x66,0x01,0xc7},
+        {0x01,0xc7},
+        {0x48,0x01,0xc7}
+    };
+    std::vector<std::string> names = {
+        "addb %al, %dil",
+        "addw %ax, %di",
+        "addl %eax, %edi",
+        "addq %rax, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        a.add(size, aasm::rax, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, add_reg_reg2) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x00,0xf9},
+        {0x66,0x01,0xf9},
+        {0x01,0xf9},
+        {0x48,0x01,0xf9}
+    };
+    const std::vector<std::string> names = {
+        "addb %dil, %cl",
+        "addw %di, %cx",
+        "addl %edi, %ecx",
+        "addq %rdi, %rcx"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        a.add(size, aasm::rdi, aasm::rcx);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
