@@ -53,4 +53,5 @@ namespace aasm {
                   << add.m_src.name(add.m_size) << ", %"
                   << add.m_dst.name(add.m_size);
     }
+
 }

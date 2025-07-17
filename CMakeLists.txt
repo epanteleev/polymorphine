@@ -138,6 +138,9 @@ add_library(ckoof SHARED
         lib/lir/x64/asm/visitors/GPBinaryVisitor.h
         lib/lir/x64/codegen/emitters/AddIntEmit.cpp
         lib/lir/x64/codegen/emitters/AddIntEmit.h
+        lib/asm/instruction/Jmp.h
+        lib/asm/instruction/Label.h
+        tests/Buff.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

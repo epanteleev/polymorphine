@@ -3,11 +3,13 @@
 #include <ostream>
 
 #include "asm/Common.h"
+#include "Label.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"
 #include "Ret.h"
 #include "Add.h"
+#include "Jmp.h"
 
 
 namespace aasm {
@@ -18,13 +20,9 @@ namespace aasm {
 
         friend std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
 
-        template<CodeBuffer Buffer>
-        constexpr void emit(Buffer &buffer) const {
-            const auto visitor = [&](const auto &var) {
-                var.emit(buffer);
-            };
-
-            std::visit(visitor, m_inst);
+        template<typename Fn>
+        constexpr void visit(Fn&& fn) const {
+            std::visit(fn, m_inst);
         }
 
     private:
@@ -33,7 +31,8 @@ namespace aasm {
             PushR, PushM, PushI,
             Ret,
             MovRR, MovRI, MovMR, MovRM, MovMI,
-            AddRR
+            AddRR,
+            Jmp
         > m_inst;
     };
 
