@@ -21,7 +21,7 @@ public:
     void run() {
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function.args())) {
             const auto local = LocalValue::from(&arg);
-            m_mapping.emplace(local, lir_arg);
+            m_value_mapping.emplace(local, lir_arg);
         }
 
         for (const auto &bb: m_function.basic_blocks()) {
@@ -32,7 +32,7 @@ public:
     }
 
 private:
-    LIROperand get_mapping(const Value& val);
+    LIROperand get_value_mapping(const Value& val);
 
     void accept(Binary *inst) override;
 
@@ -93,6 +93,6 @@ private:
     LIRFuncData& m_obj_function;
     const FunctionData& m_function;
     LIRBlock* m_bb;
-    LocalValueMap<LIRVal> m_mapping;
+    LocalValueMap<LIRVal> m_value_mapping;
 };
 

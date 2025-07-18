@@ -24,10 +24,9 @@ namespace aasm {
         }
 
         template<CodeBuffer Buffer>
-        constexpr std::uint32_t emit_unresolved32(Buffer& buffer) const {
+        constexpr void emit_unresolved32(Buffer& buffer) const {
             buffer.emit8(JMP);
             buffer.emit32(INT32_MAX);
-            return buffer.size() - 4;
         }
 
         [[nodiscard]]

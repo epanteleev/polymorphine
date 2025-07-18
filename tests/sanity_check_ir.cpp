@@ -128,7 +128,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
 }
 
 TEST(SanityCheck, add_i32_args) {
-    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()), true);
+    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()));
     const auto fn = reinterpret_cast<int(*)(int, int)>(buffer.code_start("add").value());
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
@@ -141,7 +141,7 @@ TEST(SanityCheck, add_i32_args) {
 }
 
 TEST(SanityCheck, add_i64_args) {
-    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i64()), true);
+    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i64()));
     const auto fn = reinterpret_cast<long(*)(long, long)>(buffer.code_start("add").value());
 
     std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
@@ -151,6 +151,27 @@ TEST(SanityCheck, add_i64_args) {
             ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
         }
     }
+}
+
+static Module branch() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret");
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+
+    auto* cont = data.create_basic_block();
+    data.br(cont);
+    data.switch_block(cont);
+    data.ret(Value::i32(0));
+
+    return builder.build();
+}
+
+TEST(SanityCheck, branch1) {
+    const auto buffer = do_jit_compilation(branch(), true);
+    const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
+    const auto res = fn();
+    ASSERT_EQ(res, 0) << "Failed for value: " << 0;
 }
 
 int main(int argc, char **argv) {

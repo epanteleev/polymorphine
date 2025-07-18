@@ -5,7 +5,6 @@
 #include <iosfwd>
 
 #include "TypeVisitor.h"
-#include "TypeMatcher.h"
 
 class Type {
 public:
@@ -28,6 +27,18 @@ public:
     }
 
     virtual void visit(type::Visitor &visitor) = 0;
+};
+
+class VoidType final: public Type {
+    constexpr VoidType() = default;
+
+public:
+    void visit(type::Visitor &visitor) override { visitor.accept(this); }
+
+    static consteval const VoidType *type() noexcept {
+        static constexpr VoidType instance;
+        return &instance;
+    }
 };
 
 class FlagType final: public Type {

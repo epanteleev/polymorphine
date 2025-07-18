@@ -30,6 +30,7 @@ namespace aasm {
         { t.emit16(std::declval<std::uint16_t>()) };
         { t.emit32(std::declval<std::uint32_t>()) };
         { t.emit64(std::declval<std::uint64_t>()) };
+        { t.patch32(std::declval<std::uint32_t>(), std::declval<std::uint32_t>())  };
         { t.size() } -> std::same_as<std::size_t>;
     };
 

@@ -32,6 +32,10 @@ public:
         m_size += 8;
     }
 
+    void patch32(const std::uint32_t offset, const std::uint32_t value) {
+        std::memcpy(&m_buffer[offset], &value, sizeof(value));
+    }
+
     [[nodiscard]]
     std::size_t size() const noexcept {
         return m_size;

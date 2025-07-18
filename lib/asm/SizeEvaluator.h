@@ -10,6 +10,8 @@ namespace aasm {
         constexpr void emit32(const std::uint32_t) noexcept { m_size += 4; }
         constexpr void emit64(const std::uint64_t) noexcept { m_size += 8; }
 
+        constexpr void patch32(std::uint32_t, std::int32_t) noexcept {}
+
         [[nodiscard]]
         constexpr std::size_t size() const noexcept {
             return m_size;
@@ -25,4 +27,6 @@ namespace aasm {
     private:
         std::size_t m_size{};
     };
+
+    static_assert(CodeBuffer<SizeEvaluator>);
 }

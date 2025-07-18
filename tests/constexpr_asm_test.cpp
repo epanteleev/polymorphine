@@ -27,6 +27,13 @@ public:
         emit32(static_cast<std::int32_t>((c >> 32) & 0xFFFFFFFF));
     }
 
+    constexpr void patch32(const std::uint32_t offset, const std::uint32_t value) {
+        m_buffer[offset] = static_cast<std::uint8_t>(value & 0xFF);
+        m_buffer[offset + 1] = static_cast<std::uint8_t>((value >> 8) & 0xFF);
+        m_buffer[offset + 2] = static_cast<std::uint8_t>((value >> 16) & 0xFF);
+        m_buffer[offset + 3] = static_cast<std::uint8_t>((value >> 24) & 0xFF);
+    }
+
     [[nodiscard]]
     constexpr std::size_t size() const noexcept {
         return m_size;
@@ -40,6 +47,8 @@ private:
     std::array<std::uint8_t, N> m_buffer{};
     std::size_t m_size{};
 };
+
+static_assert(aasm::CodeBuffer<ConstExprBuff<4>>);
 
 template<std::size_t N>
 consteval ConstExprBuff<N> emit_test1() {

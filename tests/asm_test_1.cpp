@@ -2,6 +2,12 @@
 
 #include "Buff.h"
 
+static void verify_codes(const std::vector<std::uint8_t>& codes, const std::uint8_t* v) {
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(codes[i], v[i]) << "codes[" << i << "] = " << codes[i];
+    }
+}
+
 TEST(Asm1, forward_jmp1) {
     aasm::Assembler a;
     const auto label = a.create_label();
@@ -17,11 +23,17 @@ TEST(Asm1, forward_jmp1) {
      ret
      */
 
+    std::vector<std::uint8_t> codes = {
+        0xe9, 0x0a, 0x00, 0x00, 0x00,
+        0x48, 0xb8, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xc3
+    };
+
     std::uint8_t v[64];
     const auto size = to_byte_buffer(a, v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
-   // ASSERT_EQ(size, 1);
-   // ASSERT_EQ(v[0], 0xC3); // 0xC3 is the opcode for RET
+    ASSERT_EQ(size, codes.size());
+    verify_codes(codes, v);
 }
 
 TEST(Asm1, backward_jmp1) {
@@ -41,15 +53,13 @@ TEST(Asm1, backward_jmp1) {
 
     std::vector<std::uint8_t> codes = {
         0x48,0xb8,0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-        0xEB, 0xf4,
+        0xEB,0xf4,
         0xC3
     };
     std::uint8_t v[64];
     const auto size = to_byte_buffer(a, v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
-    for (std::size_t i = 0; i < size; ++i) {
-        ASSERT_EQ(codes[i], v[i]) << "codes[" << i << "] = " << codes[i];
-    }
+    verify_codes(codes, v);
     ASSERT_EQ(size, 13);
 }
 

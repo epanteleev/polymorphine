@@ -30,7 +30,7 @@ class PrimitiveType;
 class NonTrivialType;
 class PointerType;
 class FlagType;
-
+class VoidType;
 
 class Value;
 class ArgumentValue;

@@ -24,7 +24,7 @@ static LirCst make_constant(const Type& type, const T integer) noexcept {
     die("Unsupported type for constant");
 }
 
-LIROperand FunctionLower::get_mapping(const Value &val) {
+LIROperand FunctionLower::get_value_mapping(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
             unimplemented();
@@ -34,7 +34,7 @@ LIROperand FunctionLower::get_mapping(const Value &val) {
 
         } else if constexpr (std::is_same_v<T, const ArgumentValue *> || std::is_same_v<T, ValueInstruction *>) {
             const auto local = LocalValue::from(v);
-            return m_mapping.at(local);
+            return m_value_mapping.at(local);
 
         } else {
             static_assert(false, "Unsupported type in Value variant");
@@ -48,10 +48,10 @@ LIROperand FunctionLower::get_mapping(const Value &val) {
 void FunctionLower::accept(Binary *inst) {
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto lhs = get_mapping(inst->lhs());
-            const auto rhs = get_mapping(inst->rhs());
+            const auto lhs = get_value_mapping(inst->lhs());
+            const auto rhs = get_value_mapping(inst->rhs());
             const auto add = m_bb->inst(LIRInstruction::add(lhs, rhs));
-            m_mapping.emplace(LocalValue::from(inst), add->def(0));
+            m_value_mapping.emplace(LocalValue::from(inst), add->def(0));
             break;
         }
         default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));
@@ -59,7 +59,7 @@ void FunctionLower::accept(Binary *inst) {
 }
 
 void FunctionLower::accept(ReturnValue *inst) {
-    const auto ret_val = get_mapping(inst->ret_value());
+    const auto ret_val = get_value_mapping(inst->ret_value());
     const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
     m_bb->inst(LIRReturn::ret(copy->def(0)));
 }

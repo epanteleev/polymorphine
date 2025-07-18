@@ -1,6 +1,6 @@
 #include "Type.h"
 
-#include <iostream>
+#include <ostream>
 
 namespace {
     class Printer final: type::Visitor {
@@ -30,6 +30,10 @@ namespace {
 
         void accept(FlagType *type) override {
             os << "flag";
+        }
+
+        void accept(VoidType *type) override {
+            os << "void";
         }
 
         std::ostream &os;
