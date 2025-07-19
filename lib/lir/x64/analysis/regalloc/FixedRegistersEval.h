@@ -3,7 +3,7 @@
 #include "ArgumentAllocator.h"
 #include "CallConv.h"
 #include "FixedRegisters.h"
-#include "base/analysis/AnalysisPassCacheBase.h"
+#include "base/analysis/AnalysisPassManagerBase.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/module/LIRFuncData.h"
 
@@ -27,7 +27,7 @@ public:
         return std::make_unique<FixedRegisters>(std::move(m_reg_map));
     }
 
-    static FixedRegistersEval create(AnalysisPassCacheBase<LIRFuncData> *, const LIRFuncData *data) {
+    static FixedRegistersEval create(AnalysisPassManagerBase<LIRFuncData> *, const LIRFuncData *data) {
         return FixedRegistersEval(*data);
     }
 

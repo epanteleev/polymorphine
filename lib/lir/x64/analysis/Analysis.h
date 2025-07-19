@@ -25,4 +25,4 @@ static_assert(Analysis<LivenessAnalysis>);
 static_assert(Analysis<LiveIntervalsEval>);
 static_assert(Analysis<FixedRegistersEval>);
 
-using AnalysisPassCacheMach = AnalysisPassCacheBase<LIRFuncData>;
+using AnalysisPassManagerMach = AnalysisPassManagerBase<LIRFuncData>;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LiveInfo.h"
-#include "base/analysis/AnalysisPassCacheBase.h"
+#include "base/analysis/AnalysisPassManagerBase.h"
 #include "base/analysis/traverse/PreorderTraverseBase.h"
 
 #include "lir/x64/module/LIRBlock.h"
@@ -58,7 +58,7 @@ public:
         return std::make_unique<result_type>(std::move(liveness));
     }
 
-    static LivenessAnalysis create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
+    static LivenessAnalysis create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         auto ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         return LivenessAnalysis(*ordering);
     }

@@ -33,6 +33,11 @@ void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
 }
 
+void MachFunctionCodegen::jmp(const LIRBlock *bb) {
+    const auto target = m_bb_labels.at(bb);
+    m_as.jmp(target);
+}
+
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
 #ifdef ENABLE_ASSERTIONS
     const auto values_num = ret_values.size();

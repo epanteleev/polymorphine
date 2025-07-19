@@ -37,6 +37,18 @@ public:
         m_asm.add(size, src, dst);
     }
 
+    void jmp(const aasm::Label& label) {
+        m_asm.jmp(label);
+    }
+
+    aasm::Label create_label() {
+        return m_asm.create_label();
+    }
+
+    void set_label(const aasm::Label& label) {
+        m_asm.set_label(label);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const AsmEmitter& masm);
 
     template<typename  Buffer>

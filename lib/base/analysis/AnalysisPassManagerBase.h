@@ -8,7 +8,7 @@
 #include "base/FunctionDataBase.h"
 
 template<Function FD>
-class AnalysisPassCacheBase final {
+class AnalysisPassManagerBase final {
     constexpr static auto MAX_ANALYSIS_PASSES = static_cast<std::size_t>(AnalysisType::Max);
 
 public:
@@ -33,7 +33,7 @@ public:
 
     template <Analysis A>
     std::future<typename A::result_type*> concurrent_analyze(const FD* data) {
-        return std::async(std::launch::async, &AnalysisPassCacheBase::analyze<A>, this, data);
+        return std::async(std::launch::async, &AnalysisPassManagerBase::analyze<A>, this, data);
     }
 
 private:

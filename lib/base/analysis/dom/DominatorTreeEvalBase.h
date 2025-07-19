@@ -47,7 +47,7 @@ public:
         enumeration_to_dom_map(m_postorder, index_to_label, dominators);
     }
 
-    static DominatorTreeEvalBase create(AnalysisPassCacheBase<FD> *cache, const FD *data) {
+    static DominatorTreeEvalBase create(AnalysisPassManagerBase<FD> *cache, const FD *data) {
         auto post_order = cache->template analyze<PostOrderTraverseBase<FD>>(data);
         return DominatorTreeEvalBase(*post_order);
     }

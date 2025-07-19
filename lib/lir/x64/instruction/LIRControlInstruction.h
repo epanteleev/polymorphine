@@ -39,12 +39,18 @@ enum class LIRBranchKind: std::uint8_t {
 
 class LIRBranch final: public LIRControlInstruction {
 public:
-    explicit LIRBranch(const std::size_t id, LIRBlock *bb, const LIRBranchKind kind, const LIROperand& condition,
-                       LIRBlock *on_true, LIRBlock *on_false) :
-        LIRControlInstruction(id, bb, {}, {condition}, {on_true, on_false}),
+    explicit LIRBranch(const std::size_t id, LIRBlock *bb, const LIRBranchKind kind, std::vector<LIROperand>&& uses,
+                       std::vector<LIRBlock* >&& successors) :
+        LIRControlInstruction(id, bb, {}, std::move(uses), std::move(successors)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
+
+    static LIRInstBuilder<LIRBranch> jmp(LIRBlock *target) {
+        return [=](std::size_t idx, LIRBlock *bb) {
+            return std::make_unique<LIRBranch>(idx, bb, LIRBranchKind::Jmp, std::vector<LIROperand>{}, std::vector{target});
+        };
+    }
 
 private:
     const LIRBranchKind m_kind;

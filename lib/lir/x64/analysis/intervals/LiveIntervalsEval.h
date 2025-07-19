@@ -43,7 +43,7 @@ public:
         return std::make_unique<LiveIntervals>(std::move(all_intervals));
     }
 
-    static LiveIntervalsEval create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
+    static LiveIntervalsEval create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto liveness = cache->analyze<LivenessAnalysis>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
 

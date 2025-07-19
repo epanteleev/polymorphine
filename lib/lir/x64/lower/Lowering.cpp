@@ -15,10 +15,10 @@ void Lowering::run() {
             args.emplace_back(idx, varg.type()->size_of());
         }
 
-        auto obj_func = std::make_unique<LIRFuncData>(func->name(), std::move(args));
-        FunctionLower lower(*obj_func.get(), *func);
+        AnalysisPassCache cache;
+        auto lower = FunctionLower::create(&cache, func.get());
         lower.run();
 
-        m_obj_functions.emplace(func->name(), std::move(obj_func));
+        m_obj_functions.emplace(func->name(), lower.result());
     }
 }

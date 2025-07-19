@@ -11,30 +11,51 @@
 
 class MachFunctionCodegen final: public LIRVisitor {
     explicit MachFunctionCodegen(const LIRFuncData &data,
-                                 const RegisterAllocation &reg_allocation) noexcept:
+                                 const RegisterAllocation &reg_allocation, const Ordering<LIRBlock>& preorder) noexcept:
         m_data(data),
-        m_reg_allocation(reg_allocation) {}
+        m_reg_allocation(reg_allocation),
+        m_preorder(preorder) {}
 
 public:
     void run() {
-        for (const auto& bb: m_data.basic_blocks()) {
-            for (auto& inst: bb.instructions()) {
-                inst.visit(*this);
-            }
-        }
+        setup_basic_block_labels();
+        traverse_instructions();
     }
 
     AsmEmitter result() noexcept {
         return std::move(m_as);
     }
 
-    static MachFunctionCodegen create(AnalysisPassCacheMach* cache, const LIRFuncData* data) {
+    static MachFunctionCodegen create(AnalysisPassManagerMach* cache, const LIRFuncData* data) {
         const auto register_allocation = cache->analyze<LinearScan>(data);
-
-        return MachFunctionCodegen(*data, *register_allocation);
+        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+        return MachFunctionCodegen(*data, *register_allocation, *preorder);
     }
 
 private:
+    void traverse_instructions() {
+        for (const auto& bb: m_preorder) {
+            if (bb != m_data.first()) {
+                const auto label = m_bb_labels.at(bb);
+                m_as.set_label(label);
+            }
+
+            for (auto& inst: bb->instructions()) inst.visit(*this);
+        }
+    }
+
+    void setup_basic_block_labels() {
+        for (const auto& bb: m_preorder) {
+            if (bb == m_data.first()) {
+                // Skip the first basic block, it does not need a label.
+                continue;
+            }
+
+            const auto label = m_as.create_label();
+            m_bb_labels.emplace(bb, label);
+        }
+    }
+
     [[nodiscard]]
     GPOp convert_to_gp_op(const LIROperand &val) const;
 
@@ -93,9 +114,7 @@ private:
 
     void copy_i(const LIRVal &out, const LIROperand &in) override;
 
-    void jmp(const LIRBlock *bb) override {
-
-    }
+    void jmp(const LIRBlock *bb) override;
 
     void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
 
@@ -145,5 +164,8 @@ private:
 
     const LIRFuncData& m_data;
     const RegisterAllocation& m_reg_allocation;
+    const Ordering<LIRBlock>& m_preorder;
+
+    std::unordered_map<const LIRBlock*, aasm::Label> m_bb_labels{};
     AsmEmitter m_as{};
 };

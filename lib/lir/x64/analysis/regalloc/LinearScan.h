@@ -29,7 +29,7 @@ public:
         return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation));
     }
 
-    static LinearScan create(AnalysisPassCacheBase<LIRFuncData> *cache, const LIRFuncData *data) {
+    static LinearScan create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto fixed_registers = cache->analyze<FixedRegistersEval>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
 
@@ -61,7 +61,6 @@ private:
     void do_register_allocation() {
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
             m_reg_allocation.try_emplace(vreg, aasm::rcx);
-
         }
     }
 

@@ -49,7 +49,7 @@ add_library(ckoof SHARED
         lib/base/analysis/AnalysisPass.h
         lib/base/analysis/traverse/PreorderTraverseBase.h
         lib/base/analysis/traverse/Ordering.h
-        lib/base/analysis/AnalysisPassCacheBase.h
+        lib/base/analysis/AnalysisPassManagerBase.h
         lib/base/analysis/traverse/PostOrderTraverseBase.h
         lib/base/analysis/dom/DominatorTreeEvalBase.h
         lib/base/analysis/dom/DominatorTree.h
@@ -141,6 +141,7 @@ add_library(ckoof SHARED
         lib/asm/instruction/Jmp.h
         lib/asm/instruction/Label.h
         tests/Buff.h
+        lib/asm/Assembler.cpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

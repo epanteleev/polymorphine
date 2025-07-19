@@ -1,19 +1,21 @@
 #pragma once
 
-class Label final {
-public:
-    constexpr explicit Label(const std::uint32_t id) noexcept :
-        m_id(id) {}
+namespace aasm {
+    class Label final {
+    public:
+        constexpr explicit Label(const std::uint32_t id) noexcept :
+            m_id(id) {}
 
-    [[nodiscard]]
-    constexpr std::uint32_t id() const noexcept { return m_id; }
+        [[nodiscard]]
+        constexpr std::uint32_t id() const noexcept { return m_id; }
 
-    friend std::ostream& operator<<(std::ostream& os, const Label& label);
+        friend std::ostream& operator<<(std::ostream& os, const Label& label);
 
-private:
-    std::uint32_t m_id;
-};
+    private:
+        std::uint32_t m_id;
+    };
 
-inline std::ostream & operator<<(std::ostream &os, const Label &label) {
-    return os << 'L' << label.id() << ':' << std::endl;
+    inline std::ostream & operator<<(std::ostream &os, const Label &label) {
+        return os << 'L' << label.id() << ':' << std::endl;
+    }
 }

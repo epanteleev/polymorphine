@@ -30,7 +30,7 @@ public:
         return std::make_unique<result_type>(std::move(m_order));
     }
 
-    static PostOrderTraverseBase create(AnalysisPassCacheBase<FD>* cache, const FD *data) {
+    static PostOrderTraverseBase create(AnalysisPassManagerBase<FD>* cache, const FD *data) {
         auto preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
         return PostOrderTraverseBase(*preorder);
     }

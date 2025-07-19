@@ -169,6 +169,7 @@ static Module branch() {
 
 TEST(SanityCheck, branch1) {
     const auto buffer = do_jit_compilation(branch(), true);
+    std::cout << buffer << std::endl;
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
     const auto res = fn();
     ASSERT_EQ(res, 0) << "Failed for value: " << 0;

@@ -172,7 +172,7 @@ int main() {
 
     auto obj_fun = result.find_function_data("ret_one").value();
 
-    AnalysisPassCacheMach cache;
+    AnalysisPassManagerMach cache;
     auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
     auto liveintervals = cache.analyze<LiveIntervalsEval>(obj_fun);
     std::cout << *liveintervals << std::endl;

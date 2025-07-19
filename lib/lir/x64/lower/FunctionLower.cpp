@@ -1,6 +1,8 @@
 #include "FunctionLower.h"
 
+#include "lir/x64/instruction/LIRInstruction.h"
 #include "mir/instruction/Binary.h"
+#include "mir/instruction/TerminateInstruction.h"
 #include "mir/types/TypeMatchingRules.h"
 
 template<std::integral T>
@@ -56,6 +58,11 @@ void FunctionLower::accept(Binary *inst) {
         }
         default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));
     }
+}
+
+void FunctionLower::accept(Branch *branch) {
+    const auto target = m_bb_mapping.at(branch->target());
+    m_bb->inst(LIRBranch::jmp(target));
 }
 
 void FunctionLower::accept(ReturnValue *inst) {

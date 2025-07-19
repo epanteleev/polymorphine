@@ -7,7 +7,7 @@
 
 #include "Ordering.h"
 #include "base/analysis/AnalysisPass.h"
-#include "base/analysis/AnalysisPassCacheBase.h"
+#include "base/analysis/AnalysisPassManagerBase.h"
 
 
 template<Function FD>
@@ -51,7 +51,7 @@ public:
         return std::make_unique<result_type>(std::move(m_order));
     }
 
-    static PreorderTraverseBase create(AnalysisPassCacheBase<FD>*, const FD *data) {
+    static PreorderTraverseBase create(AnalysisPassManagerBase<FD>*, const FD *data) {
         return PreorderTraverseBase(data);
     }
 

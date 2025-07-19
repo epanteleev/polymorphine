@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include <iomanip>
 #include <iosfwd>
 #include <ranges>
@@ -100,7 +101,7 @@ namespace aasm {
                         die("Label defined, but not set");
                     }
 
-                    if (inst_idx > offsets_from_start.size()) {
+                    if (inst_idx >= offsets_from_start.size()) {
                         var.emit_unresolved32(buffer);
                         unresolved_labels[var.label().id()].emplace_back(buffer.size());
                     } else {
@@ -117,7 +118,7 @@ namespace aasm {
                 instruction.visit(visitor);
             }
 
-            for (std::size_t label_id{}; label_id < m_label_table.size(); ++label_id) {
+            for (const auto label_id: std::views::iota(0U, m_label_table.size())) {
                 const auto label_offset = offsets_from_start[m_label_table[label_id]];
                 for (auto gaps: unresolved_labels[label_id]) {
                     buffer.patch32(gaps - 4, label_offset - gaps);
@@ -135,19 +136,5 @@ namespace aasm {
         std::vector<X64Instruction> m_instructions;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const Assembler &assembler) {
-        const auto pretty_print = static_cast<int>(os.width());
-        for (const auto& [idx, instruction]: std::ranges::enumerate_view(assembler.m_instructions)) {
-            if (idx > 0) {
-                os << std::endl;
-            }
-            if (pretty_print > 0) {
-                os << std::setw(pretty_print) << ' ' << instruction;
-            } else {
-                os << instruction;
-            }
-        }
-
-        return os;
-    }
+    std::ostream & operator<<(std::ostream &os, const Assembler &assembler);
 }

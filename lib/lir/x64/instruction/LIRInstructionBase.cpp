@@ -57,7 +57,8 @@ namespace {
         }
 
         void jmp(const LIRBlock *bb) override {
-
+            m_os << "jmp ";
+            bb->print_short_name(m_os);
         }
 
         void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
