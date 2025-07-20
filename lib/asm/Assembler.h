@@ -72,6 +72,18 @@ namespace aasm {
             m_instructions.emplace_back(CmpRI(size, imm, dst));
         }
 
+        constexpr void cmp(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(CmpRM(size, src, dst));
+        }
+
+        constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const Address& src) {
+            m_instructions.emplace_back(CmpMI(size, imm, src));
+        }
+
+        constexpr void cmp(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(CmpMR(size, src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(NO_OFFSET);
@@ -90,6 +102,10 @@ namespace aasm {
             m_instructions.emplace_back(Jmp(label));
         }
 
+        constexpr void jcc(const CondType type, const Label& label) {
+            m_instructions.emplace_back(Jcc(type, label));
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Assembler &assembler);
 
         template<CodeBuffer Buffer>
@@ -103,7 +119,7 @@ namespace aasm {
             unresolved_labels.resize(m_instructions.size());
 
             const auto visitor = [&]<typename T>(const T &var) {
-                if constexpr (std::is_same_v<T, Jmp>) {
+                if constexpr (std::is_same_v<T, Jmp> || std::is_same_v<T, Jcc>) {
                     const auto inst_idx = m_label_table[var.label().id()];
                     if (inst_idx == NO_OFFSET) {
                         die("Label defined, but not set");
@@ -129,7 +145,7 @@ namespace aasm {
             for (const auto label_id: std::views::iota(0U, m_label_table.size())) {
                 const auto label_offset = offsets_from_start[m_label_table[label_id]];
                 for (auto gaps: unresolved_labels[label_id]) {
-                    buffer.patch32(gaps - 4, label_offset - gaps);
+                    buffer.patch32(gaps - sizeof(std::int32_t), label_offset - gaps);
                 }
             }
         }

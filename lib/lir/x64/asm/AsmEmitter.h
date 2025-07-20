@@ -47,6 +47,12 @@ public:
         m_asm.jmp(label);
     }
 
+    void jcc(const aasm::CondType type, const aasm::Label& label) {
+        m_asm.jcc(type, label);
+    }
+
+    [[nodiscard]]
+
     aasm::Label create_label() {
         return m_asm.create_label();
     }

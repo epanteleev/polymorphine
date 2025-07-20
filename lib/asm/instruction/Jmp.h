@@ -12,7 +12,7 @@ namespace aasm {
         static constexpr std::uint8_t JMP_8 = 0xEB;
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer, std::int32_t offset) const {
+        constexpr void emit(Buffer& buffer, const std::int32_t offset) const {
             if (std::in_range<std::int8_t>(offset)) {
                 buffer.emit8(JMP_8);
                 buffer.emit8(static_cast<std::int8_t>(offset) - 2);

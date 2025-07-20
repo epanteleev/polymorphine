@@ -568,6 +568,130 @@ TEST(Asm, cmp_reg_imm2) {
     check_bytes(codes, names, generator, std::vector{1L, 2L, 3L});
 }
 
+TEST(Asm, cmp_reg_mem1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x3a,0x7c,0x3e,0x17},
+        {0x66,0x3b,0x7c,0x3e,0x17},
+        {0x3b,0x7c,0x3e,0x17},
+        {0x48,0x3b,0x7c,0x3e,0x17}
+    };
+
+    std::vector<std::string> names = {
+        "cmpb 23(%rsi,%rdi), %dil",
+        "cmpw 23(%rsi,%rdi), %di",
+        "cmpl 23(%rsi,%rdi), %edi",
+        "cmpq 23(%rsi,%rdi), %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
+        a.cmp(size, addr, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, cmp_reg_mem2) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x3a,0x44,0x3e,0x17},
+        {0x66,0x3b,0x44,0x3e,0x17},
+        {0x3b,0x44,0x3e,0x17},
+        {0x48,0x3b,0x44,0x3e,0x17}
+    };
+
+    std::vector<std::string> names = {
+        "cmpb 23(%rsi,%rdi), %al",
+        "cmpw 23(%rsi,%rdi), %ax",
+        "cmpl 23(%rsi,%rdi), %eax",
+        "cmpq 23(%rsi,%rdi), %rax"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
+        a.cmp(size, addr, aasm::rax);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, cmp_mem_imm1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x80,0x7e,0x17,0x12},
+        {0x66,0x83,0x7e,0x17,0x12},
+        {0x83,0x7e,0x17,0x12},
+        {0x48,0x83,0x7e,0x17,0x12}
+    };
+
+    std::vector<std::string> names = {
+        "cmpb $18, 23(%rsi)",
+        "cmpw $18, 23(%rsi)",
+        "cmpl $18, 23(%rsi)",
+        "cmpq $18, 23(%rsi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, 1, 23);
+        a.cmp(size, 18, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, cmp_mem_imm2) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x66,0x81,0x7e,0x17,0xb0,0xb9},
+        {0x81,0x7e,0x17,0xb0,0xb9,0xff,0xff},
+        {0x48,0x81,0x7e,0x17,0xb0,0xb9,0xff,0xff}
+    };
+
+    std::vector<std::string> names = {
+        "cmpw $-18000, 23(%rsi)",
+        "cmpl $-18000, 23(%rsi)",
+        "cmpq $-18000, 23(%rsi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, 1, 23);
+        a.cmp(size, -18000, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator, std::vector{1L, 2L, 3L});
+
+}
+
+TEST(Asm, cmp_mem_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x44,0x3a,0x61,0x17},
+        {0x66,0x44,0x3b,0x61,0x17},
+        {0x44,0x3b,0x61,0x17},
+        {0x4c,0x3b,0x61,0x17}
+    };
+
+    std::vector<std::string> names = {
+        "cmpb 23(%rcx), %r12b",
+        "cmpw 23(%rcx), %r12w",
+        "cmpl 23(%rcx), %r12d",
+        "cmpq 23(%rcx), %r12"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rcx, 1, 23);
+        a.cmp(size, addr, aasm::r12);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -21,6 +21,11 @@ namespace aasm {
             index(index),
             scale(scale) {}
 
+        explicit constexpr Address(const GPReg base, std::uint8_t scale = 1, const std::int32_t displacement = 0): type(AddressType::ADDR_NORMAL),
+                    displacement(displacement),
+                    base(base),
+                    index(GPReg::noreg()),
+                    scale(scale) {}
 
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
 

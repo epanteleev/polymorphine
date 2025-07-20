@@ -11,7 +11,8 @@
 #include "Add.h"
 #include "Jmp.h"
 #include "Cmp.h"
-
+#include "CondType.h"
+#include "Jcc.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -33,8 +34,8 @@ namespace aasm {
             Ret,
             MovRR, MovRI, MovMR, MovRM, MovMI,
             AddRR,
-            CmpRR, CmpRI,
-            Jmp
+            CmpRR, CmpRI, CmpMI, CmpRM, CmpMR,
+            Jmp, Jcc
         > m_inst;
     };
 
