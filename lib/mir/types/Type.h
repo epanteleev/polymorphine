@@ -10,9 +10,9 @@ class Type {
 public:
     virtual ~Type() = default;
 
-    template<typename T>
+    template<typename Matcher>
     [[nodiscard]]
-    bool isa(const T &matcher) const {
+    bool isa(const Matcher &matcher) const noexcept {
         return matcher(this);
     }
 

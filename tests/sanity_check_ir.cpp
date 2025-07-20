@@ -162,7 +162,7 @@ static Module branch() {
     auto* cont = data.create_basic_block();
     data.br(cont);
     data.switch_block(cont);
-    data.ret(Value::i32(0));
+    data.ret(Value::i32(10));
 
     return builder.build();
 }
@@ -172,7 +172,7 @@ TEST(SanityCheck, branch1) {
     std::cout << buffer << std::endl;
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
     const auto res = fn();
-    ASSERT_EQ(res, 0) << "Failed for value: " << 0;
+    ASSERT_EQ(res, 10) << "Failed for value: " << 0;
 }
 
 int main(int argc, char **argv) {

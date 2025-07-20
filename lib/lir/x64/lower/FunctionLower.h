@@ -84,9 +84,7 @@ private:
 
     void accept(Branch *branch) override;
 
-    void accept(CondBranch *cond_branch) override {
-
-    }
+    void accept(CondBranch *cond_branch) override;
 
     void accept(TerminateValueInstruction *inst) override {
 
@@ -122,9 +120,7 @@ private:
 
     }
 
-    void accept(IcmpInstruction *icmp) override {
-
-    }
+    void accept(IcmpInstruction *icmp) override;
 
     void accept(GetElementPtr *gep) override {
 

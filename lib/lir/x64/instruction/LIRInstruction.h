@@ -44,6 +44,14 @@ public:
         };
     }
 
+    static LIRInstBuilder<LIRInstruction> cmp(const LIROperand &lhs, const LIROperand &rhs) {
+        return [=](std::size_t id, LIRBlock *bb) {
+            auto cmp = std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Cmp, std::vector{lhs, rhs}, std::vector<LIRVal>{});
+            cmp->add_def(LIRVal::reg(1, 0, cmp.get()));
+            return cmp;
+        };
+    }
+
     [[nodiscard]]
     LIRInstKind kind() const noexcept {
         return m_kind;

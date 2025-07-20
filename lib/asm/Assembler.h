@@ -64,6 +64,14 @@ namespace aasm {
             m_instructions.emplace_back(AddRR(size, src, dst));
         }
 
+        constexpr void cmp(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(CmpRR(size, src, dst));
+        }
+
+        constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+            m_instructions.emplace_back(CmpRI(size, imm, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(NO_OFFSET);

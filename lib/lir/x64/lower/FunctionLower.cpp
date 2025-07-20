@@ -1,9 +1,7 @@
 #include "FunctionLower.h"
 
 #include "lir/x64/instruction/LIRInstruction.h"
-#include "mir/instruction/Binary.h"
-#include "mir/instruction/TerminateInstruction.h"
-#include "mir/types/TypeMatchingRules.h"
+#include "mir/mir.h"
 
 template<std::integral T>
 static LirCst make_constant(const Type& type, const T integer) noexcept {
@@ -65,8 +63,30 @@ void FunctionLower::accept(Branch *branch) {
     m_bb->inst(LIRBranch::jmp(target));
 }
 
+void FunctionLower::accept(CondBranch *cond_branch) {
+    const auto on_true_lir = m_bb_mapping.at(cond_branch->on_true());
+    const auto on_false_lir = m_bb_mapping.at(cond_branch->on_false());
+    const auto& cond = cond_branch->condition();
+
+    if (cond.isa(icmp(signed_v(), signed_v()))) {
+
+
+    } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
+
+    } else {
+        die("Unsupported condition type in cond branch");
+    }
+}
+
 void FunctionLower::accept(ReturnValue *inst) {
     const auto ret_val = get_value_mapping(inst->ret_value());
     const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
     m_bb->inst(LIRReturn::ret(copy->def(0)));
+}
+
+void FunctionLower::accept(IcmpInstruction *icmp) {
+    const auto lhs = get_value_mapping(icmp->lhs());
+    const auto rhs = get_value_mapping(icmp->rhs());
+    const auto cmp = m_bb->inst(LIRInstruction::cmp(lhs, rhs));
+    m_value_mapping.emplace(LocalValue::from(icmp), cmp->def(0));
 }

@@ -4,6 +4,8 @@
 
 namespace aasm {
     class SizeEvaluator final {
+        SizeEvaluator() = default;
+
     public:
         constexpr void emit8(const std::uint8_t) noexcept { m_size++; }
         constexpr void emit16(const std::uint16_t) noexcept { m_size += 2; }

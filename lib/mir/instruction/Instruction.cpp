@@ -78,8 +78,8 @@ namespace {
 
         void accept(CondBranch *cond_branch) override {
             os << "br_cond " << cond_branch->condition();
-            os << ", label %" << cond_branch->onTrue()->id();
-            os << ", label %" << cond_branch->onFalse()->id();
+            os << ", label %" << cond_branch->on_true()->id();
+            os << ", label %" << cond_branch->on_false()->id();
         }
 
         void accept(PhiInstruction *inst) override {

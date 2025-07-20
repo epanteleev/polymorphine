@@ -42,12 +42,12 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     [[nodiscard]]
-    BasicBlock *onTrue() const {
+    BasicBlock *on_true() const {
         return m_successors.at(0);
     }
 
     [[nodiscard]]
-    BasicBlock* onFalse() const {
+    BasicBlock* on_false() const {
         return m_successors.at(1);
     }
 

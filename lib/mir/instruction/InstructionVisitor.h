@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../mir_frwd.h"
+#include "mir/mir_frwd.h"
 
 class Visitor {
 public:

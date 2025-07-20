@@ -59,6 +59,9 @@ consteval ConstExprBuff<N> emit_test1() {
     as.push(2, aasm::rbx);
     as.mov(4, 0xFF, aasm::rbx);
     as.mov(8, aasm::rax, aasm::rbx);
+    as.add(4, aasm::rbx, aasm::rax);
+    as.cmp(4, aasm::rax, aasm::rbx);
+    as.cmp(2, 0x1234, aasm::rbx);
 
     ConstExprBuff<N> buff;
     as.emit(buff);

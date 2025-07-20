@@ -12,9 +12,8 @@ add_library(ckoof SHARED
         lib/mir/mir_frwd.h
         lib/mir/value/Value.cpp
         lib/mir/value/Value.h
-        lib/mir/types/TypeMatcher.h
         lib/mir/value/ValueMatcher.h
-        lib/mir/types/TypeMatchingRules.h
+        lib/mir/types/TypeMatcher.h
         lib/utility/OrderedSet.h
         lib/mir/instruction/InstructionVisitor.h
         lib/utility/Error.cpp
@@ -142,6 +141,8 @@ add_library(ckoof SHARED
         lib/asm/instruction/Label.h
         tests/Buff.h
         lib/asm/Assembler.cpp
+        lib/asm/instruction/Cmp.h
+        lib/mir/instruction/InstructionMatcher.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

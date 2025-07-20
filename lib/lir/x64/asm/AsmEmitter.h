@@ -1,7 +1,7 @@
 #pragma once
+
 #include "asm/Address.h"
 #include "asm/Assembler.h"
-
 
 class AsmEmitter final {
 public:
@@ -35,6 +35,12 @@ public:
 
     void add(const std::uint8_t size, const aasm::GPReg src, const aasm::GPReg dst) {
         m_asm.add(size, src, dst);
+    }
+
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
+    void cmp(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.cmp(size, src, dst);
     }
 
     void jmp(const aasm::Label& label) {

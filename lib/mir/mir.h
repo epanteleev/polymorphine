@@ -7,12 +7,15 @@
 #include "module/FunctionData.h"
 
 #include "types/Type.h"
-#include "types/TypeMatchingRules.h"
+#include "types/TypeMatcher.h"
 
 #include "instruction/Instruction.h"
 #include "instruction/ValueInstruction.h"
 #include "instruction/Binary.h"
 #include "instruction/Unary.h"
 #include "instruction/TerminateInstruction.h"
+#include "instruction/InstructionMatcher.h"
+
+#include "value/ValueMatcher.h"
 
 #include "analysis/Analysis.h"

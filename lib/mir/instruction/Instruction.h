@@ -28,6 +28,11 @@ public:
     [[nodiscard]]
     BasicBlock *owner() const { return m_owner; }
 
+    template<typename Matcher>
+    bool isa(Matcher&& matcher) const noexcept {
+        return matcher(this);
+    }
+
     [[nodiscard]]
     std::span<const Value> operands() const {
         return m_values;

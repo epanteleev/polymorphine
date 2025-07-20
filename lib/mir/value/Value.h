@@ -4,7 +4,7 @@
 #include <variant>
 #include <iosfwd>
 
-#include "../mir_frwd.h"
+#include "mir/mir_frwd.h"
 #include "mir/types/Type.h"
 
 template <typename T>
@@ -32,6 +32,11 @@ public:
     [[nodiscard]]
     constexpr bool is() const {
         return std::holds_alternative<T>(m_value);
+    }
+
+    template<typename Matcher>
+    constexpr bool isa(Matcher&& matcher) const noexcept {
+        return matcher(*this);
     }
 
     [[nodiscard]]

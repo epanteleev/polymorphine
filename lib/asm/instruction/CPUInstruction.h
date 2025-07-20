@@ -10,6 +10,7 @@
 #include "Ret.h"
 #include "Add.h"
 #include "Jmp.h"
+#include "Cmp.h"
 
 
 namespace aasm {
@@ -32,6 +33,7 @@ namespace aasm {
             Ret,
             MovRR, MovRI, MovMR, MovRM, MovMI,
             AddRR,
+            CmpRR, CmpRI,
             Jmp
         > m_inst;
     };

@@ -500,6 +500,29 @@ TEST(Asm, add_reg_reg2) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, cmp_reg_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x38,0xc7},
+        {0x66,0x39,0xc7},
+        {0x39,0xc7},
+        {0x48,0x39,0xc7}
+    };
+    std::vector<std::string> names = {
+        "cmpb %al, %dil",
+        "cmpw %ax, %di",
+        "cmpl %eax, %edi",
+        "cmpq %rax, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        a.cmp(size, aasm::rax, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

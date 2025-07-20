@@ -4,13 +4,13 @@
 namespace aasm {
     class AddRR final {
     public:
-        AddRR(std::uint8_t size, const GPReg src, const GPReg dst) noexcept
+        constexpr AddRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept
             : m_size(size), m_src(src), m_dst(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const AddRR& add);
 
         template<CodeBuffer Buffer>
-        void emit(Buffer& buffer) const {
+        constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t ADD_RR = 0x01;
             static constexpr std::uint8_t ADD_RR_8 = 0x00;
             switch (m_size) {
