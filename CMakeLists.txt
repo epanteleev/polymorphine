@@ -56,7 +56,6 @@ add_library(ckoof SHARED
         lib/asm/Register.h
         lib/asm/Register.cpp
         lib/asm/Address.h
-        lib/asm/Instruction.h
         lib/mir/module/Module.h
         lib/mir/module/Module.cpp
         lib/mir/builder/ModuleBuilder.cpp
