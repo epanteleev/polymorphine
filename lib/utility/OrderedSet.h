@@ -16,6 +16,7 @@ public:
     using const_iterator = typename std::deque<std::unique_ptr<T>>::const_iterator;
 
 private:
+
     template<typename iterator>
     class Iterator final {
     public:

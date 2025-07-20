@@ -66,22 +66,28 @@ static std::size_t to_byte_buffer(const aasm::Assembler& aasm, std::span<std::ui
     return buff.size();
 }
 
-static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t)) {
+template<std::ranges::range R>
+static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t), R&& scales) {
     ASSERT_EQ(codes.size(), names.size());
     ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
 
-    for (const auto scale : std::views::iota(0U, codes.size())) {
+    for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
         aasm::Assembler a = fn(1 << scale);
         std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
         const auto size = to_byte_buffer(a, v);
-        auto& code = codes[scale];
+        auto& code = codes[idx];
 
         ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
         for (std::size_t i = 0; i < code.size(); ++i) {
             ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
         }
 
-        auto& name = names[scale];
+        auto& name = names[idx];
         ASSERT_EQ(name, make_string(a)) << "Mismatch at scale=" << scale;
     }
 }
+
+static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t)) {
+    return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
+}
+
