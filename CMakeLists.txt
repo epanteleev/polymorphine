@@ -43,7 +43,6 @@ add_library(ckoof SHARED
         lib/mir/instruction/Alloc.h
         lib/mir/builder/FunctionBuilder.cpp
         lib/mir/builder/FunctionBuilder.h
-        lib/mir/instruction/Compare.cpp
         lib/mir/instruction/Compare.h
         lib/base/analysis/AnalysisPass.h
         lib/base/analysis/traverse/PreorderTraverseBase.h
@@ -139,11 +138,12 @@ add_library(ckoof SHARED
         lib/asm/instruction/Jmp.h
         lib/asm/instruction/Label.h
         tests/Buff.h
-        lib/asm/Assembler.cpp
         lib/asm/instruction/Cmp.h
         lib/mir/instruction/InstructionMatcher.h
         lib/asm/instruction/Jcc.h
         lib/asm/instruction/CondType.h
+        lib/asm/AsmBuffer.h
+        lib/asm/AsmBuffer.cpp
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

@@ -7,7 +7,6 @@ include(GoogleTest)
 function(add_test_executable target)
     add_executable(${target} ${ARGN})
     target_compile_features(${target} PUBLIC cxx_std_23)
-    target_compile_options(${target} PUBLIC -fsanitize=address)
 
     target_link_libraries(${target} PRIVATE ckoof GTest::gtest GTest::gtest_main)
     gtest_discover_tests(${target})

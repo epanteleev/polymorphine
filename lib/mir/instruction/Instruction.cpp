@@ -56,6 +56,7 @@ namespace {
                 case UnaryOp::SignExtend: return "sext";
                 case UnaryOp::ZeroExtend: return "zext";
                 case UnaryOp::Ptr2Int: return "ptr2int";
+                case UnaryOp::Flag2Int: return "flag2int";
                 case UnaryOp::Int2Ptr: return "int2ptr";
                 case UnaryOp::Int2Float: return "int2fp";
                 case UnaryOp::Float2Int: return "fp2int";

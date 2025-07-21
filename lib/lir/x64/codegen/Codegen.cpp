@@ -8,6 +8,6 @@ void Codegen::run() {
         AnalysisPassManagerMach cache;
         auto fn_codegen = MachFunctionCodegen::create(&cache, func.get());
         fn_codegen.run();
-        m_assemblers.emplace(func->name(), fn_codegen.result());
+        m_assemblers.emplace(func->name(), fn_codegen.result().to_buffer());
     }
 }

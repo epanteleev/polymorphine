@@ -84,7 +84,7 @@ namespace aasm {
                     }
 
                     if (std::in_range<std::int8_t>(m_imm)) {
-                        buffer.emit8(CMP_RI | 0x02);
+                        buffer.emit8(CMP_RI | BYTE_MARK);
                         buffer.emit8(0xC0 | reg3(m_dst) | 0x38);
                         buffer.emit8(static_cast<std::int8_t>(m_imm));
 
@@ -114,6 +114,7 @@ namespace aasm {
     private:
         static constexpr std::uint8_t CMP_RI = 0x81;
         static constexpr std::uint8_t CMP_RI_8 = 0x80;
+        static constexpr std::uint8_t BYTE_MARK = 0x02;
 
         template<CodeBuffer Buffer>
         constexpr void emit_cmp_32_and_64(Buffer& buffer) const {

@@ -8,7 +8,7 @@ TEST(Asm, ret) {
     aasm::Assembler a;
     a.ret();
     std::uint8_t v[32];
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 1);
     ASSERT_EQ(v[0], 0xC3); // 0xC3 is the opcode for RET
 }
@@ -40,7 +40,7 @@ TEST(Asm, popq_reg) {
     }
 
     std::uint8_t v[64];
-    to_byte_buffer(a, v);
+    to_byte_buffer(a.to_buffer(), v);
     auto is_same = std::equal(codings.begin(), codings.end(), v);
 
     ASSERT_TRUE(is_same);
@@ -52,7 +52,7 @@ TEST(Asm, popq_addr) {
     // Generate: popq (%rsp)
     a.pop(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x8F);
     ASSERT_EQ(v[1], 0x04);
@@ -65,7 +65,7 @@ TEST(Asm, popq_addr_with_displacement) {
     // Generate: popq 0x1234(%rsi,%rbx,1)
     a.pop(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 4);
     ASSERT_EQ(v[0], 0x8F);
     ASSERT_EQ(v[1], 0x44);
@@ -79,7 +79,7 @@ TEST(Asm, popq_addr_with_index) {
     // Generate: popq (%rsp,%rdi,1)
     a.pop(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     unsigned char expected [] = {0x8F, 0x44, 0x3C};
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x8F);
@@ -93,7 +93,7 @@ TEST(Asm, popq_addr_with_index_and_displacement) {
     // Generate: popq 0x2(%rsp,%rdi,1)
     a.pop(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 4);
     ASSERT_EQ(v[0], 0x8F);
     ASSERT_EQ(v[1], 0x44);
@@ -107,7 +107,7 @@ TEST(Asm, popq_addr_with_index_and_displacement2) {
     // Generate: popq 0x2(%r15,%rdi,1)
     a.pop(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 5);
     ASSERT_EQ(v[0], 0x41);
     ASSERT_EQ(v[1], 0x8F);
@@ -122,7 +122,7 @@ TEST(Asm, popw_addr) {
     // Generate: popw (%rsp)
     a.pop(2, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 4);
     ASSERT_EQ(v[0], 0x66);
     ASSERT_EQ(v[1], 0x8F);
@@ -136,7 +136,7 @@ TEST(Asm, pushq_addr) {
     // Generate: push (%rsp)
     a.push(8, addr);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0xFF);
     ASSERT_EQ(v[1], 0x34);
@@ -148,7 +148,7 @@ TEST(Asm, pushq_imm) {
     // Generate: push $32
     a.push(4, 320000);
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 5);
     ASSERT_EQ(v[0], 0x68);
     ASSERT_EQ(v[1], 0x00);
@@ -162,7 +162,7 @@ TEST(Asm, movq_reg_reg) {
     a.mov(8, aasm::rbx, aasm::rax);
     // Generate: movq %rbx, %rax
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x48);
     ASSERT_EQ(v[1], 0x89);
@@ -174,7 +174,7 @@ TEST(Asm, movq_reg_reg1) {
     a.mov(8, aasm::r15, aasm::r14);
     // Generate: movq %r15, %r14
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x4d);
     ASSERT_EQ(v[1], 0x89);
@@ -186,7 +186,7 @@ TEST(Asm, movq_reg_reg2) {
     a.mov(8, aasm::rax, aasm::r14);
     // Generate: movq %rax, %r14
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x49);
     ASSERT_EQ(v[1], 0x89);
@@ -198,7 +198,7 @@ TEST(Asm, movq_reg_reg3) {
     a.mov(8, aasm::r14, aasm::rbx);
     // Generate: movq %r14, %rbx
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x4c);
     ASSERT_EQ(v[1], 0x89);
@@ -210,7 +210,7 @@ TEST(Asm, movl_reg_reg3) {
     a.mov(4, aasm::r11, aasm::rdx);
     // Generate: movl %r11d, %edx
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
 
     print_hex(v, 3);
     ASSERT_EQ(size, 3);
@@ -224,7 +224,7 @@ TEST(Asm, movw_reg_reg3) {
     a.mov(2, aasm::r14, aasm::rbx);
     // Generate: movw %r14w, %bx
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 4);
     ASSERT_EQ(v[0], 0x66);
     ASSERT_EQ(v[1], 0x44);
@@ -237,7 +237,7 @@ TEST(Asm, movb_reg_reg3) {
     a.mov(1, aasm::r14, aasm::rbx);
     // Generate: movb %r14b, %bl
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x44);
     ASSERT_EQ(v[1], 0x88);
@@ -249,7 +249,7 @@ TEST(Asm, movb_imm_reg1) {
     a.mov(1, 5, aasm::rbx);
     // Generate: movb $5, %bx
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 2);
     ASSERT_EQ(v[0], 0xb3);
     ASSERT_EQ(v[1], 0x05);
@@ -260,7 +260,7 @@ TEST(Asm, movb_imm_reg2) {
     a.mov(1, 5, aasm::r15);
     // Generate: movb $5, %r15b
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 3);
     ASSERT_EQ(v[0], 0x41);
     ASSERT_EQ(v[1], 0xb7);
@@ -272,7 +272,7 @@ TEST(Asm, movw_imm_reg1) {
     a.mov(2, 256, aasm::rcx);
     // Generate: movw $256, %cx
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 4);
     ASSERT_EQ(v[0], 0x66);
     ASSERT_EQ(v[1], 0xb9);
@@ -285,7 +285,7 @@ TEST(Asm, movw_imm_reg2) {
     a.mov(2, -1, aasm::r14);
     // Generate: movw $-1, %r14w
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 5);
     ASSERT_EQ(v[0], 0x66);
     ASSERT_EQ(v[1], 0x41);
@@ -299,7 +299,7 @@ TEST(Asm, movl_imm_reg1) {
     a.mov(4, -2, aasm::rsp);
     // Generate: movl $-2, %esp
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 5);
     ASSERT_EQ(v[0], 0xbc);
     ASSERT_EQ(v[1], 0xfe);
@@ -313,7 +313,7 @@ TEST(Asm, movl_imm_reg2) {
     a.mov(4, 0, aasm::r12);
     // Generate: movl $0, %r12d
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, 6);
     ASSERT_EQ(v[0], 0x41);
     ASSERT_EQ(v[1], 0xbc);
@@ -329,7 +329,7 @@ TEST(Asm, movq_imm_reg1) {
     // Generate: movabsq $-1, %rbp
     std::uint8_t v[32]{};
     std::vector codes = {0x48,0xbd,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {
         ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
@@ -342,7 +342,7 @@ TEST(Asm, movq_imm_reg2) {
     // Generate: movabsq $0x1234567890abcdef, %r15
     std::uint8_t v[32]{};
     std::vector codes = {0x49, 0xbf, 0xef, 0xcd, 0xab, 0x90, 0x78, 0x56, 0x34, 0x12};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {
         ASSERT_EQ(v[i], codes[i]) << "Mismatch at index " << i;
@@ -355,7 +355,7 @@ TEST(Asm, movb_reg_mem1) {
     a.mov(1, aasm::rbx, addr);
     // Generate: movb %bl, 2(%rsp)
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     std::vector codes = {0x88,0x5c,0x24,0x02};
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {
@@ -369,7 +369,7 @@ TEST(Asm, movw_reg_mem1) {
     a.mov(2, aasm::rsi, addr);
     // Generate: movw %si, 2(%rsp, %rdi)
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     const std::vector codes = {0x66, 0x89, 0x74, 0x3c, 0x02};
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {
@@ -383,7 +383,7 @@ TEST(Asm, movl_reg_mem1) {
     a.mov(4, aasm::rdi, addr);
     // Generate: movl %edi, 127(%rsp, %rdi, 8)
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     const std::vector codes = {0x89, 0x7c, 0xfc, 0x7f};
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {
@@ -397,7 +397,7 @@ TEST(Asm, movq_reg_mem1) {
     a.mov(8, aasm::rdi, addr);
     // Generate: movq %rdi, 2147483647(%rsi, %rdi, 8)
     std::uint8_t v[32]{};
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     const std::vector codes = {0x48, 0x89, 0xbc, 0xfe, 0xff, 0xff, 0xff, 0x7f};
     ASSERT_EQ(size, codes.size());
     for (std::size_t i = 0; i < codes.size(); ++i) {

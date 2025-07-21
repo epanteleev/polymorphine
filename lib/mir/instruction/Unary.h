@@ -9,6 +9,7 @@ enum class UnaryOp {
     SignExtend,
     ZeroExtend,
     Ptr2Int,
+    Flag2Int,
     Int2Ptr,
     Int2Float,
     Float2Int,
@@ -33,6 +34,12 @@ public:
     static InstructionBuilder<Unary> load(const Value &value) {
         return [&](std::size_t id, BasicBlock* bb) {
             return std::make_unique<Unary>(id, bb, UnaryOp::Load, value);
+        };
+    }
+
+    static InstructionBuilder<Unary> flag2int(const Value &value) {
+        return [&](std::size_t id, BasicBlock* bb) {
+            return std::make_unique<Unary>(id, bb, UnaryOp::Flag2Int, value);
         };
     }
 

@@ -30,7 +30,7 @@ TEST(Asm1, forward_jmp1) {
     };
 
     std::uint8_t v[64];
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
     ASSERT_EQ(size, codes.size());
     verify_codes(codes, v);
@@ -57,7 +57,7 @@ TEST(Asm1, backward_jmp1) {
         0xC3
     };
     std::uint8_t v[64];
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
     verify_codes(codes, v);
     ASSERT_EQ(size, 13);
@@ -87,7 +87,7 @@ TEST(Asm1, forward_cond_jmp1) {
         0xC3
     };
     std::uint8_t v[64];
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
     ASSERT_EQ(size, codes.size());
     verify_codes(codes, v);
@@ -117,7 +117,7 @@ TEST(Asm1, backward_cond_jmp1) {
         0xC3
     };
     std::uint8_t v[64];
-    const auto size = to_byte_buffer(a, v);
+    const auto size = to_byte_buffer(a.to_buffer(), v);
     print_hex(reinterpret_cast<const std::uint8_t *>(&v), size);
     ASSERT_EQ(size, codes.size());
     verify_codes(codes, v);

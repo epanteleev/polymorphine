@@ -61,11 +61,8 @@ public:
         m_asm.set_label(label);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const AsmEmitter& masm);
-
-    template<typename  Buffer>
-    void emit(Buffer& buffer) const {
-        m_asm.emit(buffer);
+    aasm::AsmBuffer to_buffer() noexcept {
+        return m_asm.to_buffer();
     }
 
     [[nodiscard]]
@@ -76,7 +73,3 @@ public:
 private:
     aasm::Assembler m_asm{};
 };
-
-inline std::ostream & operator<<(std::ostream &os, const AsmEmitter& masm) {
-    return os << masm.m_asm;
-}

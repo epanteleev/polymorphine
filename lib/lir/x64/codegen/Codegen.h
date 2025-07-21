@@ -15,6 +15,6 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, AsmEmitter> m_assemblers;
+    std::unordered_map<std::string, aasm::AsmBuffer> m_assemblers;
     const LIRModule& m_module;
 };

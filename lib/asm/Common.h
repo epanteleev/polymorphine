@@ -11,6 +11,7 @@ namespace aasm {
         static constexpr std::uint8_t REX_W = 0x48; // REX prefix for 64-bit operands
         static constexpr auto PREFIX_OPERAND_SIZE = 0x66;
         static constexpr std::uint8_t MAX_X86_INSTRUCTION_SIZE = 15; // Maximum size of an x86 instruction
+        static constexpr auto NO_OFFSET = std::numeric_limits<std::uint32_t>::max();
     }
 
     template<std::integral T>

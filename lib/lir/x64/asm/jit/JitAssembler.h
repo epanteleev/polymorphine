@@ -13,21 +13,21 @@ class JitAssembler final {
     explicit JitAssembler(std::uint8_t* buffer) noexcept: m_buffer(buffer) {}
 
 public:
-    void emit8(const std::int8_t opcode) {
+    void emit8(const std::uint8_t opcode) {
         m_buffer[m_size++] = opcode;
     }
 
-    void emit16(const std::int16_t opcode) {
+    void emit16(const std::uint16_t opcode) {
         std::memcpy(&m_buffer[m_size], &opcode, sizeof(opcode));
         m_size += 2;
     }
 
-    void emit32(const std::int32_t c) noexcept {
+    void emit32(const std::uint32_t c) noexcept {
         std::memcpy(&m_buffer[m_size], &c, 4);
         m_size += 4;
     }
 
-    void emit64(const std::int64_t c) noexcept {
+    void emit64(const std::uint64_t c) noexcept {
         std::memcpy(&m_buffer[m_size], &c, 8);
         m_size += 8;
     }

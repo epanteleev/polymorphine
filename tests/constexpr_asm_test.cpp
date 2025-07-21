@@ -6,23 +6,23 @@
 template<std::size_t N>
 class ConstExprBuff final {
 public:
-    constexpr void emit8(const std::int8_t c) {
+    constexpr void emit8(const std::uint8_t c) {
         m_buffer[m_size++] = c;
     }
 
-    constexpr void emit16(const std::int16_t c) {
+    constexpr void emit16(const std::uint16_t c) {
         m_buffer[m_size++] = static_cast<std::uint8_t>(c & 0xFF);
         m_buffer[m_size++] = static_cast<std::uint8_t>((c >> 8) & 0xFF);
     }
 
-    constexpr void emit32(const std::int32_t c) noexcept {
+    constexpr void emit32(const std::uint32_t c) noexcept {
         m_buffer[m_size++] = static_cast<std::uint8_t>(c & 0xFF);
         m_buffer[m_size++] = static_cast<std::uint8_t>((c >> 8) & 0xFF);
         m_buffer[m_size++] = static_cast<std::uint8_t>((c >> 16) & 0xFF);
         m_buffer[m_size++] = static_cast<std::uint8_t>((c >> 24) & 0xFF);
     }
 
-    constexpr void emit64(const std::int64_t c) noexcept {
+    constexpr void emit64(const std::uint64_t c) noexcept {
         emit32(static_cast<std::int32_t>(c & 0xFFFFFFFF));
         emit32(static_cast<std::int32_t>((c >> 32) & 0xFFFFFFFF));
     }
@@ -64,7 +64,7 @@ consteval ConstExprBuff<N> emit_test1() {
     as.cmp(2, 0x1234, aasm::rbx);
 
     ConstExprBuff<N> buff;
-    as.emit(buff);
+    as.to_buffer().emit(buff);
     return std::move(buff);
 };
 

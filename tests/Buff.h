@@ -19,21 +19,21 @@ class Buff final {
 public:
     explicit Buff(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
 
-    void emit8(const std::int8_t opcode) {
+    void emit8(const std::uint8_t opcode) {
         m_buffer[m_size++] = opcode;
     }
 
-    void emit16(const std::int16_t opcode) {
+    void emit16(const std::uint16_t opcode) {
         std::memcpy(&m_buffer[m_size], &opcode, sizeof(opcode));
         m_size += sizeof(opcode);
     }
 
-    void emit32(const std::int32_t c) noexcept {
+    void emit32(const std::uint32_t c) noexcept {
         std::memcpy(&m_buffer[m_size], &c, 4);
         m_size += 4;
     }
 
-    void emit64(const std::int64_t c) noexcept {
+    void emit64(const std::uint64_t c) noexcept {
         std::memcpy(&m_buffer[m_size], &c, 8);
         m_size += 8;
     }
@@ -54,27 +54,29 @@ private:
 
 static_assert(aasm::CodeBuffer<Buff>);
 
-static std::string make_string(const aasm::Assembler &a) {
+static std::string make_string(const aasm::AsmBuffer &a) {
     std::ostringstream os;
     os << a;
     return os.str();
 }
 
-static std::size_t to_byte_buffer(const aasm::Assembler& aasm, std::span<std::uint8_t> buffer) {
+static std::size_t to_byte_buffer(const aasm::AsmBuffer& aasm, std::span<std::uint8_t> buffer) {
     Buff buff{buffer};
     aasm.emit(buff);
     return buff.size();
 }
 
 template<std::ranges::range R>
+[[maybe_unused]]
 static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t), R&& scales) {
     ASSERT_EQ(codes.size(), names.size());
     ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
 
     for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
         aasm::Assembler a = fn(1 << scale);
+        const auto asm_buffer = a.to_buffer();
         std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
-        const auto size = to_byte_buffer(a, v);
+        const auto size = to_byte_buffer(asm_buffer, v);
         auto& code = codes[idx];
 
         ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
@@ -83,10 +85,11 @@ static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, con
         }
 
         auto& name = names[idx];
-        ASSERT_EQ(name, make_string(a)) << "Mismatch at scale=" << scale;
+        ASSERT_EQ(name, make_string(asm_buffer)) << "Mismatch at scale=" << scale;
     }
 }
 
+[[maybe_unused]]
 static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t)) {
     return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
 }

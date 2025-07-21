@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <stacktrace>
 
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
@@ -156,6 +157,11 @@ std::size_t async_based_solution() {
 }
 
 int main() {
+    std::set_terminate([] {
+        std::cout << std::stacktrace::current() << std::endl;
+        std::abort();
+    });
+
     auto module = fib();
     const auto fd = module.find_function_data("fib").value();
     fd->print(std::cout);

@@ -2,15 +2,16 @@
 
 #include <expected>
 #include <unordered_map>
-#include "AsmEmitter.h"
+#include <iomanip>
 
+#include "AsmEmitter.h"
 
 class ObjModule final {
 public:
-    explicit ObjModule(std::unordered_map<std::string, AsmEmitter> &&modules) noexcept
+    explicit ObjModule(std::unordered_map<std::string, aasm::AsmBuffer> &&modules) noexcept
         : m_modules(std::move(modules)) {}
 
-    std::expected<AsmEmitter*, Error> find_masm(const std::string &name) {
+    std::expected<aasm::AsmBuffer*, Error> find_masm(const std::string &name) {
         if (const auto it = m_modules.find(name); it != m_modules.end()) {
             return &it->second;
         }
@@ -25,7 +26,7 @@ public:
     friend std::ostream& operator<<(std::ostream &os, const ObjModule &module);
 
 private:
-    std::unordered_map<std::string, AsmEmitter> m_modules;
+    std::unordered_map<std::string, aasm::AsmBuffer> m_modules;
 };
 
 inline std::ostream & operator<<(std::ostream &os, const ObjModule &module) {
