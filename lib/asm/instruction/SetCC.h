@@ -17,6 +17,7 @@ namespace aasm {
             }
             buffer.emit8(0x0F);
             buffer.emit8(static_cast<std::uint8_t>(m_cond) | 0x90);
+            buffer.emit8(reg3(m_reg) | 0xC0);
         }
 
         [[nodiscard]]
@@ -35,6 +36,6 @@ namespace aasm {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const SetCCR &set) {
-        return os << "set" << set.m_cond;
+        return os << "set" << set.m_cond << " %" << set.m_reg.name(1);
     }
 }
