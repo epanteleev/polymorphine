@@ -53,8 +53,7 @@ namespace aasm {
         template<CodeBuffer C>
         constexpr void emit(C &c) const {
             switch (m_size) {
-                case 8: emit_pop(c);
-                    break;
+                case 8: emit_pop(c); break;
                 case 2: {
                     add_word_op_size(c);
                     emit_pop(c);

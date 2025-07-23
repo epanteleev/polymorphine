@@ -144,6 +144,7 @@ add_library(ckoof SHARED
         lib/asm/instruction/CondType.h
         lib/asm/AsmBuffer.h
         lib/asm/AsmBuffer.cpp
+        lib/asm/instruction/SetCC.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

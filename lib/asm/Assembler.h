@@ -78,6 +78,10 @@ namespace aasm {
             m_instructions.emplace_back(CmpMR(size, src, dst));
         }
 
+        constexpr void setcc(const CondType type, const GPReg reg) {
+            m_instructions.emplace_back(SetCCR(type, reg));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);
