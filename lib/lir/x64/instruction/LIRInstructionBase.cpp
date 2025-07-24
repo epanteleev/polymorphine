@@ -2,7 +2,8 @@
 #include <ranges>
 
 #include "LIRInstructionBase.h"
-#include "../module/LIRBlock.h"
+#include "LIRSetCC.h"
+#include "lir/x64/module/LIRBlock.h"
 
 namespace {
     class LIRInstructionPrinter final: public LIRVisitor {
@@ -30,6 +31,10 @@ namespace {
 
         void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
 
+        }
+
+        void setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) override {
+            m_os << "setcc_i " << cond_type << "out(" << out << ") in(" << in1 << ')';
         }
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {

@@ -18,7 +18,7 @@ class LIRVal final {
         m_variant.m_arg = def;
     }
 
-    LIRVal(std::uint8_t size, std::uint8_t index, const LIRInstruction *def): m_size(size),
+    LIRVal(std::uint8_t size, std::uint8_t index, const LIRProducerInstructionBase *def): m_size(size),
                                                                       m_index(index),
                                                                       m_type(Op::Inst) {
         m_variant.m_inst = def;
@@ -35,7 +35,7 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<const LIRInstruction*> inst() const noexcept {
+    std::optional<const LIRProducerInstructionBase*> inst() const noexcept {
         if (m_type == Op::Inst) {
             return m_variant.m_inst;
         }
@@ -76,7 +76,7 @@ public:
         return {def->size(), static_cast<std::uint8_t>(def->index()), def};
     }
 
-    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRInstruction* def) noexcept {
+    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRProducerInstructionBase* def) noexcept {
         return {size, index, def};
     }
 
@@ -90,7 +90,7 @@ private:
     Op m_type;
     union {
         const LIRArg* m_arg;
-        const LIRInstruction* m_inst;
+        const LIRProducerInstructionBase* m_inst;
     } m_variant{};
 };
 

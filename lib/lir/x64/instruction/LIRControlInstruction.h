@@ -9,8 +9,8 @@
 
 class LIRControlInstruction: public LIRInstructionBase {
 public:
-    explicit LIRControlInstruction(const std::size_t id, LIRBlock *bb, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& uses, std::vector<LIRBlock* >&& successors) :
-        LIRInstructionBase(id, bb, std::move(uses), std::move(defs)),
+    explicit LIRControlInstruction(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& uses, std::vector<LIRBlock* >&& successors) :
+        LIRInstructionBase(id, bb, std::move(uses)),
         m_successors(std::move(successors)) {}
 
     [[nodiscard]]
@@ -41,7 +41,7 @@ class LIRBranch final: public LIRControlInstruction {
 public:
     explicit LIRBranch(const std::size_t id, LIRBlock *bb, const LIRBranchKind kind, std::vector<LIROperand>&& uses,
                        std::vector<LIRBlock* >&& successors) :
-        LIRControlInstruction(id, bb, {}, std::move(uses), std::move(successors)),
+        LIRControlInstruction(id, bb, std::move(uses), std::move(successors)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
@@ -59,7 +59,7 @@ private:
 class LIRReturn final: public LIRControlInstruction {
 public:
     explicit LIRReturn(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& values) :
-        LIRControlInstruction(id, bb, {}, std::move(values), {}) {}
+        LIRControlInstruction(id, bb, std::move(values), {}) {}
 
     void visit(LIRVisitor &visitor) override;
 
@@ -79,9 +79,9 @@ enum class LIRCallKind: std::uint8_t {
 
 class LIRCall final: public LIRControlInstruction {
 public:
-    explicit LIRCall(const std::size_t id, LIRBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIRVal>&& defs, std::vector<LIROperand>&& operands,
+    explicit LIRCall(const std::size_t id, LIRBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
                        LIRBlock *on_true, LIRBlock *on_false) :
-        LIRControlInstruction(id, bb, std::move(defs), std::move(operands), {on_true, on_false}),
+        LIRControlInstruction(id, bb, std::move(operands), {on_true, on_false}),
         m_name(std::move(name)),
         m_kind(kind) {}
 

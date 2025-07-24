@@ -104,8 +104,8 @@ add_library(ckoof SHARED
         lib/lir/x64/analysis/intervals/LiveIntervals.h
         lib/lir/x64/instruction/LIRControlInstruction.h
         lib/lir/x64/instruction/LIRControlInstruction.cpp
-        lib/lir/x64/instruction/LIRInstruction.cpp
-        lib/lir/x64/instruction/LIRInstruction.h
+        lib/lir/x64/instruction/LIRProducerInstruction.cpp
+        lib/lir/x64/instruction/LIRProducerInstruction.h
         lib/lir/x64/lir.h
         lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
         lib/lir/x64/analysis/regalloc/FixedRegisters.h
@@ -145,6 +145,11 @@ add_library(ckoof SHARED
         lib/asm/AsmBuffer.h
         lib/asm/AsmBuffer.cpp
         lib/asm/instruction/SetCC.h
+        lib/lir/x64/instruction/LIRSetCC.h
+        lib/lir/x64/instruction/LIRSetCC.cpp
+        lib/lir/x64/instruction/LIRInstruction.cpp
+        lib/lir/x64/instruction/LIRInstruction.h
+        lib/lir/x64/instruction/LIRProducerInstructionBase.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

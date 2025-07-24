@@ -78,9 +78,7 @@ private:
 
     void accept(Binary *inst) override;
 
-    void accept(Unary *inst) override {
-
-    }
+    void accept(Unary *inst) override;
 
     void accept(Branch *branch) override;
 
@@ -125,6 +123,8 @@ private:
     void accept(GetElementPtr *gep) override {
 
     }
+
+    void lower_flag2int(Unary *inst);
 
     std::unique_ptr<LIRFuncData> m_obj_function;
     const FunctionData& m_function;

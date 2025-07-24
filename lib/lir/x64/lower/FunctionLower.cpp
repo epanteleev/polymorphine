@@ -1,6 +1,6 @@
 #include "FunctionLower.h"
 
-#include "lir/x64/instruction/LIRInstruction.h"
+#include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "mir/mir.h"
 
 template<std::integral T>
@@ -50,7 +50,7 @@ void FunctionLower::accept(Binary *inst) {
         case BinaryOp::Add: {
             const auto lhs = get_value_mapping(inst->lhs());
             const auto rhs = get_value_mapping(inst->rhs());
-            const auto add = m_bb->inst(LIRInstruction::add(lhs, rhs));
+            const auto add = m_bb->inst(LIRProducerInstruction::add(lhs, rhs));
             m_value_mapping.emplace(LocalValue::from(inst), add->def(0));
             break;
         }
@@ -80,13 +80,24 @@ void FunctionLower::accept(CondBranch *cond_branch) {
 
 void FunctionLower::accept(ReturnValue *inst) {
     const auto ret_val = get_value_mapping(inst->ret_value());
-    const auto copy = m_bb->inst(LIRInstruction::copy(ret_val));
+    const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_val));
     m_bb->inst(LIRReturn::ret(copy->def(0)));
 }
 
 void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_value_mapping(icmp->lhs());
     const auto rhs = get_value_mapping(icmp->rhs());
-    const auto cmp = m_bb->inst(LIRInstruction::cmp(lhs, rhs));
+    const auto cmp = m_bb->inst(LIRProducerInstruction::cmp(lhs, rhs));
     m_value_mapping.emplace(LocalValue::from(icmp), cmp->def(0));
+}
+
+void FunctionLower::lower_flag2int(Unary *inst) {
+
+}
+
+void FunctionLower::accept(Unary *inst) {
+    switch (inst->op()) {
+        case UnaryOp::Flag2Int: lower_flag2int(inst); break;
+        default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
+    }
 }

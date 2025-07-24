@@ -1,18 +1,9 @@
 #include "LIRInstruction.h"
 
+#include <utility>
+
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
-        case LIRInstKind::Add: visitor.add_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Sub: visitor.sub_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Mul: visitor.mul_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Div: visitor.div_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::And: visitor.and_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Or:  visitor.or_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Xor: visitor.xor_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Shl: visitor.shl_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
-        case LIRInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
-        case LIRInstKind::Not: visitor.not_i(def(0), in(0)); break;
         case LIRInstKind::Mov: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");
@@ -23,16 +14,6 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.mov_i(in0.value(), in1.value());
             break;
         }
-        case LIRInstKind::Copy: {
-            visitor.copy_i(def(0), in(0));
-            break;
-        }
-        case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
-        case LIRInstKind::ParallelCopy: {
-            const auto out0 = def(0);
-            const auto vregs = to_vregs_only(inputs());
-            visitor.parallel_copy(out0, vregs);
-            break;
-        }
+        default: die("Unsupported LIR instruction kind: {}", static_cast<int>(m_kind));
     }
 }

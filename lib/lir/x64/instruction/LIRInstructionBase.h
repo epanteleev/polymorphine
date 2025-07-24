@@ -9,10 +9,8 @@
 
 class LIRInstructionBase {
 public:
-    LIRInstructionBase(const std::size_t id, LIRBlock *bb, std::vector<LIROperand> &&uses,
-                       std::vector<LIRVal> &&defs): m_id(id),
+    LIRInstructionBase(const std::size_t id, LIRBlock *bb, std::vector<LIROperand> &&uses): m_id(id),
                                                   m_owner(bb),
-                                                  m_defs(defs),
                                                   m_uses(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;

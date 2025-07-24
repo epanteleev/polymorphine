@@ -1,10 +1,13 @@
 #pragma once
+#include <cstdint>
 
 class LIRBlock;
 
 class LIRInstructionBase;
-class LIRInstruction;
+class LIRProducerInstruction;
 class LIRControlInstruction;
+class LIRProducerInstructionBase;
+enum class LIRCondType: std::uint8_t;
 
 class LIROperand;
 class LIRVal;
