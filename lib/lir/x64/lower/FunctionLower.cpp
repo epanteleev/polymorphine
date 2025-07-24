@@ -1,6 +1,7 @@
 #include "FunctionLower.h"
 
 #include "lir/x64/instruction/LIRProducerInstruction.h"
+#include "lir/x64/instruction/LIRSetCC.h"
 #include "mir/mir.h"
 
 template<std::integral T>
@@ -92,7 +93,30 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
 }
 
 void FunctionLower::lower_flag2int(Unary *inst) {
+    const auto cond = inst->operand();
+    if (cond.isa(icmp(signed_v(), signed_v()))) {
+        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
+        LIRCondType cond_type;
+        switch (icmp->predicate()) {
+            case IcmpPredicate::Eq: cond_type = LIRCondType::E; break;
+            case IcmpPredicate::Ne: cond_type = LIRCondType::NE; break;
+            case IcmpPredicate::Gt: cond_type = LIRCondType::G; break;
+            case IcmpPredicate::Ge: cond_type = LIRCondType::GE; break;
+            case IcmpPredicate::Lt: cond_type = LIRCondType::NGE; break;
+            case IcmpPredicate::Le: cond_type = LIRCondType::NG; break;
+            default: die("Unsupported signed condition type in flag2int");
+        }
+        const auto mapped_cond = get_value_mapping(cond);
+        const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type, mapped_cond));
+        m_value_mapping.emplace(LocalValue::from(inst), setcc->def(0));
+
+    } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
+
+    } else {
+        die("Unsupported condition type in cond branch");
+    }
 }
 
 void FunctionLower::accept(Unary *inst) {

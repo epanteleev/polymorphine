@@ -96,7 +96,7 @@ private:
 
     }
 
-    void setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) override {}
+    void setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) override;
 
     void cmp_i(const LIROperand &in1, const LIROperand &in2) override {
 

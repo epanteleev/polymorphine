@@ -3,6 +3,10 @@
 #include "emitters/AddIntEmit.h"
 #include "emitters/CopyGPEmit.h"
 
+static aasm::CondType cvt_from(const LIRCondType cond) {
+    return static_cast<aasm::CondType>(cond);
+}
+
 GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
@@ -26,6 +30,22 @@ void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const 
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
+}
+
+void MachFunctionCodegen::setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto visitor = [&]<typename T>(const T &val) {
+        if constexpr (std::is_same_v<T, aasm::GPReg>) {
+            m_as.setcc(cvt_from(cond_type), val);
+
+        } else if constexpr (std::is_same_v<T, aasm::Address>) {
+
+        } else {
+            static_assert(false, "Unsupported type in setcc_i");
+        }
+    };
+
+    out_reg.visit(visitor);
 }
 
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {

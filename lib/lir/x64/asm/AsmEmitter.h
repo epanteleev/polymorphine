@@ -37,6 +37,10 @@ public:
         m_asm.add(size, src, dst);
     }
 
+    void setcc(const aasm::CondType type, const aasm::GPReg dst) {
+        m_asm.setcc(type, dst);
+    }
+
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
     void cmp(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
