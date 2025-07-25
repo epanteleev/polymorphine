@@ -5,6 +5,7 @@
 #include "RegisterAllocation.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
+#include "lir/x64/operand/OperandMatcher.h"
 
 class LinearScan final {
 public:
@@ -60,6 +61,11 @@ private:
 
     void do_register_allocation() {
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
+            if (vreg.isa(cmp())) {
+                // Produces flag registers, which are not allocated.
+                continue;
+            }
+
             m_reg_allocation.try_emplace(vreg, aasm::rcx);
         }
     }

@@ -43,6 +43,12 @@ public:
         return std::nullopt;
     }
 
+    template<typename Matcher>
+    [[nodiscard]]
+    bool isa(Matcher&& matcher) const noexcept {
+        return matcher(*this);
+    }
+
     template<typename T>
     void visit(const T& visitor) const {
         switch (m_type) {

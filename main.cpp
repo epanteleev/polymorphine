@@ -169,7 +169,7 @@ int main() {
     AnalysisPassCache cache0;
 
     auto module0 = ret_constant();
-    module0.print(std::cout) << std::endl;
+    std::cout << module0 << std::endl;
 
     Lowering lower(module0);
     lower.run();

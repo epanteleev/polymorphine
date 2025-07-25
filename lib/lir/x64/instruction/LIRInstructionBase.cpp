@@ -34,7 +34,7 @@ namespace {
         }
 
         void setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) override {
-            m_os << "setcc_i " << cond_type << "out(" << out << ") in(" << in1 << ')';
+            m_os << "setcc_i " << cond_type << " out(" << out << ") in(" << in1 << ')';
         }
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {
@@ -42,7 +42,7 @@ namespace {
         }
 
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {
-
+            m_os << "cmp_i in1(" << in1 << ") in2(" << in2 << ')';
         }
 
         void neg_i(const LIRVal &out, const LIROperand &in) override {

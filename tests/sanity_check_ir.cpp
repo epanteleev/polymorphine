@@ -7,6 +7,9 @@
 #include "lir/x64/codegen/Codegen.h"
 
 static JitCodeBlob do_jit_compilation(const Module& module, bool verbose = false) {
+    if (verbose) {
+        std::cout << module << std::endl;
+    }
     Lowering lower(module);
     lower.run();
     const auto result = lower.result();
@@ -173,6 +176,30 @@ TEST(SanityCheck, branch1) {
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
     const auto res = fn();
     ASSERT_EQ(res, 10) << "Failed for value: " << 0;
+}
+
+
+static Module is_negative() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "is_negative");
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto arg0 = data.arg(0);
+    const auto is_neg = data.icmp(IcmpPredicate::Lt, arg0, Value::i32(0));
+    const auto res = data.flag2int(is_neg);
+    data.ret(res);
+
+    return builder.build();
+}
+
+TEST(SanityCheck, is_negative) {
+    const auto buffer = do_jit_compilation(is_negative(), true);
+    const auto fn = reinterpret_cast<int(*)(int)>(buffer.code_start("is_negative").value());
+
+    for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, i < 0 ? 1 : 0) << "Failed for value: " << i;
+    }
 }
 
 int main(int argc, char **argv) {

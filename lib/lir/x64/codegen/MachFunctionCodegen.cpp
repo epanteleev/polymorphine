@@ -1,6 +1,7 @@
 #include "MachFunctionCodegen.h"
 
 #include "emitters/AddIntEmit.h"
+#include "emitters/CmpGPEmit.h"
 #include "emitters/CopyGPEmit.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) {
@@ -32,7 +33,7 @@ void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const 
     AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
-void MachFunctionCodegen::setcc_i(const LIRVal &out, LIRCondType cond_type, const LIROperand &in1) {
+void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type, const LIROperand &in1) {
     const auto out_reg = m_reg_allocation[out];
     const auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, aasm::GPReg>) {
@@ -46,6 +47,12 @@ void MachFunctionCodegen::setcc_i(const LIRVal &out, LIRCondType cond_type, cons
     };
 
     out_reg.visit(visitor);
+}
+
+void MachFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+    CmpGPEmit::emit(m_as, in1.size(), in1_reg, in2_reg);
 }
 
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {

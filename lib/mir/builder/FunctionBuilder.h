@@ -46,6 +46,11 @@ public:
     }
 
     [[nodiscard]]
+    Value flag2int(const Value& flag) const {
+        return m_bb->push_back(Unary::flag2int(flag));
+    }
+
+    [[nodiscard]]
     BasicBlock* create_basic_block() const {
         return m_fd->create_basic_block();
     }

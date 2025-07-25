@@ -1,22 +1,31 @@
 #pragma once
 
-#include "asm/Address.h"
-
-#include "lir/x64/lir_frwd.h"
-
+#include "asm/asm_frwd.h"
+#include "lir/x64/asm/GPOp.h"
 
 class GPUnaryVisitor {
 public:
     virtual ~GPUnaryVisitor() = default;
 
-    virtual void rr(aasm::GPReg out, aasm::GPReg in) = 0;
-    virtual void rm(aasm::GPReg out, const aasm::Address& in) = 0;
-    virtual void mr(const aasm::Address& out, aasm::GPReg in) = 0;
-    virtual void mm(const aasm::Address& out, const aasm::Address& in) = 0;
-    virtual void ri(aasm::GPReg out, std::int64_t in) = 0;
-    virtual void mi(const aasm::Address& out, std::int64_t in) = 0;
+    virtual void emit(aasm::GPReg in0, aasm::GPReg in) = 0;
+    virtual void emit(aasm::GPReg in0, const aasm::Address& in) = 0;
+    virtual void emit(const aasm::Address& in0, aasm::GPReg in) = 0;
+    virtual void emit(const aasm::Address& in0, const aasm::Address& in) = 0;
+    virtual void emit(aasm::GPReg in0, std::int64_t in) = 0;
+    virtual void emit(const aasm::Address& in0, std::int64_t in) = 0;
+    virtual void emit(std::int64_t in1, std::int64_t in2) = 0;
+    virtual void emit(std::int64_t in1, aasm::GPReg in2) = 0;
+    virtual void emit(std::int64_t in1, const aasm::Address& in2) = 0;
 
-    static void dispatch(GPUnaryVisitor& visitor, const GPVReg& out, const GPOp& in);
+    template<std::derived_from<GPUnaryVisitor> Vis>
+    static void dispatch(Vis& visitor, const GPOp& in0, const GPOp& in) {
+        const auto v = [&]<typename T>(const T& reg) {
+            const auto v1 = [&]<typename U>(const U& in_val) {
+                visitor.emit(reg, in_val);
+            };
+            in.visit(v1);
+        };
+
+        in0.visit(v);
+    }
 };
-
-

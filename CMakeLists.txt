@@ -69,8 +69,6 @@ add_library(ckoof SHARED
         lib/lir/x64/module/LIRBlock.cpp
         lib/lir/x64/module/LIRBlock.h
         lib/lir/x64/lir_frwd.h
-        lib/asm/elf/Elf.cpp
-        lib/asm/elf/Elf.h
         lib/base/Constrains.h
         lib/mir/analysis/Analysis.h
         lib/lir/x64/analysis/Analysis.h
@@ -113,8 +111,7 @@ add_library(ckoof SHARED
         lib/lir/x64/asm/AsmEmitter.h
         lib/lir/x64/codegen/MachFunctionCodegen.cpp
         lib/lir/x64/codegen/MachFunctionCodegen.h
-        lib/lir/x64/asm/visitors/GPUnaryVisitor.h
-        lib/lir/x64/asm/visitors/GPUnaryVisitor.cpp
+        lib/lir/x64/asm/visitors/GPUnaryOutVisitor.h
         lib/lir/x64/asm/GPOp.h
         lib/lir/x64/codegen/emitters/CopyGPEmit.h
         lib/lir/x64/codegen/emitters/CopyGPEmit.cpp
@@ -131,7 +128,6 @@ add_library(ckoof SHARED
         lib/asm/instruction/Ret.h
         lib/asm/SizeEvaluator.h
         lib/asm/instruction/Add.h
-        lib/lir/x64/asm/visitors/GPBinaryVisitor.cpp
         lib/lir/x64/asm/visitors/GPBinaryVisitor.h
         lib/lir/x64/codegen/emitters/AddIntEmit.cpp
         lib/lir/x64/codegen/emitters/AddIntEmit.h
@@ -150,6 +146,11 @@ add_library(ckoof SHARED
         lib/lir/x64/instruction/LIRInstruction.cpp
         lib/lir/x64/instruction/LIRInstruction.h
         lib/lir/x64/instruction/LIRProducerInstructionBase.h
+        lib/asm/asm_frwd.h
+        lib/lir/x64/operand/OperandMatcher.h
+        lib/lir/x64/codegen/emitters/CmpGPEmit.cpp
+        lib/lir/x64/codegen/emitters/CmpGPEmit.h
+        lib/lir/x64/asm/visitors/GPUnaryVisitor.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

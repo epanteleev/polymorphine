@@ -2,8 +2,8 @@
 
 #include <ranges>
 
-std::ostream &Module::print(std::ostream &os) const {
-    for (const auto &f: m_functions | std::views::values) {
+std::ostream & operator<<(std::ostream &os, const Module &module) {
+    for (const auto &f: module.m_functions | std::views::values) {
         f->print(os);
     }
 

@@ -27,8 +27,10 @@ public:
         return m_functions;
     }
 
-    std::ostream &print(std::ostream &os) const;
+    friend std::ostream &operator<<(std::ostream &os, const Module &module);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<FunctionData>> m_functions;
 };
+
+std::ostream & operator<<(std::ostream &os, const Module &module);
