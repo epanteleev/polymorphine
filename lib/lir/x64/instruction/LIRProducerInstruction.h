@@ -3,6 +3,7 @@
 #include "LIRProducerInstructionBase.h"
 
 enum class LIRProdInstKind: std::uint8_t {
+    Gen,
     Add,
     Sub,
     Mul,
@@ -48,6 +49,14 @@ public:
             auto cmp = std::make_unique<LIRProducerInstruction>(id, bb, LIRProdInstKind::Cmp, std::vector{lhs, rhs});
             cmp->add_def(LIRVal::reg(1, 0, cmp.get()));
             return cmp;
+        };
+    }
+
+    static LIRInstBuilder<LIRProducerInstruction> gen(const std::uint8_t size) {
+        return [=](std::size_t id, LIRBlock *bb) {
+            auto gen = std::make_unique<LIRProducerInstruction>(id, bb, LIRProdInstKind::Gen, std::vector<LIROperand>{});
+            gen->add_def(LIRVal::reg(size, 0, gen.get()));
+            return gen;
         };
     }
 

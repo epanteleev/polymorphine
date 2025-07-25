@@ -32,7 +32,7 @@ private:
 inline std::ostream & operator<<(std::ostream &os, const ObjModule &module) {
     for (const auto& [name, masm]: module.m_modules) {
         os << name << ':' << std::endl;
-        os << std::setw(4) << masm << std::endl;
+        os << std::setfill(' ') << std::setw(4) << masm << std::endl;
     }
 
     return os;

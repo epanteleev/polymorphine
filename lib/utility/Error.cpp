@@ -18,4 +18,11 @@ namespace error {
         std::cerr << "Assertion " << condition << " failed: " << msg << std::endl;
         raise(loc, msg);
     }
+
+    void setup_terminate_handler() {
+        std::set_terminate([] {
+            std::cout << std::stacktrace::current() << std::endl;
+            std::abort();
+        });
+    }
 }

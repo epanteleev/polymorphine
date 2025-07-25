@@ -2,6 +2,7 @@
 
 void LIRProducerInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
+        case LIRProdInstKind::Gen: visitor.gen(def(0)); break;
         case LIRProdInstKind::Add: visitor.add_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Sub: visitor.sub_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Mul: visitor.mul_i(def(0), in(0), in(1)); break;

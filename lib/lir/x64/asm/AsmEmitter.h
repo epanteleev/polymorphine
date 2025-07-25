@@ -33,6 +33,18 @@ public:
         m_asm.mov(size, src, dst);
     }
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, std::int64_t>
+    void mov(const std::uint8_t size, const Op& src, const aasm::GPReg& dst) {
+        m_asm.mov(size, src, dst);
+    }
+
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
+    void mov(const std::uint8_t size, const Op& src, const aasm::Address& dst) {
+        m_asm.mov(size, src, dst);
+    }
+
     void add(const std::uint8_t size, const aasm::GPReg src, const aasm::GPReg dst) {
         m_asm.add(size, src, dst);
     }

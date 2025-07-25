@@ -4,6 +4,12 @@
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "mir/mir.h"
 
+/**
+ * Creates a LIR constant based on the type and integer value.
+ * @param type The type of the constant.
+ * @param integer The integer value to be converted into a LIR constant.
+ * @return A LirCst representing the constant.
+ */
 template<std::integral T>
 static LirCst make_constant(const Type& type, const T integer) noexcept {
     if (type.isa(i8()) || type.isa(u8())) {
@@ -25,7 +31,41 @@ static LirCst make_constant(const Type& type, const T integer) noexcept {
     die("Unsupported type for constant");
 }
 
-LIROperand FunctionLower::get_value_mapping(const Value &val) {
+/**
+ * Converts a signed condition to LIRCondType.
+ * @param predicate The IcmpPredicate representing the condition.
+ * @return The corresponding LIRCondType.
+ */
+static LIRCondType signed_cond_type(const IcmpPredicate predicate) noexcept {
+    switch (predicate) {
+        case IcmpPredicate::Eq: return LIRCondType::E;
+        case IcmpPredicate::Ne: return LIRCondType::NE;
+        case IcmpPredicate::Gt: return LIRCondType::G;
+        case IcmpPredicate::Ge: return LIRCondType::GE;
+        case IcmpPredicate::Lt: return LIRCondType::NGE;
+        case IcmpPredicate::Le: return LIRCondType::NG;
+        default: die("Unsupported signed condition type in flag2int");
+    }
+}
+
+/**
+ * Converts an unsigned condition to LIRCondType.
+ * @param predicate The IcmpPredicate representing the condition.
+ * @return The corresponding LIRCondType.
+ */
+static LIRCondType unsigned_cond_type(const IcmpPredicate predicate) noexcept {
+    switch (predicate) {
+        case IcmpPredicate::Eq: return LIRCondType::E;
+        case IcmpPredicate::Ne: return LIRCondType::NE;
+        case IcmpPredicate::Gt: return LIRCondType::A;
+        case IcmpPredicate::Ge: return LIRCondType::AE;
+        case IcmpPredicate::Lt: return LIRCondType::NAE;
+        case IcmpPredicate::Le: return LIRCondType::NA;
+        default: die("Unsupported unsigned condition type in flag2int");
+    }
+}
+
+LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
             unimplemented();
@@ -46,13 +86,22 @@ LIROperand FunctionLower::get_value_mapping(const Value &val) {
     return val.visit<LIROperand>(visitor);
 }
 
+LIRVal FunctionLower::get_lir_val(const Value &val) {
+    const auto lir_operand = get_lir_operand(val);
+    if (const auto vreg = lir_operand.vreg()) {
+        return *vreg;
+    }
+
+    die("Expected LIRVal for Value");
+}
+
 void FunctionLower::accept(Binary *inst) {
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto lhs = get_value_mapping(inst->lhs());
-            const auto rhs = get_value_mapping(inst->rhs());
+            const auto lhs = get_lir_operand(inst->lhs());
+            const auto rhs = get_lir_operand(inst->rhs());
             const auto add = m_bb->inst(LIRProducerInstruction::add(lhs, rhs));
-            m_value_mapping.emplace(LocalValue::from(inst), add->def(0));
+            memorize(inst, add->def(0));
             break;
         }
         default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));
@@ -80,48 +129,87 @@ void FunctionLower::accept(CondBranch *cond_branch) {
 }
 
 void FunctionLower::accept(ReturnValue *inst) {
-    const auto ret_val = get_value_mapping(inst->ret_value());
+    const auto ret_val = get_lir_operand(inst->ret_value());
     const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_val));
     m_bb->inst(LIRReturn::ret(copy->def(0)));
 }
 
-void FunctionLower::accept(IcmpInstruction *icmp) {
-    const auto lhs = get_value_mapping(icmp->lhs());
-    const auto rhs = get_value_mapping(icmp->rhs());
-    const auto cmp = m_bb->inst(LIRProducerInstruction::cmp(lhs, rhs));
-    m_value_mapping.emplace(LocalValue::from(icmp), cmp->def(0));
+void FunctionLower::accept(Store *store) {
+    const auto pointer = store->pointer();
+    const auto value = store->value();
+    if (pointer.isa(alloc())) {
+        const auto pointer_vreg = get_lir_val(pointer);
+        const auto value_vreg = get_lir_operand(value);
+        m_bb->inst(LIRInstruction::mov(pointer_vreg, value_vreg));
+
+    } else {
+        unimplemented();
+    }
 }
 
-void FunctionLower::lower_flag2int(Unary *inst) {
+void FunctionLower::accept(Alloc *alloc) {
+    const auto type = alloc->allocated_type();
+    if (type->isa(primitive())) {
+        const auto primitive_type = dynamic_cast<const PrimitiveType*>(type);
+        assertion(primitive_type != nullptr, "Expected PrimitiveType for allocation");
+
+        const auto size = primitive_type->size_of();
+        const auto alloc_inst = m_bb->inst(LIRProducerInstruction::gen(size));
+        memorize(alloc, alloc_inst->def(0));
+
+    } else {
+        unimplemented();
+    }
+}
+
+void FunctionLower::accept(IcmpInstruction *icmp) {
+    const auto lhs = get_lir_operand(icmp->lhs());
+    const auto rhs = get_lir_operand(icmp->rhs());
+    const auto cmp = m_bb->inst(LIRProducerInstruction::cmp(lhs, rhs));
+    memorize(icmp, cmp->def(0));
+}
+
+void FunctionLower::lower_flag2int(const Unary *inst) {
     const auto cond = inst->operand();
     if (cond.isa(icmp(signed_v(), signed_v()))) {
         const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
-        LIRCondType cond_type;
-        switch (icmp->predicate()) {
-            case IcmpPredicate::Eq: cond_type = LIRCondType::E; break;
-            case IcmpPredicate::Ne: cond_type = LIRCondType::NE; break;
-            case IcmpPredicate::Gt: cond_type = LIRCondType::G; break;
-            case IcmpPredicate::Ge: cond_type = LIRCondType::GE; break;
-            case IcmpPredicate::Lt: cond_type = LIRCondType::NGE; break;
-            case IcmpPredicate::Le: cond_type = LIRCondType::NG; break;
-            default: die("Unsupported signed condition type in flag2int");
-        }
-        const auto mapped_cond = get_value_mapping(cond);
-        const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type, mapped_cond));
-        m_value_mapping.emplace(LocalValue::from(inst), setcc->def(0));
+        make_setcc(inst, cond, signed_cond_type(icmp->predicate()));
 
     } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
+        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
+
+        make_setcc(inst, cond, unsigned_cond_type(icmp->predicate()));
 
     } else {
         die("Unsupported condition type in cond branch");
     }
 }
 
+void FunctionLower::lower_load(const Unary *inst) {
+    const auto pointer = inst->operand();
+    if (pointer.isa(alloc())) {
+        const auto pointer_vreg = get_lir_val(pointer);
+        const auto load_inst = m_bb->inst(LIRProducerInstruction::copy(pointer_vreg));
+        memorize(inst, load_inst->def(0));
+
+    } else {
+        unimplemented();
+    }
+}
+
+void FunctionLower::make_setcc(const Unary *inst, const Value& cond, LIRCondType cond_type) {
+    const auto mapped_cond = get_lir_operand(cond);
+    const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type, mapped_cond));
+    memorize(inst, setcc->def(0));
+}
+
 void FunctionLower::accept(Unary *inst) {
     switch (inst->op()) {
         case UnaryOp::Flag2Int: lower_flag2int(inst); break;
+        case UnaryOp::Load: lower_load(inst); break;
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
     }
 }

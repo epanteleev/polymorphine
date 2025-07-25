@@ -6,6 +6,7 @@ class LIRVisitor {
 public:
     virtual ~LIRVisitor() = default;
 
+    virtual void gen(const LIRVal& out) = 0;
     virtual void add_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void sub_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void mul_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
@@ -22,7 +23,7 @@ public:
     virtual void neg_i(const LIRVal& out, const LIROperand& in) = 0;
     virtual void not_i(const LIRVal& out, const LIROperand& in) = 0;
 
-    virtual void mov_i(const LIRVal& in1, const LIRVal& in2) = 0;
+    virtual void mov_i(const LIRVal& in1, const LIROperand& in2) = 0;
     virtual void copy_i(const LIRVal& out, const LIROperand& in) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;

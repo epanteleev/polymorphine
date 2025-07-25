@@ -28,6 +28,16 @@ namespace impls {
 
         return false;
     }
+
+    inline bool alloc(const Value& inst) noexcept {
+        if (!inst.is<ValueInstruction*>()) {
+            return false;
+        }
+
+        const auto val = inst.get<ValueInstruction*>();
+        return dynamic_cast<const Alloc*>(val) != nullptr;
+    }
+
 }
 
 using ValueMatcher = bool(*)(const Value&);
@@ -49,4 +59,8 @@ consteval auto icmp(LHS&& l, RHS&& r) noexcept {
     return [=](const Value& inst) {
         return impls::icmp(inst, l, r);
     };
+}
+
+consteval auto alloc() noexcept {
+    return impls::alloc;
 }

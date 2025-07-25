@@ -27,7 +27,7 @@ public:
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation));
+        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation), m_local_area_size);
     }
 
     static LinearScan create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
@@ -66,6 +66,12 @@ private:
                 continue;
             }
 
+            if (vreg.isa(gen())) {
+                m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -vreg.size()));
+                m_local_area_size += vreg.size();
+                continue;
+            }
+
             m_reg_allocation.try_emplace(vreg, aasm::rcx);
         }
     }
@@ -84,6 +90,8 @@ private:
     const LiveIntervals& m_intervals;
 
     LIRValMap<GPVReg> m_reg_allocation{};
+    // Size of the 'gen' values in the local area.
+    std::int32_t m_local_area_size{0};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_unactive_intervals{};

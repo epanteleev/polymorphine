@@ -11,6 +11,10 @@
 #include "lir/x64/module/LIRFuncData.h"
 #include "mir/analysis/Analysis.h"
 
+/**
+ * FunctionLower is responsible for lowering the MIR function to LIR.
+ * It traverses the function's basic blocks in a domination order.
+ */
 class FunctionLower final: public Visitor {
     FunctionLower(std::unique_ptr<LIRFuncData>&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& ordering) noexcept:
         m_obj_function(std::move(obj_function)),
@@ -26,6 +30,7 @@ public:
     }
 
     static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
+        // It is assumed that bfs order guarantees domination order.
         const auto* bfs = cache->analyze<BFSOrderTraverseBase<FunctionData>>(data);
         return {create_lir_function(*data), *data, *bfs};
     }
@@ -48,8 +53,7 @@ private:
 
     void setup_arguments() {
         for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
-            const auto local = LocalValue::from(&arg);
-            m_value_mapping.emplace(local, lir_arg);
+            memorize(&arg, lir_arg);
         }
     }
 
@@ -74,7 +78,9 @@ private:
         }
     }
 
-    LIROperand get_value_mapping(const Value& val);
+    LIROperand get_lir_operand(const Value& val);
+
+    LIRVal get_lir_val(const Value& val);
 
     void accept(Binary *inst) override;
 
@@ -110,13 +116,9 @@ private:
 
     }
 
-    void accept(Store *store) override {
+    void accept(Store *store) override;
 
-    }
-
-    void accept(Alloc *alloc) override {
-
-    }
+    void accept(Alloc *alloc) override;
 
     void accept(IcmpInstruction *icmp) override;
 
@@ -124,7 +126,15 @@ private:
 
     }
 
-    void lower_flag2int(Unary *inst);
+    void lower_flag2int(const Unary *inst);
+    void lower_load(const Unary *inst);
+    void make_setcc(const Unary *inst, const Value& cond, LIRCondType cond_type);
+
+    template <IsLocalValueType T>
+    void memorize(const T* val, const LIRVal& lir_val) {
+        const auto local = LocalValue::from(val);
+        m_value_mapping.emplace(local, lir_val);
+    }
 
     std::unique_ptr<LIRFuncData> m_obj_function;
     const FunctionData& m_function;

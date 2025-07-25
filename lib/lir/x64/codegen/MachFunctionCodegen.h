@@ -19,6 +19,7 @@ class MachFunctionCodegen final: public LIRVisitor {
 public:
     void run() {
         setup_basic_block_labels();
+        emit_prologue();
         traverse_instructions();
     }
 
@@ -33,17 +34,6 @@ public:
     }
 
 private:
-    void traverse_instructions() {
-        for (const auto& bb: m_preorder) {
-            if (bb != m_data.first()) {
-                const auto label = m_bb_labels.at(bb);
-                m_as.set_label(label);
-            }
-
-            for (auto& inst: bb->instructions()) inst.visit(*this);
-        }
-    }
-
     void setup_basic_block_labels() {
         for (const auto& bb: m_preorder) {
             if (bb == m_data.first()) {
@@ -56,11 +46,27 @@ private:
         }
     }
 
+    void emit_prologue() {
+    }
+
+    void traverse_instructions() {
+        for (const auto& bb: m_preorder) {
+            if (bb != m_data.first()) {
+                const auto label = m_bb_labels.at(bb);
+                m_as.set_label(label);
+            }
+
+            for (auto& inst: bb->instructions()) inst.visit(*this);
+        }
+    }
+
     [[nodiscard]]
     GPOp convert_to_gp_op(const LIROperand &val) const;
 
     [[nodiscard]]
     aasm::GPReg convert_to_gp_reg(const LIRVal &val) const;
+
+    void gen(const LIRVal &out) override {}
 
     void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
 
@@ -108,9 +114,7 @@ private:
 
     }
 
-    void mov_i(const LIRVal &in1, const LIRVal &in2) override {
-
-    }
+    void mov_i(const LIRVal &in1, const LIROperand &in2) override;
 
     void copy_i(const LIRVal &out, const LIROperand &in) override;
 

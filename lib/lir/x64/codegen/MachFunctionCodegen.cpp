@@ -3,6 +3,7 @@
 #include "emitters/AddIntEmit.h"
 #include "emitters/CmpGPEmit.h"
 #include "emitters/CopyGPEmit.h"
+#include "emitters/MovGPEmit.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) {
     return static_cast<aasm::CondType>(cond);
@@ -53,6 +54,15 @@ void MachFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     CmpGPEmit::emit(m_as, in1.size(), in1_reg, in2_reg);
+}
+
+void MachFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
+    const auto in1_reg = m_reg_allocation[in1];
+    const auto add_opt = in1_reg.as_address();
+    assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
+
+    const auto in2_op = convert_to_gp_op(in2);
+    MovGPEmit::emit(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {

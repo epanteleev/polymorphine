@@ -11,6 +11,7 @@ namespace error {
     [[noreturn]]
     void assert0(bool condition, std::source_location loc, const std::string& msg);
 
+    void setup_terminate_handler();
 }
 
 enum class Error {

@@ -57,7 +57,7 @@ namespace aasm {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const MovRR &movrr) {
-        return os << "mov" << prefix_size(movrr.m_size) << ' ' << movrr.m_src.name(movrr.m_size) << ", " << movrr.m_dest.name(movrr.m_size);
+        return os << "mov" << prefix_size(movrr.m_size) << " %" << movrr.m_src.name(movrr.m_size) << ", %" << movrr.m_dest.name(movrr.m_size);
     }
 
     class MovRI final {

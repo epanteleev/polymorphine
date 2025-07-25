@@ -151,6 +151,9 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/CmpGPEmit.cpp
         lib/lir/x64/codegen/emitters/CmpGPEmit.h
         lib/lir/x64/asm/visitors/GPUnaryVisitor.h
+        lib/lir/x64/codegen/emitters/MovGPEmit.cpp
+        lib/lir/x64/codegen/emitters/MovGPEmit.h
+        lib/lir/x64/asm/visitors/GPUnaryAddrVisitor.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

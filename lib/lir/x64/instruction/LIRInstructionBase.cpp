@@ -11,6 +11,10 @@ namespace {
         explicit LIRInstructionPrinter(std::ostream& os): m_os(os) {}
 
     private:
+        void gen(const LIRVal &out) override {
+            m_os << "gen out(" << out << ')';
+        }
+
         void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
             m_os << "add_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
@@ -53,7 +57,7 @@ namespace {
 
         }
 
-        void mov_i(const LIRVal &out, const LIRVal &in) override {
+        void mov_i(const LIRVal &out, const LIROperand &in) override {
 
         }
 

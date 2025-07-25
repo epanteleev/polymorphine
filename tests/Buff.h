@@ -7,6 +7,7 @@
 #include "asm/Assembler.h"
 #include "asm/Common.h"
 
+[[maybe_unused]]
 static void print_hex(const std::uint8_t* data, std::size_t size) {
     std::cout << "Hex: ";
     for (std::size_t i = 0; i < size; ++i)

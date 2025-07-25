@@ -58,6 +58,8 @@ private:
         }
 
     private:
+        void gen(const LIRVal &out) override {}
+
         void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
         void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
@@ -86,7 +88,7 @@ private:
 
         void not_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void mov_i(const LIRVal &in1, const LIRVal &in2) override {}
+        void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
 
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
 

@@ -9,6 +9,10 @@ namespace impls {
         return dynamic_cast<const UnsignedIntegerType *>(type) != nullptr;
     }
 
+    inline bool primitive(const Type *type) noexcept {
+        return dynamic_cast<const PrimitiveType *>(type) != nullptr;
+    }
+
     template<typename T, std::size_t SIZE>
     bool is_signed_with_size(const Type *type) noexcept {
         const auto as_signed = dynamic_cast<const T *>(type);
@@ -20,23 +24,31 @@ namespace impls {
     }
 }
 
-constexpr auto signed_type() noexcept {
+consteval auto signed_type() noexcept {
     return impls::signed_type;
 }
 
-constexpr auto i8() noexcept {
+consteval auto unsigned_type() noexcept {
+    return impls::unsigned_type;
+}
+
+consteval auto primitive() noexcept {
+    return impls::primitive;
+}
+
+consteval auto i8() noexcept {
     return impls::is_signed_with_size<SignedIntegerType, 1>;
 }
 
-constexpr auto u8() noexcept {
+consteval auto u8() noexcept {
     return impls::is_signed_with_size<UnsignedIntegerType, 1>;
 }
 
-constexpr auto i16() noexcept {
+consteval auto i16() noexcept {
     return impls::is_signed_with_size<SignedIntegerType, 2>;
 }
 
-constexpr auto u16() noexcept {
+consteval auto u16() noexcept {
     return impls::is_signed_with_size<UnsignedIntegerType, 2>;
 }
 

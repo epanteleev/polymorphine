@@ -63,6 +63,10 @@ public:
         return {value, SignedIntegerType::i32()};
     }
 
+    constexpr static Value u32(std::uint32_t value) noexcept {
+        return {value, UnsignedIntegerType::u32()};
+    }
+
     constexpr static Value i64(std::int64_t value) noexcept {
         return {value, SignedIntegerType::i64()};
     }
