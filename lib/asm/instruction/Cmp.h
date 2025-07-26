@@ -12,35 +12,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMP_RR = 0x39;
             static constexpr std::uint8_t CMP_RR_8 = 0x38;
-
-            switch (m_size) {
-                case 1: {
-                    const auto rex = constants::REX | B(m_dst) | R(m_src);
-                    if (rex != constants::REX || is_special_byte_reg(m_dst) || is_special_byte_reg(m_src)) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(CMP_RR_8);
-                    buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dst));
-                    break;
-                }
-                case 2: add_word_op_size(buffer); [[fallthrough]];
-                case 4: {
-                    const auto rex = constants::REX | B(m_dst) | R(m_src);
-                    if (rex != constants::REX) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(CMP_RR);
-                    buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dst));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | B(m_dst) | R(m_src));
-                    buffer.emit8(CMP_RR);
-                    buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dst));
-                    break;
-                }
-                default: die("Invalid size for cmp instruction: {}", m_size);
-            }
+            encode_RR<CMP_RR_8, CMP_RR>(buffer, m_size, m_src, m_dst);
         }
 
     private:
@@ -152,37 +124,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMP_MR = 0x3B;
             static constexpr std::uint8_t CMP_MR_8 = 0x3A;
-
-            switch (m_size) {
-                case 1: {
-                    const auto prefix = constants::REX | R(m_dst) | X(m_src) | B(m_src.base);
-                    if (prefix != constants::REX || is_special_byte_reg(m_dst)) {
-                        buffer.emit8(prefix);
-                    }
-
-                    buffer.emit8(CMP_MR_8);
-                    m_src.encode(buffer, reg3(m_dst));
-                    break;
-                }
-                case 2: add_word_op_size(buffer); [[fallthrough]];
-                case 4: {
-                    const auto prefix = constants::REX | R(m_dst) | X(m_src) | B(m_src.base);
-                    if (prefix != constants::REX) {
-                        buffer.emit8(prefix);
-                    }
-
-                    buffer.emit8(CMP_MR);
-                    m_src.encode(buffer, reg3(m_dst));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | R(m_dst) | X(m_src) | B(m_src.base));
-                    buffer.emit8(CMP_MR);
-                    m_src.encode(buffer, reg3(m_dst));
-                    break;
-                }
-                default: die("Invalid size for cmp instruction: {}", m_size);
-            }
+            encode_RM<CMP_MR_8, CMP_MR>(buffer, m_size, m_src, m_dst);
         }
 
     private:
@@ -209,35 +151,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMP_MR = 0x3B;
             static constexpr std::uint8_t CMP_MR_8 = 0x3A;
-
-            switch (m_size) {
-                case 1: {
-                    const auto rex = constants::REX | X(m_dst) | B(m_src);
-                    if (rex != constants::REX || is_special_byte_reg(m_src)) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(CMP_MR_8);
-                    m_dst.encode(buffer, reg3(m_src));
-                    break;
-                }
-                case 2: add_word_op_size(buffer); [[fallthrough]];
-                case 4: {
-                    const auto rex = constants::REX | X(m_dst) | B(m_src);
-                    if (rex != constants::REX) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(CMP_MR);
-                    m_dst.encode(buffer, reg3(m_src));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | X(m_dst) | B(m_src));
-                    buffer.emit8(CMP_MR);
-                    m_dst.encode(buffer, reg3(m_src));
-                    break;
-                }
-                default: die("Invalid size for cmp instruction: {}", m_size);
-            }
+            encode_MR<CMP_MR_8, CMP_MR>(buffer, m_size, m_src, m_dst);
         }
 
     private:
@@ -252,8 +166,8 @@ namespace aasm {
 
     class CmpMI final {
     public:
-        constexpr CmpMI(const std::uint8_t size, const std::int32_t imm, const Address& dest) noexcept:
-            m_dest(dest),
+        constexpr CmpMI(const std::uint8_t size, const std::int32_t imm, const Address& second) noexcept:
+            m_second(second),
             m_imm(imm),
             m_size(size) {}
 
@@ -263,35 +177,35 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             switch (m_size) {
                 case 1: {
-                    const auto rex = constants::REX | X(m_dest) | B(m_dest.base);
+                    const auto rex = constants::REX | X(m_second) | B(m_second.base);
                     if (rex != constants::REX) {
                         buffer.emit8(rex);
                     }
                     buffer.emit8(CMP_MI_8);
-                    m_dest.encode(buffer,  7);
+                    m_second.encode(buffer,  7);
                     buffer.emit8(checked_cast<std::int8_t>(m_imm));
                     break;
                 }
                 case 2: {
                     add_word_op_size(buffer);
-                    if (const auto rex = constants::REX | X(m_dest) | B(m_dest.base); rex != constants::REX) {
+                    if (const auto rex = constants::REX | X(m_second) | B(m_second.base); rex != constants::REX) {
                         buffer.emit8(rex);
                     }
                     if (std::in_range<std::int8_t>(m_imm)) {
                         buffer.emit8(CMP_MI | 0x02);
-                        m_dest.encode(buffer, 7);
+                        m_second.encode(buffer, 7);
                         buffer.emit8(static_cast<std::int8_t>(m_imm));
 
                     } else {
                         buffer.emit8(CMP_MI);
-                        m_dest.encode(buffer, 7);
+                        m_second.encode(buffer, 7);
                         buffer.emit16(checked_cast<std::int16_t>(m_imm));
                     }
 
                     break;
                 }
                 case 4: {
-                    if (const auto rex = constants::REX | X(m_dest) | B(m_dest.base); rex != constants::REX) {
+                    if (const auto rex = constants::REX | X(m_second) | B(m_second.base); rex != constants::REX) {
                         buffer.emit8(rex);
                     }
 
@@ -299,7 +213,7 @@ namespace aasm {
                     break;
                 }
                 case 8: {
-                    buffer.emit8(constants::REX_W | X(m_dest) | B(m_dest.base));
+                    buffer.emit8(constants::REX_W | X(m_second) | B(m_second.base));
                     emit_cmp_32_and_64(buffer);
                     break;
                 }
@@ -315,22 +229,22 @@ namespace aasm {
         constexpr void emit_cmp_32_and_64(Buffer& buffer) const {
             if (std::in_range<std::int8_t>(m_imm)) {
                 buffer.emit8(CMP_MI | 0x02);
-                m_dest.encode(buffer, 7);
+                m_second.encode(buffer, 7);
                 buffer.emit8(static_cast<std::int8_t>(m_imm));
             } else {
                 buffer.emit8(CMP_MI);
-                m_dest.encode(buffer, 7);
+                m_second.encode(buffer, 7);
                 buffer.emit32(checked_cast<std::int32_t>(m_imm));
             }
         }
 
-        Address m_dest;
+        Address m_second;
         std::int32_t m_imm;
         std::uint8_t m_size;
     };
 
     inline std::ostream & operator<<(std::ostream &os, const CmpMI &cmp) {
         return os << "cmp" << prefix_size(cmp.m_size)
-            << " $" << cmp.m_imm << ", " << cmp.m_dest;
+            << " $" << cmp.m_imm << ", " << cmp.m_second;
     }
 }

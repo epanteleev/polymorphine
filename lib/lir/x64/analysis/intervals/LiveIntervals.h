@@ -4,14 +4,14 @@
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRValMap.h"
 
-class Interval final {
+class LiveRange final {
 public:
-    Interval(std::uint32_t start, std::uint32_t end) noexcept:
+    LiveRange(const std::uint32_t start, const std::uint32_t end) noexcept:
         m_start(start),
         m_end(end) {}
 
     [[nodiscard]]
-    bool intersects(const Interval& other) const noexcept {
+    bool intersects(const LiveRange& other) const noexcept {
         return m_start <= other.m_start && m_end >= other.m_end;
     }
 
@@ -24,34 +24,85 @@ public:
         return m_start;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Interval& interval);
+    [[nodiscard]]
+    std::uint32_t end() const noexcept {
+        return m_end;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const LiveRange& interval);
 
 private:
     std::uint32_t m_start;
     std::uint32_t m_end;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Interval& interval) {
+inline std::ostream& operator<<(std::ostream& os, const LiveRange& interval) {
     return os << '[' << interval.m_start << ", " << interval.m_end << ']';
 }
 
+class LiveInterval final {
+public:
+    using const_iterator = std::vector<LiveRange>::const_iterator;
+
+    [[nodiscard]]
+    const_iterator begin() const noexcept {
+        return m_intervals.begin();
+    }
+
+    [[nodiscard]]
+    const_iterator end() const noexcept {
+        return m_intervals.end();
+    }
+
+    [[nodiscard]]
+    bool intersects(const LiveInterval& other) const noexcept {
+        if (m_start > other.m_end || m_end < other.m_start) {
+            return false;
+        }
+
+        for (const auto& interval : m_intervals) {
+            for (const auto& other_interval : other.m_intervals) {
+                if (interval.intersects(other_interval)) return true;
+            }
+        }
+
+        return false;
+    }
+
+    static LiveInterval create(std::vector<LiveRange>&& intervals) noexcept {
+        const auto start = intervals.front().start();
+        const auto end = intervals.back().end();
+        return LiveInterval(std::move(intervals), start, end);
+    }
+
+private:
+    explicit LiveInterval(std::vector<LiveRange>&& intervals, const std::uint32_t start, const std::uint32_t end) noexcept:
+        m_start(start),
+        m_end(end),
+        m_intervals(std::move(intervals)) {}
+
+    std::uint32_t m_start;
+    std::uint32_t m_end;
+    std::vector<LiveRange> m_intervals;
+};
+
 class LiveIntervals final: public AnalysisPassResult {
 public:
-    explicit LiveIntervals(LIRValMap<std::vector<Interval>>&& intervals) noexcept:
+    explicit LiveIntervals(LIRValMap<LiveInterval>&& intervals) noexcept:
         m_intervals(std::move(intervals)) {}
 
     friend std::ostream& operator<<(std::ostream& os, const LiveIntervals& intervals);
 
-    std::span<Interval const> intervals(const LIRVal& val) const noexcept {
+    std::span<LiveRange const> intervals(const LIRVal& val) const noexcept {
         return m_intervals.at(val);
     }
 
-    const LIRValMap<std::vector<Interval>>& intervals() const noexcept {
+    const LIRValMap<LiveInterval>& intervals() const noexcept {
         return m_intervals;
     }
 
 private:
-    LIRValMap<std::vector<Interval>> m_intervals{};
+    LIRValMap<LiveInterval> m_intervals{};
 };
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervals &intervals) {

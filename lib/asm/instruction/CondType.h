@@ -2,7 +2,7 @@
 
 namespace aasm {
     enum class CondType: std::uint8_t {
-        O   = 0x0,  // Overflow
+        O   = 0x0, // Overflow
         NO  = 0x1, // No Overflow
         NAE = 0x2, // Not Above or Equal (Below)
         AE  = 0x3, // Above or Equal (Not Below)
@@ -39,6 +39,14 @@ namespace aasm {
             case CondType::NG: return os << "ng";
             case CondType::G:  return os << "g";
             default: std::unreachable();
+        }
+    }
+
+    constexpr CondType invert(const CondType cond) noexcept {
+        if (const auto code = static_cast<std::uint8_t>(cond); (code & 1) == 0) {
+            return static_cast<CondType>(code + 1);
+        } else {
+            return static_cast<CondType>(code - 1);
         }
     }
 }

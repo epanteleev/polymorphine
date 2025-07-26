@@ -114,14 +114,19 @@ void FunctionLower::accept(Branch *branch) {
 }
 
 void FunctionLower::accept(CondBranch *cond_branch) {
-    const auto on_true_lir = m_bb_mapping.at(cond_branch->on_true());
-    const auto on_false_lir = m_bb_mapping.at(cond_branch->on_false());
     const auto& cond = cond_branch->condition();
 
+    const auto true_target = m_bb_mapping.at(cond_branch->on_true());
+    const auto false_target = m_bb_mapping.at(cond_branch->on_false());
     if (cond.isa(icmp(signed_v(), signed_v()))) {
-
+        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
+        m_bb->inst(LIRCondBranch::jcc(signed_cond_type(icmp->predicate()), true_target, false_target));
 
     } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
+        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
+        m_bb->inst(LIRCondBranch::jcc(unsigned_cond_type(icmp->predicate()), true_target, false_target));
 
     } else {
         die("Unsupported condition type in cond branch");

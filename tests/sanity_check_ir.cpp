@@ -183,47 +183,52 @@ TEST(SanityCheck, branch1) {
     ASSERT_EQ(res, 10) << "Failed for value: " << 0;
 }
 
-static void is_predicate_impl(const FunctionBuilder& data, IcmpPredicate pred, const Value& threshold) {
+static void is_predicate_impl(const FunctionBuilder& data, const IcmpPredicate pred, const Value& threshold) {
     const auto arg0 = data.arg(0);
     const auto is_neg = data.icmp(pred, arg0, threshold);
     const auto res = data.flag2int(is_neg);
     data.ret(res);
 }
 
-static Module is_predicate(const IntegerType* ty, const Value& threshold) {
+template<typename Fn>
+static Module is_predicate_base(Fn&& fn, const IntegerType* ty, const Value& threshold) {
     ModuleBuilder builder;
     {
         FunctionPrototype prototype(ty, {ty}, "is_neg");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Lt,  threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Lt,  threshold);
     }
     {
         FunctionPrototype prototype(ty, {ty}, "is_le");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Le, threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Le, threshold);
     }
     {
         FunctionPrototype prototype(ty, {ty}, "is_gt");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Gt, threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Gt, threshold);
     }
     {
         FunctionPrototype prototype(ty, {ty}, "is_eq");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Eq, threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Eq, threshold);
     }
     {
         FunctionPrototype prototype(ty, {ty}, "is_ne");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Ne, threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Ne, threshold);
     }
     {
         FunctionPrototype prototype(ty, {ty}, "is_ge");
         const auto fn_builder = builder.make_function_builder(std::move(prototype));
-        is_predicate_impl(*fn_builder.value(), IcmpPredicate::Ge, threshold);
+        fn(*fn_builder.value(), IcmpPredicate::Ge, threshold);
     }
 
     return builder.build();
+}
+
+static Module is_predicate(const IntegerType* ty, const Value& threshold) {
+    return is_predicate_base(is_predicate_impl, ty, threshold);
 }
 
 TEST(SanityCheck, is_i32_predicate) {
@@ -274,22 +279,22 @@ TEST(SanityCheck, is_u32_predicate) {
 
         for (const auto i: values) {
             const auto res = is_neg(i);
-            ASSERT_EQ(res, i < j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res, i < j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
 
             const auto res_le = is_le(i);
-            ASSERT_EQ(res_le, i <= j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res_le, i <= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
 
             const auto res_gt = is_gt(i);
-            ASSERT_EQ(res_gt, i > j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res_gt, i > j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
 
             const auto res_eq = is_eq(i);
-            ASSERT_EQ(res_eq, i == j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res_eq, i == j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
 
             const auto res_ne = is_ne(i);
-            ASSERT_EQ(res_ne, i != j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res_ne, i != j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
 
             const auto res_ge = is_ge(i);
-            ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i;
+            ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
         }
     }
 }
@@ -320,6 +325,66 @@ TEST(SanityCheck, stack_alloc) {
         const auto fn = buffer.code_start_as<std::int8_t()>("stackalloc").value();
         const auto res = fn();
         ASSERT_EQ(res, 42) << "Failed for value: " << val;
+    }
+}
+
+static void is_predicate_branch_impl(FunctionBuilder& data, IcmpPredicate pred, const Value& threshold) {
+    const auto then = data.create_basic_block();
+    const auto else_ = data.create_basic_block();
+    const auto cont = data.create_basic_block();
+
+    const auto arg0 = data.arg(0);
+    const auto res = data.alloc(SignedIntegerType::i32());
+    const auto icmp = data.icmp(pred, arg0, threshold);
+    data.br_cond(icmp, then, else_);
+
+    data.switch_block(then);
+    data.store(res, Value::i32(1));
+    data.br(cont);
+
+    data.switch_block(else_);
+    data.store(res, Value::i32(0));
+    data.br(cont);
+
+    data.switch_block(cont);
+    data.ret(data.load(res));
+}
+
+static Module is_predicate_branch(const IntegerType* ty, const Value& threshold) {
+    return is_predicate_base(is_predicate_branch_impl, ty, threshold);
+}
+
+TEST(SanityCheck, branch_u32_predicate) {
+    const auto values = {0U, 1U, 2U, 42U, 100U, 1000U, UINT32_MAX};
+
+    for (const auto j: values) {
+        const auto buffer0 = do_jit_compilation(is_predicate_branch(UnsignedIntegerType::u32(), Value::u32(j)), true);
+        const auto is_neg = buffer0.code_start_as<std::int8_t(unsigned int)>("is_neg").value();
+        const auto is_le = buffer0.code_start_as<std::int8_t(unsigned int)>("is_le").value();
+        const auto is_gt = buffer0.code_start_as<std::int8_t(unsigned int)>("is_gt").value();
+        const auto is_eq = buffer0.code_start_as<std::int8_t(unsigned int)>("is_eq").value();
+        const auto is_ne = buffer0.code_start_as<std::int8_t(unsigned int)>("is_ne").value();
+        const auto is_ge = buffer0.code_start_as<std::int8_t(unsigned int)>("is_ge").value();
+
+        for (const auto i: values) {
+            const auto res = is_neg(i);
+            ASSERT_EQ(res, i < j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_le = is_le(i);
+            ASSERT_EQ(res_le, i <= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_gt = is_gt(i);
+            ASSERT_EQ(res_gt, i > j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_eq = is_eq(i);
+            ASSERT_EQ(res_eq, i == j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ne = is_ne(i);
+            ASSERT_EQ(res_ne, i != j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ge = is_ge(i);
+            ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+        }
     }
 }
 

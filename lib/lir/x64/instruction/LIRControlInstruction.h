@@ -27,33 +27,38 @@ private:
     std::vector<LIRBlock* > m_successors;
 };
 
-enum class LIRBranchKind: std::uint8_t {
-    Jmp,
-    Je,
-    Jne,
-    Jg,
-    Jge,
-    Jl,
-    Jle,
-};
-
 class LIRBranch final: public LIRControlInstruction {
 public:
-    explicit LIRBranch(const std::size_t id, LIRBlock *bb, const LIRBranchKind kind, std::vector<LIROperand>&& uses,
+    explicit LIRBranch(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& uses,
+                       std::vector<LIRBlock* >&& successors) :
+        LIRControlInstruction(id, bb, std::move(uses), std::move(successors)) {}
+
+    void visit(LIRVisitor &visitor) override;
+
+    static LIRInstBuilder<LIRBranch> jmp(LIRBlock *target) {
+        return [=](std::size_t idx, LIRBlock *bb) {
+            return std::make_unique<LIRBranch>(idx, bb, std::vector<LIROperand>{}, std::vector{target});
+        };
+    }
+};
+
+class LIRCondBranch final: public LIRControlInstruction {
+public:
+    explicit LIRCondBranch(const std::size_t id, LIRBlock *bb, const LIRCondType kind, std::vector<LIROperand>&& uses,
                        std::vector<LIRBlock* >&& successors) :
         LIRControlInstruction(id, bb, std::move(uses), std::move(successors)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRBranch> jmp(LIRBlock *target) {
+    static LIRInstBuilder<LIRCondBranch> jcc(const LIRCondType kind, LIRBlock *on_true, LIRBlock *on_false) {
         return [=](std::size_t idx, LIRBlock *bb) {
-            return std::make_unique<LIRBranch>(idx, bb, LIRBranchKind::Jmp, std::vector<LIROperand>{}, std::vector{target});
+            return std::make_unique<LIRCondBranch>(idx, bb, kind, std::vector<LIROperand>{}, std::vector{on_true, on_false});
         };
     }
 
 private:
-    const LIRBranchKind m_kind;
+    const LIRCondType m_kind;
 };
 
 class LIRReturn final: public LIRControlInstruction {

@@ -57,8 +57,8 @@ namespace {
 
         }
 
-        void mov_i(const LIRVal &out, const LIROperand &in) override {
-
+        void mov_i(const LIRVal &in0, const LIROperand &in) override {
+            m_os << "mov_i in(" << in0 << ") in(" << in << ')';
         }
 
         void copy_i(const LIRVal &out, const LIROperand &in) override {
@@ -70,28 +70,11 @@ namespace {
             bb->print_short_name(m_os);
         }
 
-        void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-        }
-
-        void jne(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-        }
-
-        void jl(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-        }
-
-        void jle(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-        }
-
-        void jg(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-        }
-
-        void jge(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
+        void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {
+            m_os << "j" << cond_type << " ";
+            on_true->print_short_name(m_os);
+            m_os << ", ";
+            on_false->print_short_name(m_os);
         }
 
         void call(const LIRVal &out, std::span<LIRVal const> args) override {

@@ -4,6 +4,7 @@
 
 #include "asm/Common.h"
 #include "Label.h"
+#include "asm/Encoding.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"

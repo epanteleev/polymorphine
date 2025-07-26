@@ -27,12 +27,7 @@ public:
     virtual void copy_i(const LIRVal& out, const LIROperand& in) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;
-    virtual void je(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
-    virtual void jne(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
-    virtual void jl(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
-    virtual void jle(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
-    virtual void jg(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
-    virtual void jge(const LIRBlock* on_true, const LIRBlock* on_false) = 0;
+    virtual void jcc(LIRCondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
     virtual void call(const LIRVal& out, std::span<LIRVal const> args) = 0;
     virtual void vcall(std::span<LIRVal const> args) = 0;

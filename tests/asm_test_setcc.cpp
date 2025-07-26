@@ -140,6 +140,54 @@ TEST(Asm, setcc2) {
     check_bytes_setcc(codes, names, generator, cond_types);
 }
 
+TEST(Asm, setcc3) {
+    std::vector<std::string> names = {
+        "seto %dil",
+        "setno %dil",
+        "setnae %dil",
+        "setae %dil",
+        "sete %dil",
+        "setne %dil",
+        "setna %dil",
+        "seta %dil",
+        "sets %dil",
+        "setns %dil",
+        "setp %dil",
+        "setnp %dil",
+        "setnge %dil",
+        "setge %dil",
+        "setng %dil",
+        "setg %dil"
+    };
+
+    std::vector<std::vector<std::uint8_t>> codes = {
+      {0x40,0x0f,0x90,0xc7}, // seto %dil
+      {0x40,0x0f,0x91,0xc7}, // setno %dil
+      {0x40,0x0f,0x92,0xc7}, // setnae %dil
+      {0x40,0x0f,0x93,0xc7}, // setae %dil
+      {0x40,0x0f,0x94,0xc7}, // sete %dil
+      {0x40,0x0f,0x95,0xc7}, // setne %dil
+      {0x40,0x0f,0x96,0xc7}, // setna %dil
+      {0x40,0x0f,0x97,0xc7}, // seta %dil
+      {0x40,0x0f,0x98,0xc7}, // sets %dil
+      {0x40,0x0f,0x99,0xc7}, // setns %dil
+      {0x40,0x0f,0x9a,0xc7}, // setp %dil
+      {0x40,0x0f,0x9b,0xc7}, // setnp %dil
+      {0x40,0x0f,0x9c,0xc7}, // setnge %dil
+      {0x40,0x0f,0x9d,0xc7}, // setge %dil
+      {0x40,0x0f,0x9e,0xc7}, // setng %dil
+      {0x40,0x0f,0x9f,0xc7}   // setg %dil
+    };
+
+    const auto generator = [](aasm::CondType type) {
+        aasm::Assembler a;
+        a.setcc(type, aasm::rdi);
+        return a;
+    };
+
+    check_bytes_setcc(codes, names, generator, cond_types);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

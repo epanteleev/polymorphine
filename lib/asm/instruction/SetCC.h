@@ -12,7 +12,7 @@ namespace aasm {
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
             const auto rex = constants::REX | B(m_reg);
-            if (rex != constants::REX && !is_special_byte_reg(m_reg)) {
+            if (rex != constants::REX || is_special_byte_reg(m_reg)) {
                 buffer.emit8(rex);
             }
             buffer.emit8(0x0F);

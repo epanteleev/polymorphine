@@ -11,46 +11,12 @@ namespace aasm {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            switch (m_size) {
-                case 8: {
-                    emit_mov(buffer, constants::REX_W);
-                    break;
-                }
-                case 4: {
-                    emit_mov(buffer, 0);
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(buffer);
-                    emit_mov(buffer, 0);
-                    break;
-                }
-                case 1: {
-                    emit_mov_byte(buffer);
-                    break;
-                }
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
+            static constexpr std::uint8_t MOV_RR = 0x89;
+            static constexpr std::uint8_t MOV_RR_8 = 0x88;
+            encode_RR<MOV_RR_8, MOV_RR>(buffer, m_size, m_src, m_dest);
         }
 
     private:
-        static constexpr std::uint8_t MOV_RR = 0x89;
-        static constexpr std::uint8_t MOV_RR_8 = 0x88;
-
-        template<CodeBuffer Buffer>
-        constexpr void emit_mov(Buffer& buffer, const std::uint8_t rex_w) const {
-            buffer.emit8(constants::REX | B(m_dest) | rex_w | R(m_src));
-            buffer.emit8(MOV_RR);
-            buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dest));
-        }
-
-        template<CodeBuffer Buffer>
-        constexpr void emit_mov_byte(Buffer& buffer) const {
-            buffer.emit8(constants::REX | B(m_dest) | R(m_src));
-            buffer.emit8(MOV_RR_8);
-            buffer.emit8(0xC0 | reg3(m_src) << 3 | reg3(m_dest));
-        }
-
         std::uint8_t m_size;
         GPReg m_src;
         GPReg m_dest;
@@ -124,8 +90,10 @@ namespace aasm {
 
     class MovMR final {
     public:
-        constexpr MovMR(std::uint8_t size, const GPReg src, const Address& dst) noexcept:
-            m_size(size), m_src(src), m_dest(dst) {}
+        constexpr MovMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dest(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovMR &movmr);
 
@@ -133,36 +101,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_MR = 0x89;
             static constexpr std::uint8_t MOV_MR_8 = 0x88;
-            switch (m_size) {
-                case 1: {
-                    const auto reg = constants::REX | R(m_src) | X(m_dest) | B(m_dest.base);
-                    if (reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_MR_8);
-                    m_dest.encode(buffer, reg3(m_src));
-                    break;
-                }
-                case 2: add_word_op_size(buffer); [[fallthrough]];
-                case 4: {
-                    const auto reg = constants::REX | R(m_src) | X(m_dest) | B(m_dest.base);
-                    if (reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_MR);
-                    m_dest.encode(buffer, reg3(m_src));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | R(m_src) | X(m_dest) | B(m_dest.base));
-                    buffer.emit8(MOV_MR);
-                    m_dest.encode(buffer, reg3(m_src));
-                    break;
-                }
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
+            encode_MR<MOV_MR_8, MOV_MR>(buffer, m_size, m_src, m_dest);
         }
 
     private:
@@ -188,36 +127,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_RM = 0x8B;
             static constexpr std::uint8_t MOV_RM_8 = 0x8A;
-            switch (m_size) {
-                case 1: {
-                    const auto reg = constants::REX | R(m_dest) | X(m_src) | B(m_src.base);
-                    if (reg != constants::REX || is_special_byte_reg(m_dest)) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_RM_8);
-                    m_src.encode(buffer, reg3(m_dest));
-                    break;
-                }
-                case 2: add_word_op_size(buffer); [[fallthrough]];
-                case 4: {
-                    const auto reg = constants::REX | R(m_dest) | X(m_src) | B(m_src.base);
-                    if (reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_RM);
-                    m_src.encode(buffer, reg3(m_dest));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | R(m_dest) | X(m_src) | B(m_src.base));
-                    buffer.emit8(MOV_RM);
-                    m_src.encode(buffer, reg3(m_dest));
-                    break;
-                }
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
+            encode_RM<MOV_RM_8, MOV_RM>(buffer, m_size, m_src, m_dest);
         }
 
     private:

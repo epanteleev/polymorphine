@@ -1,16 +1,11 @@
 #include "LIRControlInstruction.h"
 
-
 void LIRBranch::visit(LIRVisitor &visitor) {
-    switch (m_kind) {
-        case LIRBranchKind::Je: visitor.je(succ(0), succ(1)); break;
-        case LIRBranchKind::Jg: visitor.jg(succ(0), succ(1)); break;
-        case LIRBranchKind::Jl: visitor.jl(succ(0), succ(1)); break;
-        case LIRBranchKind::Jmp: visitor.jmp(succ(0)); break;
-        case LIRBranchKind::Jne: visitor.jne(succ(0), succ(1)); break;
-        case LIRBranchKind::Jge: visitor.jge(succ(0), succ(1)); break;
-        case LIRBranchKind::Jle: visitor.jle(succ(0), succ(1)); break;
-    }
+    visitor.jmp(succ(0));
+}
+
+void LIRCondBranch::visit(LIRVisitor &visitor) {
+    visitor.jcc(m_kind, succ(0), succ(1));
 }
 
 void LIRReturn::visit(LIRVisitor &visitor) {

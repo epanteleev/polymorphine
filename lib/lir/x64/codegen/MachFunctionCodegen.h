@@ -120,29 +120,7 @@ private:
 
     void jmp(const LIRBlock *bb) override;
 
-    void je(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
-
-    void jne(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
-
-    void jl(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
-
-    void jle(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
-
-    void jg(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
-
-    void jge(const LIRBlock *on_true, const LIRBlock *on_false) override {
-
-    }
+    void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override;
 
     void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {
 

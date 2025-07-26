@@ -75,6 +75,12 @@ void MachFunctionCodegen::jmp(const LIRBlock *bb) {
     m_as.jmp(target);
 }
 
+void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
+    const auto target_false = m_bb_labels.at(on_false);
+    const auto cond = aasm::invert(cvt_from(cond_type));
+    m_as.jcc(cond, target_false);
+}
+
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
 #ifdef ENABLE_ASSERTIONS
     const auto values_num = ret_values.size();

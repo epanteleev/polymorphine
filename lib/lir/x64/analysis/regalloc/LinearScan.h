@@ -46,20 +46,17 @@ private:
 
     void setup_unhandled_intervals() {
         m_unhandled_intervals.reserve(m_intervals.intervals().size());
-        for (auto& [lir_val, intervals]: m_intervals.intervals()) {
-            for (auto interval: intervals) {
-                m_unhandled_intervals.emplace_back(interval, lir_val);
+        for (auto& [lir_val, interval]: m_intervals.intervals()) {
+            if (lir_val.arg().has_value()) {
+                m_active_intervals.emplace_back(&interval, lir_val);
+            } else {
+                m_unhandled_intervals.emplace_back(&interval, lir_val);
             }
         }
-
-        const auto ordering = [](const IntervalEntry& a, const IntervalEntry& b) -> bool {
-            return a.m_interval.start() < b.m_interval.start();
-        };
-
-        std::ranges::sort(m_unhandled_intervals, ordering);
     }
 
     void do_register_allocation() {
+        auto reg_set = RegSet::create(std::array{aasm::rdi});
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
             if (vreg.isa(cmp())) {
                 // Produces flag registers, which are not allocated.
@@ -72,17 +69,129 @@ private:
                 continue;
             }
 
-            m_reg_allocation.try_emplace(vreg, aasm::rcx);
+            const auto active_eraser = [&](const IntervalEntry& entry) {
+                if (entry.m_interval->end() <= unhandled_interval->begin()) {
+                    // This interval is no longer active, we can remove it.
+                    return true;
+                }
+
+                if (!entry.m_interval->intersects(*unhandled_interval)) {
+                    m_inactive_intervals.emplace_back(entry);
+                    const auto reg = m_reg_allocation.at(entry.m_vreg);
+                    if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                        reg_set.push(reg_opt.value());
+                    }
+
+                    return true;
+                }
+
+                return false;
+            };
+
+            std::erase_if(m_active_intervals, active_eraser);
+
+            const auto unactive_eraser = [&](const IntervalEntry& entry) {
+                if (entry.m_interval->end() <= unhandled_interval->begin()) {
+                    // This interval is no longer active, we can remove it.
+                    return true;
+                }
+                if (entry.m_interval->intersects(*unhandled_interval)) {
+                    // This interval is still active, we need to keep it.
+                    m_active_intervals.emplace_back(entry);
+                    const auto reg = m_reg_allocation.at(entry.m_vreg);
+                    if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                        reg_set.remove(reg_opt.value());
+                    }
+
+                    return true;
+                }
+
+                return false;
+            };
+
+            std::erase_if(m_inactive_intervals, unactive_eraser);
+
+            for (const auto& unhandled: m_unhandled_intervals) {
+                if (!m_fixed_registers.contains(unhandled.m_vreg)) {
+                    continue;
+                }
+
+                if (!unhandled.m_interval->intersects(*unhandled_interval)) {
+                    continue;
+                }
+
+                m_active_intervals.emplace_back(unhandled);
+                const auto reg = m_reg_allocation.at(unhandled.m_vreg);
+                if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                    reg_set.remove(reg_opt.value());
+                }
+            }
+
+            const auto pair = m_reg_allocation.try_emplace(vreg, reg_set.top());
+            if (pair.second) {
+                // Successfully allocated a register for this interval.
+                reg_set.pop();
+            }
+            m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
     }
 
     struct IntervalEntry final {
-        IntervalEntry(const Interval& interval, const LIRVal vreg) noexcept:
+        IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
             m_interval(interval),
             m_vreg(vreg) {}
 
-        Interval m_interval;
+        const LiveInterval* m_interval;
         LIRVal m_vreg;
+    };
+
+    class RegSet final {
+    public:
+        using stack = std::vector<aasm::GPReg>;
+
+        explicit RegSet(stack&& free_regs) noexcept:
+            m_free_regs(std::move(free_regs)) {}
+
+        template<std::ranges::range Range>
+        static RegSet create(Range&& arg_regs) {
+            stack regs{};
+            for (const auto& reg: call_conv::GP_ARGUMENT_REGISTERS) {
+                if (std::ranges::contains(arg_regs, reg)) {
+                    continue;
+                }
+
+                regs.push_back(reg);
+            }
+
+            return RegSet(std::move(regs));
+        }
+
+        [[nodiscard]]
+        aasm::GPReg top() const noexcept {
+            return m_free_regs.back();
+        }
+
+        void pop() noexcept {
+            m_free_regs.pop_back();
+        }
+
+        void push(const aasm::GPReg reg) noexcept {
+            m_free_regs.push_back(reg);
+        }
+
+        void remove(const aasm::GPReg reg) noexcept {
+            if (const auto it = std::ranges::find(m_free_regs, reg); it != m_free_regs.end()) {
+                m_free_regs.erase(it);
+            }
+        }
+
+        [[nodiscard]]
+        bool empty() const noexcept {
+            return m_free_regs.empty();
+        }
+
+    private:
+        stack m_free_regs{};
     };
 
     const LIRFuncData& m_obj_func_data;
@@ -94,6 +203,6 @@ private:
     std::int32_t m_local_area_size{0};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
-    std::vector<IntervalEntry> m_unactive_intervals{};
+    std::vector<IntervalEntry> m_inactive_intervals{};
     std::vector<IntervalEntry> m_active_intervals{};
 };

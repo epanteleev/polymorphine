@@ -34,5 +34,24 @@ namespace call_conv {
         aasm::r15
     };
 
+    static constexpr std::array ALL_GP_REGISTERS = {
+        aasm::rax,
+        aasm::rbx,
+        aasm::rcx,
+        aasm::rdx,
+        aasm::rdi,
+        aasm::rsi,
+        aasm::rbp,
+        aasm::rsp,
+        aasm::r8,
+        aasm::r9,
+        aasm::r10,
+        aasm::r11,
+        aasm::r12,
+        aasm::r13,
+        aasm::r14,
+        aasm::r15
+    };
+
     static constexpr std::size_t STACK_ALIGNMENT = 16;
 }

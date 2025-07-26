@@ -22,6 +22,11 @@ public:
         return m_reg_map.end();
     }
 
+    [[nodiscard]]
+    bool contains(const LIRVal& val) const noexcept {
+        return m_reg_map.contains(val);
+    }
+
 private:
     const LIRValMap<GPVReg> m_reg_map;
 };
