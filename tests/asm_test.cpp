@@ -549,14 +549,64 @@ TEST(Asm, add_addr_imm1) {
     check_bytes(codes, names, generator);
 }
 
-TEST(Asm, cmp_reg_reg1) {
+TEST(Asm, add_reg_addr) {
     std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x00,0x7c,0x3e,0x17},
+        {0x66,0x01,0x7c,0x3e,0x17},
+        {0x01,0x7c,0x3e,0x17},
+        {0x48,0x01,0x7c,0x3e,0x17}
+    };
+
+    std::vector<std::string> names = {
+        "addb %dil, 23(%rsi,%rdi)",
+        "addw %di, 23(%rsi,%rdi)",
+        "addl %edi, 23(%rsi,%rdi)",
+        "addq %rdi, 23(%rsi,%rdi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
+        a.add(size, aasm::rdi, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, add_mem_imm1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x80,0x44,0x3e,0x17,0x12},
+        {0x66,0x81,0x44,0x3e,0x17,0x12,0x00},
+        {0x81,0x44,0x3e,0x17,0x12,0x00,0x00,0x00},
+        {0x48,0x81,0x44,0x3e,0x17,0x12,0x00,0x00,0x00}
+    };
+
+    std::vector<std::string> names = {
+        "addb $18, 23(%rsi,%rdi)",
+        "addw $18, 23(%rsi,%rdi)",
+        "addl $18, 23(%rsi,%rdi)",
+        "addq $18, 23(%rsi,%rdi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
+        a.add(size, 18, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, cmp_reg_reg1) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
         {0x40,0x38,0xc7},
         {0x66,0x39,0xc7},
         {0x39,0xc7},
         {0x48,0x39,0xc7}
     };
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "cmpb %al, %dil",
         "cmpw %ax, %di",
         "cmpl %eax, %edi",

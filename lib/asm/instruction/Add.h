@@ -92,9 +92,36 @@ namespace aasm {
                   << add.m_src << ", %" << add.m_dst.name(add.m_size);
     }
 
+    class AddMI final {
+    public:
+        constexpr explicit AddMI(const std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dst(dst) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const AddMI& add);
+
+        template<CodeBuffer Buffer>
+        constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t ADD_MI = 0x81;
+            static constexpr std::uint8_t ADD_MI_8 = 0x80;
+            encode_MI32<ADD_MI_8, ADD_MI>(buffer, m_size, m_src, m_dst);
+        }
+
+    private:
+        std::uint8_t m_size;
+        std::int32_t m_src;
+        Address m_dst;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const AddMI &add) {
+        return os << "add" << prefix_size(add.m_size) << " $"
+                  << add.m_src << ", " << add.m_dst;
+    }
+
     class AddRM final {
     public:
-        explicit AddRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
+        constexpr explicit AddRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
             m_size(size),
             m_src(src),
             m_dst(dst) {}
@@ -117,5 +144,32 @@ namespace aasm {
     inline std::ostream & operator<<(std::ostream &os, const AddRM &add) {
         return os << "add" << prefix_size(add.m_size) << " "
                   << add.m_src << ", %" << add.m_dst.name(add.m_size);
+    }
+
+    class AddMR final {
+    public:
+        constexpr explicit AddMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dst(dst) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const AddMR& add);
+
+        template<CodeBuffer Buffer>
+        constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t ADD_MR = 0x01;
+            static constexpr std::uint8_t ADD_MR_8 = 0x00;
+            encode_MR<ADD_MR_8, ADD_MR>(buffer, m_size, m_src, m_dst);
+        }
+
+    private:
+        std::uint8_t m_size;
+        GPReg m_src;
+        Address m_dst;
+    };
+
+    inline std::ostream & operator<<(std::ostream &os, const AddMR &add) {
+        return os << "add" << prefix_size(add.m_size) << " %"
+                  << add.m_src.name(add.m_size) << ", " << add.m_dst;
     }
 }

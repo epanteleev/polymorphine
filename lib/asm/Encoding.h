@@ -10,7 +10,7 @@ namespace aasm {
         switch (size) {
             case 1: {
                 const auto reg = constants::REX | R(src) | X(dest) | B(dest.base);
-                if (reg != constants::REX) {
+                if (reg != constants::REX || is_special_byte_reg(src)) {
                     buffer.emit8(reg);
                 }
 
@@ -318,7 +318,8 @@ namespace aasm {
     constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         switch (size) {
             case 1: {
-                if (const auto reg = constants::REX | X(dst) | B(dst.base); reg != constants::REX) {
+                const auto reg = constants::REX | X(dst) | B(dst.base);
+                if (reg != constants::REX) {
                     buffer.emit8(reg);
                 }
 

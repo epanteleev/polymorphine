@@ -66,6 +66,14 @@ namespace aasm {
             m_instructions.emplace_back(AddRM(size, src, dst));
         }
 
+        constexpr void add(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(AddMR(size, src, dst));
+        }
+
+        constexpr void add(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(AddMI(size, src, dst));
+        }
+
         constexpr void cmp(const std::uint8_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(CmpRR(size, src, dst));
         }
