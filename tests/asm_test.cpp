@@ -500,6 +500,55 @@ TEST(Asm, add_reg_reg2) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, add_reg_imm8_1) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x80,0xc7,0x12},
+        {0x66,0x87,0x12,0x00},
+        {0x81,0xc7,0x12,0x00,0x00,0x00},
+        {0x48,0x81,0xc7,0x12,0x00,0x00,0x00}
+    };
+
+    const std::vector<std::string> names = {
+        "addb $18, %dil",
+        "addw $18, %di",
+        "addl $18, %edi",
+        "addq $18, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        a.add(size, 18, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, add_addr_imm1) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x44,0x02,0x54,0x3e,0x17},
+        {0x66,0x44,0x03,0x54,0x3e,0x17},
+        {0x44,0x03,0x54,0x3e,0x17},
+        {0x4c,0x03,0x54,0x3e,0x17}
+    };
+
+    const std::vector<std::string> names = {
+        "addb 23(%rsi,%rdi), %r10b",
+        "addw 23(%rsi,%rdi), %r10w",
+        "addl 23(%rsi,%rdi), %r10d",
+        "addq 23(%rsi,%rdi), %r10"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::Assembler a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
+        a.add(size, addr, aasm::r10);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 TEST(Asm, cmp_reg_reg1) {
     std::vector<std::vector<std::uint8_t>> codes = {
         {0x40,0x38,0xc7},

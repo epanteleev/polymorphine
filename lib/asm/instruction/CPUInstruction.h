@@ -35,7 +35,7 @@ namespace aasm {
             PushR, PushM, PushI,
             Ret,
             MovRR, MovRI, MovMR, MovRM, MovMI,
-            AddRR,
+            AddRR, AddRI, AddRM,
             CmpRR, CmpRI, CmpMI, CmpRM, CmpMR,
             Jmp, Jcc,
             SetCCR

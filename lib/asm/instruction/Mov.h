@@ -37,41 +37,9 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_RI_8 = 0xB0;
             static constexpr std::uint8_t MOV_RI = 0xB8;
-            switch (m_size) {
-                case 8: {
-                    buffer.emit8(constants::REX | B(m_dest) | constants::REX_W);
-                    buffer.emit8(MOV_RI | reg3(m_dest));
-                    buffer.emit64(m_src);
-                    break;
-                }
-                case 4: {
-                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(MOV_RI | reg3(m_dest));
-                    buffer.emit32(checked_cast<std::int32_t>(m_src));
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(buffer);
-                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(MOV_RI | reg3(m_dest));
-                    buffer.emit16(checked_cast<std::int16_t>(m_src));
-                    break;
-                }
-                case 1: {
-                    if (const auto rex = constants::REX | B(m_dest); rex != constants::REX) {
-                        buffer.emit8(rex);
-                    }
-                    buffer.emit8(MOV_RI_8 | reg3(m_dest));
-                    buffer.emit8(checked_cast<std::int8_t>(m_src));
-                    break;
-                }
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
+            encode_RI64 <MOV_RI_8, MOV_RI>(buffer, m_size, m_src, m_dest);
         }
+
     private:
         std::uint8_t m_size;
         std::int64_t m_src;
@@ -153,47 +121,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_MI = 0xC7;
             static constexpr std::uint8_t MOV_MI_8 = 0xC6;
-            switch (m_size) {
-                case 1: {
-                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_MI_8);
-                    m_dest.encode(buffer, 0);
-                    buffer.emit8(checked_cast<std::int8_t>(m_src));
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(buffer);
-                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_MI);
-                    m_dest.encode(buffer, 0);
-                    buffer.emit16(checked_cast<std::int16_t>(m_src));
-                    break;
-                }
-                case 4: {
-                    if (const auto reg = constants::REX | X(m_dest) | B(m_dest.base); reg != constants::REX) {
-                        buffer.emit8(reg);
-                    }
-
-                    buffer.emit8(MOV_MI);
-                    m_dest.encode(buffer, 0);
-                    buffer.emit32(checked_cast<std::int32_t>(m_src));
-                    break;
-                }
-                case 8: {
-                    buffer.emit8(constants::REX_W | X(m_dest) | B(m_dest.base));
-                    buffer.emit8(MOV_MI);
-                    m_dest.encode(buffer, 0);
-                    buffer.emit32(m_src);
-                    break;
-                }
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
+            encode_MI32<MOV_MI_8, MOV_MI>(buffer, m_size, m_src, m_dest);
         }
 
     private:
