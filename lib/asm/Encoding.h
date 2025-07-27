@@ -77,7 +77,7 @@ namespace aasm {
     constexpr void encode_RR(Buffer& buffer, const std::uint8_t size, const GPReg src, const GPReg dest) {
         switch (size) {
             case 1: {
-                const auto reg = constants::REX | R(dest) | R(src);
+                const auto reg = constants::REX | B(dest) | R(src);
                 if (reg != constants::REX || is_special_byte_reg(dest) || is_special_byte_reg(src)) {
                     buffer.emit8(reg);
                 }
@@ -88,7 +88,7 @@ namespace aasm {
             }
             case 2: add_word_op_size(buffer); [[fallthrough]];
             case 4: {
-                const auto reg = constants::REX | R(dest) | R(src);
+                const auto reg = constants::REX | B(dest) | R(src);
                 if (reg != constants::REX) {
                     buffer.emit8(reg);
                 }

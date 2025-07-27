@@ -133,19 +133,31 @@ void FunctionLower::accept(CondBranch *cond_branch) {
     }
 }
 
+void FunctionLower::accept(Return *inst) {
+    m_bb->inst(LIRReturn::ret());
+}
+
 void FunctionLower::accept(ReturnValue *inst) {
+    const auto ret_value = inst->ret_value();
+    const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
+    assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
+
     const auto ret_val = get_lir_operand(inst->ret_value());
-    const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_val));
+    const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_type->size_of(), ret_val));
     m_bb->inst(LIRReturn::ret(copy->def(0)));
 }
 
 void FunctionLower::accept(Store *store) {
     const auto pointer = store->pointer();
     const auto value = store->value();
+
+    const auto pointer_vreg = get_lir_val(pointer);
+    const auto value_vreg = get_lir_operand(value);
     if (pointer.isa(alloc())) {
-        const auto pointer_vreg = get_lir_val(pointer);
-        const auto value_vreg = get_lir_operand(value);
         m_bb->inst(LIRInstruction::mov(pointer_vreg, value_vreg));
+
+    } else if (pointer.isa(argument())) {
+        m_bb->inst(LIRInstruction::store(pointer_vreg, value_vreg));
 
     } else {
         unimplemented();
@@ -195,9 +207,17 @@ void FunctionLower::lower_flag2int(const Unary *inst) {
 
 void FunctionLower::lower_load(const Unary *inst) {
     const auto pointer = inst->operand();
+    const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+    assertion(type != nullptr, "Expected PrimitiveType for load operation");
+
+    const auto pointer_vreg = get_lir_val(pointer);
+
     if (pointer.isa(alloc())) {
-        const auto pointer_vreg = get_lir_val(pointer);
-        const auto load_inst = m_bb->inst(LIRProducerInstruction::copy(pointer_vreg));
+        const auto copy_inst = m_bb->inst(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
+        memorize(inst, copy_inst->def(0));
+
+    } else if (pointer.isa(argument())) {
+        const auto load_inst = m_bb->inst(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
 
     } else {

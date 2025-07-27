@@ -3,7 +3,9 @@
 #include "emitters/AddIntEmit.h"
 #include "emitters/CmpGPEmit.h"
 #include "emitters/CopyGPEmit.h"
+#include "emitters/LoadGPEmit.h"
 #include "emitters/MovGPEmit.h"
+#include "emitters/StoreGPEmit.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) {
     return static_cast<aasm::CondType>(cond);
@@ -65,9 +67,21 @@ void MachFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     MovGPEmit::emit(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
+void MachFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
+    const auto pointer_reg = m_reg_allocation[pointer];
+    const auto value_op = convert_to_gp_op(value);
+    StoreGPEmit::emit(m_as, value.size(), pointer_reg, value_op);
+}
+
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
+}
+
+void MachFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto pointer_reg = m_reg_allocation[pointer];
+    LoadGPEmit::emit(m_as, out.size(), out_reg, pointer_reg);
 }
 
 void MachFunctionCodegen::jmp(const LIRBlock *bb) {

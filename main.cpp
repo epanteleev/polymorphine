@@ -40,7 +40,7 @@ Module fib() {
     data.store(a, Value::i32(0));
     data.store(b, Value::i32(1));
 
-    auto v0 = data.load(n_addr);
+    auto v0 = data.load(SignedIntegerType::i32(), n_addr);
     auto cmp0 = data.icmp(IcmpPredicate::Eq, v0, Value::i32(0));
 
     auto if_then = data.create_basic_block();
@@ -55,7 +55,7 @@ Module fib() {
 
     data.switch_block(if_then);
 
-    auto v1 = data.load(b);
+    auto v1 = data.load(SignedIntegerType::i32(), b);
     data.store(ret_addr, v1);
     data.br(ret);
 
@@ -64,14 +64,14 @@ Module fib() {
     data.br(for_cond);
 
     data.switch_block(for_cond);
-    auto v2 = data.load(n_addr);
-    auto v3 = data.load(i);
+    auto v2 = data.load(SignedIntegerType::i32(), n_addr);
+    auto v3 = data.load(SignedIntegerType::i32(), i);
     auto cmp = data.icmp(IcmpPredicate::Lt, v3, v2);
     data.br_cond(cmp, for_body, for_end);
 
     data.switch_block(for_body);
-    auto v4 = data.load(a);
-    auto v5 = data.load(b);
+    auto v4 = data.load(SignedIntegerType::i32(), a);
+    auto v5 = data.load(SignedIntegerType::i32(), b);
     auto v6 = data.add(v4, v5);
     data.store(c, v6);
     data.store(a, v5);
@@ -80,19 +80,19 @@ Module fib() {
 
     data.switch_block(for_inc);
 
-    auto v7 = data.load(i);
+    auto v7 = data.load(SignedIntegerType::i32(), i);
     auto v8 = data.add(v7, Value::i32(1));
     data.store(i, v8);
 
     data.br(for_cond);
 
     data.switch_block(for_end);
-    auto v9 = data.load(b);
+    auto v9 = data.load(SignedIntegerType::i32(), b);
     data.store(ret_addr, v9);
     data.br(ret);
 
     data.switch_block(ret);
-    auto v10 = data.load(ret_addr);
+    auto v10 = data.load(SignedIntegerType::i32(), ret_addr);
 
     data.ret(v10);
 

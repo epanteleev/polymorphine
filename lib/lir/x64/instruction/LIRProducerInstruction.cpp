@@ -18,6 +18,12 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.copy_i(def(0), in(0));
             break;
         }
+        case LIRProdInstKind::Load: {
+            const auto in0 = LIRVal::try_from(in(0));
+            assertion(in0.has_value(), "invariant");
+            visitor.load_i(def(0), in0.value());
+            break;
+        }
         case LIRProdInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
         case LIRProdInstKind::ParallelCopy: {
             const auto out0 = def(0);

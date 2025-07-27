@@ -17,6 +17,7 @@ enum class LIRProdInstKind: std::uint8_t {
     Not,
     ParallelCopy,
     Copy,
+    Load,
     Cmp,
 };
 
@@ -28,10 +29,10 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRProducerInstruction> copy(const LIROperand &op)  {
+    static LIRInstBuilder<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op)  {
         return [=](std::size_t id, LIRBlock *bb) {
             auto copy = std::make_unique<LIRProducerInstruction>(id, bb, LIRProdInstKind::Copy, std::vector{op});
-            copy->add_def(LIRVal::reg(op.size(), 0, copy.get()));
+            copy->add_def(LIRVal::reg(size, 0, copy.get()));
             return copy;
         };
     }
@@ -57,6 +58,14 @@ public:
             auto gen = std::make_unique<LIRProducerInstruction>(id, bb, LIRProdInstKind::Gen, std::vector<LIROperand>{});
             gen->add_def(LIRVal::reg(size, 0, gen.get()));
             return gen;
+        };
+    }
+
+    static LIRInstBuilder<LIRProducerInstruction> load(const std::uint8_t loaded_ty_size, const LIROperand &op) {
+        return [=](std::size_t id, LIRBlock *bb) {
+            auto load = std::make_unique<LIRProducerInstruction>(id, bb, LIRProdInstKind::Load, std::vector{op});
+            load->add_def(LIRVal::reg(loaded_ty_size, 0, load.get()));
+            return load;
         };
     }
 

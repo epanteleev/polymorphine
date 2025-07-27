@@ -94,9 +94,7 @@ private:
 
     }
 
-    void accept(Return *inst) override {
-
-    }
+    void accept(Return *inst) override;
 
     void accept(ReturnValue *inst) override;
 

@@ -27,8 +27,8 @@ public:
     }
 
     [[nodiscard]]
-    Value load(const Value& pointer) const {
-        return m_bb->push_back(Unary::load(pointer));
+    Value load(const PrimitiveType* loaded_type, const Value& pointer) const {
+        return m_bb->push_back(Unary::load(loaded_type, pointer));
     }
 
     void store(const Value& pointer, const Value &value) const {
@@ -46,8 +46,8 @@ public:
     }
 
     [[nodiscard]]
-    Value flag2int(const Value& flag) const {
-        return m_bb->push_back(Unary::flag2int(flag));
+    Value flag2int(const IntegerType* to_type, const Value& flag) const {
+        return m_bb->push_back(Unary::flag2int(to_type, flag));
     }
 
     [[nodiscard]]
@@ -69,6 +69,10 @@ public:
 
     void ret(const Value& ret_value) const {
         m_bb->push_back(ReturnValue::ret(ret_value));
+    }
+
+    void ret() const {
+        m_bb->push_back(Return::ret());
     }
 
     [[nodiscard]]

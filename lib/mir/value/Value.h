@@ -11,7 +11,7 @@ template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
     std::is_same_v<T, std::uint64_t> ||
-    std::is_same_v<T, ArgumentValue *> ||
+    std::is_same_v<T, const ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *>;
 
 class Value final {

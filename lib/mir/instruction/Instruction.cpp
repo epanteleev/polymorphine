@@ -44,7 +44,7 @@ namespace {
             os << '%' << inst->id() << " = ";
             os << binaryOpToString(inst->op());
             os << ' ';
-            inst->type()->print(os);
+            os << *inst->type();
             os << ' ' << inst->lhs() << ", " << inst->rhs();
         }
 
@@ -68,8 +68,7 @@ namespace {
         void accept(Unary *inst) override {
             os << '%' << inst->id() << " = ";
             os << unaryOpToString(inst->op());
-            os << ' ';
-            inst->type()->print(os);
+            os << ' ' << *inst->type();
             os << ' ' << inst->operand();
         }
 
@@ -93,7 +92,7 @@ namespace {
 
         void accept(ReturnValue *inst) override {
             os << "ret ";
-            inst->ret_value().type()->print(os);
+            os << *inst->ret_value().type();
             os << ' ' << inst->ret_value();
         }
 
@@ -115,13 +114,13 @@ namespace {
 
         void accept(Store *store) override {
             os << "store ptr " << store->pointer() << ", ";
-            store->value().type()->print(os);
+            os << *store->value().type();
             os << ": " << store->value();
         }
 
         void accept(Alloc *alloc) override {
             os << '%' << alloc->id() << " = alloc ";
-            alloc->type()->print(os);
+            os << *alloc->type();
         }
 
         static std::string_view icmpOpToString(const IcmpPredicate op) noexcept {
@@ -138,14 +137,14 @@ namespace {
 
         void accept(IcmpInstruction *icmp) override {
             os << '%' << icmp->id() << " = icmp ";
-            icmp->type()->print(os);
+            os << *icmp->type();
             os << ' ' << icmpOpToString(icmp->predicate()) << ' ';
             os << icmp->lhs() << ", " << icmp->rhs();
         }
 
         void accept(GetElementPtr *gep) override {
             os << '%' << gep->id() << " = gep ";
-            gep->access_type()->print(os);
+            os << *gep->access_type();
             os << ' ' << gep->pointer() << ", " << gep->index();
         }
 

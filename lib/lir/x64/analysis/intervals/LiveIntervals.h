@@ -12,7 +12,7 @@ public:
 
     [[nodiscard]]
     bool intersects(const LiveRange& other) const noexcept {
-        return m_start <= other.m_start && m_end >= other.m_end;
+        return !(m_start > other.m_end || m_end < other.m_start);
     }
 
     void propagate(const std::uint32_t end) noexcept {

@@ -61,8 +61,16 @@ namespace {
             m_os << "mov_i in(" << in0 << ") in(" << in << ')';
         }
 
+        void store_i(const LIRVal &pointer, const LIROperand &value) override {
+            m_os << "store_i pointer(" << pointer << ") value(" << value << ')';
+        }
+
         void copy_i(const LIRVal &out, const LIROperand &in) override {
             m_os << "copy_i out(" << out << ") in(" << in << ')';
+        }
+
+        void load_i(const LIRVal &out, const LIRVal &pointer) override {
+            m_os << "load_i out(" << out << ") pointer(" << pointer << ')';
         }
 
         void jmp(const LIRBlock *bb) override {

@@ -1,7 +1,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Buff.h"
+#include "Utils.h"
 #include "asm/Assembler.h"
 
 TEST(Asm, ret) {
@@ -582,7 +582,7 @@ TEST(Asm, add_mem_imm1) {
         {0x48,0x81,0x44,0x3e,0x17,0x12,0x00,0x00,0x00}
     };
 
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "addb $18, 23(%rsi,%rdi)",
         "addw $18, 23(%rsi,%rdi)",
         "addl $18, 23(%rsi,%rdi)",

@@ -79,7 +79,7 @@ namespace aasm {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const MovMR &movmr) {
-        return os << "mov" << prefix_size(movmr.m_size) << " %" << movmr.m_src.name(8) << ", " << movmr.m_dest;
+        return os << "mov" << prefix_size(movmr.m_size) << " %" << movmr.m_src.name(movmr.m_size) << ", " << movmr.m_dest;
     }
 
     class MovRM final {

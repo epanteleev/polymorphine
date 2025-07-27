@@ -64,3 +64,7 @@ consteval auto icmp(LHS&& l, RHS&& r) noexcept {
 consteval auto alloc() noexcept {
     return impls::alloc;
 }
+
+consteval auto argument() noexcept {
+    return [](const Value& inst) { return inst.is<const ArgumentValue*>(); };
+}

@@ -16,9 +16,9 @@ static void print_hex(const std::uint8_t* data, std::size_t size) {
     std::cout << std::dec << std::endl;
 }
 
-class Buff final {
+class Utils final {
 public:
-    explicit Buff(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
+    explicit Utils(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
 
     void emit8(const std::uint8_t opcode) {
         m_buffer[m_size++] = opcode;
@@ -53,7 +53,7 @@ private:
     std::size_t m_size{};
 };
 
-static_assert(aasm::CodeBuffer<Buff>);
+static_assert(aasm::CodeBuffer<Utils>);
 
 static std::string make_string(const aasm::AsmBuffer &a) {
     std::ostringstream os;
@@ -62,7 +62,7 @@ static std::string make_string(const aasm::AsmBuffer &a) {
 }
 
 static std::size_t to_byte_buffer(const aasm::AsmBuffer& aasm, std::span<std::uint8_t> buffer) {
-    Buff buff{buffer};
+    Utils buff{buffer};
     aasm.emit(buff);
     return buff.size();
 }
@@ -95,3 +95,11 @@ static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, con
     return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
 }
 
+
+template<std::signed_integral T>
+[[maybe_unused]]
+static constexpr T add_overflow(T a, T b) {
+    T sum;
+    __builtin_add_overflow(a, b, &sum);
+    return sum;
+}

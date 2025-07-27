@@ -90,7 +90,11 @@ private:
 
         void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
 
+        void store_i(const LIRVal &pointer, const LIROperand &value) override {}
+
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
+
+        void load_i(const LIRVal &out, const LIRVal &pointer) override {}
 
         void jmp(const LIRBlock *bb) override {}
 

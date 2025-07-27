@@ -10,10 +10,9 @@ void FunctionPrototype::print(std::ostream &os) const {
         if (i > 0) {
             os << ", ";
         }
-        m_arg_types[i]->print(os);
+        os << *m_arg_types[i] << ": ";
     }
-    os << "): ";
-    m_ret_type->print(os);
+    os << "): " << *m_ret_type;
 }
 
 void FunctionPrototype::print(std::ostream &os, const std::span<const ArgumentValue> args) const {
@@ -22,10 +21,8 @@ void FunctionPrototype::print(std::ostream &os, const std::span<const ArgumentVa
         if (i > 0) {
             os << ", ";
         }
-        m_arg_types[i]->print(os);
-        os << ": ";
+        os << *m_arg_types[i] << ": ";
         args[i].print(os);
     }
-    os << "): ";
-    m_ret_type->print(os);
+    os << "): " << *m_ret_type;
 }

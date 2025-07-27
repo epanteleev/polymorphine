@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "Utils.h"
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
 
@@ -136,14 +137,14 @@ static Module add_i32_args(const NonTrivialType* ty) {
 }
 
 TEST(SanityCheck, add_i32_args) {
-    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()));
+    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()), true);
     const auto fn = reinterpret_cast<int(*)(int, int)>(buffer.code_start("add").value());
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
     for (const auto i: values) {
         for (const auto j: values) {
             const auto res = fn(i, j);
-            ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
+            ASSERT_EQ(res, add_overflow(i, j)) << "Failed for values: " << i << ", " << j;
         }
     }
 }
@@ -156,7 +157,7 @@ TEST(SanityCheck, add_i64_args) {
     for (const auto i: values) {
         for (const auto j: values) {
             const auto res = fn(i, j);
-            ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
+            ASSERT_EQ(res, add_overflow(i, j)) << "Failed for values: " << i << ", " << j;
         }
     }
 }
@@ -186,7 +187,7 @@ TEST(SanityCheck, branch1) {
 static void is_predicate_impl(const FunctionBuilder& data, const IcmpPredicate pred, const Value& threshold) {
     const auto arg0 = data.arg(0);
     const auto is_neg = data.icmp(pred, arg0, threshold);
-    const auto res = data.flag2int(is_neg);
+    const auto res = data.flag2int(SignedIntegerType::i8(), is_neg);
     data.ret(res);
 }
 
@@ -306,7 +307,7 @@ static Module stack_alloc(const Value& val) {
     const auto& data = *fn_builder.value();
     const auto alloc = data.alloc(dynamic_cast<const PrimitiveType*>(val.type()));
     data.store(alloc, val);
-    data.ret(data.load(alloc));
+    data.ret(data.load(dynamic_cast<const PrimitiveType*>(val.type()), alloc));
     return builder.build();
 }
 
@@ -321,7 +322,7 @@ TEST(SanityCheck, stack_alloc) {
     };
 
     for (const auto& val: values) {
-        const auto buffer = do_jit_compilation(stack_alloc(val), true);
+        const auto buffer = do_jit_compilation(stack_alloc(val));
         const auto fn = buffer.code_start_as<std::int8_t()>("stackalloc").value();
         const auto res = fn();
         ASSERT_EQ(res, 42) << "Failed for value: " << val;
@@ -347,7 +348,7 @@ static void is_predicate_branch_impl(FunctionBuilder& data, IcmpPredicate pred, 
     data.br(cont);
 
     data.switch_block(cont);
-    data.ret(data.load(res));
+    data.ret(data.load(SignedIntegerType::i32(), res));
 }
 
 static Module is_predicate_branch(const IntegerType* ty, const Value& threshold) {
@@ -358,7 +359,7 @@ TEST(SanityCheck, branch_u32_predicate) {
     const auto values = {0U, 1U, 2U, 42U, 100U, 1000U, UINT32_MAX};
 
     for (const auto j: values) {
-        const auto buffer0 = do_jit_compilation(is_predicate_branch(UnsignedIntegerType::u32(), Value::u32(j)), true);
+        const auto buffer0 = do_jit_compilation(is_predicate_branch(UnsignedIntegerType::u32(), Value::u32(j)));
         const auto is_neg = buffer0.code_start_as<std::int8_t(unsigned int)>("is_neg").value();
         const auto is_le = buffer0.code_start_as<std::int8_t(unsigned int)>("is_le").value();
         const auto is_gt = buffer0.code_start_as<std::int8_t(unsigned int)>("is_gt").value();
@@ -386,6 +387,81 @@ TEST(SanityCheck, branch_u32_predicate) {
             ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
         }
     }
+}
+
+
+static Module swap(const PrimitiveType* ty) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(VoidType::type(), {PointerType::ptr(), PointerType::ptr()}, "swap");
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto arg0 = data.arg(0);
+    const auto arg1 = data.arg(1);
+    const auto tmp0 = data.load(ty, arg0);
+    const auto tmp1 = data.load(ty, arg1);
+
+    data.store(arg0, tmp1);
+    data.store(arg1, tmp0);
+    data.ret();
+
+    return builder.build();
+}
+
+TEST(SanityCheck, swap_signed) {
+    const auto sign_types = {
+        SignedIntegerType::i32(),
+        SignedIntegerType::i64(),
+        SignedIntegerType::i16(),
+        SignedIntegerType::i8(),
+    };
+
+    for (const auto& ty: sign_types) {
+        const auto buffer = do_jit_compilation(swap(ty));
+        const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
+
+        std::int64_t a = 42;
+        std::int64_t b = 84;
+        fn(&a, &b);
+
+        ASSERT_EQ(a, 84) << "Failed to swap a for type: " << *ty;
+        ASSERT_EQ(b, 42) << "Failed to swap b for type: ";
+    }
+}
+
+TEST(SanityCheck, swap_unsigned) {
+    const auto sign_types = {
+        UnsignedIntegerType::u32(),
+        UnsignedIntegerType::u64(),
+        UnsignedIntegerType::u16(),
+        UnsignedIntegerType::u8(),
+    };
+
+    for (const auto& ty: sign_types) {
+        const auto buffer = do_jit_compilation(swap(ty));
+        const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
+
+        std::uint64_t a = 42;
+        std::uint64_t b = 84;
+        fn(&a, &b);
+
+        ASSERT_EQ(a, 84) << "Failed to swap a for type: " << *ty;
+        ASSERT_EQ(b, 42) << "Failed to swap b for type: ";
+    }
+}
+
+TEST(SanityCheck, swap_ptr) {
+    const auto ty = PointerType::ptr();
+    const auto buffer = do_jit_compilation(swap(ty), true);
+    const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
+
+    int a = 42;
+    int b = 84;
+    int* pa = &a;
+    int* pb = &b;
+    fn(&pa, &pb);
+
+    ASSERT_EQ(*pa, 84) << "Failed to swap a for type: " << *ty;
+    ASSERT_EQ(*pb, 42) << "Failed to swap b for type: ";
 }
 
 int main(int argc, char **argv) {

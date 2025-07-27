@@ -5,6 +5,7 @@
 
 enum class LIRInstKind: std::uint8_t {
     Mov,
+    Store,
 };
 
 class LIRInstruction final: public LIRInstructionBase {
@@ -18,6 +19,12 @@ public:
     static LIRInstBuilder<LIRInstruction> mov(const LIRVal& dst, const LIROperand& src) {
         return [=](std::size_t id, LIRBlock *bb) {
             return std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Mov, std::vector<LIROperand>{dst, src});
+        };
+    }
+
+    static LIRInstBuilder<LIRInstruction> store(const LIRVal& dst, const LIROperand& src) {
+        return [=](std::size_t id, LIRBlock *bb) {
+            return std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Store, std::vector<LIROperand>{dst, src});
         };
     }
 

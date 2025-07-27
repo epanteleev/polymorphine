@@ -133,7 +133,7 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/AddIntEmit.h
         lib/asm/instruction/Jmp.h
         lib/asm/instruction/Label.h
-        tests/Buff.h
+        tests/Utils.h
         lib/asm/instruction/Cmp.h
         lib/mir/instruction/InstructionMatcher.h
         lib/asm/instruction/Jcc.h
@@ -155,6 +155,10 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/MovGPEmit.h
         lib/lir/x64/asm/visitors/GPUnaryAddrVisitor.h
         lib/asm/Encoding.h
+        lib/lir/x64/codegen/emitters/LoadGPEmit.cpp
+        lib/lir/x64/codegen/emitters/LoadGPEmit.h
+        lib/lir/x64/codegen/emitters/StoreGPEmit.cpp
+        lib/lir/x64/codegen/emitters/StoreGPEmit.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

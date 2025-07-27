@@ -7,8 +7,8 @@ namespace {
     public:
         explicit Printer(std::ostream &os): os(os) {}
 
-        void do_print(Type* type) {
-            type->visit(*this);
+        void do_print(const Type* type) {
+            const_cast<Type*>(type)->visit(*this);
         }
 
     private:
@@ -40,7 +40,8 @@ namespace {
     };
 }
 
-void Type::print(std::ostream &os) const {
+std::ostream & operator<<(std::ostream &os, const Type &obj) {
     Printer p(os);
-    p.do_print(const_cast<Type *>(this));
+    p.do_print(&obj);
+    return os;
 }

@@ -73,6 +73,12 @@ public:
             return std::make_unique<LIRReturn>(idx, bb, std::vector{value});
         };
     }
+
+    static LIRInstBuilder<LIRReturn> ret() {
+        return [=](std::size_t idx, LIRBlock *bb) {
+            return std::make_unique<LIRReturn>(idx, bb, std::vector<LIROperand>{});
+        };
+    }
 };
 
 enum class LIRCallKind: std::uint8_t {

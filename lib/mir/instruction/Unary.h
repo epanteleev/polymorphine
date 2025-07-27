@@ -18,8 +18,9 @@ enum class UnaryOp {
 
 class Unary final: public ValueInstruction {
 public:
-    Unary(const std::size_t id, BasicBlock *bb, const UnaryOp op, const Value& operand)
-        : ValueInstruction(id, bb, operand.type(), {operand}), m_op(op) {}
+    Unary(const std::size_t id, BasicBlock *bb, const PrimitiveType* type, const UnaryOp op, const Value& operand) noexcept:
+        ValueInstruction(id, bb, type, {operand}),
+        m_op(op) {}
 
     [[nodiscard]]
     Value operand() const {
@@ -27,19 +28,19 @@ public:
     }
 
     [[nodiscard]]
-    UnaryOp op() const { return m_op; }
+    UnaryOp op() const noexcept { return m_op; }
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static InstructionBuilder<Unary> load(const Value &value) {
-        return [&](std::size_t id, BasicBlock* bb) {
-            return std::make_unique<Unary>(id, bb, UnaryOp::Load, value);
+    static InstructionBuilder<Unary> load(const PrimitiveType* ty, const Value &value) {
+        return [=](std::size_t id, BasicBlock* bb) {
+            return std::make_unique<Unary>(id, bb, ty, UnaryOp::Load, value);
         };
     }
 
-    static InstructionBuilder<Unary> flag2int(const Value &value) {
-        return [&](std::size_t id, BasicBlock* bb) {
-            return std::make_unique<Unary>(id, bb, UnaryOp::Flag2Int, value);
+    static InstructionBuilder<Unary> flag2int(const IntegerType* ty, const Value &value) {
+        return [=](std::size_t id, BasicBlock* bb) {
+            return std::make_unique<Unary>(id, bb, ty, UnaryOp::Flag2Int, value);
         };
     }
 

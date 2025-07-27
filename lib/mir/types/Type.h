@@ -16,7 +16,7 @@ public:
         return matcher(this);
     }
 
-    void print(std::ostream &os) const;
+    friend std::ostream& operator<<(std::ostream &os, const Type &obj);
 
     bool operator==(const Type &other) const {
         return this == &other;
@@ -28,6 +28,8 @@ public:
 
     virtual void visit(type::Visitor &visitor) = 0;
 };
+
+std::ostream& operator<<(std::ostream &os, const Type &obj);
 
 class VoidType final: public Type {
     constexpr VoidType() = default;
