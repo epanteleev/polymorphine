@@ -10,6 +10,7 @@
 #include "Mov.h"
 #include "Ret.h"
 #include "Add.h"
+#include "Sub.h"
 #include "Jmp.h"
 #include "Cmp.h"
 #include "CondType.h"
@@ -32,15 +33,16 @@ namespace aasm {
 
     private:
         std::variant<
-            PopR, PopM,
-            PushR, PushM, PushI,
-            Ret,
-            MovRR, MovRI, MovMR, MovRM, MovMI,
-            AddRR, AddRI, AddRM, AddMR, AddMI,
-            CmpRR, CmpRI, CmpMI, CmpRM, CmpMR,
-            Jmp, Jcc,
-            SetCCR,
-            Leave
+            details::PopR, details::PopM,
+            details::PushR, details::PushM, details::PushI,
+            details::Ret,
+            details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
+            details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
+            details::SubRR, details::SubRI, details::SubRM, details::SubMI,
+            details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
+            details::Jmp, details::Jcc,
+            details::SetCCR,
+            details::Leave
         > m_inst;
     };
 

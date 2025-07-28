@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class Jmp final {
     public:
         constexpr explicit Jmp(const Label& label) noexcept:

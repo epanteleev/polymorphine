@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class Ret final {
     public:
         friend std::ostream& operator<<(std::ostream &os, const Ret& ret);

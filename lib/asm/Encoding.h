@@ -172,6 +172,51 @@ namespace aasm {
         }
     }
 
+    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
+    constexpr void encode_RI32_arithmetic(Buffer &buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+        switch (size) {
+            case 1: {
+                const auto rex = constants::REX | B(dst);
+                if (rex != constants::REX || is_special_byte_reg(dst)) {
+                    buffer.emit8(rex);
+                }
+                buffer.emit8(B_CODING);
+                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit8(static_cast<std::int8_t>(imm));
+                break;
+            }
+            case 2: {
+                add_word_op_size(buffer);
+                const auto rex = constants::REX | B(dst);
+                if (rex != constants::REX) {
+                    buffer.emit8(rex);
+                }
+                buffer.emit8(CODING);
+                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit16(static_cast<std::int16_t>(imm));
+                break;
+            }
+            case 4: {
+                const auto rex = constants::REX | B(dst);
+                if (rex != constants::REX) {
+                    buffer.emit8(rex);
+                }
+                buffer.emit8(CODING);
+                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit32(static_cast<std::int32_t>(imm));
+                break;
+            }
+            case 8: {
+                buffer.emit8(constants::REX_W | B(dst) | constants::REX);
+                buffer.emit8(CODING);
+                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit32(static_cast<std::int32_t>(imm));
+                break;
+            }
+            default: die("Invalid size for add instruction: {}", size);
+        }
+    }
+
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
     constexpr void encode_MI32_cmp(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         switch (size) {
@@ -314,7 +359,7 @@ namespace aasm {
         }
     }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
+    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
     constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         switch (size) {
             case 1: {
@@ -324,7 +369,7 @@ namespace aasm {
                 }
 
                 buffer.emit8(B_CODING);
-                dst.encode(buffer, 0);
+                dst.encode(buffer, MODRM >> 3);
                 buffer.emit8(checked_cast<std::int8_t>(imm));
                 break;
             }
@@ -335,7 +380,7 @@ namespace aasm {
                 }
 
                 buffer.emit8(CODING);
-                dst.encode(buffer, 0);
+                dst.encode(buffer, MODRM >> 3);
                 buffer.emit16(checked_cast<std::int16_t>(imm));
                 break;
             }
@@ -345,14 +390,14 @@ namespace aasm {
                 }
 
                 buffer.emit8(CODING);
-                dst.encode(buffer, 0);
+                dst.encode(buffer, MODRM >> 3);
                 buffer.emit32(checked_cast<std::int32_t>(imm));
                 break;
             }
             case 8: {
                 buffer.emit8(constants::REX_W | X(dst) | B(dst.base));
                 buffer.emit8(CODING);
-                dst.encode(buffer, 0);
+                dst.encode(buffer, MODRM >> 3);
                 buffer.emit32(imm);
                 break;
             }

@@ -791,6 +791,77 @@ TEST(Asm, cmp_mem_reg1) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, sub_reg_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x28,0xc7},
+        {0x66,0x29,0xc7},
+        {0x29,0xc7},
+        {0x48,0x29,0xc7}
+    };
+    std::vector<std::string> names = {
+        "subb %al, %dil",
+        "subw %ax, %di",
+        "subl %eax, %edi",
+        "subq %rax, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.sub(size, aasm::rax, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, sub_imm_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x80,0xef,0x12},
+        {0x66,0x81,0xef,0x12,0x00},
+        {0x81,0xef,0x12,0x00,0x00,0x00},
+        {0x48,0x81,0xef,0x12,0x00,0x00,0x00}
+    };
+    std::vector<std::string> names = {
+        "subb $18, %dil",
+        "subw $18, %di",
+        "subl $18, %edi",
+        "subq $18, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.sub(size, 18, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, sub_imm_addr1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x80,0x2c,0x3e,0x17},
+        {0x66,0x81,0x2c,0x3e,0x17,0x00},
+        {0x81,0x2c,0x3e,0x17,0x00,0x00,0x00},
+        {0x48,0x81,0x2c,0x3e,0x17,0x00,0x00,0x00}
+    };
+
+    std::vector<std::string> names = {
+        "subb $23, (%rsi,%rdi)",
+        "subw $23, (%rsi,%rdi)",
+        "subl $23, (%rsi,%rdi)",
+        "subq $23, (%rsi,%rdi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        aasm::Address addr(aasm::rsi, aasm::rdi, 1);
+        a.sub(size, 23, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -165,6 +165,7 @@ add_library(ckoof SHARED
         tests/helpers/Jit.cpp
         lib/asm/asm.h
         lib/asm/Assembler.h
+        lib/asm/instruction/Sub.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

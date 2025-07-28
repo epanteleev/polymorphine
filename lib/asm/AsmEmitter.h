@@ -11,95 +11,113 @@ namespace aasm {
     class AsmEmitter final {
     public:
         constexpr void ret() {
-            m_instructions.emplace_back(Ret());
+            m_instructions.emplace_back(details::Ret());
         }
 
         constexpr void pop(const std::uint8_t size, const GPReg r) {
-            m_instructions.emplace_back(PopR(size, r));
+            m_instructions.emplace_back(details::PopR(size, r));
         }
 
         constexpr void pop(const std::uint8_t size, const Address& addr) {
-            m_instructions.emplace_back(PopM(size, addr));
+            m_instructions.emplace_back(details::PopM(size, addr));
         }
 
         constexpr void push(const std::uint8_t size, const GPReg r) {
-            m_instructions.emplace_back(PushR(size, r));
+            m_instructions.emplace_back(details::PushR(size, r));
         }
 
         constexpr void push(const std::uint8_t size, const Address& addr) {
-            m_instructions.emplace_back(PushM(size, addr));
+            m_instructions.emplace_back(details::PushM(size, addr));
         }
 
         constexpr void push(const std::uint8_t size, const std::int32_t value) {
-            m_instructions.emplace_back(PushI(value, size));
+            m_instructions.emplace_back(details::PushI(value, size));
         }
 
         constexpr void mov(const std::uint8_t size, const GPReg src, const GPReg dst) {
-            m_instructions.emplace_back(MovRR(size, src, dst));
+            m_instructions.emplace_back(details::MovRR(size, src, dst));
         }
 
         constexpr void mov(const std::uint8_t size, const std::int64_t src, const GPReg dst) {
-            m_instructions.emplace_back(MovRI(size, src, dst));
+            m_instructions.emplace_back(details::MovRI(size, src, dst));
         }
 
         constexpr void mov(const std::uint8_t size, const GPReg src, const Address& dst) {
-            m_instructions.emplace_back(MovMR(size, src, dst));
+            m_instructions.emplace_back(details::MovMR(size, src, dst));
         }
 
         constexpr void mov(const std::uint8_t size, const Address& src, GPReg dst) {
-            m_instructions.emplace_back(MovRM(size, src, dst));
+            m_instructions.emplace_back(details::MovRM(size, src, dst));
         }
 
         constexpr void mov(const std::uint8_t size, const std::int32_t src, const Address& dst) {
-            m_instructions.emplace_back(MovMI(size, src, dst));
+            m_instructions.emplace_back(details::MovMI(size, src, dst));
         }
 
+        // Add
         constexpr void add(const std::uint8_t size, const GPReg src, const GPReg dst) {
-            m_instructions.emplace_back(AddRR(size, src, dst));
+            m_instructions.emplace_back(details::AddRR(size, src, dst));
         }
 
         constexpr void add(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
-            m_instructions.emplace_back(AddRI(size, src, dst));
+            m_instructions.emplace_back(details::AddRI(size, src, dst));
         }
 
         constexpr void add(const std::uint8_t size, const Address& src, const GPReg dst) {
-            m_instructions.emplace_back(AddRM(size, src, dst));
+            m_instructions.emplace_back(details::AddRM(size, src, dst));
         }
 
         constexpr void add(const std::uint8_t size, const GPReg src, const Address& dst) {
-            m_instructions.emplace_back(AddMR(size, src, dst));
+            m_instructions.emplace_back(details::AddMR(size, src, dst));
         }
 
         constexpr void add(const std::uint8_t size, const std::int32_t src, const Address& dst) {
-            m_instructions.emplace_back(AddMI(size, src, dst));
+            m_instructions.emplace_back(details::AddMI(size, src, dst));
+        }
+
+        // Subtract
+        constexpr void sub(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::SubRR(size, src, dst));
+        }
+
+        constexpr void sub(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
+            m_instructions.emplace_back(details::SubRI(size, src, dst));
+        }
+
+        constexpr void sub(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(details::SubMI(size, src, dst));
+        }
+
+        constexpr void sub(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::SubRM(size, src, dst));
         }
 
         constexpr void cmp(const std::uint8_t size, const GPReg src, const GPReg dst) {
-            m_instructions.emplace_back(CmpRR(size, src, dst));
+            m_instructions.emplace_back(details::CmpRR(size, src, dst));
         }
 
         constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
-            m_instructions.emplace_back(CmpRI(size, imm, dst));
+            m_instructions.emplace_back(details::CmpRI(size, imm, dst));
         }
 
         constexpr void cmp(const std::uint8_t size, const Address& src, const GPReg dst) {
-            m_instructions.emplace_back(CmpRM(size, src, dst));
+            m_instructions.emplace_back(details::CmpRM(size, src, dst));
         }
 
         constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const Address& src) {
-            m_instructions.emplace_back(CmpMI(size, imm, src));
+            m_instructions.emplace_back(details::CmpMI(size, imm, src));
         }
 
         constexpr void cmp(const std::uint8_t size, const GPReg src, const Address& dst) {
-            m_instructions.emplace_back(CmpMR(size, src, dst));
+            m_instructions.emplace_back(details::CmpMR(size, src, dst));
         }
 
         constexpr void leave() {
-            m_instructions.emplace_back(Leave());
+            m_instructions.emplace_back(details::Leave());
         }
 
         constexpr void setcc(const CondType type, const GPReg reg) {
-            m_instructions.emplace_back(SetCCR(type, reg));
+            m_instructions.emplace_back(details::SetCCR(type, reg));
         }
 
         constexpr Label create_label() {
@@ -117,11 +135,11 @@ namespace aasm {
         }
 
         constexpr void jmp(const Label& label) {
-            m_instructions.emplace_back(Jmp(label));
+            m_instructions.emplace_back(details::Jmp(label));
         }
 
         constexpr void jcc(const CondType type, const Label& label) {
-            m_instructions.emplace_back(Jcc(type, label));
+            m_instructions.emplace_back(details::Jcc(type, label));
         }
 
         [[nodiscard]]

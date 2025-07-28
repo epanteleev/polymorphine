@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class Jcc final {
     public:
         explicit constexpr Jcc(const CondType type, const Label& label) noexcept:

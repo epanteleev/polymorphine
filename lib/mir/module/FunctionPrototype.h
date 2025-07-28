@@ -5,7 +5,7 @@
 #include <iosfwd>
 #include <span>
 
-#include "../mir_frwd.h"
+#include "mir/mir_frwd.h"
 
 class FunctionPrototype final {
 public:

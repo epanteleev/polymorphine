@@ -30,7 +30,7 @@ namespace aasm {
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
 
         template<CodeBuffer C>
-        void encode(C& c, unsigned int reg) const {
+        void encode(C& c, unsigned int modrm_pattern) const {
             /* SP is used as sentinel for SIB, and R12 overlaps. */
             const auto has_sib = index.code() || !base.code() || reg3(base) == reg3(rsp) || scale > 1;
 
@@ -38,7 +38,7 @@ namespace aasm {
             const auto has_displacement = !base.code() || displacement || base == rbp;
 
             // Emit ModR/M byte: [7-6]=mod, [5-3]=reg, [2-0]=r/m or 4 if SIB present
-            std::uint8_t modrm = ((reg & 0x7) << 3) | (has_sib ? 4 : reg3(base));
+            std::uint8_t modrm = ((modrm_pattern & 0x7) << 3) | (has_sib ? 4 : reg3(base));
 
             // Set Mod bits according to displacement presence and range
             if (!std::in_range<std::int8_t>(displacement)) {

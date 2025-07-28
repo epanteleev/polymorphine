@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class Leave final {
     public:
         constexpr Leave() noexcept = default;

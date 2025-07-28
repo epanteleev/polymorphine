@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class CmpRR final {
     public:
         constexpr CmpRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class SetCCR final {
     public:
         explicit constexpr SetCCR(CondType cond, GPReg reg) noexcept:

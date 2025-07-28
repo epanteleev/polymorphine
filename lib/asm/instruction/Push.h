@@ -1,6 +1,6 @@
 #pragma once
 
-namespace aasm {
+namespace aasm::details {
     class PushR final {
     public:
         explicit constexpr PushR(const std::uint8_t size, const GPReg reg)

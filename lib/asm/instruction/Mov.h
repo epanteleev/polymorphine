@@ -1,7 +1,7 @@
 #pragma once
 #include "asm/Register.h"
 
-namespace aasm {
+namespace aasm::details {
     class MovRR final {
     public:
         explicit constexpr MovRR(std::uint8_t size, const GPReg& src, const GPReg& dest) noexcept:
@@ -121,7 +121,7 @@ namespace aasm {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_MI = 0xC7;
             static constexpr std::uint8_t MOV_MI_8 = 0xC6;
-            encode_MI32<MOV_MI_8, MOV_MI>(buffer, m_size, m_src, m_dest);
+            encode_MI32<MOV_MI_8, MOV_MI, 0>(buffer, m_size, m_src, m_dest);
         }
 
     private:
