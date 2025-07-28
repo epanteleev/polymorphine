@@ -1,6 +1,6 @@
 #include "StoreGPEmit.h"
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 
 void StoreGPEmit::emit(const aasm::GPReg out, const aasm::GPReg in) {
     m_as.mov(m_size, in, aasm::Address(out));

@@ -5,7 +5,7 @@
 
 static std::size_t module_size_eval(const ObjModule& masm) {
     std::size_t acc = 0;
-    for (const auto& emitter : masm.emitters() | std::views::values) {
+    for (const auto& emitter : masm.assembler() | std::views::values) {
         acc += aasm::SizeEvaluator::emit(emitter);
     }
 
@@ -19,12 +19,12 @@ JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
                                                   PROT_READ | PROT_WRITE | PROT_EXEC,
                                                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 
-    std::unordered_map<std::string, std::size_t> offset_table;
+    std::unordered_map<std::string, JitCodeChunk> offset_table;
     JitAssembler jit_assembler(mapped);
-    for (const auto& [name, emitter] : module.emitters()) {
+    for (const auto& [name, emitter] : module.assembler()) {
         const auto start = jit_assembler.size();
         emitter.emit(jit_assembler);
-        offset_table.emplace(name, start);
+        offset_table.emplace(name, JitCodeChunk(start, jit_assembler.size() - start));
     }
 
     return {std::move(offset_table), mapped, buffer_size};

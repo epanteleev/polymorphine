@@ -3,7 +3,7 @@
 #include <cstring>
 #include <gtest/gtest.h>
 
-#include "asm/Assembler.h"
+#include "asm/AsmEmitter.h"
 #include "asm/Common.h"
 
 [[maybe_unused]]
@@ -58,12 +58,12 @@ static std::size_t to_byte_buffer(const aasm::AsmBuffer& aasm, std::span<std::ui
 
 template<std::ranges::range R>
 [[maybe_unused]]
-static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t), R&& scales) {
+static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(std::uint8_t), R&& scales) {
     ASSERT_EQ(codes.size(), names.size());
     ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
 
     for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
-        aasm::Assembler a = fn(1 << scale);
+        aasm::AsmEmitter a = fn(1 << scale);
         const auto asm_buffer = a.to_buffer();
         std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
         const auto size = to_byte_buffer(asm_buffer, v);
@@ -80,7 +80,7 @@ static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, con
 }
 
 [[maybe_unused]]
-static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(std::uint8_t)) {
+static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(std::uint8_t)) {
     return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
 }
 

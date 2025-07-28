@@ -2,7 +2,7 @@
 
 #include "asm/asm.h"
 
-class AsmEmitter final {
+class MasmEmitter final {
 public:
     void ret() {
         m_asm.ret();
@@ -96,5 +96,5 @@ public:
     }
 
 private:
-    aasm::Assembler m_asm{};
+    aasm::AsmEmitter m_asm{};
 };

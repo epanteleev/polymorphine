@@ -1,6 +1,6 @@
 #include "LoadGPEmit.h"
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 
 void LoadGPEmit::emit(const aasm::GPReg out, const aasm::GPReg in) {
     m_as.mov(m_size, aasm::Address(in), out);

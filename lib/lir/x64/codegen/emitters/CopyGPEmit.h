@@ -6,7 +6,7 @@
 
 class CopyGPEmit final: public GPUnaryOutVisitor {
 public:
-    static void emit(AsmEmitter& as, std::uint8_t size, const GPVReg& out, const GPOp& in) {
+    static void emit(MasmEmitter& as, std::uint8_t size, const GPVReg& out, const GPOp& in) {
         CopyGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }
@@ -14,7 +14,7 @@ public:
 private:
     friend class GPUnaryOutVisitor;
 
-    explicit CopyGPEmit(AsmEmitter& as, std::uint8_t size) noexcept
+    explicit CopyGPEmit(MasmEmitter& as, std::uint8_t size) noexcept
         : m_size(size), m_as(as) {}
 
     void emit(aasm::GPReg out, aasm::GPReg in) override;
@@ -25,5 +25,5 @@ private:
     void emit(const aasm::Address &out, std::int64_t in) override;
 
     std::uint8_t m_size;
-    AsmEmitter& m_as;
+    MasmEmitter& m_as;
 };

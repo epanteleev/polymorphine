@@ -18,4 +18,4 @@ class VregBuilder;
 class GPVReg;
 class GPOp;
 
-class AsmEmitter;
+class MasmEmitter;

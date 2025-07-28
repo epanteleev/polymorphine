@@ -2,6 +2,6 @@
 
 namespace aasm {
     class Address;
-    class Assembler;
+    class AsmEmitter;
     class GPReg;
 }

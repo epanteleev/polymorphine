@@ -1,6 +1,6 @@
 #include "CopyGPEmit.h"
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 
 void CopyGPEmit::emit(const aasm::GPReg out, const aasm::GPReg in) {
     m_as.copy(m_size, in, out);

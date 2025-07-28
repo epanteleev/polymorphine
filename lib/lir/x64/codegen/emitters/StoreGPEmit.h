@@ -6,7 +6,7 @@
 
 class StoreGPEmit final: public GPUnaryOutVisitor {
 public:
-    static void emit(AsmEmitter &as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
+    static void emit(MasmEmitter &as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
         StoreGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }
@@ -14,7 +14,7 @@ public:
 private:
     friend class GPUnaryOutVisitor;
 
-    explicit StoreGPEmit(AsmEmitter &as, const std::uint8_t size) noexcept
+    explicit StoreGPEmit(MasmEmitter &as, const std::uint8_t size) noexcept
         : m_size(size),
           m_as(as) {}
 
@@ -26,6 +26,6 @@ private:
     void emit(const aasm::Address &out, std::int64_t in) override;
 
     std::uint8_t m_size;
-    AsmEmitter& m_as;
+    MasmEmitter& m_as;
 };
 

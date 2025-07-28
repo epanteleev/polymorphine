@@ -1,6 +1,6 @@
 #include "CmpGPEmit.h"
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 
 void CmpGPEmit::emit(aasm::GPReg out, aasm::GPReg in) {
     m_as.cmp(m_size, in, out);

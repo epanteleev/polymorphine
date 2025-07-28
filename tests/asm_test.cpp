@@ -2,10 +2,10 @@
 #include <gtest/gtest.h>
 
 #include "helpers/Utils.h"
-#include "asm/Assembler.h"
+#include "asm/AsmEmitter.h"
 
 TEST(Asm, ret) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.ret();
     std::uint8_t v[32];
     const auto size = to_byte_buffer(a.to_buffer(), v);
@@ -14,7 +14,7 @@ TEST(Asm, ret) {
 }
 
 TEST(Asm, popq_reg) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
 
     static constexpr std::array codings = {
         0x58, // 0x58 is the opcode for POP AX
@@ -47,7 +47,7 @@ TEST(Asm, popq_reg) {
 }
 
 TEST(Asm, popq_addr) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: popq (%rsp)
     a.pop(8, addr);
@@ -60,7 +60,7 @@ TEST(Asm, popq_addr) {
 }
 
 TEST(Asm, popq_addr_with_displacement) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
     // Generate: popq 0x1234(%rsi,%rbx,1)
     a.pop(8, addr);
@@ -74,7 +74,7 @@ TEST(Asm, popq_addr_with_displacement) {
 }
 
 TEST(Asm, popq_addr_with_index) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::rdi, 1, 0);
     // Generate: popq (%rsp,%rdi,1)
     a.pop(8, addr);
@@ -88,7 +88,7 @@ TEST(Asm, popq_addr_with_index) {
 }
 
 TEST(Asm, popq_addr_with_index_and_displacement) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::rdi, 1, 2);
     // Generate: popq 0x2(%rsp,%rdi,1)
     a.pop(8, addr);
@@ -102,7 +102,7 @@ TEST(Asm, popq_addr_with_index_and_displacement) {
 }
 
 TEST(Asm, popq_addr_with_index_and_displacement2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::r15, aasm::rdi, 1, 2);
     // Generate: popq 0x2(%r15,%rdi,1)
     a.pop(8, addr);
@@ -117,7 +117,7 @@ TEST(Asm, popq_addr_with_index_and_displacement2) {
 }
 
 TEST(Asm, popw_addr) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: popw (%rsp)
     a.pop(2, addr);
@@ -131,7 +131,7 @@ TEST(Asm, popw_addr) {
 }
 
 TEST(Asm, pushq_addr) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
     // Generate: push (%rsp)
     a.push(8, addr);
@@ -144,7 +144,7 @@ TEST(Asm, pushq_addr) {
 }
 
 TEST(Asm, pushq_imm) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     // Generate: push $32
     a.push(4, 320000);
     std::uint8_t v[32]{};
@@ -158,7 +158,7 @@ TEST(Asm, pushq_imm) {
 }
 
 TEST(Asm, movq_reg_reg) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, aasm::rbx, aasm::rax);
     // Generate: movq %rbx, %rax
     std::uint8_t v[32]{};
@@ -170,7 +170,7 @@ TEST(Asm, movq_reg_reg) {
 }
 
 TEST(Asm, movq_reg_reg1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, aasm::r15, aasm::r14);
     // Generate: movq %r15, %r14
     std::uint8_t v[32]{};
@@ -182,7 +182,7 @@ TEST(Asm, movq_reg_reg1) {
 }
 
 TEST(Asm, movq_reg_reg2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, aasm::rax, aasm::r14);
     // Generate: movq %rax, %r14
     std::uint8_t v[32]{};
@@ -194,7 +194,7 @@ TEST(Asm, movq_reg_reg2) {
 }
 
 TEST(Asm, movq_reg_reg3) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, aasm::r14, aasm::rbx);
     // Generate: movq %r14, %rbx
     std::uint8_t v[32]{};
@@ -206,7 +206,7 @@ TEST(Asm, movq_reg_reg3) {
 }
 
 TEST(Asm, movl_reg_reg3) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(4, aasm::r11, aasm::rdx);
     // Generate: movl %r11d, %edx
     std::uint8_t v[32]{};
@@ -220,7 +220,7 @@ TEST(Asm, movl_reg_reg3) {
 }
 
 TEST(Asm, movw_reg_reg3) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(2, aasm::r14, aasm::rbx);
     // Generate: movw %r14w, %bx
     std::uint8_t v[32]{};
@@ -233,7 +233,7 @@ TEST(Asm, movw_reg_reg3) {
 }
 
 TEST(Asm, movb_reg_reg3) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(1, aasm::r14, aasm::rbx);
     // Generate: movb %r14b, %bl
     std::uint8_t v[32]{};
@@ -245,7 +245,7 @@ TEST(Asm, movb_reg_reg3) {
 }
 
 TEST(Asm, movb_imm_reg1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(1, 5, aasm::rbx);
     // Generate: movb $5, %bx
     std::uint8_t v[32]{};
@@ -256,7 +256,7 @@ TEST(Asm, movb_imm_reg1) {
 }
 
 TEST(Asm, movb_imm_reg2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(1, 5, aasm::r15);
     // Generate: movb $5, %r15b
     std::uint8_t v[32]{};
@@ -268,7 +268,7 @@ TEST(Asm, movb_imm_reg2) {
 }
 
 TEST(Asm, movw_imm_reg1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(2, 256, aasm::rcx);
     // Generate: movw $256, %cx
     std::uint8_t v[32]{};
@@ -281,7 +281,7 @@ TEST(Asm, movw_imm_reg1) {
 }
 
 TEST(Asm, movw_imm_reg2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(2, -1, aasm::r14);
     // Generate: movw $-1, %r14w
     std::uint8_t v[32]{};
@@ -295,7 +295,7 @@ TEST(Asm, movw_imm_reg2) {
 }
 
 TEST(Asm, movl_imm_reg1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(4, -2, aasm::rsp);
     // Generate: movl $-2, %esp
     std::uint8_t v[32]{};
@@ -309,7 +309,7 @@ TEST(Asm, movl_imm_reg1) {
 }
 
 TEST(Asm, movl_imm_reg2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(4, 0, aasm::r12);
     // Generate: movl $0, %r12d
     std::uint8_t v[32]{};
@@ -324,7 +324,7 @@ TEST(Asm, movl_imm_reg2) {
 }
 
 TEST(Asm, movq_imm_reg1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, -1, aasm::rbp);
     // Generate: movabsq $-1, %rbp
     std::uint8_t v[32]{};
@@ -337,7 +337,7 @@ TEST(Asm, movq_imm_reg1) {
 }
 
 TEST(Asm, movq_imm_reg2) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     a.mov(8, 0x1234567890abcdef, aasm::r15);
     // Generate: movabsq $0x1234567890abcdef, %r15
     std::uint8_t v[32]{};
@@ -350,7 +350,7 @@ TEST(Asm, movq_imm_reg2) {
 }
 
 TEST(Asm, movb_reg_mem1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
     a.mov(1, aasm::rbx, addr);
     // Generate: movb %bl, 2(%rsp)
@@ -364,7 +364,7 @@ TEST(Asm, movb_reg_mem1) {
 }
 
 TEST(Asm, movw_reg_mem1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::rdi, 1, 2);
     a.mov(2, aasm::rsi, addr);
     // Generate: movw %si, 2(%rsp, %rdi)
@@ -378,7 +378,7 @@ TEST(Asm, movw_reg_mem1) {
 }
 
 TEST(Asm, movl_reg_mem1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsp, aasm::rdi, 8, INT8_MAX);
     a.mov(4, aasm::rdi, addr);
     // Generate: movl %edi, 127(%rsp, %rdi, 8)
@@ -392,7 +392,7 @@ TEST(Asm, movl_reg_mem1) {
 }
 
 TEST(Asm, movq_reg_mem1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     aasm::Address addr(aasm::rsi, aasm::rdi, 8, INT32_MAX);
     a.mov(8, aasm::rdi, addr);
     // Generate: movq %rdi, 2147483647(%rsi, %rdi, 8)
@@ -421,7 +421,7 @@ TEST(Asm, mov_mem_reg2) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
         a.mov(size, addr, aasm::rsi);
         return a;
@@ -445,7 +445,7 @@ TEST(Asm, mov_mem_imm1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
         a.mov(size, 0x12, addr);
         return a;
@@ -469,7 +469,7 @@ TEST(Asm, add_reg_reg1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.add(size, aasm::rax, aasm::rdi);
         return a;
     };
@@ -492,7 +492,7 @@ TEST(Asm, add_reg_reg2) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.add(size, aasm::rdi, aasm::rcx);
         return a;
     };
@@ -516,7 +516,7 @@ TEST(Asm, add_reg_imm8_1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.add(size, 18, aasm::rdi);
         return a;
     };
@@ -540,7 +540,7 @@ TEST(Asm, add_addr_imm1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
         a.add(size, addr, aasm::r10);
         return a;
@@ -565,7 +565,7 @@ TEST(Asm, add_reg_addr) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
         a.add(size, aasm::rdi, addr);
         return a;
@@ -590,7 +590,7 @@ TEST(Asm, add_mem_imm1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
         a.add(size, 18, addr);
         return a;
@@ -614,7 +614,7 @@ TEST(Asm, cmp_reg_reg1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.cmp(size, aasm::rax, aasm::rdi);
         return a;
     };
@@ -638,7 +638,7 @@ TEST(Asm, cmp_reg_imm1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.cmp(size, 18, aasm::rdi);
         return a;
     };
@@ -659,7 +659,7 @@ TEST(Asm, cmp_reg_imm2) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.cmp(size, 18000, aasm::rdi);
         return a;
     };
@@ -683,7 +683,7 @@ TEST(Asm, cmp_reg_mem1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
         a.cmp(size, addr, aasm::rdi);
         return a;
@@ -708,7 +708,7 @@ TEST(Asm, cmp_reg_mem2) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, aasm::rdi, 1, 23);
         a.cmp(size, addr, aasm::rax);
         return a;
@@ -733,7 +733,7 @@ TEST(Asm, cmp_mem_imm1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, 1, 23);
         a.cmp(size, 18, addr);
         return a;
@@ -756,7 +756,7 @@ TEST(Asm, cmp_mem_imm2) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rsi, 1, 23);
         a.cmp(size, -18000, addr);
         return a;
@@ -782,7 +782,7 @@ TEST(Asm, cmp_mem_reg1) {
     };
 
     const auto generator = [](const std::uint8_t size) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         aasm::Address addr(aasm::rcx, 1, 23);
         a.cmp(size, addr, aasm::r12);
         return a;

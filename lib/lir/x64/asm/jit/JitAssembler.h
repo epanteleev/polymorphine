@@ -6,7 +6,7 @@
 #include <ranges>
 
 #include "JitCodeBlob.h"
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/ObjModule.h"
 
 class JitAssembler final {

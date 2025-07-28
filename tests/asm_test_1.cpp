@@ -9,7 +9,7 @@ static void verify_codes(const std::vector<std::uint8_t>& codes, const std::uint
 }
 
 TEST(Asm1, forward_jmp1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     const auto label = a.create_label();
     a.jmp(label);
     a.mov(8, 8, aasm::rax);
@@ -37,7 +37,7 @@ TEST(Asm1, forward_jmp1) {
 }
 
 TEST(Asm1, backward_jmp1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     const auto label = a.create_label();
     a.set_label(label);
     a.mov(8, 8, aasm::rax);
@@ -64,7 +64,7 @@ TEST(Asm1, backward_jmp1) {
 }
 
 TEST(Asm1, forward_cond_jmp1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     const auto label = a.create_label();
     a.cmp(8, 8, aasm::rax);
     a.jcc(aasm::CondType::A, label);
@@ -94,7 +94,7 @@ TEST(Asm1, forward_cond_jmp1) {
 }
 
 TEST(Asm1, backward_cond_jmp1) {
-    aasm::Assembler a;
+    aasm::AsmEmitter a;
     const auto label = a.create_label();
     a.set_label(label);
     a.mov(8, 8, aasm::rax);

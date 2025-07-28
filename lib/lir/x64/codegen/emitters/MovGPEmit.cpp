@@ -1,6 +1,6 @@
 #include "MovGPEmit.h"
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 
 void MovGPEmit::emit(const aasm::Address &out, const aasm::GPReg in) {
     m_as.mov(m_size, in, out);

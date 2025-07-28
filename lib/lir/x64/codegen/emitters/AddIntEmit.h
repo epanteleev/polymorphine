@@ -1,12 +1,12 @@
 #pragma once
 
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 
 
 class AddIntEmit final: public GPBinaryVisitor {
 public:
-    static void emit(AsmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+    static void emit(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         AddIntEmit emitter(as, size);
         dispatch(emitter, out, in1, in2);
     }
@@ -14,7 +14,7 @@ public:
 private:
     friend class GPBinaryVisitor;
 
-    explicit AddIntEmit(AsmEmitter& as, const std::uint8_t size) noexcept
+    explicit AddIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept
         : m_size(size), m_as(as) {}
 
     void emit(aasm::GPReg out, aasm::GPReg in1, aasm::GPReg in2) override;
@@ -37,5 +37,5 @@ private:
     void emit(const aasm::Address &out, std::int32_t in1, aasm::GPReg in2) override;
 
     std::uint8_t m_size;
-    AsmEmitter& m_as;
+    MasmEmitter& m_as;
 };

@@ -4,7 +4,7 @@
 
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/GPOp.h"
-#include "lir/x64/asm/AsmEmitter.h"
+#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 #include "lir/x64/module/LIRFuncData.h"
 
@@ -23,7 +23,7 @@ public:
         traverse_instructions();
     }
 
-    AsmEmitter result() noexcept {
+    MasmEmitter result() noexcept {
         return std::move(m_as);
     }
 
@@ -168,5 +168,5 @@ private:
     const Ordering<LIRBlock>& m_preorder;
 
     std::unordered_map<const LIRBlock*, aasm::Label> m_bb_labels{};
-    AsmEmitter m_as{};
+    MasmEmitter m_as{};
 };

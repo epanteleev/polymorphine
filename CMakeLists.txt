@@ -51,7 +51,7 @@ add_library(ckoof SHARED
         lib/base/analysis/traverse/PostOrderTraverseBase.h
         lib/base/analysis/dom/DominatorTreeEvalBase.h
         lib/base/analysis/dom/DominatorTree.h
-        lib/asm/Assembler.h
+        lib/asm/AsmEmitter.h
         lib/asm/Register.h
         lib/asm/Register.cpp
         lib/asm/Address.h
@@ -108,7 +108,7 @@ add_library(ckoof SHARED
         lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
         lib/lir/x64/analysis/regalloc/FixedRegisters.h
         lib/lir/x64/asm/GPVReg.h
-        lib/lir/x64/asm/AsmEmitter.h
+        lib/lir/x64/asm/MasmEmitter.h
         lib/lir/x64/codegen/MachFunctionCodegen.cpp
         lib/lir/x64/codegen/MachFunctionCodegen.h
         lib/lir/x64/asm/visitors/GPUnaryOutVisitor.h
@@ -164,6 +164,7 @@ add_library(ckoof SHARED
         tests/helpers/Jit.h
         tests/helpers/Jit.cpp
         lib/asm/asm.h
+        lib/asm/Assembler.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

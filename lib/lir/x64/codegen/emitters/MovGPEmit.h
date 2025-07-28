@@ -6,7 +6,7 @@
 
 class MovGPEmit final: public GPUnaryAddrVisitor {
 public:
-    static void emit(AsmEmitter& as, const std::uint8_t size, const aasm::Address& out, const GPOp& in) {
+    static void emit(MasmEmitter& as, const std::uint8_t size, const aasm::Address& out, const GPOp& in) {
         MovGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }
@@ -14,7 +14,7 @@ public:
 private:
     friend class GPUnaryAddrVisitor;
 
-    explicit MovGPEmit(AsmEmitter& as, const std::uint8_t size) noexcept:
+    explicit MovGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
         m_size(size),
         m_as(as) {}
 
@@ -23,5 +23,5 @@ private:
     void emit(const aasm::Address &out, std::int64_t in) override;
 
     std::uint8_t m_size;
-    AsmEmitter& m_as;
+    MasmEmitter& m_as;
 };

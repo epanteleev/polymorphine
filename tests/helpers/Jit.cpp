@@ -3,7 +3,7 @@
 #include <iostream>
 #include "lir/x64/lir.h"
 
-JitCodeBlob do_jit_compilation(const Module& module, bool verbose) {
+JitCodeBlob do_jit_compilation(const Module& module, const bool verbose) {
     if (verbose) {
         std::cout << module << std::endl;
     }

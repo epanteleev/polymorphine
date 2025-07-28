@@ -1,16 +1,16 @@
 #include <gtest/gtest.h>
 
 #include "helpers/Utils.h"
-#include "asm/Assembler.h"
+#include "asm/AsmEmitter.h"
 
 template<std::ranges::range R>
 [[maybe_unused]]
-static void check_bytes_setcc(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::Assembler(*fn)(aasm::CondType type), R&& scales) {
+static void check_bytes_setcc(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(aasm::CondType type), R&& scales) {
     ASSERT_EQ(codes.size(), names.size());
     ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
 
     for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
-        aasm::Assembler a = fn(scale);
+        aasm::AsmEmitter a = fn(scale);
         const auto asm_buffer = a.to_buffer();
         std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
         const auto size = to_byte_buffer(asm_buffer, v);
@@ -84,7 +84,7 @@ TEST(Asm, setcc1) {
     };
 
     const auto generator = [](aasm::CondType type) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.setcc(type, aasm::r12);
         return a;
     };
@@ -132,7 +132,7 @@ TEST(Asm, setcc2) {
     };
 
     const auto generator = [](aasm::CondType type) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.setcc(type, aasm::rcx);
         return a;
     };
@@ -180,7 +180,7 @@ TEST(Asm, setcc3) {
     };
 
     const auto generator = [](aasm::CondType type) {
-        aasm::Assembler a;
+        aasm::AsmEmitter a;
         a.setcc(type, aasm::rdi);
         return a;
     };

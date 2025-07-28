@@ -1,7 +1,7 @@
 #include <cstring>
 #include <gtest/gtest.h>
 
-#include "asm/Assembler.h"
+#include "asm/AsmEmitter.h"
 
 template<std::size_t N>
 class ConstExprBuff final {
@@ -52,7 +52,7 @@ static_assert(aasm::CodeBuffer<ConstExprBuff<4>>);
 
 template<std::size_t N>
 consteval ConstExprBuff<N> emit_test1() {
-    aasm::Assembler as;
+    aasm::AsmEmitter as;
     as.ret();
     as.push(4, 8);
     as.pop(2, aasm::rax);

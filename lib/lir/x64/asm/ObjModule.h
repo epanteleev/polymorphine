@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <iomanip>
 
-#include "AsmEmitter.h"
+#include "MasmEmitter.h"
 
 class ObjModule final {
 public:
@@ -19,7 +19,7 @@ public:
         return std::unexpected(Error::NotFoundError);
     }
 
-    const auto& emitters() const noexcept {
+    const auto& assembler() const noexcept {
         return m_modules;
     }
 

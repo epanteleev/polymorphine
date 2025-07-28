@@ -10,11 +10,23 @@
 #include "utility/Error.h"
 
 /**
+ * Represents a block of JIT-compiled code for one function.
+ */
+class JitCodeChunk final {
+public:
+    explicit JitCodeChunk(std::size_t _offset, std::size_t _size) noexcept:
+        offset(_offset), size(_size) {}
+
+    const std::size_t offset; // Offset from code blob start
+    const std::size_t size; // Size of the code in bytes
+};
+
+/**
  * JitCodeBlob is a class that represents ready-to-execute JIT-compiled code.
  */
 class JitCodeBlob final {
 public:
-    JitCodeBlob(std::unordered_map<std::string, std::size_t> &&offset_table,
+    JitCodeBlob(std::unordered_map<std::string, JitCodeChunk> &&offset_table,
                 std::uint8_t* buffer, const std::size_t size) noexcept:
         m_offset_table(std::move(offset_table)),
         m_buffer(buffer),
@@ -32,7 +44,7 @@ public:
     [[nodiscard]]
     std::expected<std::uint8_t*, Error> code_start(const std::string& name) const {
         if (const auto it = m_offset_table.find(name); it != m_offset_table.end()) {
-            return m_buffer + it->second;
+            return m_buffer + it->second.offset;
         }
 
         return std::unexpected(Error::NotFoundError);
@@ -41,7 +53,7 @@ public:
     /**
      * Finds the start of the code section for a given function name and casts it to a specific type.
      * @tparam T the type to cast the code section to.
-     * @return pointer to the code section casted to type T if found, otherwise an error.
+     * @return pointer to the code section cast to type T if found, otherwise an error.
      */
     template<typename T>
     requires std::is_function_v<T>
@@ -57,7 +69,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const JitCodeBlob& blob);
 
 private:
-    std::unordered_map<std::string, std::size_t> m_offset_table;
+    std::unordered_map<std::string, JitCodeChunk> m_offset_table;
     std::uint8_t* m_buffer;
     std::size_t m_size{0};
 };
