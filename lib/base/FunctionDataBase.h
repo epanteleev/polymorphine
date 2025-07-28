@@ -6,6 +6,12 @@
 #include "utility/OrderedSet.h"
 
 
+/**
+ * Base class for function data in MIR and LIR.
+ *
+ * @tparam BB The type of code block (BasicBlock or LIRBlock).
+ * @tparam Arg The type of argument (e.g., LIRArg).
+ */
 template<CodeBlock BB, typename Arg>
 class FunctionDataBase {
 public:
@@ -17,11 +23,19 @@ public:
 
     virtual ~FunctionDataBase() = default;
 
+    /**
+     * Returns begin block of the function.
+     * The begin block is the first basic block in the function.
+     * It doesn't have predecessors.
+     */
     [[nodiscard]]
     code_block_type* first() const {
         return m_basic_blocks.begin().get();
     }
 
+    /**
+     * Returns number of basic blocks in the function.
+     */
     [[nodiscard]]
     std::size_t size() const noexcept {
         return m_basic_blocks.size();

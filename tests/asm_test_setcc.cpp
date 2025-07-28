@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Utils.h"
+#include "helpers/Utils.h"
 #include "asm/Assembler.h"
 
 template<std::ranges::range R>

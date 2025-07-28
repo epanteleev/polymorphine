@@ -2,11 +2,12 @@
 
 #include <iosfwd>
 
+#include "utility/OrderedSet.h"
+#include "base/FunctionDataBase.h"
+
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
-#include "utility/OrderedSet.h"
 #include "mir/module/FunctionPrototype.h"
-#include "base/FunctionDataBase.h"
 #include "mir/instruction/TerminateInstruction.h"
 
 

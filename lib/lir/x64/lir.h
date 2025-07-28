@@ -4,3 +4,5 @@
 #include "lower/Lowering.h"
 
 #include "analysis/liveness/LivenessAnalysis.h"
+
+#include "codegen/Codegen.h"

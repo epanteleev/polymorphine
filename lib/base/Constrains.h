@@ -2,6 +2,9 @@
 
 #include <span>
 
+/**
+ * Concept that defines the requirements for a basic block.
+ */
 template<typename T>
 concept CodeBlock = requires(T t)
 {

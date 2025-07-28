@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-#include "FunctionLower.h"
+#include "lir/x64/lower/FunctionLower.h"
 #include "mir/instruction/TerminateInstruction.h"
 
 

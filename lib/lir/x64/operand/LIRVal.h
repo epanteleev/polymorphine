@@ -1,12 +1,15 @@
 #pragma once
 
 #include <expected>
-#include <vector>
 
 #include "LIRArg.h"
 #include "lir/x64/lir_frwd.h"
 #include "utility/Error.h"
 
+/**
+ * Represents a value in the Low-Level Intermediate Representation (LIR).
+ * This class can represent either an argument or a produced values from instructions.
+ */
 class LIRVal final {
     enum class Op: std::uint8_t {
         Arg,

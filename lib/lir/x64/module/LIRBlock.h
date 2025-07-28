@@ -1,16 +1,14 @@
 #pragma once
 
-#include <cstddef>
 #include <span>
+
+#include "utility/OrderedSet.h"
 
 #include "base/BasicBlockBase.h"
 #include "base/Constrains.h"
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/instruction/LIRControlInstruction.h"
-
-#include "utility/OrderedSet.h"
-
 
 class LIRBlock final: public BasicBlockBase<LIRBlock, LIRInstructionBase> {
 public:

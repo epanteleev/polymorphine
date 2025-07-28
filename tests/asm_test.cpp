@@ -1,7 +1,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Utils.h"
+#include "helpers/Utils.h"
 #include "asm/Assembler.h"
 
 TEST(Asm, ret) {

@@ -21,6 +21,7 @@ std::ostream & operator<<(std::ostream &os, const LirCst &op) noexcept {
             os << "'q";
             break;
         }
+        default: std::unreachable();
     }
     return os;
 }

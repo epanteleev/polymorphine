@@ -73,7 +73,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         } else if constexpr (std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
             return make_constant(*val.type(), v);
 
-        } else if constexpr (std::is_same_v<T, const ArgumentValue *> || std::is_same_v<T, ValueInstruction *>) {
+        } else if constexpr (std::is_same_v<T, const ArgumentValue *> || std::is_same_v<T, const ValueInstruction *>) {
             const auto local = LocalValue::from(v);
             return m_value_mapping.at(local);
 
@@ -115,16 +115,16 @@ void FunctionLower::accept(Branch *branch) {
 
 void FunctionLower::accept(CondBranch *cond_branch) {
     const auto& cond = cond_branch->condition();
-
     const auto true_target = m_bb_mapping.at(cond_branch->on_true());
     const auto false_target = m_bb_mapping.at(cond_branch->on_false());
+
     if (cond.isa(icmp(signed_v(), signed_v()))) {
-        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<const ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
         m_bb->inst(LIRCondBranch::jcc(signed_cond_type(icmp->predicate()), true_target, false_target));
 
     } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
-        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<const ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
         m_bb->inst(LIRCondBranch::jcc(unsigned_cond_type(icmp->predicate()), true_target, false_target));
 
@@ -188,13 +188,13 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
 void FunctionLower::lower_flag2int(const Unary *inst) {
     const auto cond = inst->operand();
     if (cond.isa(icmp(signed_v(), signed_v()))) {
-        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<const ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
         make_setcc(inst, signed_cond_type(icmp->predicate()));
 
     } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
-        const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<const ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
         make_setcc(inst, unsigned_cond_type(icmp->predicate()));

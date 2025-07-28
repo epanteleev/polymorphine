@@ -1,0 +1,30 @@
+#include "Jit.h"
+
+#include <iostream>
+#include "lir/x64/lir.h"
+
+JitCodeBlob do_jit_compilation(const Module& module, bool verbose) {
+    if (verbose) {
+        std::cout << module << std::endl;
+    }
+    Lowering lower(module);
+    lower.run();
+    const auto result = lower.result();
+    if (verbose) {
+        std::cout << result << std::endl;
+    }
+
+    Codegen codegen(result);
+    codegen.run();
+    const auto obj = codegen.result();
+    if (verbose) {
+        std::cout << obj << std::endl;
+    }
+
+    const auto buffer = JitAssembler::assembly(obj);
+    if (verbose) {
+        std::cout << buffer << std::endl;
+    }
+
+    return buffer;
+}

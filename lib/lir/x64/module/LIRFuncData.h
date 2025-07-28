@@ -3,7 +3,7 @@
 #include <ranges>
 
 #include "LIRBlock.h"
-#include "../operand/LIRVal.h"
+#include "lir/x64/operand/LIRVal.h"
 #include "base/FunctionDataBase.h"
 
 

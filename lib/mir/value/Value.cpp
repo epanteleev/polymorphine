@@ -8,7 +8,7 @@
 
 Value::Value(const ArgumentValue *value) noexcept : m_value(value), m_type(value->type()) {}
 
-Value::Value(ValueInstruction *value) noexcept: m_value(value), m_type(value->type()) {}
+Value::Value(const ValueInstruction *value) noexcept: m_value(value), m_type(value->type()) {}
 
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
@@ -18,7 +18,7 @@ std::ostream& operator<<(std::ostream& os, const Value& obj) {
         } else if constexpr (std::is_same_v<T, const ArgumentValue *>) {
             val->print(os);
 
-        } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
+        } else if constexpr (std::is_same_v<T, const ValueInstruction*>) {
             os << '%' << val->id();
 
         } else {

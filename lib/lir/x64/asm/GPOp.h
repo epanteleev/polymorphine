@@ -1,8 +1,7 @@
 #pragma once
 
 #include "GPVReg.h"
-#include "asm/Address.h"
-#include "asm/Register.h"
+#include "asm/asm.h"
 
 
 class GPOp final {

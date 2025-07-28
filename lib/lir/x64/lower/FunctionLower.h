@@ -6,10 +6,10 @@
 #include "mir/value/LocalValue.h"
 #include "mir/module/FunctionData.h"
 #include "mir/value/LocalValueMap.h"
+#include "mir/analysis/Analysis.h"
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRFuncData.h"
-#include "mir/analysis/Analysis.h"
 
 /**
  * FunctionLower is responsible for lowering the MIR function to LIR.

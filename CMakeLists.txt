@@ -133,7 +133,7 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/AddIntEmit.h
         lib/asm/instruction/Jmp.h
         lib/asm/instruction/Label.h
-        tests/Utils.h
+        tests/helpers/Utils.h
         lib/asm/instruction/Cmp.h
         lib/mir/instruction/InstructionMatcher.h
         lib/asm/instruction/Jcc.h
@@ -161,6 +161,9 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/StoreGPEmit.h
         lib/utility/Align.h
         lib/asm/instruction/Leave.h
+        tests/helpers/Jit.h
+        tests/helpers/Jit.cpp
+        lib/asm/asm.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

@@ -12,7 +12,7 @@ concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
     std::is_same_v<T, std::uint64_t> ||
     std::is_same_v<T, const ArgumentValue *> ||
-    std::is_same_v<T, ValueInstruction *>;
+    std::is_same_v<T, const ValueInstruction *>;
 
 class Value final {
 public:
@@ -21,7 +21,7 @@ public:
     constexpr Value(std::int64_t value, const SignedIntegerType * type) noexcept: m_value(value), m_type(type) {}
 
     Value(const ArgumentValue* value) noexcept;
-    Value(ValueInstruction * value) noexcept;
+    Value(const ValueInstruction * value) noexcept;
 
     template <IsValueType T>
     [[nodiscard]] constexpr T get() const {
@@ -88,7 +88,7 @@ private:
         std::int64_t,
         std::uint64_t,
         const ArgumentValue*,
-        ValueInstruction *> m_value;
+        const ValueInstruction *> m_value;
     const Type* m_type;
 };
 

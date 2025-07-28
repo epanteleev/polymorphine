@@ -1,6 +1,5 @@
 #pragma once
 
-#include <utility>
 #include <iosfwd>
 
 #include "LIRInstructionBase.h"

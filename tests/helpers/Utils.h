@@ -1,20 +1,13 @@
 #pragma once
 
 #include <cstring>
-#include <iomanip>
-#include <iostream>
+#include <gtest/gtest.h>
 
 #include "asm/Assembler.h"
 #include "asm/Common.h"
 
 [[maybe_unused]]
-static void print_hex(const std::uint8_t* data, std::size_t size) {
-    std::cout << "Hex: ";
-    for (std::size_t i = 0; i < size; ++i)
-        std::cout << std::hex << std::setw(2) << std::setfill('0')
-                  << static_cast<int>(data[i]) << " ";
-    std::cout << std::dec << std::endl;
-}
+void print_hex(const std::uint8_t* data, std::size_t size);
 
 class Utils final {
 public:
@@ -55,11 +48,7 @@ private:
 
 static_assert(aasm::CodeBuffer<Utils>);
 
-static std::string make_string(const aasm::AsmBuffer &a) {
-    std::ostringstream os;
-    os << a;
-    return os.str();
-}
+std::string make_string(const aasm::AsmBuffer &a);
 
 static std::size_t to_byte_buffer(const aasm::AsmBuffer& aasm, std::span<std::uint8_t> buffer) {
     Utils buff{buffer};

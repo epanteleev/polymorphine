@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "lir/x64/operand/LIROperand.h"
-#include "LIRVisitor.h"
+#include "lir/x64/instruction/LIRVisitor.h"
 
 class LIRInstructionBase {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();

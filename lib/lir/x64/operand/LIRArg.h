@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <iosfwd>
 
+/**
+ * Represents an argument in the Low-Level Intermediate Representation (LIR).
+ * This class encapsulates the index and size of the argument.
+ */
 class LIRArg final {
 public:
     explicit LIRArg(std::uint32_t index, std::uint8_t size) :

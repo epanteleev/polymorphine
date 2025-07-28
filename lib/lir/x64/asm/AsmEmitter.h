@@ -1,7 +1,6 @@
 #pragma once
 
-#include "asm/Address.h"
-#include "asm/Assembler.h"
+#include "asm/asm.h"
 
 class AsmEmitter final {
 public:
@@ -45,7 +44,6 @@ public:
         m_asm.mov(size, src, dst);
     }
 
-    template<typename Op>
     void add(const std::uint8_t size, const aasm::GPReg src, const aasm::Address& dst) {
         m_asm.add(size, src, dst);
     }

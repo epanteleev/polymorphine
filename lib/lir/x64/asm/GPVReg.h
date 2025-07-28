@@ -2,8 +2,7 @@
 #include <variant>
 #include <expected>
 
-#include "asm/Address.h"
-#include "asm/Register.h"
+#include "asm/asm.h"
 
 
 class GPVReg final {

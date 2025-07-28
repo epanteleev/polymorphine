@@ -2,9 +2,12 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <utility>
 
-#include "utility/Error.h"
-
+/**
+ * Represents a constant value in the LIR (Low-Level Intermediate Representation).
+ * This class encapsulates integer constants of various sizes (8, 16, 32, and 64 bits).
+ */
 class LirCst final {
     enum class Kind : std::uint8_t {
         Int8,
@@ -24,9 +27,8 @@ public:
             case Kind::Int16: return 2;
             case Kind::Int32: return 4;
             case Kind::Int64: return 8;
+            default: std::unreachable();
         }
-
-        die("unreachable");
     }
 
     [[nodiscard]]

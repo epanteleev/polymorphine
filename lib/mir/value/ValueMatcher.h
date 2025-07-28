@@ -18,10 +18,10 @@ namespace impls {
 
     template<typename LHS, typename RHL>
     bool icmp(const Value& inst, LHS& l, RHL&& r) {
-        if (!inst.is<ValueInstruction*>()) {
+        if (!inst.is<const ValueInstruction*>()) {
             return false;
         }
-        const auto val = inst.get<ValueInstruction*>();
+        const auto val = inst.get<const ValueInstruction*>();
         if (const auto *icmp = dynamic_cast<const IcmpInstruction*>(val)) {
             return l(icmp->lhs()) && r(icmp->rhs());
         }
@@ -30,11 +30,11 @@ namespace impls {
     }
 
     inline bool alloc(const Value& inst) noexcept {
-        if (!inst.is<ValueInstruction*>()) {
+        if (!inst.is<const ValueInstruction*>()) {
             return false;
         }
 
-        const auto val = inst.get<ValueInstruction*>();
+        const auto val = inst.get<const ValueInstruction*>();
         return dynamic_cast<const Alloc*>(val) != nullptr;
     }
 

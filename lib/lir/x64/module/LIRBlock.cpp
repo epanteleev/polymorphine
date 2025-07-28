@@ -1,9 +1,7 @@
 #include "LIRBlock.h"
 
-#include <ostream>
-
-#include "../instruction/LIRInstructionBase.h"
 #include "utility/Error.h"
+#include "lir/x64/instruction/LIRInstructionBase.h"
 
 LIRControlInstruction * LIRBlock::last() const {
     const auto inst = m_instructions.back();

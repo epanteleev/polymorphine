@@ -1,8 +1,8 @@
 #include <ostream>
 #include <ranges>
 
-#include "LIRInstructionBase.h"
-#include "LIRSetCC.h"
+#include "lir/x64/instruction/LIRInstructionBase.h"
+#include "lir/x64/instruction/LIRSetCC.h"
 #include "lir/x64/module/LIRBlock.h"
 
 namespace {
