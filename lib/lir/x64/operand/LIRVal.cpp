@@ -25,7 +25,7 @@ std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
     return vreg.value();
 }
 
-std::expected<std::span<LIRVal const>, Error> LIRVal::try_from(const LIRInstructionBase *inst) noexcept {
+std::span<LIRVal const> LIRVal::try_from(const LIRInstructionBase *inst) noexcept {
     if (const auto producer = dynamic_cast<const LIRProducerInstructionBase*>(inst)) {
         return producer->defs();
     }
@@ -33,7 +33,16 @@ std::expected<std::span<LIRVal const>, Error> LIRVal::try_from(const LIRInstruct
         return call->defs();
     }
 
-    return std::unexpected(Error::CastError);
+    return {};
+}
+
+std::size_t LIRVal::id() const noexcept {
+    switch (m_type) {
+        case Op::Arg: return m_variant.m_arg->index();
+        case Op::Inst: return m_variant.m_inst->id();
+        case Op::Call: return m_variant.m_call->id();
+        default: std::unreachable();
+    }
 }
 
 std::ostream & operator<<(std::ostream &os, const LIRVal &op) noexcept {
@@ -43,7 +52,7 @@ std::ostream & operator<<(std::ostream &os, const LIRVal &op) noexcept {
         return os;
     }
     if (const auto inst = op.inst(); inst.has_value()) {
-        os << inst.value()->owner()->id() << 'x' << idx << '\'' << size_prefix(op.size());
+        os << inst.value()->owner()->id() << 'x' << op.id() << '-' << idx << '\'' << size_prefix(op.size());
         return os;
     }
 

@@ -7,9 +7,6 @@
 
 LIRControlInstruction * LIRBlock::last() const {
     const auto inst = m_instructions.back();
-    if (!inst.has_value()) {
-        die("no instruction found");
-    }
-
+    assertion(inst.has_value(), "last instruction is null");
     return dynamic_cast<LIRControlInstruction*>(inst.value());
 }

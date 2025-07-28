@@ -10,8 +10,10 @@
 
 template<typename Derived, typename Inst>
 class BasicBlockBase {
+    static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
+
 public:
-    explicit BasicBlockBase(): m_id(-1) {}
+    explicit BasicBlockBase(): m_id(NO_ID) {}
 
     virtual ~BasicBlockBase() = default;
 

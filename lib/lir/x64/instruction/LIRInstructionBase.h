@@ -13,23 +13,29 @@ class LIRInstructionBase {
 public:
     explicit LIRInstructionBase(std::vector<LIROperand> &&uses): m_id(NO_ID),
                                                   m_owner(nullptr),
-                                                  m_uses(std::move(uses)) {}
+                                                  m_inputs(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;
 
     [[nodiscard]]
     std::span<LIROperand const> inputs() const noexcept {
-        return m_uses;
+        return m_inputs;
     }
 
     [[nodiscard]]
     const LIROperand& in(const std::size_t idx) const {
-        return m_uses.at(idx);
+        return m_inputs.at(idx);
     }
 
     virtual void visit(LIRVisitor& visitor) = 0;
 
     void print(std::ostream &os) const;
+
+    [[nodiscard]]
+    std::size_t id() const noexcept {
+        assertion(m_id != NO_ID, "instruction id is not set");
+        return m_id;
+    }
 
     [[nodiscard]]
     const LIRBlock* owner() const noexcept {
@@ -66,7 +72,7 @@ protected:
 
     std::size_t m_id;
     const LIRBlock* m_owner;
-    std::vector<LIROperand> m_uses;
+    std::vector<LIROperand> m_inputs;
 };
 
 template<typename T>

@@ -23,12 +23,6 @@ public:
     }
 
     [[nodiscard]]
-    code_block_type* last() const {
-        const auto last_bb = m_basic_blocks.back();
-        return last_bb.value();
-    }
-
-    [[nodiscard]]
     std::size_t size() const noexcept {
         return m_basic_blocks.size();
     }
@@ -39,6 +33,10 @@ public:
     }
 
 protected:
+    std::unique_ptr<code_block_type> remove(const code_block_type* bb) {
+        return m_basic_blocks.remove(bb->id());
+    }
+
     std::ostream& print_blocks(std::ostream &os) const {
         os << '{' << std::endl;
         for (const auto &bb : m_basic_blocks) {

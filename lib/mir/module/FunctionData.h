@@ -7,9 +7,11 @@
 #include "utility/OrderedSet.h"
 #include "mir/module/FunctionPrototype.h"
 #include "base/FunctionDataBase.h"
+#include "mir/instruction/TerminateInstruction.h"
 
 
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
+    friend class FunctionBuilder;
 public:
     explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
 
@@ -24,9 +26,23 @@ public:
     }
 
     BasicBlock* create_basic_block() {
-        const auto id = m_basic_blocks.push_back(std::make_unique<BasicBlock>());
+        const auto id = add_basic_block(std::make_unique<BasicBlock>());
         m_basic_blocks[id].set_id(id);
         return &m_basic_blocks[id];
+    }
+
+    [[nodiscard]]
+    BasicBlock* last() const {
+        const auto last_bb = m_basic_blocks.back();
+        assertion(last_bb.has_value(), "last basic block is null");
+        if (last_bb.value()->last().is<ReturnValue>()) {
+            return last_bb.value();
+        }
+        if (last_bb.value()->last().is<Return>()) {
+            return last_bb.value();
+        }
+
+        die("last instruction is not a return");
     }
 
     void print(std::ostream &os) const {
@@ -42,6 +58,10 @@ public:
     }
 
 private:
+    std::size_t add_basic_block(std::unique_ptr<BasicBlock>&& bb) {
+        return m_basic_blocks.push_back(std::move(bb));
+    }
+
     FunctionPrototype m_prototype;
 };
 

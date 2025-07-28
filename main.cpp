@@ -55,7 +55,7 @@ Module fib() {
 
     data.switch_block(if_then);
 
-    auto v1 = data.load(SignedIntegerType::i32(), b);
+    auto v1 = data.load(SignedIntegerType::i32(), a);
     data.store(ret_addr, v1);
     data.br(ret);
 

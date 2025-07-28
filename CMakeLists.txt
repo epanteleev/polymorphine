@@ -159,6 +159,8 @@ add_library(ckoof SHARED
         lib/lir/x64/codegen/emitters/LoadGPEmit.h
         lib/lir/x64/codegen/emitters/StoreGPEmit.cpp
         lib/lir/x64/codegen/emitters/StoreGPEmit.h
+        lib/utility/Align.h
+        lib/asm/instruction/Leave.h
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")

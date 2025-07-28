@@ -15,6 +15,7 @@
 #include "CondType.h"
 #include "Jcc.h"
 #include "SetCC.h"
+#include "Leave.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -38,7 +39,8 @@ namespace aasm {
             AddRR, AddRI, AddRM, AddMR, AddMI,
             CmpRR, CmpRI, CmpMI, CmpRM, CmpMR,
             Jmp, Jcc,
-            SetCCR
+            SetCCR,
+            Leave
         > m_inst;
     };
 

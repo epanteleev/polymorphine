@@ -62,11 +62,21 @@ public:
         return free_slot;
     }
 
-    void remove(T* item) {
-        const auto id = item->id();
-        auto node = m_list.at(id);
-        m_free_indices.push_back(id);
-        delete node;
+    std::unique_ptr<T> remove(std::size_t idx) {
+        if (idx >= m_list.size()) {
+            return nullptr;
+        }
+
+        auto it = m_list[idx];
+        if (it == m_holder.end()) {
+            return nullptr;
+        }
+
+        auto removed = std::move(*it);
+        m_holder.erase(it);
+        m_list[idx] = m_holder.end();
+        m_free_indices.push_back(idx);
+        return removed;
     }
 
     T &operator[](std::size_t index) {

@@ -95,7 +95,6 @@ static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, con
     return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
 }
 
-
 template<std::signed_integral T>
 [[maybe_unused]]
 static constexpr T add_overflow(T a, T b) {

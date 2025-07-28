@@ -96,6 +96,7 @@ void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_tr
 }
 
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
+    emit_epilogue();
 #ifdef ENABLE_ASSERTIONS
     const auto values_num = ret_values.size();
     if (values_num == 1) {

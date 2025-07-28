@@ -37,6 +37,24 @@ public:
         }
     }
 
+    template<IsTerminator T>
+    [[nodiscard]]
+    bool is() const noexcept {
+        if constexpr (std::is_base_of_v<TerminateInstruction, T>) {
+            return std::holds_alternative<TerminateInstruction *>(m_value) &&
+                   dynamic_cast<T *>(std::get<TerminateInstruction *>(m_value)) != nullptr;
+
+        } else if constexpr (std::is_base_of_v<TerminateValueInstruction, T>) {
+            return std::holds_alternative<TerminateValueInstruction *>(m_value) &&
+                   dynamic_cast<T *>(std::get<TerminateValueInstruction *>(m_value)) != nullptr;
+
+        } else {
+            static_assert(false, "somthing was wrong");
+            return false;
+        }
+    }
+
+
 private:
     std::variant<TerminateInstruction *,
         TerminateValueInstruction *> m_value;

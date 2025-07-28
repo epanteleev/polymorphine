@@ -80,12 +80,7 @@ private:
             for (const auto& inst: bb->instructions()) {
                 inst_number += 1;
 
-                const auto defs_opt = LIRVal::try_from(&inst);
-                if (!defs_opt.has_value()) {
-                    continue; // Not a producer instruction.
-                }
-
-                for (const auto& def: defs_opt.value()) {
+                for (const auto& def: LIRVal::try_from(&inst)) {
                     std::unordered_map<const LIRBlock*, LiveRange> intervals;
                     if (live_out.contains(def)) {
                         intervals.emplace(bb, LiveRange(inst_number, start + bb->size()));

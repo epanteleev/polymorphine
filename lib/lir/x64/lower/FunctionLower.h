@@ -16,10 +16,10 @@
  * It traverses the function's basic blocks in a domination order.
  */
 class FunctionLower final: public Visitor {
-    FunctionLower(std::unique_ptr<LIRFuncData>&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& ordering) noexcept:
+    FunctionLower(std::unique_ptr<LIRFuncData>&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering) noexcept:
         m_obj_function(std::move(obj_function)),
         m_function(function),
-        m_ordering(ordering),
+        m_dom_ordering(dom_ordering),
         m_bb(m_obj_function->first()) {}
 
 public:
@@ -58,7 +58,7 @@ private:
     }
 
     void traverse_instructions() {
-        for (const auto &bb: m_ordering) {
+        for (const auto &bb: m_dom_ordering) {
             m_bb = m_bb_mapping.at(bb);
             for (auto &inst: bb->instructions()) {
                 inst.visit(*this);
@@ -67,14 +67,14 @@ private:
     }
 
     void setup_bb_mapping() {
-        for (const auto& bb: m_ordering) {
-            if (bb == m_function.first()) {
-                m_bb_mapping.emplace(bb, m_obj_function->first());
+        for (const auto& bb: m_function.basic_blocks()) {
+            if (&bb == m_function.first()) {
+                m_bb_mapping.emplace(&bb, m_obj_function->first());
                 continue;
             }
 
             auto lir_bb = m_obj_function->create_mach_block();
-            m_bb_mapping.emplace(bb, lir_bb);
+            m_bb_mapping.emplace(&bb, lir_bb);
         }
     }
 
@@ -136,7 +136,7 @@ private:
 
     std::unique_ptr<LIRFuncData> m_obj_function;
     const FunctionData& m_function;
-    const Ordering<BasicBlock>& m_ordering;
+    const Ordering<BasicBlock>& m_dom_ordering;
 
     LIRBlock* m_bb;
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;

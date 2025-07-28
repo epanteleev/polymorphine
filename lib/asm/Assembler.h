@@ -94,6 +94,10 @@ namespace aasm {
             m_instructions.emplace_back(CmpMR(size, src, dst));
         }
 
+        constexpr void leave() {
+            m_instructions.emplace_back(Leave());
+        }
+
         constexpr void setcc(const CondType type, const GPReg reg) {
             m_instructions.emplace_back(SetCCR(type, reg));
         }

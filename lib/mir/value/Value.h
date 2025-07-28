@@ -59,6 +59,14 @@ public:
         return {value, UnsignedIntegerType::u8()};
     }
 
+    constexpr static Value i16(std::int16_t value) noexcept {
+        return {value, SignedIntegerType::i16()};
+    }
+
+    constexpr static Value u16(std::uint16_t value) noexcept {
+        return {value, UnsignedIntegerType::u16()};
+    }
+
     constexpr static Value i32(int value) noexcept {
         return {value, SignedIntegerType::i32()};
     }
@@ -69,6 +77,10 @@ public:
 
     constexpr static Value i64(std::int64_t value) noexcept {
         return {value, SignedIntegerType::i64()};
+    }
+
+    constexpr static Value u64(std::uint64_t value) noexcept {
+        return {value, UnsignedIntegerType::u64()};
     }
 
 private:

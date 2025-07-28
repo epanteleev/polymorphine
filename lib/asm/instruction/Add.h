@@ -56,7 +56,8 @@ namespace aasm {
                     if (rex != constants::REX) {
                         buffer.emit8(rex);
                     }
-                    buffer.emit8(ADD_RI | reg3(m_dst));
+                    buffer.emit8(ADD_RI);
+                    buffer.emit8(0xC0 | reg3(m_dst));
                     buffer.emit16(static_cast<std::int16_t>(m_src));
                     break;
                 }

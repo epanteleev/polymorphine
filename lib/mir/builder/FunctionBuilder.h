@@ -77,6 +77,19 @@ public:
 
     [[nodiscard]]
     std::unique_ptr<FunctionData> build() noexcept {
+        const auto& bbs = m_fd->basic_blocks();
+
+        for (const auto& bb : bbs) {
+            if (!bb.last().is<Return>() && !bb.last().is<ReturnValue>()) {
+                continue;
+            }
+            if (bbs.back() == &bb) {
+                continue;
+            }
+
+            auto current = m_fd->remove(&bb);
+            m_fd->add_basic_block(std::move(current));
+        }
         return std::move(m_fd);
     }
 

@@ -35,6 +35,15 @@ public:
         return m_args | std::views::transform([](const auto &arg) { return LIRVal::from(&arg); } );
     }
 
+    [[nodiscard]]
+    LIRBlock* last() const {
+        const auto last_bb = m_basic_blocks.back();
+        assertion(last_bb.has_value(), "last basic block is null");
+        const auto ret = dynamic_cast<const LIRReturn*>(last_bb.value()->last());
+        assertion(ret != nullptr, "last instruction is not a return");
+        return last_bb.value();
+    }
+
     void print(std::ostream &os) const {
         os << m_name << '(';
         for (auto& arg : m_args) {

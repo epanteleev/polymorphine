@@ -6,6 +6,7 @@
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 #include "lir/x64/operand/OperandMatcher.h"
+#include "utility/Align.h"
 
 class LinearScan final {
 public:
@@ -59,8 +60,9 @@ private:
         auto reg_set = RegSet::create(std::array{aasm::rdi});
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
             if (vreg.isa(gen())) {
-                m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -vreg.size()));
-                m_local_area_size += vreg.size();
+                const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
+                m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -offset));
+                m_local_area_size = offset;
                 continue;
             }
 

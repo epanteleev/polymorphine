@@ -91,11 +91,14 @@ public:
 
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
-    static std::expected<std::span<LIRVal const>, Error> try_from(const LIRInstructionBase* inst) noexcept;
+    static std::span<LIRVal const> try_from(const LIRInstructionBase* inst) noexcept;
 
     friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
 
 private:
+    [[nodiscard]]
+    std::size_t id() const noexcept;
+
     std::uint8_t m_size;
     std::uint8_t m_index;
     Op m_type;
