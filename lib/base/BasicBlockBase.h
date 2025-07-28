@@ -11,7 +11,7 @@
 template<typename Derived, typename Inst>
 class BasicBlockBase {
 public:
-    explicit BasicBlockBase(const std::size_t id): m_id(id) {}
+    explicit BasicBlockBase(): m_id(-1) {}
 
     virtual ~BasicBlockBase() = default;
 
@@ -57,7 +57,12 @@ public:
     }
 
 protected:
-    const std::size_t m_id;
+    void set_id(const std::size_t id) noexcept {
+        assertion(std::in_range<std::uint32_t>(id), "id={} is out of range", id);
+        m_id = id;
+    }
+
+    std::size_t m_id;
     std::vector<Derived *> m_predecessors;
     OrderedSet<Inst> m_instructions;
 };

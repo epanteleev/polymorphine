@@ -112,7 +112,12 @@ private:
                     }
                 }
 
-                for (const auto& out: inst.defs()) {
+                const auto defs_opt = LIRVal::try_from(&inst);
+                if (!defs_opt.has_value()) {
+                    continue;
+                }
+
+                for (const auto& out: defs_opt.value()) {
                     kill.insert(out);
                 }
             }

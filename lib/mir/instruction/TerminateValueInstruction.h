@@ -9,7 +9,7 @@ enum class TermValueInstType {
 
 class TerminateValueInstruction final : public ValueInstruction {
 public:
-    TerminateValueInstruction(std::size_t id, BasicBlock *bb, NonTrivialType* ty, TermValueInstType type,
+    TerminateValueInstruction(NonTrivialType* ty, TermValueInstType type,
                          std::vector<BasicBlock *> &&successors);
 
     void visit(Visitor &visitor) override { visitor.accept(this); }

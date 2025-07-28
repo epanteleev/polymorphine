@@ -24,11 +24,9 @@ public:
     }
 
     BasicBlock* create_basic_block() {
-        const auto creator = [this](std::size_t id) {
-            return std::make_unique<BasicBlock>(id);
-        };
-
-        return m_basic_blocks.push_back<BasicBlock>(creator);
+        const auto id = m_basic_blocks.push_back(std::make_unique<BasicBlock>());
+        m_basic_blocks[id].set_id(id);
+        return &m_basic_blocks[id];
     }
 
     void print(std::ostream &os) const {

@@ -13,8 +13,8 @@ enum class IcmpPredicate {
 
 class Compare: public ValueInstruction {
 public:
-    Compare(const std::size_t id, BasicBlock* bb, const Value& lhs, const Value& rhs):
-        ValueInstruction(id, bb, FlagType::flag(),{lhs, rhs}) {}
+    Compare(const Value& lhs, const Value& rhs):
+        ValueInstruction(FlagType::flag(),{lhs, rhs}) {}
 
     [[nodiscard]]
     const Value& lhs() const {
@@ -29,8 +29,8 @@ public:
 
 class IcmpInstruction final: public Compare {
 public:
-    IcmpInstruction (const std::size_t id, BasicBlock* bb, IcmpPredicate pred, const Value& lhs, const Value& rhs):
-        Compare(id, bb, lhs, rhs), m_pred(pred) {}
+    IcmpInstruction(IcmpPredicate pred, const Value& lhs, const Value& rhs):
+        Compare(lhs, rhs), m_pred(pred) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -39,10 +39,8 @@ public:
         return m_pred;
     }
 
-    static InstructionBuilder<IcmpInstruction> icmp(IcmpPredicate pred, const Value& lhs, const Value& rhs) {
-        return [=](std::size_t id, BasicBlock *bb) {
-            return std::make_unique<IcmpInstruction>(id, bb, pred, lhs, rhs);
-        };
+    static std::unique_ptr<IcmpInstruction> icmp(IcmpPredicate pred, const Value& lhs, const Value& rhs) {
+        return std::make_unique<IcmpInstruction>(pred, lhs, rhs);
     }
 
 private:

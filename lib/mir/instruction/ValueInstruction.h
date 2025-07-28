@@ -4,8 +4,8 @@
 
 class ValueInstruction : public Instruction {
 public:
-    ValueInstruction(const std::size_t id, BasicBlock *bb, const Type* ty, const std::initializer_list<Value>& values):
-        Instruction(id, bb, values),
+    ValueInstruction(const Type* ty, const std::initializer_list<Value>& values):
+        Instruction(values),
         m_ty(ty) {}
 
     [[nodiscard]]
@@ -20,7 +20,7 @@ protected:
 
 class PhiInstruction final: public ValueInstruction {
 public:
-    PhiInstruction(std::size_t id, BasicBlock *bb, NonTrivialType* ty, const std::initializer_list<Value>& values, std::vector<BasicBlock*> targets);
+    PhiInstruction(NonTrivialType* ty, const std::initializer_list<Value>& values, std::vector<BasicBlock*> targets);
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 

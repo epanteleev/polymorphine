@@ -9,24 +9,30 @@
 
 #include "InstructionVisitor.h"
 #include "mir/value/Value.h"
-
-template <typename T>
-using InstructionBuilder = std::function<std::unique_ptr<T>(std::size_t, BasicBlock*)>;
+#include "utility/Error.h"
 
 class Instruction {
+    static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
+
 public:
     virtual ~Instruction() = default;
 
-    Instruction(const std::size_t id, BasicBlock *bb, std::vector<Value>&& values)
-        : m_owner(bb),
-        m_id(id),
+    explicit Instruction(std::vector<Value>&& values)
+        : m_owner(nullptr),
+        m_id(NO_ID),
         m_values(std::move(values)) {}
 
     [[nodiscard]]
-    std::size_t id() const { return m_id; }
+    std::size_t id() const {
+        assertion(m_id != NO_ID, "Instruction ID is not set");
+        return m_id;
+    }
 
     [[nodiscard]]
-    BasicBlock *owner() const { return m_owner; }
+    BasicBlock *owner() const {
+        assertion(m_owner != nullptr, "Instruction owner is not set");
+        return m_owner;
+    }
 
     template<typename Matcher>
     bool isa(Matcher&& matcher) const noexcept {
@@ -43,7 +49,14 @@ public:
     void print(std::ostream& os) const;
 
 protected:
+    friend class BasicBlock;
+
+    void connect(const std::size_t id, BasicBlock* owner) {
+        m_id = id;
+        m_owner = owner;
+    }
+
     BasicBlock* m_owner;
-    const std::size_t m_id;
+    std::size_t m_id;
     std::vector<Value> m_values;
 };

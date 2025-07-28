@@ -6,26 +6,27 @@
 enum class LIRInstKind: std::uint8_t {
     Mov,
     Store,
+    Cmp
 };
 
 class LIRInstruction final: public LIRInstructionBase {
 public:
-    LIRInstruction(const std::size_t id, LIRBlock *bb, const LIRInstKind kind, std::vector<LIROperand>&& uses) :
-        LIRInstructionBase(id, bb, std::move(uses)),
+    LIRInstruction(const LIRInstKind kind, std::vector<LIROperand>&& uses) :
+        LIRInstructionBase(std::move(uses)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRInstruction> mov(const LIRVal& dst, const LIROperand& src) {
-        return [=](std::size_t id, LIRBlock *bb) {
-            return std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Mov, std::vector<LIROperand>{dst, src});
-        };
+    static std::unique_ptr<LIRInstruction> mov(const LIRVal& dst, const LIROperand& src) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::Mov, std::vector<LIROperand>{dst, src});
     }
 
-    static LIRInstBuilder<LIRInstruction> store(const LIRVal& dst, const LIROperand& src) {
-        return [=](std::size_t id, LIRBlock *bb) {
-            return std::make_unique<LIRInstruction>(id, bb, LIRInstKind::Store, std::vector<LIROperand>{dst, src});
-        };
+    static std::unique_ptr<LIRInstruction> store(const LIRVal& dst, const LIROperand& src) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::Store, std::vector<LIROperand>{dst, src});
+    }
+
+    static std::unique_ptr<LIRInstruction> cmp(const LIROperand &lhs, const LIROperand &rhs) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::Cmp, std::vector{lhs, rhs});
     }
 
 private:

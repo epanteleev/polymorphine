@@ -16,8 +16,8 @@ enum class BinaryOp {
 
 class Binary final : public ValueInstruction {
 public:
-    Binary(const std::size_t id, BasicBlock *bb, const BinaryOp op, const Value &lhs,
-           const Value &rhs): ValueInstruction(id, bb, lhs.type(), {lhs, rhs}), m_op(op) {
+    Binary(const BinaryOp op, const Value &lhs,
+           const Value &rhs): ValueInstruction(lhs.type(), {lhs, rhs}), m_op(op) {
     }
 
     [[nodiscard]]
@@ -35,16 +35,12 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static InstructionBuilder<Binary> add(const Value &lhs, const Value &rhs) {
-        return [=](std::size_t id, BasicBlock *bb) {
-            return std::make_unique<Binary>(id, bb, BinaryOp::Add, lhs, rhs);
-        };
+    static std::unique_ptr<Binary> add(const Value &lhs, const Value &rhs) {
+        return std::make_unique<Binary>(BinaryOp::Add, lhs, rhs);
     }
 
-    static InstructionBuilder<Binary> sub(const Value &lhs, const Value &rhs) {
-        return [=](std::size_t id, BasicBlock *bb) {
-            return std::make_unique<Binary>(id, bb, BinaryOp::Subtract, lhs, rhs);
-        };
+    static std::unique_ptr<Binary> sub(const Value &lhs, const Value &rhs) {
+        return std::make_unique<Binary>(BinaryOp::Subtract, lhs, rhs);
     }
 
 private:

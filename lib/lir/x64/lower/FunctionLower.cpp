@@ -182,8 +182,7 @@ void FunctionLower::accept(Alloc *alloc) {
 void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
-    const auto cmp = m_bb->inst(LIRProducerInstruction::cmp(lhs, rhs));
-    memorize(icmp, cmp->def(0));
+    m_bb->inst(LIRInstruction::cmp(lhs, rhs));
 }
 
 void FunctionLower::lower_flag2int(const Unary *inst) {
@@ -192,13 +191,13 @@ void FunctionLower::lower_flag2int(const Unary *inst) {
         const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
-        make_setcc(inst, cond, signed_cond_type(icmp->predicate()));
+        make_setcc(inst, signed_cond_type(icmp->predicate()));
 
     } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
         const auto icmp = dynamic_cast<IcmpInstruction*>(cond.get<ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
 
-        make_setcc(inst, cond, unsigned_cond_type(icmp->predicate()));
+        make_setcc(inst, unsigned_cond_type(icmp->predicate()));
 
     } else {
         die("Unsupported condition type in cond branch");
@@ -225,9 +224,8 @@ void FunctionLower::lower_load(const Unary *inst) {
     }
 }
 
-void FunctionLower::make_setcc(const Unary *inst, const Value& cond, LIRCondType cond_type) {
-    const auto mapped_cond = get_lir_operand(cond);
-    const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type, mapped_cond));
+void FunctionLower::make_setcc(const Unary *inst, const LIRCondType cond_type) {
+    const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type));
     memorize(inst, setcc->def(0));
 }
 

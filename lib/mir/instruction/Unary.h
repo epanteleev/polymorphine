@@ -18,8 +18,8 @@ enum class UnaryOp {
 
 class Unary final: public ValueInstruction {
 public:
-    Unary(const std::size_t id, BasicBlock *bb, const PrimitiveType* type, const UnaryOp op, const Value& operand) noexcept:
-        ValueInstruction(id, bb, type, {operand}),
+    Unary(const PrimitiveType* type, const UnaryOp op, const Value& operand) noexcept:
+        ValueInstruction(type, {operand}),
         m_op(op) {}
 
     [[nodiscard]]
@@ -32,16 +32,12 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static InstructionBuilder<Unary> load(const PrimitiveType* ty, const Value &value) {
-        return [=](std::size_t id, BasicBlock* bb) {
-            return std::make_unique<Unary>(id, bb, ty, UnaryOp::Load, value);
-        };
+    static std::unique_ptr<Unary> load(const PrimitiveType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::Load, value);
     }
 
-    static InstructionBuilder<Unary> flag2int(const IntegerType* ty, const Value &value) {
-        return [=](std::size_t id, BasicBlock* bb) {
-            return std::make_unique<Unary>(id, bb, ty, UnaryOp::Flag2Int, value);
-        };
+    static std::unique_ptr<Unary> flag2int(const IntegerType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::Flag2Int, value);
     }
 
 private:

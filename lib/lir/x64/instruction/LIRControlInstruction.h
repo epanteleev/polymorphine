@@ -9,8 +9,8 @@
 
 class LIRControlInstruction: public LIRInstructionBase {
 public:
-    explicit LIRControlInstruction(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& uses, std::vector<LIRBlock* >&& successors) :
-        LIRInstructionBase(id, bb, std::move(uses)),
+    explicit LIRControlInstruction(std::vector<LIROperand>&& uses, std::vector<LIRBlock* >&& successors) :
+        LIRInstructionBase(std::move(uses)),
         m_successors(std::move(successors)) {}
 
     [[nodiscard]]
@@ -29,32 +29,28 @@ private:
 
 class LIRBranch final: public LIRControlInstruction {
 public:
-    explicit LIRBranch(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& uses,
+    explicit LIRBranch(std::vector<LIROperand>&& uses,
                        std::vector<LIRBlock* >&& successors) :
-        LIRControlInstruction(id, bb, std::move(uses), std::move(successors)) {}
+        LIRControlInstruction(std::move(uses), std::move(successors)) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRBranch> jmp(LIRBlock *target) {
-        return [=](std::size_t idx, LIRBlock *bb) {
-            return std::make_unique<LIRBranch>(idx, bb, std::vector<LIROperand>{}, std::vector{target});
-        };
+    static std::unique_ptr<LIRBranch> jmp(LIRBlock *target) {
+        return std::make_unique<LIRBranch>(std::vector<LIROperand>{}, std::vector{target});
     }
 };
 
 class LIRCondBranch final: public LIRControlInstruction {
 public:
-    explicit LIRCondBranch(const std::size_t id, LIRBlock *bb, const LIRCondType kind, std::vector<LIROperand>&& uses,
+    explicit LIRCondBranch(const LIRCondType kind, std::vector<LIROperand>&& uses,
                        std::vector<LIRBlock* >&& successors) :
-        LIRControlInstruction(id, bb, std::move(uses), std::move(successors)),
+        LIRControlInstruction(std::move(uses), std::move(successors)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRCondBranch> jcc(const LIRCondType kind, LIRBlock *on_true, LIRBlock *on_false) {
-        return [=](std::size_t idx, LIRBlock *bb) {
-            return std::make_unique<LIRCondBranch>(idx, bb, kind, std::vector<LIROperand>{}, std::vector{on_true, on_false});
-        };
+    static std::unique_ptr<LIRCondBranch> jcc(const LIRCondType kind, LIRBlock *on_true, LIRBlock *on_false) {
+        return std::make_unique<LIRCondBranch>(kind, std::vector<LIROperand>{}, std::vector{on_true, on_false});
     }
 
 private:
@@ -63,21 +59,17 @@ private:
 
 class LIRReturn final: public LIRControlInstruction {
 public:
-    explicit LIRReturn(const std::size_t id, LIRBlock *bb, std::vector<LIROperand>&& values) :
-        LIRControlInstruction(id, bb, std::move(values), {}) {}
+    explicit LIRReturn(std::vector<LIROperand>&& values) :
+        LIRControlInstruction(std::move(values), {}) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRReturn> ret(const LIROperand& value) {
-        return [=](std::size_t idx, LIRBlock *bb) {
-            return std::make_unique<LIRReturn>(idx, bb, std::vector{value});
-        };
+    static std::unique_ptr<LIRReturn> ret(const LIROperand& value) {
+        return std::make_unique<LIRReturn>(std::vector{value});
     }
 
-    static LIRInstBuilder<LIRReturn> ret() {
-        return [=](std::size_t idx, LIRBlock *bb) {
-            return std::make_unique<LIRReturn>(idx, bb, std::vector<LIROperand>{});
-        };
+    static std::unique_ptr<LIRReturn> ret() {
+        return std::make_unique<LIRReturn>(std::vector<LIROperand>{});
     }
 };
 
@@ -90,15 +82,31 @@ enum class LIRCallKind: std::uint8_t {
 
 class LIRCall final: public LIRControlInstruction {
 public:
-    explicit LIRCall(const std::size_t id, LIRBlock *bb, std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
+    explicit LIRCall(std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
                        LIRBlock *on_true, LIRBlock *on_false) :
-        LIRControlInstruction(id, bb, std::move(operands), {on_true, on_false}),
+        LIRControlInstruction(std::move(operands), {on_true, on_false}),
         m_name(std::move(name)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
 
+    [[nodiscard]]
+    std::span<LIRVal const> defs() const noexcept {
+        return m_defs;
+    }
+
+    [[nodiscard]]
+    const LIRVal& def(const std::size_t idx) const {
+        return m_defs.at(idx);
+    }
+
+protected:
+    void add_def(const LIRVal& def) {
+        m_defs.push_back(def);
+    }
+
 private:
     std::string m_name;
+    std::vector<LIRVal> m_defs;
     const LIRCallKind m_kind;
 };

@@ -5,15 +5,8 @@
 
 template<typename T>
 struct Elem {
-    Elem(std::uint8_t id, T value) noexcept :
-        m_id(id), value(value) {}
+    explicit Elem(T value) noexcept :value(value) {}
 
-    [[nodiscard]]
-    std::size_t id() const {
-        return m_id;
-    }
-
-    std::size_t m_id;
     T value;
 };
 
@@ -21,11 +14,8 @@ template<typename T>
 using create_fn = std::function<std::unique_ptr<Elem<T>>(std::size_t)>;
 
 
-template<typename T>
-create_fn<T> create(T value) {
-    return [=](std::size_t id) {
-        return std::make_unique<Elem<int>>(id, value);
-    };
+std::unique_ptr<Elem<int>> create(int value) {
+    return std::make_unique<Elem<int>>(value);
 }
 
 TEST(OrderedSet, test1) {

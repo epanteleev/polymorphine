@@ -16,6 +16,7 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.store_i(pointer.value(), in(1));
             break;
         }
+        case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
         default: die("Unsupported LIR instruction kind: {}", static_cast<int>(m_kind));
     }
 }

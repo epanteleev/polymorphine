@@ -15,11 +15,9 @@ public:
     }
 
     LIRBlock* create_mach_block() {
-        const auto creator = [this](std::size_t id) {
-            return std::make_unique<LIRBlock>(id);
-        };
-
-        return m_basic_blocks.push_back<LIRBlock>(creator);
+        const auto id = m_basic_blocks.push_back(std::make_unique<LIRBlock>());
+        m_basic_blocks[id].set_id(id);
+        return &m_basic_blocks[id];
     }
 
     [[nodiscard]]

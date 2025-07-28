@@ -36,7 +36,7 @@ void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const 
     AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
-void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type, const LIROperand &in1) {
+void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type) {
     const auto out_reg = m_reg_allocation[out];
     const auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, aasm::GPReg>) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <vector>
 
 #include "LIRArg.h"
 #include "lir/x64/lir_frwd.h"
@@ -9,7 +10,8 @@
 class LIRVal final {
     enum class Op: std::uint8_t {
         Arg,
-        Inst
+        Inst,
+        Call
     };
 
     LIRVal(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
@@ -54,6 +56,7 @@ public:
         switch (m_type) {
             case Op::Arg: visitor(*m_variant.m_arg); break;
             case Op::Inst: visitor(*m_variant.m_inst); break;
+            case Op::Call: visitor(*m_variant.m_call); break;
         }
     }
 
@@ -88,6 +91,8 @@ public:
 
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
+    static std::expected<std::span<LIRVal const>, Error> try_from(const LIRInstructionBase* inst) noexcept;
+
     friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
 
 private:
@@ -97,6 +102,7 @@ private:
     union {
         const LIRArg* m_arg;
         const LIRProducerInstructionBase* m_inst;
+        class LIRCall* m_call;
     } m_variant{};
 };
 

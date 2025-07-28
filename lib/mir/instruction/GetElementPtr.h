@@ -4,8 +4,8 @@
 
 class GetElementPtr final: public ValueInstruction {
 public:
-    GetElementPtr(const std::size_t id, BasicBlock *bb, const NonTrivialType* basic_type, const Value &pointer, const Value &index):
-        ValueInstruction(id, bb, PointerType::ptr(), {pointer, index}),
+    GetElementPtr(const NonTrivialType* basic_type, const Value &pointer, const Value &index):
+        ValueInstruction(PointerType::ptr(), {pointer, index}),
         m_basic_type(basic_type) {}
 
     [[nodiscard]]

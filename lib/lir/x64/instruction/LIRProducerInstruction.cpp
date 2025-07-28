@@ -24,7 +24,6 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.load_i(def(0), in0.value());
             break;
         }
-        case LIRProdInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
         case LIRProdInstKind::ParallelCopy: {
             const auto out0 = def(0);
             const auto vregs = to_vregs_only(inputs());

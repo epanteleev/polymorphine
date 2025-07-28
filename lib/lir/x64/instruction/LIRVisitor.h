@@ -16,7 +16,7 @@ public:
     virtual void xor_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shl_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shr_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
-    virtual void setcc_i(const LIRVal& out, LIRCondType cond_type, const LIROperand& in1) = 0;
+    virtual void setcc_i(const LIRVal& out, LIRCondType cond_type) = 0;
     virtual void parallel_copy(const LIRVal& out, std::span<LIRVal const> inputs) = 0;
 
     virtual void cmp_i(const LIROperand& in1, const LIROperand& in2) = 0;

@@ -29,18 +29,16 @@ std::ostream& operator<<(std::ostream &os, const LIRCondType &cond);
 
 class LIRSetCC final: public LIRProducerInstructionBase {
 public:
-    LIRSetCC(const std::size_t id, LIRBlock *bb, LIRCondType cond_type, std::vector<LIROperand>&& uses) :
-        LIRProducerInstructionBase(id, bb, std::move(uses)),
+    explicit LIRSetCC(LIRCondType cond_type) :
+        LIRProducerInstructionBase({}),
         m_cond_type(cond_type) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static LIRInstBuilder<LIRSetCC> setcc(LIRCondType cond_type, const LIROperand &op) {
-        return [=](std::size_t id, LIRBlock *bb) {
-            auto setcc = std::make_unique<LIRSetCC>(id, bb, cond_type, std::vector{op});
-            setcc->add_def(LIRVal::reg(1, 0, setcc.get()));
-            return setcc;
-        };
+    static std::unique_ptr<LIRSetCC> setcc(LIRCondType cond_type) {
+        auto setcc = std::make_unique<LIRSetCC>(cond_type);
+        setcc->add_def(LIRVal::reg(1, 0, setcc.get()));
+        return setcc;
     }
 
 private:

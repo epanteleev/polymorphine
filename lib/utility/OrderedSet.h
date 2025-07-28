@@ -10,13 +10,10 @@
 template<typename T>
 class OrderedSet final {
 public:
-    template<typename U>
-    using creator = std::function<std::unique_ptr<U>(std::size_t)>;
     using iterator = typename std::deque<std::unique_ptr<T>>::iterator;
     using const_iterator = typename std::deque<std::unique_ptr<T>>::const_iterator;
 
 private:
-
     template<typename iterator>
     class Iterator final {
     public:
@@ -52,38 +49,17 @@ private:
 public:
     OrderedSet() = default;
 
-    template<typename U>
-    U* push_back(const creator<U>& fn) {
+    std::size_t push_back(std::unique_ptr<T>&& ptr) {
         const auto free_slot = get_free_index();
-        auto value = fn(free_slot);
-        auto ret = value.get();
-
         const auto s = size();
-        m_holder.push_back(std::move(value));
+        m_holder.push_back(std::move(ptr));
         if (free_slot == s) {
             m_list.push_back(--m_holder.end());
-        } else {
-            m_list[free_slot] = --m_holder.end();
+            return s;
         }
 
-        return ret;
-    }
-
-    template<typename U>
-    T* push_front(const creator<U>& fn) {
-        const auto free_slot = get_free_index();
-        auto value = fn(free_slot);
-        auto ret = value.get();
-
-        const auto s = size();
-        m_holder.push_front(std::move(value));
-        if (free_slot == s) {
-            m_list.push_back(--m_holder.end());
-        } else {
-            m_list[free_slot] = --m_holder.end();
-        }
-
-        return ret;
+        m_list[free_slot] = --m_holder.end();
+        return free_slot;
     }
 
     void remove(T* item) {

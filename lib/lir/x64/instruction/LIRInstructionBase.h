@@ -8,9 +8,11 @@
 #include "LIRVisitor.h"
 
 class LIRInstructionBase {
+    static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
+
 public:
-    LIRInstructionBase(const std::size_t id, LIRBlock *bb, std::vector<LIROperand> &&uses): m_id(id),
-                                                  m_owner(bb),
+    explicit LIRInstructionBase(std::vector<LIROperand> &&uses): m_id(NO_ID),
+                                                  m_owner(nullptr),
                                                   m_uses(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;
@@ -18,16 +20,6 @@ public:
     [[nodiscard]]
     std::span<LIROperand const> inputs() const noexcept {
         return m_uses;
-    }
-
-    [[nodiscard]]
-    std::span<LIRVal const> defs() const noexcept {
-        return m_defs;
-    }
-
-    [[nodiscard]]
-    const LIRVal& def(const std::size_t idx) const {
-        return m_defs.at(idx);
     }
 
     [[nodiscard]]
@@ -41,6 +33,7 @@ public:
 
     [[nodiscard]]
     const LIRBlock* owner() const noexcept {
+        assertion(m_owner != nullptr, "owner is null");
         return m_owner;
     }
 
@@ -51,9 +44,14 @@ public:
     }
 
 protected:
-    void add_def(const LIRVal& def) {
-        m_defs.push_back(def);
+    friend class LIRBlock;
+
+    void connect(std::size_t idx, const LIRBlock* owner) {
+        m_id = idx;
+        m_owner = owner;
     }
+
+    [[nodiscard]]
 
     static std::vector<LIRVal> to_vregs_only(std::span<LIROperand const> inputs) {
         std::vector<LIRVal> vregs;
@@ -67,8 +65,7 @@ protected:
     }
 
     std::size_t m_id;
-    LIRBlock* m_owner;
-    std::vector<LIRVal> m_defs;
+    const LIRBlock* m_owner;
     std::vector<LIROperand> m_uses;
 };
 

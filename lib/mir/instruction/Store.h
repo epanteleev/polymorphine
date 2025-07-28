@@ -4,8 +4,8 @@
 
 class Store final: public Instruction {
 public:
-    Store(const std::size_t id, BasicBlock *bb, const Value& ptr, const Value& value) :
-        Instruction(id, bb, {ptr, value}) {}
+    Store(const Value& ptr, const Value& value) :
+        Instruction({ptr, value}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -19,9 +19,7 @@ public:
         return m_values.at(1);
     }
 
-    static InstructionBuilder<Store> store(const Value& ptr, const Value& value) {
-        return [=](std::size_t id, BasicBlock *bb) {
-            return std::make_unique<Store>(id, bb, ptr, value);
-        };
+    static std::unique_ptr<Store> store(const Value& ptr, const Value& value) {
+        return std::make_unique<Store>(ptr, value);
     }
 };

@@ -14,15 +14,12 @@
 
 class LIRBlock final: public BasicBlockBase<LIRBlock, LIRInstructionBase> {
 public:
-    explicit LIRBlock(const std::size_t id) noexcept: BasicBlockBase(id) {}
-
     template<std::derived_from<LIRInstructionBase> U>
-    U* inst(const LIRInstBuilder<U>& fn) {
-        auto creator = [&] (const std::size_t id) {
-            return fn(id, this);
-        };
-
-        return m_instructions.push_back<U>(creator);
+    U* inst(std::unique_ptr<U>&& inst) {
+        auto inst_ptr = inst.get();
+        const auto id = m_instructions.push_back(std::move(inst));
+        inst_ptr->connect(id, this);
+        return inst_ptr;
     }
 
     [[nodiscard]]
@@ -32,6 +29,8 @@ public:
     std::span<LIRBlock* const> successors() const {
         return last()->successors();
     }
+
+    friend class LIRFuncData;
 };
 
 static_assert(CodeBlock<LIRBlock>, "assumed to be");

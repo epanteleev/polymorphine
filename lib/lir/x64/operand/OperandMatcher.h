@@ -18,11 +18,7 @@ namespace impl {
 
         return false;
     }
-}
 
-
-consteval auto cmp() {
-    return impl::is_producer<LIRProdInstKind::Cmp>;
 }
 
 consteval auto gen() {

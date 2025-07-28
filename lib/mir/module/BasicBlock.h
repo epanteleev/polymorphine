@@ -8,21 +8,17 @@
 
 class BasicBlock final: public BasicBlockBase<BasicBlock, Instruction> {
 public:
-    explicit BasicBlock(const std::size_t id): BasicBlockBase(id) {}
-
     template<std::derived_from<Instruction> U>
-    U* push_back(const InstructionBuilder<U>& fn) {
-        auto creator = [&] (std::size_t id) {
-            return fn(id, this);
-        };
-
-        auto inst = m_instructions.push_back<U>(creator);
-        make_def_use_chain(inst);
+    U* push_back(std::unique_ptr<U>&& inst) {
+        auto inst_ptr = inst.get();
+        const auto id = m_instructions.push_back(std::move(inst));
+        inst_ptr->connect(id, this);
+        make_def_use_chain(inst_ptr);
         if constexpr (IsTerminator<U>) {
-            make_edges(inst);
+            make_edges(inst_ptr);
         }
 
-        return inst;
+        return inst_ptr;
     }
 
     [[nodiscard]]
@@ -34,6 +30,8 @@ public:
     }
 
 private:
+    friend class FunctionData;
+
     static void make_def_use_chain(Instruction* inst);
 
     template<IsTerminator T>

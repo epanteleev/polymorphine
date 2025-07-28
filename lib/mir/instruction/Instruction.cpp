@@ -158,13 +158,6 @@ void Instruction::print(std::ostream& os) const {
     p.do_print(const_cast<Instruction *>(this));
 }
 
-PhiInstruction::PhiInstruction(const std::size_t id, BasicBlock *bb, NonTrivialType *ty,
+PhiInstruction::PhiInstruction(NonTrivialType *ty,
                                const std::initializer_list<Value> &values, std::vector<BasicBlock *> targets)
-        : ValueInstruction(id, bb, ty, values), m_entries(std::move(targets)) {}
-
-TerminateValueInstruction::TerminateValueInstruction(const std::size_t id, BasicBlock *bb, NonTrivialType *ty,
-                                                     const TermValueInstType type,
-                                                     std::vector<BasicBlock *> &&successors)
-    : ValueInstruction(id, bb, ty, {}),
-    m_type(type),
-    m_successors(std::move(successors)) {}
+        : ValueInstruction(ty, values), m_entries(std::move(targets)) {}

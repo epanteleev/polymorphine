@@ -58,11 +58,6 @@ private:
     void do_register_allocation() {
         auto reg_set = RegSet::create(std::array{aasm::rdi});
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
-            if (vreg.isa(cmp())) {
-                // Produces flag registers, which are not allocated.
-                continue;
-            }
-
             if (vreg.isa(gen())) {
                 m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -vreg.size()));
                 m_local_area_size += vreg.size();

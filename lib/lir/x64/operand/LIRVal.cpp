@@ -25,6 +25,17 @@ std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
     return vreg.value();
 }
 
+std::expected<std::span<LIRVal const>, Error> LIRVal::try_from(const LIRInstructionBase *inst) noexcept {
+    if (const auto producer = dynamic_cast<const LIRProducerInstructionBase*>(inst)) {
+        return producer->defs();
+    }
+    if (const auto call = dynamic_cast<const LIRCall*>(inst)) {
+        return call->defs();
+    }
+
+    return std::unexpected(Error::CastError);
+}
+
 std::ostream & operator<<(std::ostream &os, const LIRVal &op) noexcept {
     const auto idx = static_cast<std::size_t>(op.m_index);
     if (auto arg_opt = op.arg(); arg_opt.has_value()) {
