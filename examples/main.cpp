@@ -5,10 +5,6 @@
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
 
-#include "lib/lir/x64/asm/jit/JitAssembler.h"
-#include "lir/x64/codegen/Codegen.h"
-#include "lir/x64/codegen/MachFunctionCodegen.h"
-
 Module ret_constant() {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");

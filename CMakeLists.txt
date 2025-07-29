@@ -8,172 +8,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/Sanitizers.cmake)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
+
+file(GLOB_RECURSE MIR_SOURCES lib/mir/*.cpp lib/mir/*.h)
+file(GLOB_RECURSE ASM_SOURCES lib/asm/*.cpp lib/asm/*.h)
+file(GLOB_RECURSE UTILS_SOURCES lib/utility/*.cpp lib/utility/*.h)
+
+# x64 specific sources
+file(GLOB_RECURSE LIR_X64_SOURCES lib/lir/x64/*.cpp lib/lir/x64/*.h)
+file(GLOB_RECURSE ASM_X64_SOURCES lib/asm/*.cpp lib/asm/*.h)
 
 add_library(ckoof SHARED
-        lib/mir/types/Type.h
-        lib/mir/module/BasicBlock.cpp
-        lib/mir/module/BasicBlock.h
-        lib/mir/instruction/Instruction.cpp
-        lib/mir/instruction/Instruction.h
-        lib/mir/mir_frwd.h
-        lib/mir/value/Value.cpp
-        lib/mir/value/Value.h
-        lib/mir/value/ValueMatcher.h
-        lib/mir/types/TypeMatcher.h
-        lib/utility/OrderedSet.h
-        lib/mir/instruction/InstructionVisitor.h
-        lib/utility/Error.cpp
-        lib/utility/Error.h
-        lib/mir/types/Type.cpp
-        lib/mir/types/TypeVisitor.h
-        lib/mir/module/FunctionData.cpp
-        lib/mir/module/FunctionData.h
-        lib/mir/module/FunctionPrototype.h
-        lib/mir/module/FunctionPrototype.cpp
-        lib/mir/value/ArgumentValue.cpp
-        lib/mir/value/ArgumentValue.h
-        lib/mir/instruction/Binary.h
-        lib/mir/instruction/ValueInstruction.h
-        lib/mir/instruction/Unary.h
-        lib/mir/instruction/TerminateValueInstruction.h
-        lib/mir/instruction/TerminateInstruction.h
-        lib/mir/mir.h
-        lib/mir/value/LocalValue.h
-        lib/mir/value/LocalValue.cpp
-        lib/mir/instruction/ValueInstruction.cpp
-        lib/mir/instruction/Terminator.h
-        lib/mir/instruction/Terminator.cpp
-        lib/mir/instruction/TerminateInstruction.cpp
-        lib/mir/instruction/TerminateValueInstruction.cpp
-        lib/mir/instruction/Store.h
-        lib/mir/instruction/Alloc.h
-        lib/mir/builder/FunctionBuilder.cpp
-        lib/mir/builder/FunctionBuilder.h
-        lib/mir/instruction/Compare.h
-        lib/base/analysis/AnalysisPass.h
-        lib/base/analysis/traverse/PreorderTraverseBase.h
-        lib/base/analysis/traverse/Ordering.h
-        lib/base/analysis/AnalysisPassManagerBase.h
-        lib/base/analysis/traverse/PostOrderTraverseBase.h
-        lib/base/analysis/dom/DominatorTreeEvalBase.h
-        lib/base/analysis/dom/DominatorTree.h
-        lib/asm/AsmEmitter.h
-        lib/asm/Register.h
-        lib/asm/Register.cpp
-        lib/asm/Address.h
-        lib/mir/module/Module.h
-        lib/mir/module/Module.cpp
-        lib/mir/builder/ModuleBuilder.cpp
-        lib/mir/builder/ModuleBuilder.h
-        lib/mir/instruction/GetElementPtr.h
-        lib/base/analysis/traverse/BFSOrderTraverseBase.h
-        lib/lir/x64/instruction/LIRInstructionBase.cpp
-        lib/lir/x64/instruction/LIRInstructionBase.h
-        lib/lir/x64/operand/LIRVal.h
-        lib/lir/x64/operand/LIRCst.h
-        lib/lir/x64/operand/LIROperand.h
-        lib/lir/x64/module/LIRBlock.cpp
-        lib/lir/x64/module/LIRBlock.h
-        lib/lir/x64/lir_frwd.h
-        lib/base/Constrains.h
-        lib/mir/analysis/Analysis.h
-        lib/lir/x64/analysis/Analysis.h
-        lib/lir/x64/module/LIRFuncData.h
-        lib/lir/x64/instruction/LIRVisitor.h
-        lib/lir/x64/operand/LIRVal.cpp
-        lib/lir/x64/module/LIRModule.cpp
-        lib/lir/x64/module/LIRModule.h
-        lib/lir/x64/lower/Lowering.cpp
-        lib/lir/x64/lower/Lowering.h
-        lib/lir/x64/operand/LIRArg.h
-        lib/lir/x64/operand/LIROperand.cpp
-        lib/lir/x64/operand/LIRCst.cpp
-        lib/lir/x64/operand/LIRArg.cpp
-        lib/base/BasicBlockBase.h
-        lib/lir/x64/lower/FunctionLower.cpp
-        lib/lir/x64/lower/FunctionLower.h
-        lib/mir/value/LocalValueMap.h
-        lib/lir/x64/codegen/Codegen.cpp
-        lib/lir/x64/codegen/Codegen.h
-        lib/lir/x64/analysis/regalloc/LinearScan.h
-        lib/lir/x64/analysis/regalloc/RegisterAllocation.h
-        lib/lir/x64/analysis/liveness/LivenessAnalysis.h
-        lib/lir/x64/analysis/liveness/LiveInfo.h
-        lib/base/FunctionDataBase.h
-        lib/lir/x64/instruction/Matcher.h
-        lib/lir/x64/operand/LIRValMap.h
-        lib/asm/instruction/CPUInstruction.h
-        lib/asm/Common.h
-        lib/lir/x64/analysis/intervals/LiveIntervalsEval.h
-        lib/lir/x64/analysis/intervals/LiveIntervals.h
-        lib/lir/x64/instruction/LIRControlInstruction.h
-        lib/lir/x64/instruction/LIRControlInstruction.cpp
-        lib/lir/x64/instruction/LIRProducerInstruction.cpp
-        lib/lir/x64/instruction/LIRProducerInstruction.h
-        lib/lir/x64/lir.h
-        lib/lir/x64/analysis/regalloc/FixedRegistersEval.h
-        lib/lir/x64/analysis/regalloc/FixedRegisters.h
-        lib/lir/x64/asm/GPVReg.h
-        lib/lir/x64/asm/MasmEmitter.h
-        lib/lir/x64/codegen/MachFunctionCodegen.cpp
-        lib/lir/x64/codegen/MachFunctionCodegen.h
-        lib/lir/x64/asm/visitors/GPUnaryOutVisitor.h
-        lib/lir/x64/asm/GPOp.h
-        lib/lir/x64/codegen/emitters/CopyGPEmit.h
-        lib/lir/x64/codegen/emitters/CopyGPEmit.cpp
-        lib/lir/x64/asm/jit/JitAssembler.h
-        lib/lir/x64/asm/ObjModule.h
-        lib/lir/x64/asm/jit/JitCodeBlob.h
-        lib/lir/x64/asm/jit/JitAssembler.cpp
-        lib/lir/x64/asm/jit/JitCodeBlob.cpp
-        lib/lir/x64/analysis/regalloc/ArgumentAllocator.h
-        lib/lir/x64/analysis/regalloc/CallConv.h
-        lib/asm/instruction/Pop.h
-        lib/asm/instruction/Push.h
-        lib/asm/instruction/Mov.h
-        lib/asm/instruction/Ret.h
-        lib/asm/SizeEvaluator.h
-        lib/asm/instruction/Add.h
-        lib/lir/x64/asm/visitors/GPBinaryVisitor.h
-        lib/lir/x64/codegen/emitters/AddIntEmit.cpp
-        lib/lir/x64/codegen/emitters/AddIntEmit.h
-        lib/asm/instruction/Jmp.h
-        lib/asm/instruction/Label.h
-        tests/helpers/Utils.h
-        lib/asm/instruction/Cmp.h
-        lib/mir/instruction/InstructionMatcher.h
-        lib/asm/instruction/Jcc.h
-        lib/asm/instruction/CondType.h
-        lib/asm/AsmBuffer.h
-        lib/asm/AsmBuffer.cpp
-        lib/asm/instruction/SetCC.h
-        lib/lir/x64/instruction/LIRSetCC.h
-        lib/lir/x64/instruction/LIRSetCC.cpp
-        lib/lir/x64/instruction/LIRInstruction.cpp
-        lib/lir/x64/instruction/LIRInstruction.h
-        lib/lir/x64/instruction/LIRProducerInstructionBase.h
-        lib/asm/asm_frwd.h
-        lib/lir/x64/operand/OperandMatcher.h
-        lib/lir/x64/codegen/emitters/CmpGPEmit.cpp
-        lib/lir/x64/codegen/emitters/CmpGPEmit.h
-        lib/lir/x64/asm/visitors/GPUnaryVisitor.h
-        lib/lir/x64/codegen/emitters/MovGPEmit.cpp
-        lib/lir/x64/codegen/emitters/MovGPEmit.h
-        lib/lir/x64/asm/visitors/GPUnaryAddrVisitor.h
-        lib/asm/Encoding.h
-        lib/lir/x64/codegen/emitters/LoadGPEmit.cpp
-        lib/lir/x64/codegen/emitters/LoadGPEmit.h
-        lib/lir/x64/codegen/emitters/StoreGPEmit.cpp
-        lib/lir/x64/codegen/emitters/StoreGPEmit.h
-        lib/utility/Align.h
-        lib/asm/instruction/Leave.h
-        tests/helpers/Jit.h
-        tests/helpers/Jit.cpp
-        lib/asm/asm.h
-        lib/asm/Assembler.h
-        lib/asm/instruction/Sub.h
-        lib/asm/instruction/Call.h
+        ${MIR_SOURCES}
+        ${LIR_X64_SOURCES}
+        ${ASM_SOURCES}
+        ${ASM_X64_SOURCES}
+        ${UTILS_SOURCES}
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)
@@ -182,7 +32,7 @@ target_include_directories(ckoof PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
-add_executable(shlang_cpp main.cpp)
+add_executable(shlang_cpp examples/main.cpp)
 target_link_libraries(shlang_cpp PRIVATE ckoof)
 
 enable_testing()
