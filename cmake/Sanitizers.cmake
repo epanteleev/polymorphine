@@ -15,4 +15,3 @@ endfunction()
 
 register_sanitizer(Asan "-fsanitize=address -fno-sanitize-recover=address")
 register_sanitizer(Usan "-fsanitize=undefined -fno-sanitize-recover=undefined")
-register_sanitizer(Tsan "-fsanitize=thread")

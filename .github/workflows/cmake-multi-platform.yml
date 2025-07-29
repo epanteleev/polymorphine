@@ -19,6 +19,7 @@ jobs:
         os: [ubuntu-latest]
         build_type: [Debug, Release, Asan, Tsan, Usan]
         c_compiler: [gcc, clang-18]
+        cpp_compiler: [g++, clang++-18]
 
     steps:
     - uses: actions/checkout@v4
