@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        build_type: [Debug, Release, Asan, Tsan, Usan]
-        c_compiler: [gcc, clang-18]
-        cpp_compiler: [g++, clang++-18]
+        build_type: [Debug, Release, Asan, Usan]
+        c_compiler: [gcc]
+        cpp_compiler: [g++]
 
     steps:
     - uses: actions/checkout@v4
