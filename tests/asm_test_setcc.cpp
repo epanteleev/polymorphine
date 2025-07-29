@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "helpers/Utils.h"
-#include "asm/AsmEmitter.h"
+#include "asm/asm.h"
 
 template<std::ranges::range R>
 [[maybe_unused]]

@@ -3,8 +3,7 @@
 #include <cstring>
 #include <gtest/gtest.h>
 
-#include "asm/AsmEmitter.h"
-#include "asm/Common.h"
+#include "asm/asm.h"
 
 [[maybe_unused]]
 void print_hex(const std::uint8_t* data, std::size_t size);

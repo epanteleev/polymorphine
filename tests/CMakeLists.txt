@@ -1,19 +1,16 @@
-
 include(../cmake/GoogleTest.cmake)
-
-include(GoogleTest)
-
 
 function(add_test_executable target)
     add_executable(${target} ${target}.cpp
             helpers/Utils.cpp
             helpers/Jit.cpp
     )
+
     target_compile_features(${target} PUBLIC cxx_std_23)
-
     target_link_libraries(${target} PRIVATE ckoof GTest::gtest GTest::gtest_main)
-    gtest_discover_tests(${target})
+    target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/lib>)
 
+    gtest_discover_tests(${target})
     add_test(NAME ${target} COMMAND ${target})
 endfunction()
 

@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "helpers/Utils.h"
-#include "asm/AsmEmitter.h"
+#include "asm/asm.h"
 
 TEST(Asm, ret) {
     aasm::AsmEmitter a;

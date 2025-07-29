@@ -3,10 +3,7 @@
 #include <ranges>
 
 #include "base/analysis/AnalysisPassManagerBase.h"
-#include "mir/value/LocalValue.h"
-#include "mir/module/FunctionData.h"
-#include "mir/value/LocalValueMap.h"
-#include "mir/analysis/Analysis.h"
+#include "mir/mir.h"
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRFuncData.h"

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "lir/x64/lir.h"
-#include "lir/x64/asm/jit/JitAssembler.h"
 
 /**
  * Performs JIT compilation of the given module.

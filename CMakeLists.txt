@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.28)
 project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
-
 # Permanently enable compile commands for cmake debugging purposes
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -10,20 +9,43 @@ include(cmake/Sanitizers.cmake)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
+function(register_static_library NAME)
+    add_library(${NAME} STATIC ${ARGN})
+    target_include_directories(${NAME} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>
+            $<INSTALL_INTERFACE:include>
+    )
+    target_compile_features(${NAME} PUBLIC cxx_std_23)
+    target_compile_definitions(${NAME} PRIVATE
+            $<$<CONFIG:Debug>:DEBUG>
+            $<$<CONFIG:Release>:NDEBUG>
+    )
+    target_compile_options(${NAME} PRIVATE -fPIC
+            $<$<CONFIG:Debug>:-g>
+            $<$<CONFIG:Release>:${CMAKE_CXX_FLAGS_RELEASE}>
+    )
+    target_link_libraries(${NAME} PRIVATE stdc++exp)
+endfunction()
+
+
 file(GLOB_RECURSE MIR_SOURCES lib/mir/*.cpp lib/mir/*.h)
-file(GLOB_RECURSE ASM_SOURCES lib/asm/*.cpp lib/asm/*.h)
+register_static_library(mir ${MIR_SOURCES})
+
 file(GLOB_RECURSE UTILS_SOURCES lib/utility/*.cpp lib/utility/*.h)
+register_static_library(utils ${UTILS_SOURCES})
 
 # x64 specific sources
-file(GLOB_RECURSE LIR_X64_SOURCES lib/lir/x64/*.cpp lib/lir/x64/*.h)
 file(GLOB_RECURSE ASM_X64_SOURCES lib/asm/*.cpp lib/asm/*.h)
+register_static_library(asm_x64 ${ASM_X64_SOURCES})
+
+file(GLOB_RECURSE LIR_X64_SOURCES lib/lir/x64/*.cpp lib/lir/x64/*.h)
+register_static_library(lir_x64 ${LIR_X64_SOURCES})
 
 add_library(ckoof SHARED
-        ${MIR_SOURCES}
-        ${LIR_X64_SOURCES}
-        ${ASM_SOURCES}
-        ${ASM_X64_SOURCES}
-        ${UTILS_SOURCES}
+        $<TARGET_OBJECTS:mir>
+        $<TARGET_OBJECTS:utils>
+        $<TARGET_OBJECTS:asm_x64>
+        $<TARGET_OBJECTS:lir_x64>
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)
