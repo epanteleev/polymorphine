@@ -18,14 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug, Release, Asan, Tsan, Usan]
-        c_compiler: [gcc, clang]
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang-18
-            cpp_compiler: clang++-18
+        c_compiler: [gcc, clang-18]
 
     steps:
     - uses: actions/checkout@v4
