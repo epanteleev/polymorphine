@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
+
 # Permanently enable compile commands for cmake debugging purposes
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -20,10 +21,7 @@ function(register_static_library NAME)
             $<$<CONFIG:Debug>:DEBUG>
             $<$<CONFIG:Release>:NDEBUG>
     )
-    target_compile_options(${NAME} PRIVATE -fPIC
-            $<$<CONFIG:Debug>:-g>
-            $<$<CONFIG:Release>:${CMAKE_CXX_FLAGS_RELEASE}>
-    )
+    target_compile_options(${NAME} PRIVATE -fPIC)
     target_link_libraries(${NAME} PRIVATE stdc++exp)
 endfunction()
 
