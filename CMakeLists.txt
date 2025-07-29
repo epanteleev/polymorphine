@@ -3,7 +3,11 @@ project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
+# Permanently enable compile commands for cmake debugging purposes
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+include(cmake/Sanitizers.cmake)
+
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 add_library(ckoof SHARED
@@ -183,4 +187,3 @@ target_link_libraries(shlang_cpp PRIVATE ckoof)
 
 enable_testing()
 add_subdirectory(tests)
-
