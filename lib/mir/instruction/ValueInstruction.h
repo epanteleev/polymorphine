@@ -4,7 +4,7 @@
 
 class ValueInstruction : public Instruction {
 public:
-    ValueInstruction(const Type* ty, const std::initializer_list<Value>& values):
+    ValueInstruction(const Type* ty, const std::initializer_list<Value>& values) noexcept:
         Instruction(values),
         m_ty(ty) {}
 

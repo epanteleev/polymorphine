@@ -17,7 +17,7 @@ public:
         return LIRModule(std::move(m_obj_functions));
     }
 
-    static Lowering create(AnalysisPassCache&, const Module &module) {
+    static Lowering create(AnalysisPassManager&, const Module &module) {
         return Lowering(module);
     }
 

@@ -15,7 +15,7 @@ void Lowering::run() {
             args.emplace_back(idx, varg.type()->size_of());
         }
 
-        AnalysisPassCache cache;
+        AnalysisPassManager cache;
         auto lower = FunctionLower::create(&cache, func.get());
         lower.run();
 

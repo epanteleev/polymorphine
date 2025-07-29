@@ -152,7 +152,7 @@ private:
         template<std::ranges::range Range>
         static RegSet create(Range&& arg_regs) {
             stack regs{};
-            for (const auto& reg: call_conv::GP_CALLER_SAVE_REGISTERS) {
+            for (const auto reg: call_conv::GP_CALLER_SAVE_REGISTERS) {
                 if (std::ranges::contains(arg_regs, reg)) {
                     continue;
                 }
@@ -173,6 +173,10 @@ private:
         }
 
         void push(const aasm::GPReg reg) noexcept {
+            if (std::ranges::contains(m_free_regs, reg)) {
+                return;
+            }
+
             m_free_regs.push_back(reg);
         }
 

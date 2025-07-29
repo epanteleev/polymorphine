@@ -9,4 +9,4 @@
  * @param verbose If true, prints the intermediate representations after each compilation step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitCodeBlob do_jit_compilation(const Module& module, bool verbose = false);
+JitCodeBlob do_jit_compilation(const Module& module, bool verbose = true);

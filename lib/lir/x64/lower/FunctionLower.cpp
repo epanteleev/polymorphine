@@ -96,12 +96,17 @@ LIRVal FunctionLower::get_lir_val(const Value &val) {
 }
 
 void FunctionLower::accept(Binary *inst) {
+    const auto lhs = get_lir_operand(inst->lhs());
+    const auto rhs = get_lir_operand(inst->rhs());
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto lhs = get_lir_operand(inst->lhs());
-            const auto rhs = get_lir_operand(inst->rhs());
             const auto add = m_bb->inst(LIRProducerInstruction::add(lhs, rhs));
             memorize(inst, add->def(0));
+            break;
+        }
+        case BinaryOp::Subtract: {
+            const auto sub = m_bb->inst(LIRProducerInstruction::sub(lhs, rhs));
+            memorize(inst, sub->def(0));
             break;
         }
         default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));

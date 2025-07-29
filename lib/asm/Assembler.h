@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <ranges>
+#include <unordered_map>
 
 #include "instruction/CPUInstruction.h"
 
@@ -15,7 +16,7 @@ namespace aasm::details {
          * @param label_table A vector mapping labels to instruction indices.
          */
         template <CodeBuffer Buffer>
-        static constexpr void assemble(Buffer& buffer, const std::vector<X64Instruction> &instructions, const std::vector<std::uint32_t> &label_table) {
+        static constexpr std::unordered_map<std::string, std::uint32_t> assemble(Buffer& buffer, const std::vector<X64Instruction> &instructions, const std::vector<std::uint32_t> &label_table) {
             Assembler assembler(instructions, label_table);
             return assembler.emit(buffer);
         }
@@ -26,7 +27,7 @@ namespace aasm::details {
             m_instructions(instructions) {}
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer &buffer) {
+        constexpr std::unordered_map<std::string, std::uint32_t> emit(Buffer &buffer) {
             offsets_from_start.reserve(m_instructions.size());
             unresolved_labels.resize(m_instructions.size());
 
@@ -36,15 +37,26 @@ namespace aasm::details {
             }
 
             resolve_and_patch(buffer);
+            return std::move(m_relocation_table);
         }
 
         template<CodeBuffer Buffer, typename T>
-        constexpr void emit_instruction(Buffer& buffer, const T& var) {
+        constexpr void emit_instruction(Buffer& buffer, const T& inst) {
             if constexpr (std::is_same_v<T, Jmp> || std::is_same_v<T, Jcc>) {
-                emit_jump(buffer, var);
+                emit_jump(buffer, inst);
+
+            } else if constexpr (std::is_same_v<T, Call>) {
+                emit_call(buffer, inst);
+
             } else {
-                var.emit(buffer);
+                inst.emit(buffer);
             }
+        }
+
+        template<CodeBuffer Buffer>
+        constexpr void emit_call(Buffer& buffer, const Call& inst) {
+            inst.emit(buffer);
+            m_relocation_table.emplace(inst.name(), buffer.size());
         }
 
         template<CodeBuffer Buffer, typename T>
@@ -79,5 +91,7 @@ namespace aasm::details {
 
         std::vector<std::int32_t> offsets_from_start; // instruction index to offset from function start
         std::vector<std::vector<std::int32_t> > unresolved_labels; // Hashmap from 'label' to vector of offsets where jmp operand must be patched.
+
+        std::unordered_map<std::string, std::uint32_t> m_relocation_table;
     };
 }

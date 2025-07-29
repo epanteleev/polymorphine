@@ -17,6 +17,7 @@
 #include "Jcc.h"
 #include "SetCC.h"
 #include "Leave.h"
+#include "Call.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -42,6 +43,7 @@ namespace aasm {
             details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
             details::Jmp, details::Jcc,
             details::SetCCR,
+            details::Call,
             details::Leave
         > m_inst;
     };

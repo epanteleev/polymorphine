@@ -16,9 +16,9 @@ enum class BinaryOp {
 
 class Binary final : public ValueInstruction {
 public:
-    Binary(const BinaryOp op, const Value &lhs,
-           const Value &rhs): ValueInstruction(lhs.type(), {lhs, rhs}), m_op(op) {
-    }
+    Binary(const BinaryOp op, const Value &lhs, const Value &rhs) noexcept:
+        ValueInstruction(lhs.type(), {lhs, rhs}),
+        m_op(op) {}
 
     [[nodiscard]]
     const Value& lhs() const {

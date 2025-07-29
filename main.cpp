@@ -106,7 +106,7 @@ std::size_t single_thread_solution() {
     std::size_t sum{};
 
     for (int i = 0; i < 2000; i++) {
-        AnalysisPassCache cache;
+        AnalysisPassManager cache;
 
         auto start = std::chrono::steady_clock::now();
 
@@ -133,7 +133,7 @@ std::size_t async_based_solution() {
     std::size_t sum{};
 
     for (int i = 0; i < 2000; i++) {
-        AnalysisPassCache cache;
+        AnalysisPassManager cache;
         auto start = std::chrono::steady_clock::now();
 
         auto dom_tree = cache.concurrent_analyze<DominatorTreeEval>(fd);
@@ -166,7 +166,7 @@ int main() {
     const auto fd = module.find_function_data("fib").value();
     fd->print(std::cout);
 
-    AnalysisPassCache cache0;
+    AnalysisPassManager cache0;
 
     auto module0 = ret_constant();
     std::cout << module0 << std::endl;

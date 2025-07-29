@@ -18,7 +18,7 @@ TEST(EmptyFunc, traverse) {
     const auto func = module.find_function_data("ret_one")
         .value();
 
-    AnalysisPassCache cache;
+    AnalysisPassManager cache;
     const auto& preorder = *cache.analyze<PreorderTraverse>(func);
     ASSERT_EQ(preorder.size(), 1);
     ASSERT_EQ(preorder[0], func->first());
@@ -37,7 +37,7 @@ TEST(EmptyFunc, dom) {
     const auto func = module.find_function_data("ret_one")
         .value();
 
-    AnalysisPassCache cache;
+    AnalysisPassManager cache;
     const auto& dom = *cache.analyze<DominatorTreeEval>(func);
 
     std::size_t size{};

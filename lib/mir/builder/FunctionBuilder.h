@@ -41,6 +41,11 @@ public:
     }
 
     [[nodiscard]]
+    Value sub(const Value& lhs, const Value& rhs) const {
+        return m_bb->push_back(Binary::sub(lhs, rhs));
+    }
+
+    [[nodiscard]]
     Value icmp(IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
         return m_bb->push_back(IcmpInstruction::icmp(predicate, lhs, rhs));
     }

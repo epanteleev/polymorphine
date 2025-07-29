@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.28)
 project(shlang_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 add_library(ckoof SHARED
         lib/mir/types/Type.h
@@ -166,10 +169,8 @@ add_library(ckoof SHARED
         lib/asm/asm.h
         lib/asm/Assembler.h
         lib/asm/instruction/Sub.h
+        lib/asm/instruction/Call.h
 )
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 target_link_libraries(ckoof PRIVATE stdc++exp)
 target_include_directories(ckoof PUBLIC

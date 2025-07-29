@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <vector>
 #include <iosfwd>
 #include <memory>
@@ -15,12 +14,12 @@ class Instruction {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
-    virtual ~Instruction() = default;
-
-    explicit Instruction(std::vector<Value>&& values)
-        : m_owner(nullptr),
+    explicit Instruction(std::vector<Value>&& values) noexcept:
+        m_owner(nullptr),
         m_id(NO_ID),
         m_values(std::move(values)) {}
+
+    virtual ~Instruction() = default;
 
     [[nodiscard]]
     std::size_t id() const {

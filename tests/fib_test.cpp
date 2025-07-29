@@ -100,7 +100,7 @@ static T fib_value(T n) {
 }
 
 TEST(Fib, i8) {
-    const auto buffer = do_jit_compilation(fib(SignedIntegerType::i8(), Value::i8), true);
+    const auto buffer = do_jit_compilation(fib(SignedIntegerType::i8(), Value::i8));
     const auto fn = buffer.code_start_as<std::int8_t(std::int8_t)>("fib").value();
 
     for (std::int8_t i = 0; i < 20; ++i) {
@@ -120,7 +120,7 @@ TEST(Fib, u8) {
 }
 
 TEST(Fib, i16) {
-    const auto buffer = do_jit_compilation(fib(SignedIntegerType::i16(), Value::i16), true);
+    const auto buffer = do_jit_compilation(fib(SignedIntegerType::i16(), Value::i16));
     const auto fn = buffer.code_start_as<std::int16_t(std::int16_t)>("fib").value();
 
     for (std::int16_t i = 0; i < 20; ++i) {
@@ -130,7 +130,7 @@ TEST(Fib, i16) {
 }
 
 TEST(Fib, u16) {
-    const auto buffer = do_jit_compilation(fib(UnsignedIntegerType::u16(), Value::u16), true);
+    const auto buffer = do_jit_compilation(fib(UnsignedIntegerType::u16(), Value::u16));
     const auto fn = buffer.code_start_as<std::uint16_t(std::uint16_t)>("fib").value();
 
     for (std::uint16_t i = 0; i < 20; ++i) {
@@ -180,6 +180,7 @@ TEST(Fib, u64) {
 }
 
 int main(int argc, char **argv) {
+    error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

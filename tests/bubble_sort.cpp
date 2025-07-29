@@ -3,6 +3,7 @@
 #include "mir/mir.h"
 #include "helpers/Jit.h"
 
+[[maybe_unused]]
 static Module bubble_sort(const PrimitiveType* ty, const IntegerType* inc_type) {
     ModuleBuilder builder;
     FunctionPrototype prototype(VoidType::type(), {PointerType::ptr(), inc_type}, "bubble_sort");
@@ -25,6 +26,7 @@ static Module bubble_sort(const PrimitiveType* ty, const IntegerType* inc_type) 
     auto n_addr = data.alloc(ty);
     auto i = data.alloc(ty);
     auto j = data.alloc(ty);
+    [[maybe_unused]]
     auto tmp = data.alloc(ty);
     auto a = data.arg(0);
     auto n = data.arg(1);
@@ -50,8 +52,16 @@ static Module bubble_sort(const PrimitiveType* ty, const IntegerType* inc_type) 
     auto v3 = data.load(ty, n_addr);
     auto v4 = data.load(ty, i);
 
-   // auto sub = data.sub(v3, v4);
+    auto sub = data.sub(v3, v4);
+    auto sub2 = data.sub(sub, Value::i32(1));
+    auto cmp3 = data.icmp(IcmpPredicate::Lt, v2, sub2);
+    data.br_cond(cmp3, for_body4, for_end);
 
+    data.switch_block(for_body4);
+    auto v5 = data.load(ty, a_addr);
+    auto v6 = data.load(ty, j);
+    [[maybe_unused]]
+    auto idxprom = data.add(v5, v6);
 
     return builder.build();
 }

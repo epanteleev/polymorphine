@@ -17,4 +17,4 @@ static_assert(Analysis<PostOrderTraverse>);
 static_assert(Analysis<PreorderTraverse>);
 static_assert(Analysis<DominatorTreeEval>);
 
-using AnalysisPassCache = AnalysisPassManagerBase<FunctionData>;
+using AnalysisPassManager = AnalysisPassManagerBase<FunctionData>;

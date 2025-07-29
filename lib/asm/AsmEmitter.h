@@ -112,6 +112,10 @@ namespace aasm {
             m_instructions.emplace_back(details::CmpMR(size, src, dst));
         }
 
+        constexpr void call(const std::string_view name) {
+            m_instructions.emplace_back(details::Call(name));
+        }
+
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
         }
