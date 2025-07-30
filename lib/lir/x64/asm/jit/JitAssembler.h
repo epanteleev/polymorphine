@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cassert>
 #include <cstring>
-#include <memory>
-#include <ranges>
 
 #include "JitCodeBlob.h"
 #include "lir/x64/asm/MasmEmitter.h"

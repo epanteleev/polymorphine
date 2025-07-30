@@ -14,7 +14,7 @@
  */
 class JitCodeChunk final {
 public:
-    explicit JitCodeChunk(std::size_t _offset, std::size_t _size) noexcept:
+    explicit JitCodeChunk(const std::size_t _offset, const std::size_t _size) noexcept:
         offset(_offset), size(_size) {}
 
     const std::size_t offset; // Offset from code blob start

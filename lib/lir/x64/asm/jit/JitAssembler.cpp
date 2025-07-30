@@ -30,8 +30,8 @@ JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
         offset_table.emplace(name, JitCodeChunk(start, jit_assembler.size() - start));
     }
 
-    for (const auto& reloc : relocation_table | std::views::values) {
-        for (const auto& [label, offset_to_patch] : reloc) {
+    for (const auto& relocation : relocation_table | std::views::values) {
+        for (const auto& [label, offset_to_patch] : relocation) {
             const auto chunk = offset_table.find(label);
             if (chunk == offset_table.end()) {
                 die("Relocation for label '{}' not found in offset table", label);
@@ -39,6 +39,10 @@ JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
 
             const auto& [start, size] = chunk->second;
             const auto offset = static_cast<std::int64_t>(start) - offset_to_patch;
+            if (!std::in_range<std::int32_t>(offset)) {
+                die("Offset {} is out of range for 32-bit patching", offset);
+            }
+
             jit_assembler.patch32(offset_to_patch - sizeof(std::int32_t), offset);
         }
     }

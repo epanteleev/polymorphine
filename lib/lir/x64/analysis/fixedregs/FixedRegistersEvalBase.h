@@ -126,11 +126,7 @@ private:
             m_reg_map.emplace(out, aasm::rax);
             ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
             for (const auto& arg: args) {
-                if (const auto reg = arg.arg(); reg.has_value()) {
-                    m_reg_map.emplace(arg, arguments.get_reg());
-                } else {
-                    unimplemented();
-                }
+                m_reg_map.emplace(arg, arguments.get_reg());
             }
         }
 
