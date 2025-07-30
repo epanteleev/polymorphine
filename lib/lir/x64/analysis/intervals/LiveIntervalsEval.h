@@ -31,10 +31,6 @@ public:
     std::unique_ptr<LiveIntervals> result() {
         LIRValMap<LiveInterval> all_intervals;
 
-        const auto ordering = [](const LiveRange& a, const LiveRange& b) -> bool {
-            return a.start() < b.start();
-        };
-
         for (auto& [vreg, intervals]: m_intervals) {
             std::vector<LiveRange> intervals_for_vreg;
             intervals_for_vreg.reserve(intervals.size());
@@ -42,7 +38,6 @@ public:
                 intervals_for_vreg.emplace_back(interval);
             }
 
-            std::ranges::sort(intervals_for_vreg, ordering);
             all_intervals.emplace(vreg, LiveInterval::create(std::move(intervals_for_vreg)));
         }
 

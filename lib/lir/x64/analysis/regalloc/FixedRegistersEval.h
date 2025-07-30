@@ -24,7 +24,7 @@ public:
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<FixedRegisters>(std::move(m_reg_map));
+        return std::make_unique<FixedRegisters>(std::move(m_reg_map), std::move(m_args));
     }
 
     static FixedRegistersEval create(AnalysisPassManagerBase<LIRFuncData> *, const LIRFuncData *data) {
@@ -35,7 +35,9 @@ private:
     void handle_argument_values() {
         ArgumentAllocator arguments(call_conv::GP_ARGUMENT_REGISTERS);
         for (const auto& arg: m_obj_func_data.args()) {
-            m_reg_map.emplace(arg, arguments.get_reg());
+            const auto reg = arguments.get_reg();
+            m_reg_map.emplace(arg, reg);
+            m_args.emplace_back(reg);
         }
     }
 
@@ -118,6 +120,8 @@ private:
     };
 
     const LIRFuncData& m_obj_func_data;
+
+    std::vector<GPVReg> m_args{};
     LIRValMap<GPVReg> m_reg_map{};
 };
 

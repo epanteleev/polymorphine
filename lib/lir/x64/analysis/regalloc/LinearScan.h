@@ -34,7 +34,6 @@ public:
     static LinearScan create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto fixed_registers = cache->analyze<FixedRegistersEval>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
-
         return {*data, *fixed_registers, *intervals};
     }
 
@@ -54,10 +53,16 @@ private:
                 m_unhandled_intervals.emplace_back(&interval, lir_val);
             }
         }
+
+        const auto pred = [](const IntervalEntry& lhs, const IntervalEntry& rhs) {
+            return lhs.m_interval->begin()->start() < rhs.m_interval->begin()->start();
+        };
+
+        std::ranges::sort(m_unhandled_intervals, pred);
     }
 
     void do_register_allocation() {
-        auto reg_set = RegSet::create(std::array{aasm::rdi});
+        auto reg_set = RegSet::create(m_fixed_registers.arguments());
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
             if (vreg.isa(gen())) {
                 const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
@@ -67,43 +72,32 @@ private:
             }
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
-                if (entry.m_interval->end() <= unhandled_interval->begin()) {
-                    // This interval is no longer active, we can remove it.
-                    return true;
+                if (entry.m_interval->intersects(*unhandled_interval)) {
+                    return false;
+                }
+                m_inactive_intervals.emplace_back(entry);
+                const auto reg = m_reg_allocation.at(entry.m_vreg);
+                if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                    reg_set.push(reg_opt.value());
                 }
 
-                if (!entry.m_interval->intersects(*unhandled_interval)) {
-                    m_inactive_intervals.emplace_back(entry);
-                    const auto reg = m_reg_allocation.at(entry.m_vreg);
-                    if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                        reg_set.push(reg_opt.value());
-                    }
-
-                    return true;
-                }
-
-                return false;
+                return true;
             };
 
             std::erase_if(m_active_intervals, active_eraser);
 
             const auto unactive_eraser = [&](const IntervalEntry& entry) {
-                if (entry.m_interval->end() <= unhandled_interval->begin()) {
-                    // This interval is no longer active, we can remove it.
-                    return true;
+                if (!entry.m_interval->intersects(*unhandled_interval)) {
+                    return false;
                 }
-                if (entry.m_interval->intersects(*unhandled_interval)) {
-                    // This interval is still active, we need to keep it.
-                    m_active_intervals.emplace_back(entry);
-                    const auto reg = m_reg_allocation.at(entry.m_vreg);
-                    if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                        reg_set.remove(reg_opt.value());
-                    }
-
-                    return true;
+                // This interval is still active, we need to keep it.
+                m_active_intervals.emplace_back(entry);
+                const auto reg = m_reg_allocation.at(entry.m_vreg);
+                if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                    reg_set.remove(reg_opt.value());
                 }
 
-                return false;
+                return true;
             };
 
             std::erase_if(m_inactive_intervals, unactive_eraser);
@@ -152,6 +146,8 @@ private:
         template<std::ranges::range Range>
         static RegSet create(Range&& arg_regs) {
             stack regs{};
+            regs.reserve(call_conv::GP_CALLER_SAVE_REGISTERS.size());
+
             for (const auto reg: call_conv::GP_CALLER_SAVE_REGISTERS) {
                 if (std::ranges::contains(arg_regs, reg)) {
                     continue;
@@ -165,10 +161,12 @@ private:
 
         [[nodiscard]]
         aasm::GPReg top() const noexcept {
+            assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
             return m_free_regs.back();
         }
 
         void pop() noexcept {
+            assertion(!m_free_regs.empty(), "Attempted to pop from an empty register set");
             m_free_regs.pop_back();
         }
 
@@ -181,9 +179,7 @@ private:
         }
 
         void remove(const aasm::GPReg reg) noexcept {
-            if (const auto it = std::ranges::find(m_free_regs, reg); it != m_free_regs.end()) {
-                m_free_regs.erase(it);
-            }
+            std::erase(m_free_regs, reg);
         }
 
         [[nodiscard]]

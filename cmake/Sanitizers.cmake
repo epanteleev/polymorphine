@@ -13,5 +13,5 @@ function(register_sanitizer name flags)
     set(CMAKE_SHARED_LINKER_FLAGS_${PREFIX} "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${flags}" PARENT_SCOPE)
 endfunction()
 
-register_sanitizer(Asan "-fsanitize=address -fno-sanitize-recover=address")
-register_sanitizer(Usan "-fsanitize=undefined -fno-sanitize-recover=undefined")
+register_sanitizer(Asan "-fsanitize=address")
+register_sanitizer(Usan "-fsanitize=undefined")

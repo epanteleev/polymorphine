@@ -29,6 +29,19 @@ namespace aasm {
 
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
 
+
+        bool operator==(const Address & other) const noexcept {
+            if (this == &other) {
+                return true;
+            }
+
+            return type == other.type &&
+                   displacement == other.displacement &&
+                   base == other.base &&
+                   index == other.index &&
+                   scale == other.scale;
+        }
+
         template<CodeBuffer C>
         void encode(C& c, unsigned int modrm_pattern) const {
             /* SP is used as sentinel for SIB, and R12 overlaps. */

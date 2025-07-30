@@ -38,6 +38,14 @@ public:
         return std::unexpected(Error::CastError);
     }
 
+    bool operator==(const GPVReg &other) const noexcept {
+        if (this == &other) {
+            return true;
+        }
+
+        return m_reg == other.m_reg;
+    }
+
 private:
     std::variant<aasm::GPReg, aasm::Address> m_reg;
 };
