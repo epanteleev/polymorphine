@@ -138,6 +138,28 @@ void FunctionLower::accept(CondBranch *cond_branch) {
     }
 }
 
+void FunctionLower::accept(Call *inst) {
+    std::vector<LIROperand> args;
+    args.reserve(inst->operands().size());
+
+    for (const auto &arg: inst->operands()) {
+        const auto arg_vreg = get_lir_operand(arg);
+        const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
+        assertion(type != nullptr, "Expected NonTrivialType for call argument");
+
+        const auto copy = m_bb->inst(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
+        args.emplace_back(copy->def(0));
+    }
+    const auto cont = m_bb_mapping.at(inst->cont());
+    const auto& proto = inst->prototype();
+    const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
+    assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
+
+    const auto call = m_bb->inst(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args)));
+    const auto copy_ret = cont->inst(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
+    memorize(inst, copy_ret->def(0));
+}
+
 void FunctionLower::accept(Return *inst) {
     m_bb->inst(LIRReturn::ret());
 }

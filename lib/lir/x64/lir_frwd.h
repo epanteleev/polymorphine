@@ -7,6 +7,7 @@ class LIRInstructionBase;
 class LIRProducerInstruction;
 class LIRControlInstruction;
 class LIRProducerInstructionBase;
+class LIRCall;
 enum class LIRCondType: std::uint8_t;
 
 class LIROperand;

@@ -47,14 +47,14 @@ std::size_t LIRVal::id() const noexcept {
 
 std::ostream & operator<<(std::ostream &os, const LIRVal &op) noexcept {
     const auto idx = static_cast<std::size_t>(op.m_index);
-    if (auto arg_opt = op.arg(); arg_opt.has_value()) {
-        os << "arg " << '[' << idx << '\'' << size_prefix(op.size()) << ']';
-        return os;
+    switch (op.m_type) {
+        case LIRVal::Op::Arg: {
+            return os << "arg " << '[' << idx << '\'' << size_prefix(op.size()) << ']';
+        }
+        case LIRVal::Op::Inst: [[fallthrough]];
+        case LIRVal::Op::Call: {
+            return os << op.m_variant.m_inst->owner()->id() << 'x' << op.id() << '-' << idx << '\'' << size_prefix(op.size());
+        }
+        default: std::unreachable();
     }
-    if (const auto inst = op.inst(); inst.has_value()) {
-        os << inst.value()->owner()->id() << 'x' << op.id() << '-' << idx << '\'' << size_prefix(op.size());
-        return os;
-    }
-
-    die("wrong variant");
 }

@@ -122,7 +122,17 @@ private:
 
         void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void call(const LIRVal &out, std::span<LIRVal const> args) override {}
+        void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args) override {
+            m_reg_map.emplace(out, aasm::rax);
+            ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
+            for (const auto& arg: args) {
+                if (const auto reg = arg.arg(); reg.has_value()) {
+                    m_reg_map.emplace(arg, arguments.get_reg());
+                } else {
+                    unimplemented();
+                }
+            }
+        }
 
         void vcall(std::span<LIRVal const> args) override {}
 

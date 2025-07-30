@@ -83,8 +83,8 @@ enum class LIRCallKind: std::uint8_t {
 class LIRCall final: public LIRControlInstruction {
 public:
     explicit LIRCall(std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
-                       LIRBlock *on_true, LIRBlock *on_false) :
-        LIRControlInstruction(std::move(operands), {on_true, on_false}),
+                       LIRBlock *cont) :
+        LIRControlInstruction(std::move(operands), {cont}),
         m_name(std::move(name)),
         m_kind(kind) {}
 
@@ -98,6 +98,17 @@ public:
     [[nodiscard]]
     const LIRVal& def(const std::size_t idx) const {
         return m_defs.at(idx);
+    }
+
+    [[nodiscard]]
+    std::string_view name() const noexcept {
+        return m_name;
+    }
+
+    static std::unique_ptr<LIRCall> call(std::string&& name, std::uint8_t size, LIRBlock* cont, std::vector<LIROperand>&& args) {
+        auto call = std::make_unique<LIRCall>(std::move(name), LIRCallKind::Call, std::move(args), cont);
+        call->add_def(LIRVal::reg(size, 0, call.get()));
+        return call;
     }
 
 protected:

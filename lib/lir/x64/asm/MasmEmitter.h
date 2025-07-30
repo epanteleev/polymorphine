@@ -64,9 +64,9 @@ public:
         m_asm.cmp(size, src, dst);
     }
 
-    void leave() {
-        m_asm.leave();
-    }
+    void call(const std::string_view name) { m_asm.call(name); }
+
+    void leave() { m_asm.leave(); }
 
     void jmp(const aasm::Label& label) {
         m_asm.jmp(label);

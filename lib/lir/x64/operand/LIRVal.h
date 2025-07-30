@@ -17,16 +17,25 @@ class LIRVal final {
         Call
     };
 
-    LIRVal(std::uint8_t size, std::uint8_t index, const LIRArg *def): m_size(size),
-                                                          m_index(index),
-                                                          m_type(Op::Arg) {
+    LIRVal(const std::uint8_t size, const std::uint8_t index, const LIRArg *def) noexcept:
+        m_size(size),
+        m_index(index),
+        m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    LIRVal(std::uint8_t size, std::uint8_t index, const LIRProducerInstructionBase *def): m_size(size),
-                                                                      m_index(index),
-                                                                      m_type(Op::Inst) {
+    LIRVal(const std::uint8_t size, const std::uint8_t index, const LIRProducerInstructionBase *def) noexcept:
+        m_size(size),
+        m_index(index),
+        m_type(Op::Inst) {
         m_variant.m_inst = def;
+    }
+
+    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRCall *def) noexcept:
+        m_size(size),
+        m_index(index),
+        m_type(Op::Call) {
+        m_variant.m_call = def;
     }
 
 public:
@@ -47,6 +56,7 @@ public:
 
         return std::nullopt;
     }
+
 
     template<typename Matcher>
     [[nodiscard]]
@@ -92,6 +102,10 @@ public:
         return {size, index, def};
     }
 
+    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRCall* def) noexcept {
+        return {size, index, def};
+    }
+
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
     static std::span<LIRVal const> try_from(const LIRInstructionBase* inst) noexcept;
@@ -108,7 +122,7 @@ private:
     union {
         const LIRArg* m_arg;
         const LIRProducerInstructionBase* m_inst;
-        class LIRCall* m_call;
+        const LIRCall* m_call;
     } m_variant{};
 };
 

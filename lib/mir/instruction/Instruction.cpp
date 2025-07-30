@@ -27,6 +27,10 @@ namespace {
         }
 
     private:
+        void print_val(const Instruction* inst) const {
+            os << '%' << inst->id() << " = ";
+        }
+
         static std::string_view binaryOpToString(const BinaryOp op) {
             switch (op) {
                 case BinaryOp::Add: return "add";
@@ -41,7 +45,7 @@ namespace {
         }
 
         void accept(Binary *inst) override {
-            os << '%' << inst->id() << " = ";
+            print_val(inst);
             os << binaryOpToString(inst->op());
             os << ' ';
             os << *inst->type();
@@ -66,7 +70,7 @@ namespace {
         }
 
         void accept(Unary *inst) override {
-            os << '%' << inst->id() << " = ";
+            print_val(inst);
             os << unaryOpToString(inst->op());
             os << ' ' << *inst->type();
             os << ' ' << inst->operand();
@@ -97,10 +101,11 @@ namespace {
         }
 
         void accept(Call *inst) override {
-            os << "call ";
+            print_val(inst);
+            os << "call " << *inst->prototype().ret_type() << ' ';
             inst->prototype().print(os, inst->operands());
-
-
+            os << ' ';
+            inst->cont()->print_short_name(os);
         }
 
         void accept(Switch *inst) override {
@@ -122,7 +127,8 @@ namespace {
         }
 
         void accept(Alloc *alloc) override {
-            os << '%' << alloc->id() << " = alloc ";
+            print_val(alloc);
+            os << "alloc ";
             os << *alloc->type();
         }
 

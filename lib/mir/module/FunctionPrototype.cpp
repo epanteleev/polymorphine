@@ -25,11 +25,12 @@ static void print_args(std::ostream &os, const FunctionPrototype& proto, Args&& 
         }
         os << *proto.arg_type(i) << ": " << args[i];
     }
+    os << ')';
 }
 
 void FunctionPrototype::print(std::ostream &os, const std::span<const ArgumentValue> args) const {
     print_args(os, *this, args);
-    os << "): " << *ret_type();
+    os << ": " << *ret_type();
 }
 
 void FunctionPrototype::print(std::ostream &os, std::span<const Value> args) const {

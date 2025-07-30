@@ -87,9 +87,7 @@ private:
 
     void accept(CondBranch *cond_branch) override;
 
-    void accept(Call *inst) override {
-
-    }
+    void accept(Call *inst) override;
 
     void accept(Return *inst) override;
 

@@ -85,8 +85,16 @@ namespace {
             on_false->print_short_name(m_os);
         }
 
-        void call(const LIRVal &out, std::span<LIRVal const> args) override {
+        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args) override {
+            m_os << "call " << name << " out(" << out << ") args(";
+            for (auto [idx, arg]: std::ranges::views::enumerate(args)) {
+                if (idx != 0) {
+                    m_os << ", ";
+                }
 
+                m_os << arg;
+            }
+            m_os << ")";
         }
 
         void vcall(std::span<LIRVal const> args) override {

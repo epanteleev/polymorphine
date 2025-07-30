@@ -20,8 +20,8 @@ namespace aasm {
          * @param buffer The code buffer to emit the instructions into.
          */
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
-            details::Assembler::assemble(buffer, m_instructions, m_label_table);
+        constexpr std::unordered_map<std::string, std::int32_t> emit(Buffer& buffer) const {
+            return details::Assembler::assemble(buffer, m_instructions, m_label_table);
         }
 
         /**

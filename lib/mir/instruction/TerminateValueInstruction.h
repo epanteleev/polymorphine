@@ -6,21 +6,28 @@
 
 class TerminateValueInstruction : public ValueInstruction {
 public:
-    TerminateValueInstruction(const Type *ty, std::vector<BasicBlock *> &&successors, std::vector<Value>&& values) noexcept:
+    TerminateValueInstruction(const Type *ty, BasicBlock *cont, std::vector<Value>&& values) noexcept:
         ValueInstruction(ty, std::move(values)),
-        m_successors(std::move(successors)) {}
+        m_cont(cont) {}
 
     [[nodiscard]]
-    std::span<BasicBlock *const> successors();
+    const BasicBlock * cont() const noexcept {
+        return m_cont;
+    }
+
+    [[nodiscard]]
+    std::span<BasicBlock * const> successors() const noexcept {
+        return {&m_cont, 1};
+    }
 
 private:
-    std::vector<BasicBlock* > m_successors;
+    BasicBlock* m_cont;
 };
 
 class Call final : public TerminateValueInstruction {
 public:
     Call(FunctionPrototype&& proto, BasicBlock* successor, std::vector<Value>&& args) noexcept:
-        TerminateValueInstruction(proto.ret_type(), {successor}, std::move(args)),
+        TerminateValueInstruction(proto.ret_type(), successor, std::move(args)),
         m_prototype(std::move(proto)) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }

@@ -36,6 +36,7 @@ TEST(CallTest, CallFunction) {
 }
 
 int main(int argc, char **argv) {
+    error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

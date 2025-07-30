@@ -16,7 +16,7 @@ void LIRReturn::visit(LIRVisitor &visitor) {
 void LIRCall::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRCallKind::Call: {
-            visitor.call(def(0), to_vregs_only(inputs()));
+            visitor.call(def(0), m_name, to_vregs_only(inputs()));
             break;
         }
         case LIRCallKind::ICall: {

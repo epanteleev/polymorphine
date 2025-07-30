@@ -95,6 +95,10 @@ void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_tr
     m_as.jcc(cond, target_false);
 }
 
+void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args) {
+    m_as.call(name);
+}
+
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
     emit_epilogue();
 #ifdef ENABLE_ASSERTIONS
