@@ -11,7 +11,7 @@ public:
     explicit ArgumentValue(const std::size_t index, const NonTrivialType* type) noexcept
         : m_index(index), m_type(type) {}
 
-    void print(std::ostream& os) const;
+    friend std::ostream& operator<<(std::ostream &os, const ArgumentValue &args);
 
     [[nodiscard]]
     const NonTrivialType* type() const noexcept {

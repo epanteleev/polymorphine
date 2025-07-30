@@ -18,6 +18,7 @@ class Store;
 class Alloc;
 class IcmpInstruction;
 class GetElementPtr;
+class Call;
 
 class BasicBlock;
 

@@ -1,21 +1,24 @@
 #pragma once
 
-#include "FixedRegisters.h"
-#include "FixedRegistersEval.h"
 #include "RegisterAllocation.h"
+
+#include "lir/x64/analysis/fixedregs/FixedRegistersEvalBase.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 #include "lir/x64/operand/OperandMatcher.h"
+#include "lir/x64/asm/cc/CallConv.h"
+
 #include "utility/Align.h"
 
-class LinearScan final {
+template<call_conv::CallConv CC>
+class LinearScanBase final {
 public:
     using result_type = RegisterAllocation;
     using basic_block = LIRBlock;
     static constexpr auto analysis_kind = AnalysisType::LinearScan;
 
 private:
-    LinearScan(const LIRFuncData &obj_func_data, const FixedRegisters& fixed_registers, const LiveIntervals& intervals) noexcept:
+    LinearScanBase(const LIRFuncData &obj_func_data, const FixedRegisters& fixed_registers, const LiveIntervals& intervals) noexcept:
         m_obj_func_data(obj_func_data),
         m_fixed_registers(fixed_registers),
         m_intervals(intervals) {}
@@ -31,8 +34,8 @@ public:
         return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation), m_local_area_size);
     }
 
-    static LinearScan create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        const auto fixed_registers = cache->analyze<FixedRegistersEval>(data);
+    static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
+        const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         return {*data, *fixed_registers, *intervals};
     }
@@ -46,6 +49,8 @@ private:
 
     void setup_unhandled_intervals() {
         m_unhandled_intervals.reserve(m_intervals.intervals().size());
+        m_active_intervals.reserve(m_intervals.intervals().size());
+
         for (auto& [lir_val, interval]: m_intervals.intervals()) {
             if (lir_val.arg().has_value()) {
                 m_active_intervals.emplace_back(&interval, lir_val);
@@ -65,9 +70,7 @@ private:
         auto reg_set = RegSet::create(m_fixed_registers.arguments());
         for (auto& [unhandled_interval, vreg]: m_unhandled_intervals) {
             if (vreg.isa(gen())) {
-                const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
-                m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -offset));
-                m_local_area_size = offset;
+                do_stack_alloc(vreg);
                 continue;
             }
 
@@ -127,6 +130,12 @@ private:
         }
     }
 
+    void do_stack_alloc(const LIRVal& vreg) {
+        const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
+        m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -offset));
+        m_local_area_size = offset;
+    }
+
     struct IntervalEntry final {
         IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
             m_interval(interval),
@@ -146,9 +155,9 @@ private:
         template<std::ranges::range Range>
         static RegSet create(Range&& arg_regs) {
             stack regs{};
-            regs.reserve(call_conv::GP_CALLER_SAVE_REGISTERS.size());
+            regs.reserve(CC::GP_CALLER_SAVE_REGISTERS.size());
 
-            for (const auto reg: call_conv::GP_CALLER_SAVE_REGISTERS) {
+            for (const auto reg: CC::GP_CALLER_SAVE_REGISTERS) {
                 if (std::ranges::contains(arg_regs, reg)) {
                     continue;
                 }

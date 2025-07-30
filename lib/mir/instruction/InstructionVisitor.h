@@ -9,7 +9,7 @@ public:
     virtual void accept(Unary *inst) = 0;
     virtual void accept(Branch* branch) = 0;
     virtual void accept(CondBranch* cond_branch) = 0;
-    virtual void accept(TerminateValueInstruction* inst) = 0;
+    virtual void accept(Call* inst) = 0;
     virtual void accept(Return* inst) = 0;
     virtual void accept(ReturnValue* inst) = 0;
     virtual void accept(Switch* inst) = 0;

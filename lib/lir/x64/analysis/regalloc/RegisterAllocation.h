@@ -2,6 +2,7 @@
 
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/asm/GPVReg.h"
+#include "lir/x64/operand/LIRValMap.h"
 
 
 class RegisterAllocation final: public AnalysisPassResult {

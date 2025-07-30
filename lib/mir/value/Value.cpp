@@ -12,11 +12,11 @@ Value::Value(const ValueInstruction *value) noexcept: m_value(value), m_type(val
 
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
+        if constexpr (std::is_same_v<T, double> ||
+            std::is_same_v<T, std::int64_t> ||
+            std::is_same_v<T, std::uint64_t> ||
+            std::is_same_v<T, const ArgumentValue *>) {
             os << val;
-
-        } else if constexpr (std::is_same_v<T, const ArgumentValue *>) {
-            val->print(os);
 
         } else if constexpr (std::is_same_v<T, const ValueInstruction*>) {
             os << '%' << val->id();

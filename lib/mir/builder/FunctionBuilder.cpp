@@ -1,6 +1,6 @@
 #include "mir/builder/FunctionBuilder.h"
 
-FunctionBuilder::FunctionBuilder(std::unique_ptr<FunctionData> functionData): m_fd(std::move(functionData)) {
+FunctionBuilder::FunctionBuilder(std::unique_ptr<FunctionData>&& functionData): m_fd(std::move(functionData)) {
     m_bb = m_fd->first();
 }
 

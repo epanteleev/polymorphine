@@ -96,7 +96,10 @@ namespace {
             os << ' ' << inst->ret_value();
         }
 
-        void accept(TerminateValueInstruction *inst) override {
+        void accept(Call *inst) override {
+            os << "call ";
+            inst->prototype().print(os, inst->operands());
+
 
         }
 

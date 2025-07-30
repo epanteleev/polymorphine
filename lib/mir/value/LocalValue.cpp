@@ -60,7 +60,7 @@ void LocalValue::add_user(Instruction* user) {
 std::ostream& operator<<(std::ostream& os, const LocalValue& obj) {
     auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, ArgumentValue *>) {
-            val->print(os);
+            os << val;
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
             os << '%' << val->id();

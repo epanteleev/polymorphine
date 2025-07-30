@@ -4,8 +4,8 @@
 
 class ValueInstruction : public Instruction {
 public:
-    ValueInstruction(const Type* ty, const std::initializer_list<Value>& values) noexcept:
-        Instruction(values),
+    ValueInstruction(const Type* ty, std::vector<Value>&& values) noexcept:
+        Instruction(std::move(values)),
         m_ty(ty) {}
 
     [[nodiscard]]

@@ -7,11 +7,12 @@
 #include "mir/instruction/Compare.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/TerminateInstruction.h"
+#include "mir/instruction/TerminateValueInstruction.h"
 #include "mir/instruction/Unary.h"
 
 
 class FunctionBuilder final {
-    explicit FunctionBuilder(std::unique_ptr<FunctionData> functionData);
+    explicit FunctionBuilder(std::unique_ptr<FunctionData>&& functionData);
 
 public:
     static FunctionBuilder make(FunctionPrototype&& prototype, std::vector<ArgumentValue>&& args) noexcept;
@@ -53,6 +54,11 @@ public:
     [[nodiscard]]
     Value flag2int(const IntegerType* to_type, const Value& flag) const {
         return m_bb->push_back(Unary::flag2int(to_type, flag));
+    }
+
+    [[nodiscard]]
+    Value call(FunctionPrototype&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
+        return m_bb->push_back(Call::call(std::move(prototype), cont, std::move(args)));
     }
 
     [[nodiscard]]

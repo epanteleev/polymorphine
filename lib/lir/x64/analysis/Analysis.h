@@ -6,15 +6,19 @@
 #include "base/analysis/traverse/PreorderTraverseBase.h"
 
 #include "lir/x64/module/LIRFuncData.h"
-#include "lir/x64/analysis/regalloc/LinearScan.h"
-#include "lir/x64/analysis/regalloc/FixedRegistersEval.h"
+#include "lir/x64/analysis/regalloc/LinearScanBase.h"
+#include "fixedregs/FixedRegistersEvalBase.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 #include "lir/x64/analysis/liveness/LivenessAnalysis.h"
+#include "lir/x64/asm/cc/LinuxX64.h"
 
 using BFSOrderTraverseLIR = BFSOrderTraverseBase<LIRFuncData>;
 using PostOrderTraverseLIR = PostOrderTraverseBase<LIRFuncData>;
 using PreorderTraverseLIR = PreorderTraverseBase<LIRFuncData>;
 using DominatorTreeEvalLIR = DominatorTreeEvalBase<LIRFuncData>;
+
+using LinearScan = LinearScanBase<call_conv::LinuxX64>;
+using FixedRegistersEval = FixedRegistersEvalBase<call_conv::LinuxX64>;
 
 static_assert(Analysis<BFSOrderTraverseLIR>);
 static_assert(Analysis<PostOrderTraverseLIR>);

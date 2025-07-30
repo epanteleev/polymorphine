@@ -1,20 +1,21 @@
 #pragma once
 
-#include "ArgumentAllocator.h"
-#include "CallConv.h"
-#include "FixedRegisters.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
+
+#include "lir/x64/asm/cc/CallConv.h"
+#include "lir/x64/analysis/fixedregs/FixedRegisters.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/module/LIRFuncData.h"
 
-class FixedRegistersEval final {
+template<call_conv::CallConv CC>
+class FixedRegistersEvalBase final {
 public:
     using result_type = FixedRegisters;
     using basic_block = LIRBlock;
     static constexpr auto analysis_kind = AnalysisType::FixedRegisters;
 
 private:
-    explicit FixedRegistersEval(const LIRFuncData &obj_func_data) noexcept:
+    explicit FixedRegistersEvalBase(const LIRFuncData &obj_func_data) noexcept:
         m_obj_func_data(obj_func_data){}
 
 public:
@@ -27,13 +28,32 @@ public:
         return std::make_unique<FixedRegisters>(std::move(m_reg_map), std::move(m_args));
     }
 
-    static FixedRegistersEval create(AnalysisPassManagerBase<LIRFuncData> *, const LIRFuncData *data) {
-        return FixedRegistersEval(*data);
+    static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData> *, const LIRFuncData *data) {
+        return FixedRegistersEvalBase(*data);
     }
 
 private:
+    template<typename Reg, std::size_t N>
+    class ArgumentAllocator final {
+    public:
+        explicit ArgumentAllocator(const std::array<Reg, N>& regs):
+            m_regs(regs) {}
+
+        Reg get_reg() noexcept {
+            if (m_gp_reg_pos < N) {
+                return m_regs[m_gp_reg_pos++];
+            }
+
+            unimplemented();
+        }
+
+    private:
+        std::size_t m_gp_reg_pos{};
+        const std::array<Reg, N>& m_regs;
+    };
+
     void handle_argument_values() {
-        ArgumentAllocator arguments(call_conv::GP_ARGUMENT_REGISTERS);
+        ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
         for (const auto& arg: m_obj_func_data.args()) {
             const auto reg = arguments.get_reg();
             m_reg_map.emplace(arg, reg);
