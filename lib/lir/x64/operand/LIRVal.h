@@ -127,3 +127,16 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
+
+namespace details {
+    struct VRegHash final {
+        [[nodiscard]]
+        std::size_t operator()(const LIRVal& val) const noexcept {
+            return val.size() ^ val.index(); // TODO: better hash func
+        }
+    };
+
+    struct VRegEqualTo final {
+        bool operator()(const LIRVal& x, const LIRVal& y) const { return x == y; }
+    };
+}

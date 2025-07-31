@@ -32,6 +32,14 @@ public:
         return m_args_map;
     }
 
+    std::optional<GPVReg> get(const LIRVal& val) const noexcept {
+        if (const auto it = m_reg_map.find(val); it != m_reg_map.end()) {
+            return it->second;
+        }
+
+        return std::nullopt;
+    }
+
 private:
     // Maps LIR values to fixed registers. It also contains argument values.
     const LIRValMap<GPVReg> m_reg_map;

@@ -101,7 +101,7 @@ void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, s
 
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
     emit_epilogue();
-#ifdef ENABLE_ASSERTIONS
+#ifndef NDEBUG
     const auto values_num = ret_values.size();
     if (values_num == 1) {
         const auto ret_val = convert_to_gp_reg(ret_values[0]);

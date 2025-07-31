@@ -27,8 +27,8 @@ public:
         return std::move(m_as);
     }
 
-    static MachFunctionCodegen create(AnalysisPassManagerMach* cache, const LIRFuncData* data) {
-        const auto register_allocation = cache->analyze<LinearScan>(data);
+    static MachFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data) {
+        const auto register_allocation = cache->analyze<LinearScanLinuxX64>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         return MachFunctionCodegen(*data, *register_allocation, *preorder);
     }

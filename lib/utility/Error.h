@@ -22,7 +22,10 @@ enum class Error {
 
 
 #define die(...) error::raise(std::source_location::current(), std::format(__VA_ARGS__))
-#define assertion(condition, ...) if (!(condition)) { error::assert0(condition, std::source_location::current(), std::format(__VA_ARGS__)); }
 #define unimplemented() die("Unimplemented feature: {}", __func__)
 
-#define ENABLE_ASSERTIONS
+#ifndef NDEBUG
+#define assertion(condition, ...) if (!(condition)) { error::assert0(condition, std::source_location::current(), std::format(__VA_ARGS__)); }
+#else
+#define assertion(condition, ...) (void)(condition)
+#endif

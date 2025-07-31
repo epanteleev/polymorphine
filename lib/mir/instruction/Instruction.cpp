@@ -145,8 +145,8 @@ namespace {
         }
 
         void accept(IcmpInstruction *icmp) override {
-            os << '%' << icmp->id() << " = icmp ";
-            os << *icmp->type();
+            print_val(icmp);
+            os << "icmp " << *icmp->type();
             os << ' ' << icmpOpToString(icmp->predicate()) << ' ';
             os << icmp->lhs() << ", " << icmp->rhs();
         }

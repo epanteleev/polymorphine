@@ -30,7 +30,6 @@ public:
 
     std::unique_ptr<LiveIntervals> result() {
         LIRValMap<LiveInterval> all_intervals;
-
         for (auto& [vreg, intervals]: m_intervals) {
             std::vector<LiveRange> intervals_for_vreg;
             intervals_for_vreg.reserve(intervals.size());

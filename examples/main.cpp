@@ -174,12 +174,12 @@ int main() {
 
     auto obj_fun = result.find_function_data("ret_one").value();
 
-    AnalysisPassManagerMach cache;
+    LIRAnalysisPassManager cache;
     auto liveness = cache.analyze<LivenessAnalysis>(obj_fun);
     auto liveintervals = cache.analyze<LiveIntervalsEval>(obj_fun);
     std::cout << *liveintervals << std::endl;
 
-    auto register_alloc = cache.analyze<LinearScan>(obj_fun);
+    auto register_alloc = cache.analyze<LinearScanLinuxX64>(obj_fun);
     std::cout << *register_alloc << std::endl;
 
     Codegen codegen(result);

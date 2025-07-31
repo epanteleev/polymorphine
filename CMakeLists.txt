@@ -44,6 +44,8 @@ add_library(ckoof SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
+        lib/lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h
+        lib/lir/x64/analysis/join_intervals/LiveIntervalsGroups.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

@@ -11,6 +11,7 @@ enum class AnalysisType {
     LivenessAnalysis,
     LiveIntervalsEval,
     FixedRegisters,
+    LiveIntervalsGroups,
     Max
 };
 
@@ -27,4 +28,5 @@ concept Analysis = requires(A a)
     A::analysis_kind;
     a.run();
     a.result();
+    A::create;
 };

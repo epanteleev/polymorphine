@@ -16,7 +16,7 @@ FunctionData::FunctionData(FunctionPrototype &&proto, std::vector<ArgumentValue>
     assertion(m_args.size() == m_prototype.arg_types().size(),
               "Number of arguments does not match prototype m_args={}, arg_types={}", m_args.size(), m_prototype.arg_types().size());
 
-#ifdef ENABLE_ASSERTIONS
+#ifndef NDEBUG
     for (auto [a, b]: std::ranges::views::zip(m_args, proto.arg_types())) {
         assertion(a.type() == b, "Argument type mismatch");
     }
