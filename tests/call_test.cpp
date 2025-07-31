@@ -3,7 +3,7 @@
 #include "helpers/Jit.h"
 #include "mir/mir.h"
 
-void call_test(ModuleBuilder& builder, const IntegerType* ty) {
+static void call_test(ModuleBuilder& builder, const IntegerType* ty) {
     FunctionPrototype prototype(ty, {}, "call_test");
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -15,7 +15,7 @@ void call_test(ModuleBuilder& builder, const IntegerType* ty) {
 }
 
 template<typename Fn>
-void ret_42(ModuleBuilder& builder, const IntegerType* ty, Fn&& fn) {
+static void ret_42(ModuleBuilder& builder, const IntegerType* ty, Fn&& fn) {
     FunctionPrototype ret_42(ty, {}, "ret_42");
     const auto fn_builder = builder.make_function_builder(std::move(ret_42));
     const auto& data = *fn_builder.value();
@@ -100,9 +100,129 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
 
 TEST(CallTest, return_arg_i32) {
     const auto module = return_arg(SignedIntegerType::i32(), Value::i32(10));
-    auto code = do_jit_compilation(module, true);
+    auto code = do_jit_compilation(module);
     const auto fn = code.code_start_as<std::int32_t(std::int32_t)>("return_arg").value();
     ASSERT_EQ(fn(32), 42);
+}
+
+
+static Module clamp(const IntegerType* ty) {
+    ModuleBuilder builder;
+    {
+        FunctionPrototype prototype(ty, {ty, ty}, "max");
+        auto fn_builder = builder.make_function_builder(std::move(prototype));
+        auto& data = *fn_builder.value();
+        const auto arg1 = data.arg(0);
+        const auto arg2 = data.arg(1);
+        const auto alloc = data.alloc(ty);
+        const auto max = data.icmp(IcmpPredicate::Gt, arg1, arg2);
+        const auto then = data.create_basic_block();
+        const auto else_ = data.create_basic_block();
+        const auto cont = data.create_basic_block();
+        data.br_cond(max, then, else_);
+
+        data.switch_block(then);
+        data.store(alloc, arg1);
+        data.br(cont);
+
+        data.switch_block(else_);
+        data.store(alloc, arg2);
+        data.br(cont);
+        data.switch_block(cont);
+        data.ret(data.load(ty, alloc));
+    }
+    {
+        FunctionPrototype prototype(ty, {ty, ty}, "min");
+        auto fn_builder = builder.make_function_builder(std::move(prototype));
+        auto& data = *fn_builder.value();
+        const auto arg1 = data.arg(0);
+        const auto arg2 = data.arg(1);
+        const auto alloc = data.alloc(ty);
+        const auto min = data.icmp(IcmpPredicate::Lt, arg1, arg2);
+        const auto then = data.create_basic_block();
+        const auto else_ = data.create_basic_block();
+        const auto cont = data.create_basic_block();
+        data.br_cond(min, then, else_);
+
+        data.switch_block(then);
+        data.store(alloc, arg1);
+        data.br(cont);
+
+        data.switch_block(else_);
+        data.store(alloc, arg2);
+        data.br(cont);
+        data.switch_block(cont);
+        data.ret(data.load(ty, alloc));
+    }
+    {
+        FunctionPrototype prototype(ty, {ty, ty, ty}, "clamp");
+        auto fn_builder = builder.make_function_builder(std::move(prototype));
+        auto& data = *fn_builder.value();
+        const auto arg = data.arg(0);
+        const auto min = data.arg(1);
+        const auto max = data.arg(2);
+        const auto cont = data.create_basic_block();
+        const auto min_val = data.call(FunctionPrototype(ty, {ty, ty}, "max"), cont, {arg, min});
+        data.switch_block(cont);
+        const auto then = data.create_basic_block();
+        const auto max_val = data.call(FunctionPrototype(ty, {ty, ty}, "min"), then, {min_val, max});
+        data.switch_block(then);
+        data.ret(max_val);
+    }
+    return builder.build();
+}
+
+template<typename Fn>
+static void verify_clamp(const Module& module) {
+    auto code = do_jit_compilation(module);
+
+    const auto clamp = code.code_start_as<Fn>("clamp").value();
+
+    ASSERT_EQ(clamp(10, 0, 20), 10);
+    ASSERT_EQ(clamp(10, 20, 30), 20);
+    ASSERT_EQ(clamp(10, 5, 15), 10);
+    ASSERT_EQ(clamp(10, 10, 10), 10);
+    ASSERT_EQ(clamp(10, -5, 5), 5);
+}
+
+TEST(CallTest, clamp_i32) {
+    const auto module = clamp(SignedIntegerType::i32());
+    verify_clamp<std::int32_t(std::int32_t, std::int32_t, std::int32_t)>(module);
+}
+
+TEST(CallTest, clamp_i64) {
+    const auto module = clamp(SignedIntegerType::i64());
+    verify_clamp<std::int64_t(std::int64_t, std::int64_t, std::int64_t)>(module);
+}
+
+TEST(CallTest, clamp_u32) {
+    const auto module = clamp(UnsignedIntegerType::u32());
+    verify_clamp<std::uint32_t(std::uint32_t, std::uint32_t, std::uint32_t)>(module);
+}
+
+TEST(CallTest, clamp_u64) {
+    const auto module = clamp(UnsignedIntegerType::u64());
+    verify_clamp<std::uint64_t(std::uint64_t, std::uint64_t, std::uint64_t)>(module);
+}
+
+TEST(CallTest, clamp_u8) {
+    const auto module = clamp(UnsignedIntegerType::u8());
+    verify_clamp<std::uint8_t(std::uint8_t, std::uint8_t, std::uint8_t)>(module);
+}
+
+TEST(CallTest, clamp_i8) {
+    const auto module = clamp(SignedIntegerType::i8());
+    verify_clamp<std::int8_t(std::int8_t, std::int8_t, std::int8_t)>(module);
+}
+
+TEST(CallTest, clamp_i16) {
+    const auto module = clamp(SignedIntegerType::i16());
+    verify_clamp<std::int16_t(std::int16_t, std::int16_t, std::int16_t)>(module);
+}
+
+TEST(CallTest, clamp_u16) {
+    const auto module = clamp(UnsignedIntegerType::u16());
+    verify_clamp<std::uint16_t(std::uint16_t, std::uint16_t, std::uint16_t)>(module);
 }
 
 int main(int argc, char **argv) {

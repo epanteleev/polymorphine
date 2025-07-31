@@ -9,8 +9,10 @@
 
 class FunctionPrototype final {
 public:
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*> arg_types, std::string name)
-        : m_ret_type(ret_type), m_arg_types(std::move(arg_types)), m_name(std::move(name)) {}
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*> arg_types, std::string name) noexcept:
+        m_ret_type(ret_type),
+        m_arg_types(std::move(arg_types)),
+        m_name(std::move(name)) {}
 
     [[nodiscard]]
     const Type* ret_type() const { return m_ret_type; }
@@ -20,12 +22,13 @@ public:
         return m_arg_types;
     }
 
+    [[nodiscard]]
     const NonTrivialType* arg_type(const std::size_t index) const noexcept {
         return m_arg_types[index];
     }
 
     [[nodiscard]]
-    std::string_view name() const { return m_name; }
+    std::string_view name() const noexcept { return m_name; }
 
     void print(std::ostream &os) const;
     void print(std::ostream &os, std::span<const ArgumentValue> args) const;
