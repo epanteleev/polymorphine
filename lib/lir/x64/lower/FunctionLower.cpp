@@ -151,7 +151,7 @@ void FunctionLower::accept(Call *inst) {
         args.emplace_back(copy->def(0));
     }
     const auto cont = m_bb_mapping.at(inst->cont());
-    const auto& proto = inst->prototype();
+    const auto& proto = inst->declaration();
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 

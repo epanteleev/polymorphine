@@ -57,7 +57,7 @@ public:
     }
 
     [[nodiscard]]
-    Value call(FunctionPrototype&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
+    Value call(FunctionDeclaration&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
         return m_bb->push_back(Call::call(std::move(prototype), cont, std::move(args)));
     }
 
