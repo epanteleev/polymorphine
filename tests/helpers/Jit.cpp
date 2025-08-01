@@ -15,12 +15,12 @@ JitCodeBlob do_jit_compilation(const Module& module, const bool verbose) {
 
     Codegen codegen(result);
     codegen.run();
-    const auto obj = codegen.result();
+    auto obj = codegen.result();
     if (verbose) {
         std::cout << obj << std::endl;
     }
 
-    const auto buffer = JitAssembler::assembly(obj);
+    const auto buffer = JitAssembler::assembly(std::move(obj));
     if (verbose) {
         std::cout << buffer << std::endl;
     }

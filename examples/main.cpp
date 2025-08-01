@@ -184,9 +184,9 @@ int main() {
 
     Codegen codegen(result);
     codegen.run();
-    const auto mach = codegen.result();
+    auto mach = codegen.result();
 
-    const auto buffer = JitAssembler::assembly(mach);
+    const auto buffer = JitAssembler::assembly(std::move(mach));
 
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
     const auto res = fn();

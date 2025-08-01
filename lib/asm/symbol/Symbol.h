@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <string>
-#include <string_view>
+#include <utility>
 
 namespace aasm {
     enum class Linkage: std::uint8_t {
@@ -12,12 +12,21 @@ namespace aasm {
 
     class Symbol final {
     public:
-        Symbol(const std::string_view name, const Linkage linkage) noexcept:
-            m_name(name),
+        Symbol(std::string&& name, const Linkage linkage) noexcept:
+            m_name(std::move(name)),
             m_linkage(linkage) {}
+
+        [[nodiscard]]
+        std::string_view name() const noexcept { return m_name; }
+
+        friend std::ostream &operator<<(std::ostream &os, const Symbol &symbol);
 
     private:
         std::string m_name;
         Linkage m_linkage;
     };
+
+    inline std::ostream & operator<<(std::ostream &os, const Symbol &symbol) {
+        return os << symbol.m_name;
+    }
 }

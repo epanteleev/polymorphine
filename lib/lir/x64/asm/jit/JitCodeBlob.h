@@ -7,6 +7,9 @@
 #include <unordered_map>
 #include <sys/mman.h>
 
+#include "asm/asm_frwd.h"
+#include "asm/symbol/Symbol.h"
+#include "asm/symbol/SymbolTable.h"
 #include "utility/Error.h"
 
 /**
@@ -26,8 +29,9 @@ public:
  */
 class JitCodeBlob final {
 public:
-    JitCodeBlob(std::unordered_map<std::string, JitCodeChunk> &&offset_table,
+    JitCodeBlob(aasm::SymbolTable&& symbol_table, std::unordered_map<const aasm::Symbol*, JitCodeChunk> &&offset_table,
                 std::uint8_t* buffer, const std::size_t size) noexcept:
+        m_symbol_table(std::move(symbol_table)),
         m_offset_table(std::move(offset_table)),
         m_buffer(buffer),
         m_size(size) {}
@@ -43,7 +47,12 @@ public:
      */
     [[nodiscard]]
     std::expected<std::uint8_t*, Error> code_start(const std::string& name) const {
-        if (const auto it = m_offset_table.find(name); it != m_offset_table.end()) {
+        const auto sym = m_symbol_table.find(name);
+        if (!sym.has_value()) {
+            return std::unexpected(Error::NotFoundError);
+        }
+
+        if (const auto it = m_offset_table.find(sym.value()); it != m_offset_table.end()) {
             return m_buffer + it->second.offset;
         }
 
@@ -69,7 +78,8 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const JitCodeBlob& blob);
 
 private:
-    std::unordered_map<std::string, JitCodeChunk> m_offset_table;
+    aasm::SymbolTable m_symbol_table;
+    std::unordered_map<const aasm::Symbol*, JitCodeChunk> m_offset_table;
     std::uint8_t* m_buffer;
     std::size_t m_size{0};
 };

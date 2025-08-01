@@ -6,6 +6,7 @@
 #include "Address.h"
 #include "AsmBuffer.h"
 #include "instruction/CPUInstruction.h"
+#include "symbol/Symbol.h"
 
 namespace aasm {
     class AsmEmitter final {
@@ -112,7 +113,7 @@ namespace aasm {
             m_instructions.emplace_back(details::CmpMR(size, src, dst));
         }
 
-        constexpr void call(const std::string_view name) {
+        constexpr void call(const Symbol* name) {
             m_instructions.emplace_back(details::Call(name));
         }
 

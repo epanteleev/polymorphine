@@ -64,7 +64,7 @@ public:
         m_asm.cmp(size, src, dst);
     }
 
-    void call(const std::string_view name) { m_asm.call(name); }
+    void call(const aasm::Symbol* name) { m_asm.call(name); }
 
     void leave() { m_asm.leave(); }
 

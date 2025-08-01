@@ -3,7 +3,7 @@
 namespace aasm::details {
     class Call final {
     public:
-        explicit constexpr Call(std::string_view name) noexcept:
+        explicit constexpr Call(const Symbol* name) noexcept:
             m_name(name) {}
 
         friend std::ostream& operator<<(std::ostream &os, const Call& call);
@@ -16,15 +16,15 @@ namespace aasm::details {
         }
 
         [[nodiscard]]
-        std::string_view name() const noexcept {
+        const Symbol* name() const noexcept {
             return m_name;
         }
 
     private:
-        std::string m_name;
+        const Symbol* m_name;
     };
 
     inline std::ostream &operator<<(std::ostream &os, const Call &call) {
-        return os << "call " << call.m_name;
+        return os << "call " << call.m_name->name();
     }
 }

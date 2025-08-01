@@ -3,6 +3,7 @@
 #include <ostream>
 
 #include "asm/Common.h"
+#include "asm/symbol/Symbol.h"
 #include "Label.h"
 #include "asm/Encoding.h"
 #include "Pop.h"

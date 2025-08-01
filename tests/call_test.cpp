@@ -100,7 +100,7 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
 
 TEST(CallTest, return_arg_i32) {
     const auto module = return_arg(SignedIntegerType::i32(), Value::i32(10));
-    auto code = do_jit_compilation(module);
+    const auto code = do_jit_compilation(module);
     const auto fn = code.code_start_as<std::int32_t(std::int32_t)>("return_arg").value();
     ASSERT_EQ(fn(32), 42);
 }

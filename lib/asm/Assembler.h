@@ -16,7 +16,7 @@ namespace aasm::details {
          * @param label_table A vector mapping labels to instruction indices.
          */
         template <CodeBuffer Buffer>
-        static constexpr std::unordered_map<std::string, std::int32_t> assemble(Buffer& buffer, const std::vector<X64Instruction> &instructions, const std::vector<std::uint32_t> &label_table) {
+        static constexpr std::unordered_map<const Symbol*, std::int32_t> assemble(Buffer& buffer, const std::vector<X64Instruction> &instructions, const std::vector<std::uint32_t> &label_table) {
             Assembler assembler(instructions, label_table);
             return assembler.emit(buffer);
         }
@@ -27,7 +27,7 @@ namespace aasm::details {
             m_instructions(instructions) {}
 
         template<CodeBuffer Buffer>
-        constexpr std::unordered_map<std::string, std::int32_t> emit(Buffer &buffer) {
+        constexpr std::unordered_map<const Symbol*, std::int32_t> emit(Buffer &buffer) {
             offsets_from_start.reserve(m_instructions.size());
             unresolved_labels.resize(m_instructions.size());
 
@@ -92,6 +92,6 @@ namespace aasm::details {
         std::vector<std::int32_t> offsets_from_start; // instruction index to offset from code block start
         std::vector<std::vector<std::int32_t> > unresolved_labels; // Hashmap from 'label' to vector of offsets where jmp operand must be patched.
 
-        std::unordered_map<std::string, std::int32_t> m_relocation_table;
+        std::unordered_map<const Symbol*, std::int32_t> m_relocation_table;
     };
 }

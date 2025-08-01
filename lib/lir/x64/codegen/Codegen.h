@@ -11,10 +11,11 @@ public:
     void run();
 
     ObjModule result() {
-        return ObjModule(std::move(m_assemblers));
+        return ObjModule(std::move(m_symbol_table), std::move(m_assemblers));
     }
 
 private:
-    std::unordered_map<std::string, aasm::AsmBuffer> m_assemblers;
     const LIRModule& m_module;
+    aasm::SymbolTable m_symbol_table; // Symbol table for the module
+    std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer> m_assemblers;
 };

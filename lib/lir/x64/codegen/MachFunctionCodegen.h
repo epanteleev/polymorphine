@@ -2,6 +2,7 @@
 
 #include <span>
 
+#include "asm/symbol/SymbolTable.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/MasmEmitter.h"
@@ -11,10 +12,11 @@
 
 class MachFunctionCodegen final: public LIRVisitor {
     explicit MachFunctionCodegen(const LIRFuncData &data,
-                                 const RegisterAllocation &reg_allocation, const Ordering<LIRBlock>& preorder) noexcept:
+                                 const RegisterAllocation &reg_allocation, const Ordering<LIRBlock>& preorder, aasm::SymbolTable& symbol_table):
         m_data(data),
         m_reg_allocation(reg_allocation),
-        m_preorder(preorder) {}
+        m_preorder(preorder),
+        m_symbol_tab(symbol_table) {}
 
 public:
     void run() {
@@ -27,10 +29,10 @@ public:
         return std::move(m_as);
     }
 
-    static MachFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data) {
+    static MachFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data, aasm::SymbolTable& symbol_tab) {
         const auto register_allocation = cache->analyze<LinearScanLinuxX64>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return MachFunctionCodegen(*data, *register_allocation, *preorder);
+        return MachFunctionCodegen(*data, *register_allocation, *preorder, symbol_tab);
     }
 
 private:
@@ -164,6 +166,7 @@ private:
     const LIRFuncData& m_data;
     const RegisterAllocation& m_reg_allocation;
     const Ordering<LIRBlock>& m_preorder;
+    aasm::SymbolTable& m_symbol_tab;
 
     std::unordered_map<const LIRBlock*, aasm::Label> m_bb_labels{};
     MasmEmitter m_as{};

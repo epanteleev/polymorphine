@@ -12,15 +12,15 @@ static std::size_t module_size_eval(const ObjModule& masm) {
     return acc;
 }
 
-JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
+JitCodeBlob JitAssembler::assembly(ObjModule&& module) {
     const auto buffer_size = module_size_eval(module);
 
     auto* mapped = static_cast<std::uint8_t*>(mmap(nullptr, buffer_size,
                                                   PROT_READ | PROT_WRITE | PROT_EXEC,
                                                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 
-    std::unordered_map<std::string, std::unordered_map<std::string, std::int32_t>> relocation_table;
-    std::unordered_map<std::string, JitCodeChunk> offset_table;
+    std::unordered_map<const aasm::Symbol*, std::unordered_map<const aasm::Symbol*, std::int32_t>> relocation_table;
+    std::unordered_map<const aasm::Symbol*, JitCodeChunk> offset_table;
     JitAssembler jit_assembler(mapped);
     for (const auto& [name, emitter] : module.assembler()) {
         const auto start = jit_assembler.size();
@@ -34,7 +34,7 @@ JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
         for (const auto& [label, offset_to_patch] : relocation) {
             const auto chunk = offset_table.find(label);
             if (chunk == offset_table.end()) {
-                die("Relocation for label '{}' not found in offset table", label);
+                die("Relocation for label '{}' not found in offset table", label->name());
             }
 
             const auto& [start, size] = chunk->second;
@@ -47,5 +47,5 @@ JitCodeBlob JitAssembler::assembly(const ObjModule &module) {
         }
     }
 
-    return {std::move(offset_table), mapped, buffer_size};
+    return {module.symbol_table(), std::move(offset_table), mapped, buffer_size};
 }

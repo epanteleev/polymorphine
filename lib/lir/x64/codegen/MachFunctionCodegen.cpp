@@ -96,7 +96,8 @@ void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_tr
 }
 
 void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args) {
-    m_as.call(name);
+    const auto [symbol, _] = m_symbol_tab.add(name, aasm::Linkage::INTERNAL);
+    m_as.call(symbol);
 }
 
 void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {

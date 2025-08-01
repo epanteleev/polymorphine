@@ -3,7 +3,6 @@
 #include <cstring>
 
 #include "JitCodeBlob.h"
-#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/ObjModule.h"
 
 class JitAssembler final {
@@ -43,7 +42,7 @@ public:
         return m_buffer;
     }
 
-    static JitCodeBlob assembly(const ObjModule& module);
+    static JitCodeBlob assembly(ObjModule&& module);
 
 private:
     static constexpr auto PAGE_SIZE = 4096;
