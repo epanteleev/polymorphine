@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RegisterAllocation.h"
+#include "RegSet.h"
 
 #include "lir/x64/analysis/fixedregs/FixedRegistersEvalBase.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
@@ -23,7 +24,8 @@ private:
         m_obj_func_data(obj_func_data),
         m_fixed_registers(fixed_registers),
         m_intervals(intervals),
-        m_groups(groups) {}
+        m_groups(groups),
+        m_reg_set(details::RegSet<CC>::create(m_fixed_registers.arguments())) {}
 
     struct IntervalEntry final {
         IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
@@ -32,61 +34,6 @@ private:
 
         const LiveInterval* m_interval;
         LIRVal m_vreg;
-    };
-
-    class RegSet final {
-    public:
-        using stack = std::vector<aasm::GPReg>;
-
-        explicit RegSet(stack&& free_regs) noexcept:
-            m_free_regs(std::move(free_regs)) {}
-
-        template<std::ranges::range Range>
-        static RegSet create(Range&& arg_regs) {
-            stack regs{};
-            regs.reserve(CC::GP_CALLER_SAVE_REGISTERS.size());
-
-            for (const auto reg: CC::GP_CALLER_SAVE_REGISTERS) {
-                if (std::ranges::contains(arg_regs, reg)) {
-                    continue;
-                }
-
-                regs.push_back(reg);
-            }
-
-            return RegSet(std::move(regs));
-        }
-
-        [[nodiscard]]
-        aasm::GPReg top() const noexcept {
-            assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
-            return m_free_regs.back();
-        }
-
-        void pop() noexcept {
-            assertion(!m_free_regs.empty(), "Attempted to pop from an empty register set");
-            m_free_regs.pop_back();
-        }
-
-        void push(const aasm::GPReg reg) noexcept {
-            if (std::ranges::contains(m_free_regs, reg)) {
-                return;
-            }
-
-            m_free_regs.push_back(reg);
-        }
-
-        void remove(const aasm::GPReg reg) noexcept {
-            std::erase(m_free_regs, reg);
-        }
-
-        [[nodiscard]]
-        bool empty() const noexcept {
-            return m_free_regs.empty();
-        }
-
-    private:
-        stack m_free_regs{};
     };
 
 public:
@@ -140,9 +87,8 @@ private:
     }
 
     void do_register_allocation() {
-        auto reg_set = RegSet::create(m_fixed_registers.arguments());
         while (!m_unhandled_intervals.empty()) {
-            auto& [unhandled_interval, vreg] = m_unhandled_intervals.back();
+            auto [unhandled_interval, vreg] = m_unhandled_intervals.back();
             m_unhandled_intervals.pop_back();
 
             if (vreg.isa(gen())) {
@@ -157,13 +103,13 @@ private:
                 m_inactive_intervals.emplace_back(entry);
                 const auto reg = m_reg_allocation.at(entry.m_vreg);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                    reg_set.push(reg_opt.value());
+                    m_reg_set.push(reg_opt.value());
                 }
 
                 return true;
             };
 
-            std::erase_if(m_active_intervals, active_eraser);
+            remove_interval_if(m_active_intervals, active_eraser);
 
             const auto unactive_eraser = [&](const IntervalEntry& entry) {
                 if (!entry.m_interval->intersects(*unhandled_interval)) {
@@ -173,13 +119,13 @@ private:
                 m_active_intervals.emplace_back(entry);
                 const auto reg = m_reg_allocation.at(entry.m_vreg);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                    reg_set.remove(reg_opt.value());
+                    m_reg_set.remove(reg_opt.value());
                 }
 
                 return true;
             };
 
-            std::erase_if(m_inactive_intervals, unactive_eraser);
+            remove_interval_if(m_inactive_intervals, unactive_eraser);
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
                 if (unhandled.m_interval->start() < unhandled_interval->finish()) {
@@ -197,20 +143,34 @@ private:
                 m_active_intervals.emplace_back(unhandled);
                 const auto reg = m_reg_allocation.at(unhandled.m_vreg);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                    reg_set.remove(reg_opt.value());
+                    m_reg_set.remove(reg_opt.value());
                 }
             }
 
-            allocate_vreg(reg_set, vreg);
+            allocate_vreg(m_reg_set, vreg);
             m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
     }
 
-    void allocate_vreg(RegSet& reg_set, const LIRVal& vreg) {
+    template<typename Fn>
+    void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
+        for (auto it = intervals.begin(); it != intervals.end();) {
+            if (fn(*it)) {
+                std::swap(*it, intervals.back());
+                intervals.pop_back();
+            } else {
+                ++it;
+            }
+        }
+    }
+
+    void allocate_vreg(details::RegSet<CC>& reg_set, const LIRVal& vreg) {
         const auto group_opt = m_groups.try_get_group(vreg);
         if (!group_opt.has_value()) {
-            const auto pair = m_reg_allocation.try_emplace(vreg, reg_set.top());
-            if (pair.second) reg_set.pop();
+            if (const auto pair = m_reg_allocation.try_emplace(vreg, reg_set.top()); pair.second) {
+                reg_set.pop();
+            }
+
             return;
         }
 
@@ -231,7 +191,7 @@ private:
 
     void do_stack_alloc(const LIRVal& vreg) {
         const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
-        m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, 0, -offset));
+        m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, -offset));
         m_local_area_size = offset;
     }
 
@@ -239,6 +199,8 @@ private:
     const FixedRegisters& m_fixed_registers;
     const LiveIntervals& m_intervals;
     const LiveIntervalsGroups& m_groups;
+
+    details::RegSet<CC> m_reg_set;
 
     LIRValMap<GPVReg> m_reg_allocation{};
     // Size of the 'gen' values in the local area.

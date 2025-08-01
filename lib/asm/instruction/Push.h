@@ -72,7 +72,7 @@ namespace aasm::details {
 
         template<CodeBuffer C>
         constexpr void emit_push(C& c) const noexcept {
-            unsigned char rex = constants::REX | X(m_addr) | B(m_addr.base);
+            unsigned char rex = constants::REX | X(m_addr) | B(m_addr.base());
             if (rex != constants::REX) {
                 c.emit8(rex);
             }

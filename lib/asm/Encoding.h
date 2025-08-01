@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "Address.h"
+#include "address/Address.h"
 #include "Register.h"
 
 namespace aasm {
@@ -9,7 +9,7 @@ namespace aasm {
     constexpr void encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const Address& dest) {
         switch (size) {
             case 1: {
-                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base);
+                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base());
                 if (reg != constants::REX || is_special_byte_reg(src)) {
                     buffer.emit8(reg);
                 }
@@ -20,7 +20,7 @@ namespace aasm {
             }
             case 2: add_word_op_size(buffer); [[fallthrough]];
             case 4: {
-                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base);
+                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base());
                 if (reg != constants::REX) {
                     buffer.emit8(reg);
                 }
@@ -30,7 +30,7 @@ namespace aasm {
                 break;
             }
             case 8: {
-                buffer.emit8(constants::REX_W | R(src) | X(dest) | B(dest.base));
+                buffer.emit8(constants::REX_W | R(src) | X(dest) | B(dest.base()));
                 buffer.emit8(CODING);
                 dest.encode(buffer, reg3(src));
                 break;
@@ -43,7 +43,7 @@ namespace aasm {
     constexpr void encode_RM(Buffer& buffer, const std::uint8_t size, const Address& src, const GPReg dest) {
         switch (size) {
             case 1: {
-                const auto reg = constants::REX | R(dest) | X(src) | B(src.base);
+                const auto reg = constants::REX | R(dest) | X(src) | B(src.base());
                 if (reg != constants::REX || is_special_byte_reg(dest)) {
                     buffer.emit8(reg);
                 }
@@ -54,7 +54,7 @@ namespace aasm {
             }
             case 2: add_word_op_size(buffer); [[fallthrough]];
             case 4: {
-                const auto reg = constants::REX | R(dest) | X(src) | B(src.base);
+                const auto reg = constants::REX | R(dest) | X(src) | B(src.base());
                 if (reg != constants::REX) {
                     buffer.emit8(reg);
                 }
@@ -64,7 +64,7 @@ namespace aasm {
                 break;
             }
             case 8: {
-                buffer.emit8(constants::REX_W | R(dest) | X(src) | B(src.base));
+                buffer.emit8(constants::REX_W | R(dest) | X(src) | B(src.base()));
                 buffer.emit8(CODING);
                 src.encode(buffer, reg3(dest));
                 break;
@@ -221,7 +221,7 @@ namespace aasm {
     constexpr void encode_MI32_cmp(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         switch (size) {
             case 1: {
-                const auto rex = constants::REX | X(dst) | B(dst.base);
+                const auto rex = constants::REX | X(dst) | B(dst.base());
                 if (rex != constants::REX) {
                     buffer.emit8(rex);
                 }
@@ -232,7 +232,7 @@ namespace aasm {
             }
             case 2: {
                 add_word_op_size(buffer);
-                if (const auto rex = constants::REX | X(dst) | B(dst.base); rex != constants::REX) {
+                if (const auto rex = constants::REX | X(dst) | B(dst.base()); rex != constants::REX) {
                     buffer.emit8(rex);
                 }
                 if (std::in_range<std::int8_t>(imm)) {
@@ -249,7 +249,7 @@ namespace aasm {
                 break;
             }
             case 4: {
-                if (const auto rex = constants::REX | X(dst) | B(dst.base); rex != constants::REX) {
+                if (const auto rex = constants::REX | X(dst) | B(dst.base()); rex != constants::REX) {
                     buffer.emit8(rex);
                 }
 
@@ -265,7 +265,7 @@ namespace aasm {
                 break;
             }
             case 8: {
-                buffer.emit8(constants::REX_W | X(dst) | B(dst.base));
+                buffer.emit8(constants::REX_W | X(dst) | B(dst.base()));
                 if (std::in_range<std::int8_t>(imm)) {
                     buffer.emit8(CODING | 0x02);
                     dst.encode(buffer, 7);
@@ -363,7 +363,7 @@ namespace aasm {
     constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         switch (size) {
             case 1: {
-                const auto reg = constants::REX | X(dst) | B(dst.base);
+                const auto reg = constants::REX | X(dst) | B(dst.base());
                 if (reg != constants::REX) {
                     buffer.emit8(reg);
                 }
@@ -375,7 +375,7 @@ namespace aasm {
             }
             case 2: {
                 add_word_op_size(buffer);
-                if (const auto reg = constants::REX | X(dst) | B(dst.base); reg != constants::REX) {
+                if (const auto reg = constants::REX | X(dst) | B(dst.base()); reg != constants::REX) {
                     buffer.emit8(reg);
                 }
 
@@ -385,7 +385,7 @@ namespace aasm {
                 break;
             }
             case 4: {
-                if (const auto reg = constants::REX | X(dst) | B(dst.base); reg != constants::REX) {
+                if (const auto reg = constants::REX | X(dst) | B(dst.base()); reg != constants::REX) {
                     buffer.emit8(reg);
                 }
 
@@ -395,7 +395,7 @@ namespace aasm {
                 break;
             }
             case 8: {
-                buffer.emit8(constants::REX_W | X(dst) | B(dst.base));
+                buffer.emit8(constants::REX_W | X(dst) | B(dst.base()));
                 buffer.emit8(CODING);
                 dst.encode(buffer, MODRM >> 3);
                 buffer.emit32(imm);

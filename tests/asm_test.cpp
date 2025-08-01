@@ -48,7 +48,7 @@ TEST(Asm, popq_reg) {
 
 TEST(Asm, popq_addr) {
     aasm::AsmEmitter a;
-    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
+    aasm::Address addr(aasm::rsp);
     // Generate: popq (%rsp)
     a.pop(8, addr);
     std::uint8_t v[32]{};
@@ -61,7 +61,7 @@ TEST(Asm, popq_addr) {
 
 TEST(Asm, popq_addr_with_displacement) {
     aasm::AsmEmitter a;
-    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
+    aasm::Address addr(aasm::rsp,  2);
     // Generate: popq 0x1234(%rsi,%rbx,1)
     a.pop(8, addr);
     std::uint8_t v[32]{};
@@ -118,7 +118,7 @@ TEST(Asm, popq_addr_with_index_and_displacement2) {
 
 TEST(Asm, popw_addr) {
     aasm::AsmEmitter a;
-    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
+    aasm::Address addr(aasm::rsp, 0);
     // Generate: popw (%rsp)
     a.pop(2, addr);
     std::uint8_t v[32]{};
@@ -132,7 +132,7 @@ TEST(Asm, popw_addr) {
 
 TEST(Asm, pushq_addr) {
     aasm::AsmEmitter a;
-    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 0);
+    aasm::Address addr(aasm::rsp, 0);
     // Generate: push (%rsp)
     a.push(8, addr);
     std::uint8_t v[32]{};
@@ -351,7 +351,7 @@ TEST(Asm, movq_imm_reg2) {
 
 TEST(Asm, movb_reg_mem1) {
     aasm::AsmEmitter a;
-    aasm::Address addr(aasm::rsp, aasm::GPReg::noreg(), 1, 2);
+    aasm::Address addr(aasm::rsp, 2);
     a.mov(1, aasm::rbx, addr);
     // Generate: movb %bl, 2(%rsp)
     std::uint8_t v[32]{};
@@ -422,7 +422,7 @@ TEST(Asm, mov_mem_reg2) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
+        aasm::Address addr(aasm::rsi);
         a.mov(size, addr, aasm::rsi);
         return a;
     };
@@ -446,7 +446,7 @@ TEST(Asm, mov_mem_imm1) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rsi, aasm::GPReg::noreg(), 1);
+        aasm::Address addr(aasm::rsi);
         a.mov(size, 0x12, addr);
         return a;
     };
@@ -734,7 +734,7 @@ TEST(Asm, cmp_mem_imm1) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rsi, 1, 23);
+        aasm::Address addr(aasm::rsi,23);
         a.cmp(size, 18, addr);
         return a;
     };
@@ -757,7 +757,7 @@ TEST(Asm, cmp_mem_imm2) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rsi, 1, 23);
+        aasm::Address addr(aasm::rsi, 23);
         a.cmp(size, -18000, addr);
         return a;
     };
@@ -783,7 +783,7 @@ TEST(Asm, cmp_mem_reg1) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rcx, 1, 23);
+        aasm::Address addr(aasm::rcx, 23);
         a.cmp(size, addr, aasm::r12);
         return a;
     };

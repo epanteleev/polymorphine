@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Register.h"
-#include "Address.h"
+#include "address/Address.h"
 #include "AsmBuffer.h"
 #include "instruction/CPUInstruction.h"
 #include "symbol/Symbol.h"

@@ -2,41 +2,35 @@
 
 #include <cstdint>
 #include <array>
-#include <optional>
 #include <string_view>
 
 namespace aasm {
     class GPReg final {
     public:
         enum class RegEncoding: std::uint8_t {
-            NONE = 0,
-            AX  = 1,    /* 0b000 */
-            CX  = 2,    /* 0b001 */
-            DX  = 3,    /* 0b010 */
-            BX  = 4,    /* 0b011 */
-            SP  = 5,    /* 0b100 */
-            BP  = 6,    /* 0b101 */
-            SI  = 7,    /* 0b110 */
-            DI  = 8,    /* 0b111 */
-            R8  = 9,
-            R9  = 10,
-            R10 = 11,
-            R11 = 12,
-            R12 = 13,
-            R13 = 14,
-            R14 = 15,
-            R15 = 16,
+            AX  = 0,    /* 0b000 */
+            CX  = 1,    /* 0b001 */
+            DX  = 2,    /* 0b010 */
+            BX  = 3,    /* 0b011 */
+            SP  = 4,    /* 0b100 */
+            BP  = 5,    /* 0b101 */
+            SI  = 6,    /* 0b110 */
+            DI  = 7,    /* 0b111 */
+            R8  = 8,
+            R9  = 9,
+            R10 = 10,
+            R11 = 11,
+            R12 = 12,
+            R13 = 13,
+            R14 = 14,
+            R15 = 15,
         };
 
         constexpr explicit GPReg(const RegEncoding code) noexcept: m_code(code) {}
 
         [[nodiscard]]
-        constexpr std::optional<std::uint8_t> code() const noexcept {
-            if (m_code == RegEncoding::NONE) {
-                return std::nullopt;
-            }
-
-            return static_cast<uint8_t>(m_code)-1;
+        constexpr std::uint8_t code() const noexcept {
+            return static_cast<uint8_t>(m_code);
         }
 
         [[nodiscard]]
@@ -48,8 +42,6 @@ namespace aasm {
         constexpr bool operator==(const GPReg & other) const {
             return m_code == other.m_code;
         }
-
-        static constexpr GPReg noreg() noexcept { return GPReg(RegEncoding::NONE); }
 
         [[nodiscard]]
         std::string_view name(std::size_t size) const noexcept;
@@ -95,7 +87,7 @@ namespace aasm {
     }
 
     static constexpr std::uint8_t reg3(const GPReg arg) noexcept {
-        return arg.code().value() & 0x7;
+        return arg.code() & 0x7;
     }
 
     static constexpr bool is_special_byte_reg(const GPReg arg) {

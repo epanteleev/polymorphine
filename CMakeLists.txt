@@ -44,6 +44,10 @@ add_library(ckoof SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
+        lib/lir/x64/analysis/regalloc/RegSet.h
+        lib/asm/address/AddressBaseDisp.h
+        lib/asm/address/AddressIndexScale.h
+        lib/asm/address/AddressLiteral.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)
