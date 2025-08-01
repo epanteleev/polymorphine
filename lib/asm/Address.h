@@ -7,21 +7,15 @@
 #include "Register.h"
 
 namespace aasm {
-    enum class AddressType: std::uint8_t {
-        ADDR_NORMAL,
-        ADDR_GLOBAL_OFFSET,
-        ADDR_PLT
-    };
-
     class Address final {
     public:
-        explicit constexpr Address(const GPReg base, const GPReg index, std::uint8_t scale = 1, const std::int32_t displacement = 0): type(AddressType::ADDR_NORMAL),
+        explicit constexpr Address(const GPReg base, const GPReg index, const std::uint8_t scale = 1, const std::int32_t displacement = 0) noexcept:
             displacement(displacement),
             base(base),
             index(index),
             scale(scale) {}
 
-        explicit constexpr Address(const GPReg base, std::uint8_t scale = 1, const std::int32_t displacement = 0): type(AddressType::ADDR_NORMAL),
+        explicit constexpr Address(const GPReg base, std::uint8_t scale = 1, const std::int32_t displacement = 0) noexcept:
                     displacement(displacement),
                     base(base),
                     index(GPReg::noreg()),
@@ -29,14 +23,12 @@ namespace aasm {
 
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
 
-
         bool operator==(const Address & other) const noexcept {
             if (this == &other) {
                 return true;
             }
 
-            return type == other.type &&
-                   displacement == other.displacement &&
+            return displacement == other.displacement &&
                    base == other.base &&
                    index == other.index &&
                    scale == other.scale;
@@ -82,7 +74,6 @@ namespace aasm {
             }
         }
 
-        AddressType type;
         std::int32_t displacement;
         GPReg base;
         GPReg index;

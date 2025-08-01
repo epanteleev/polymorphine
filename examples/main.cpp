@@ -192,12 +192,12 @@ int main() {
     const auto res = fn();
     std::cout << "Result of 'ret_one': " << res << std::endl;
 
-    /*
+
     const auto time1 = async_based_solution();
     const auto time2 = single_thread_solution();
 
     std::cout << "'async_based_solution' average time: " << time1 << " ns"<< std::endl;
     std::cout << "'single_thread_solution' average time: " << time2 << " ns"<< std::endl;
-*/
+
     return 0;
 }
