@@ -8,7 +8,7 @@ static void call_test(ModuleBuilder& builder, const IntegerType* ty) {
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
     const auto cont = data.create_basic_block();
-    FunctionDeclaration proto(FunctionLinkage::INTERNAL, ty, {}, "ret_42");
+    FunctionPrototype proto(ty, {}, "ret_42");
     const auto res = data.call(std::move(proto), cont, {});
     data.switch_block(cont);
     data.ret(res);
@@ -81,7 +81,7 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
         auto& data = *fn_builder.value();
         const auto cont = data.create_basic_block();
         const auto arg = data.arg(0);
-        const auto call = data.call(FunctionDeclaration(FunctionLinkage::INTERNAL, ty, {ty, ty}, "sum"), cont, {arg, val});
+        const auto call = data.call(FunctionPrototype(ty, {ty, ty}, "sum"), cont, {arg, val});
         data.switch_block(cont);
         data.ret(call);
     }
@@ -162,10 +162,10 @@ static Module clamp(const IntegerType* ty) {
         const auto min = data.arg(1);
         const auto max = data.arg(2);
         const auto cont = data.create_basic_block();
-        const auto min_val = data.call(FunctionDeclaration(FunctionLinkage::INTERNAL, ty, {ty, ty}, "max"), cont, {arg, min});
+        const auto min_val = data.call(FunctionPrototype(ty, {ty, ty}, "max"), cont, {arg, min});
         data.switch_block(cont);
         const auto then = data.create_basic_block();
-        const auto max_val = data.call(FunctionDeclaration(FunctionLinkage::INTERNAL, ty, {ty, ty}, "min"), then, {min_val, max});
+        const auto max_val = data.call(FunctionPrototype(ty, {ty, ty}, "min"), then, {min_val, max});
         data.switch_block(then);
         data.ret(max_val);
     }

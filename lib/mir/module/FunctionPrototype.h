@@ -30,8 +30,7 @@ public:
     [[nodiscard]]
     std::string_view name() const noexcept { return m_name; }
 
-    friend std::ostream &operator<<(std::ostream &os, const FunctionPrototype &proto);
-
+    void print(std::ostream &os) const;
     void print(std::ostream &os, std::span<const ArgumentValue> args) const;
     void print(std::ostream &os, std::span<const Value> args) const;
 
@@ -40,5 +39,3 @@ private:
     std::vector<const NonTrivialType*> m_arg_types;
     std::string m_name;
 };
-
-std::ostream &operator<<(std::ostream &os, const FunctionPrototype &proto);
