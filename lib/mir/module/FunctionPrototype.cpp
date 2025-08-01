@@ -1,19 +1,19 @@
-#include <iostream>
+#include <ostream>
 
 #include "mir/types/Type.h"
 #include "mir/value/Value.h"
 #include "FunctionPrototype.h"
+
+#include <utility>
+
 #include "mir/value/ArgumentValue.h"
 
-void FunctionPrototype::print(std::ostream &os) const {
-    os << m_name << '(';
-    for (size_t i = 0; i < m_arg_types.size(); ++i) {
-        if (i > 0) {
-            os << ", ";
-        }
-        os << *m_arg_types[i];
+std::ostream & operator<<(std::ostream &os, const FunctionLinkage &linkage) {
+    switch (linkage) {
+        case FunctionLinkage::EXTERN: return os << "extern";
+        case FunctionLinkage::INTERNAL: return os << "internal";
+        default: std::unreachable();
     }
-    os << "): " << *m_ret_type;
 }
 
 template<std::ranges::range Args>
@@ -35,4 +35,16 @@ void FunctionPrototype::print(std::ostream &os, const std::span<const ArgumentVa
 
 void FunctionPrototype::print(std::ostream &os, std::span<const Value> args) const {
     print_args(os, *this, args);
+}
+
+std::ostream & operator<<(std::ostream &os, const FunctionPrototype &proto) {
+    os << proto.m_name << '(';
+    for (size_t i = 0; i < proto.m_arg_types.size(); ++i) {
+        if (i > 0) {
+            os << ", ";
+        }
+        os << *proto.m_arg_types[i];
+    }
+
+    return os << "): " << *proto.m_ret_type;
 }
