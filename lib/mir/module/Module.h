@@ -14,10 +14,10 @@ public:
         return fst->second.get();
     }
 
-    std::optional<FunctionData*> find_function_data(const std::string& name) {
+    std::expected<FunctionData*, Error> find_function_data(const std::string& name) {
         const auto& it = m_functions.find(name);
         if (it == m_functions.end()) {
-            return std::nullopt;
+            return std::unexpected(Error::NotFoundError);
         }
 
         return it->second.get();

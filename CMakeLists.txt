@@ -48,6 +48,7 @@ add_library(ckoof SHARED
         lib/asm/address/AddressBaseDisp.h
         lib/asm/address/AddressIndexScale.h
         lib/asm/address/AddressLiteral.h
+        lib/asm/Relocation.h
 )
 
 target_link_libraries(ckoof PRIVATE stdc++exp)

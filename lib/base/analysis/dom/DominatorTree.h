@@ -9,67 +9,66 @@
 #include "base/Constrains.h"
 
 template<CodeBlock BB>
-struct DominatorNode final {
-    explicit DominatorNode(const BB *me):
+struct DominatorTreeNode final {
+    explicit DominatorTreeNode(const BB *me):
         m_me(me) {}
 
-    DominatorNode *idom{};
+    DominatorTreeNode *idom{};
     const BB *m_me;
-    std::vector<DominatorNode *> children{};
+    std::vector<DominatorTreeNode *> children{};
 };
 
 template<CodeBlock BB>
 class DominatorTree final: public AnalysisPassResult {
-    class DominatorNodeIterator final {
+    class DominatorTreeNodeIterator final {
     public:
-        explicit DominatorNodeIterator(DominatorNode<BB> *node):
+        explicit DominatorTreeNodeIterator(DominatorTreeNode<BB> *node):
             m_dominator_node(node) {}
 
-        DominatorNodeIterator &operator++() {
+        DominatorTreeNodeIterator &operator++() {
             m_dominator_node = m_dominator_node->idom;
             return *this;
         }
 
-        bool operator==(const DominatorNodeIterator &other) const {
+        bool operator==(const DominatorTreeNodeIterator &other) const {
             return m_dominator_node == other.m_dominator_node;
         }
 
-        bool operator!=(const DominatorNodeIterator &other) const {
+        bool operator!=(const DominatorTreeNodeIterator &other) const {
             return m_dominator_node != other.m_dominator_node;
         }
 
-        DominatorNode<BB>* operator->() const {
+        DominatorTreeNode<BB>* operator->() const {
             return m_dominator_node;
         }
 
-        DominatorNode<BB>* operator*() const {
+        DominatorTreeNode<BB>* operator*() const {
             return m_dominator_node;
         }
 
     private:
-        DominatorNode<BB>* m_dominator_node;
+        DominatorTreeNode<BB>* m_dominator_node;
     };
 
     class Dominators final {
     public:
-        explicit Dominators(DominatorNode<BB> *node):
+        explicit Dominators(DominatorTreeNode<BB> *node):
             m_dominator_node(node) {}
 
-        DominatorNodeIterator begin() const {
-            return DominatorNodeIterator(m_dominator_node);
+        DominatorTreeNodeIterator begin() const {
+            return DominatorTreeNodeIterator(m_dominator_node);
         }
 
-        DominatorNodeIterator end() const {
-            return DominatorNodeIterator(nullptr);
+        DominatorTreeNodeIterator end() const {
+            return DominatorTreeNodeIterator(nullptr);
         }
 
     private:
-        DominatorNode<BB> *m_dominator_node;
+        DominatorTreeNode<BB> *m_dominator_node;
     };
 
-
 public:
-    using dom_node = std::unique_ptr<DominatorNode<BB>>;
+    using dom_node = std::unique_ptr<DominatorTreeNode<BB>>;
 
     explicit DominatorTree(std::unordered_map<const BB*, dom_node> &&dominator_tree) noexcept
         : dominator_tree(std::move(dominator_tree)) {}
