@@ -4,210 +4,136 @@
 #include "address/Address.h"
 #include "Register.h"
 
-namespace aasm {
+namespace aasm::details {
+    constexpr std::optional<std::uint8_t> prefix(std::uint8_t size, const GPReg src, const Address& dest) noexcept {
+        auto code = R(src) | X(dest) | B(dest.base());
+        if (size == 8) {
+            code |= constants::REX_W;
+        } else {
+            code |= constants::REX;
+        }
+
+        if (code != constants::REX || (size == 1 && is_special_byte_reg(src))) {
+            return code;
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src, const GPReg dest) noexcept {
+        auto code = R(src) | B(dest);
+        if (size == 8) {
+            code |= constants::REX_W;
+        } else {
+            code |= constants::REX;
+        }
+
+        if (code != constants::REX || (size == 1 && (is_special_byte_reg(dest) || is_special_byte_reg(src)))) {
+            return code;
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src) {
+        if (size == 8) {
+            return constants::REX_W | B(src);
+        }
+
+        const auto reg = constants::REX | B(src);
+        if (reg != constants::REX || (size == 1 && is_special_byte_reg(src))) {
+            return reg;
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const Address& src) {
+        const auto rex = constants::REX | X(src) | B(src.base());
+        if (size == 8) {
+            return rex | constants::REX_W;
+        }
+
+        if (rex != constants::REX) {
+            return rex;
+        }
+
+        return std::nullopt;
+    }
+
+    template<typename Op2, CodeBuffer Buffer>
+    requires std::is_same_v<Op2, Address> || std::is_same_v<Op2, GPReg>
+    constexpr void emit_op_prologue(Buffer& buffer, const std::uint8_t size, const GPReg op1, const Op2& op2) {
+        if (size == 2) {
+            add_word_op_size(buffer);
+        }
+
+        if (const auto prefix = details::prefix(size, op1, op2); prefix.has_value()) {
+            buffer.emit8(prefix.value());
+        }
+    }
+
+    template<typename Op2, CodeBuffer Buffer>
+    requires std::is_same_v<Op2, Address> || std::is_same_v<Op2, GPReg>
+    constexpr void emit_op_prologue(Buffer& buffer, const std::uint8_t size, const Op2& op1) {
+        if (size == 2) {
+            add_word_op_size(buffer);
+        }
+
+        if (const auto prefix = details::prefix(size, op1); prefix.has_value()) {
+            buffer.emit8(prefix.value());
+        }
+    }
+
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
     constexpr void encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const Address& dest) {
+        emit_op_prologue(buffer, size, src, dest);
         switch (size) {
-            case 1: {
-                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base());
-                if (reg != constants::REX || is_special_byte_reg(src)) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(B_CODING);
-                dest.encode(buffer, reg3(src));
-                break;
-            }
-            case 2: add_word_op_size(buffer); [[fallthrough]];
-            case 4: {
-                const auto reg = constants::REX | R(src) | X(dest) | B(dest.base());
-                if (reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(CODING);
-                dest.encode(buffer, reg3(src));
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX_W | R(src) | X(dest) | B(dest.base()));
-                buffer.emit8(CODING);
-                dest.encode(buffer, reg3(src));
-                break;
-            }
+            case 1: buffer.emit8(B_CODING); break;
+            case 2: [[fallthrough]];
+            case 4: [[fallthrough]];
+            case 8: buffer.emit8(CODING); break;
             default: die("Invalid size for mov instruction: {}", size);
         }
+        dest.encode(buffer, reg3(src));
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
     constexpr void encode_RM(Buffer& buffer, const std::uint8_t size, const Address& src, const GPReg dest) {
-        switch (size) {
-            case 1: {
-                const auto reg = constants::REX | R(dest) | X(src) | B(src.base());
-                if (reg != constants::REX || is_special_byte_reg(dest)) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(B_CODING);
-                src.encode(buffer, reg3(dest));
-                break;
-            }
-            case 2: add_word_op_size(buffer); [[fallthrough]];
-            case 4: {
-                const auto reg = constants::REX | R(dest) | X(src) | B(src.base());
-                if (reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(CODING);
-                src.encode(buffer, reg3(dest));
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX_W | R(dest) | X(src) | B(src.base()));
-                buffer.emit8(CODING);
-                src.encode(buffer, reg3(dest));
-                break;
-            }
-            default: die("Invalid size for mov instruction: {}", size);
-        }
+        encode_MR<B_CODING, CODING>(buffer, size, dest, src);
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
     constexpr void encode_RR(Buffer& buffer, const std::uint8_t size, const GPReg src, const GPReg dest) {
+        emit_op_prologue(buffer, size, src, dest);
         switch (size) {
-            case 1: {
-                const auto reg = constants::REX | B(dest) | R(src);
-                if (reg != constants::REX || is_special_byte_reg(dest) || is_special_byte_reg(src)) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-                break;
-            }
-            case 2: add_word_op_size(buffer); [[fallthrough]];
-            case 4: {
-                const auto reg = constants::REX | B(dest) | R(src);
-                if (reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(CODING);
-                buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX_W | B(dest) | R(src));
-                buffer.emit8(CODING);
-                buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-                break;
-            }
+            case 1: buffer.emit8(B_CODING); break;
+            case 2: [[fallthrough]];
+            case 4: [[fallthrough]];
+            case 8: buffer.emit8(CODING); break;
             default: die("Invalid size for mov instruction: {}", size);
         }
-    }
-
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RI32_cmp(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
-        switch (size) {
-            case 1: {
-                const auto reg = constants::REX | B(dst);
-                if (reg != constants::REX || is_special_byte_reg(dst)) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                buffer.emit8(checked_cast<std::int8_t>(imm));
-                break;
-            }
-            case 2: {
-                add_word_op_size(buffer);
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-
-                } else {
-                    buffer.emit8(CODING);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit16(checked_cast<std::int16_t>(imm));
-                }
-                break;
-            }
-            case 4: {
-                if (const auto reg = constants::REX | B(dst); reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-                } else {
-                    buffer.emit8(CODING);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit32(checked_cast<std::int32_t>(imm));
-                }
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX_W | B(dst));
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-                } else {
-                    buffer.emit8(CODING);
-                    buffer.emit8(0xC0 | reg3(dst) | 0x38);
-                    buffer.emit32(checked_cast<std::int32_t>(imm));
-                }
-                break;
-            }
-            default: die("Invalid size for mov instruction: {}", size);
-        }
+        buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr void encode_RI32_arithmetic(Buffer &buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+    constexpr void encode_RI32(Buffer &buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+        emit_op_prologue(buffer, size, dst);
         switch (size) {
             case 1: {
-                const auto rex = constants::REX | B(dst);
-                if (rex != constants::REX || is_special_byte_reg(dst)) {
-                    buffer.emit8(rex);
-                }
                 buffer.emit8(B_CODING);
                 buffer.emit8(0xC0 | reg3(dst) | MODRM);
                 buffer.emit8(static_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
-                add_word_op_size(buffer);
-                const auto rex = constants::REX | B(dst);
-                if (rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
                 buffer.emit8(CODING);
                 buffer.emit8(0xC0 | reg3(dst) | MODRM);
                 buffer.emit16(static_cast<std::int16_t>(imm));
                 break;
             }
-            case 4: {
-                const auto rex = constants::REX | B(dst);
-                if (rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(CODING);
-                buffer.emit8(0xC0 | reg3(dst) | MODRM);
-                buffer.emit32(static_cast<std::int32_t>(imm));
-                break;
-            }
+            case 4: [[fallthrough]];
             case 8: {
-                buffer.emit8(constants::REX_W | B(dst) | constants::REX);
                 buffer.emit8(CODING);
                 buffer.emit8(0xC0 | reg3(dst) | MODRM);
                 buffer.emit32(static_cast<std::int32_t>(imm));
@@ -218,101 +144,27 @@ namespace aasm {
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_MI32_cmp(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
+    constexpr void encode_RI64(Buffer& buffer, const std::uint8_t size, const std::int64_t imm, const GPReg dst) {
+        emit_op_prologue(buffer, size, dst);
         switch (size) {
             case 1: {
-                const auto rex = constants::REX | X(dst) | B(dst.base());
-                if (rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(B_CODING);
-                dst.encode(buffer,  7);
+                buffer.emit8(B_CODING | reg3(dst));
                 buffer.emit8(checked_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
-                add_word_op_size(buffer);
-                if (const auto rex = constants::REX | X(dst) | B(dst.base()); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    dst.encode(buffer, 7);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-
-                } else {
-                    buffer.emit8(CODING);
-                    dst.encode(buffer, 7);
-                    buffer.emit16(checked_cast<std::int16_t>(imm));
-                }
-
-                break;
-            }
-            case 4: {
-                if (const auto rex = constants::REX | X(dst) | B(dst.base()); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    dst.encode(buffer, 7);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-                } else {
-                    buffer.emit8(CODING);
-                    dst.encode(buffer, 7);
-                    buffer.emit32(checked_cast<std::int32_t>(imm));
-                }
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX_W | X(dst) | B(dst.base()));
-                if (std::in_range<std::int8_t>(imm)) {
-                    buffer.emit8(CODING | 0x02);
-                    dst.encode(buffer, 7);
-                    buffer.emit8(static_cast<std::int8_t>(imm));
-                } else {
-                    buffer.emit8(CODING);
-                    dst.encode(buffer, 7);
-                    buffer.emit32(checked_cast<std::int32_t>(imm));
-                }
-                break;
-            }
-            default: die("Invalid size for cmp instruction: {}", size);
-        }
-    }
-
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RI64(Buffer& buffer, const std::uint8_t size, const std::int64_t imm, const GPReg dst) {
-        switch (size) {
-            case 8: {
-                buffer.emit8(constants::REX | B(dst) | constants::REX_W);
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit64(imm);
-                break;
-            }
-            case 4: {
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            case 2: {
-                add_word_op_size(buffer);
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
                 buffer.emit8(CODING | reg3(dst));
                 buffer.emit16(checked_cast<std::int16_t>(imm));
                 break;
             }
-            case 1: {
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(B_CODING | reg3(dst));
-                buffer.emit8(checked_cast<std::int8_t>(imm));
+            case 4: {
+                buffer.emit8(CODING | reg3(dst));
+                buffer.emit32(checked_cast<std::int32_t>(imm));
+                break;
+            }
+            case 8: {
+                buffer.emit8(CODING | reg3(dst));
+                buffer.emit64(imm);
                 break;
             }
             default: die("Invalid size for mov instruction: {}", size);
@@ -321,38 +173,28 @@ namespace aasm {
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
     constexpr void encode_RI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+        emit_op_prologue(buffer, size, dst);
         switch (size) {
-            case 8: {
-                buffer.emit8(constants::REX | B(dst) | constants::REX_W);
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            case 4: {
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
+            case 1: {
+                buffer.emit8(B_CODING);
+                buffer.emit8(0xC0 | reg3(dst));
+                buffer.emit8(checked_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
-                add_word_op_size(buffer);
-                if (const auto rex = constants::REX | B(dst); rex != constants::REX) {
-                    buffer.emit8(rex);
-                }
                 buffer.emit8(CODING | reg3(dst));
                 buffer.emit16(checked_cast<std::int16_t>(imm));
                 break;
             }
-            case 1: {
-                const auto rex = constants::REX | B(dst);
-                if (rex != constants::REX || is_special_byte_reg(dst)) {
-                    buffer.emit8(rex);
-                }
-                buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | reg3(dst));
-                buffer.emit8(checked_cast<std::int8_t>(imm));
+            case 4: {
+                buffer.emit8(CODING | reg3(dst));
+                buffer.emit32(checked_cast<std::int32_t>(imm));
+                break;
+            }
+            case 8: {
+                buffer.emit8(constants::REX | B(dst) | constants::REX_W);
+                buffer.emit8(CODING | reg3(dst));
+                buffer.emit32(checked_cast<std::int32_t>(imm));
                 break;
             }
             default: die("Invalid size for mov instruction: {}", size);
@@ -361,41 +203,22 @@ namespace aasm {
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
     constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
+        emit_op_prologue(buffer, size, dst);
         switch (size) {
             case 1: {
-                const auto reg = constants::REX | X(dst) | B(dst.base());
-                if (reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
                 buffer.emit8(B_CODING);
                 dst.encode(buffer, MODRM >> 3);
                 buffer.emit8(checked_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
-                add_word_op_size(buffer);
-                if (const auto reg = constants::REX | X(dst) | B(dst.base()); reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
                 buffer.emit8(CODING);
                 dst.encode(buffer, MODRM >> 3);
                 buffer.emit16(checked_cast<std::int16_t>(imm));
                 break;
             }
-            case 4: {
-                if (const auto reg = constants::REX | X(dst) | B(dst.base()); reg != constants::REX) {
-                    buffer.emit8(reg);
-                }
-
-                buffer.emit8(CODING);
-                dst.encode(buffer, MODRM >> 3);
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
+            case 4: [[fallthrough]];
             case 8: {
-                buffer.emit8(constants::REX_W | X(dst) | B(dst.base()));
                 buffer.emit8(CODING);
                 dst.encode(buffer, MODRM >> 3);
                 buffer.emit32(imm);

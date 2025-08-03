@@ -40,7 +40,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t ADD_RI = 0x81;
             static constexpr std::uint8_t ADD_RI_8 = 0x80;
-            encode_RI32_arithmetic<ADD_RI_8, ADD_RI, 0>(buffer, m_size, m_src, m_dst);
+            encode_RI32<ADD_RI_8, ADD_RI, 0>(buffer, m_size, m_src, m_dst);
         }
 
     private:

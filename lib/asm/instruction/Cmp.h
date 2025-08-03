@@ -38,7 +38,7 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            encode_RI32_cmp<CMP_RI_8, CMP_RI>(buffer, m_size, m_imm, m_dst);
+            encode_RI32<CMP_RI_8, CMP_RI, 0x38>(buffer, m_size, m_imm, m_dst);
         }
 
     private:
@@ -121,7 +121,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMP_MI = 0x81;
             static constexpr std::uint8_t CMP_MI_8 = 0x80;
-            encode_MI32_cmp<CMP_MI_8, CMP_MI>(buffer, m_size, m_imm, m_second);
+            encode_MI32<CMP_MI_8, CMP_MI, 0x38>(buffer, m_size, m_imm, m_second);
         }
 
     private:

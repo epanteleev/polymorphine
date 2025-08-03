@@ -37,7 +37,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_RI_8 = 0xB0;
             static constexpr std::uint8_t MOV_RI = 0xB8;
-            encode_RI64 <MOV_RI_8, MOV_RI>(buffer, m_size, m_src, m_dest);
+            encode_RI64<MOV_RI_8, MOV_RI>(buffer, m_size, m_src, m_dest);
         }
 
     private:
