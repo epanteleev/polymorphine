@@ -22,14 +22,18 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Instance information
-      id: strings
       shell: bash
       run: >
-        echo "CORES: $(nproc)"
-        echo "CPU: $(lscpu | grep 'Model name' | sed 's/Model name:\s*//')"
-        echo "RAM: $(free -h | grep 'Mem:' | awk '{print $2}')"
-        echo "OS: $(uname -s)"
-        echo "OS Version: $(uname -r)"
+        echo -e "CORES: $(nproc)" &&
+        echo -e "CPU: $(lscpu | grep 'Model name' | sed 's/Model name:\s*//')" &&
+        echo -e "RAM: $(free -h | grep 'Mem:' | awk '{print $2}')" &&
+        echo -e "OS: $(uname -s)" &&
+        echo -e "OS Version: $(uname -r)"
+
+    - name: Setup reused build output directory
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=build/${{ matrix.os }}/${{ matrix.build_type }}" >> $GITHUB_OUTPUT
 
     - name: Configure CMake
       run: >
