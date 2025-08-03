@@ -1,12 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <iosfwd>
-
-#include "asm/symbol/Symbol.h"
-#include "asm/Common.h"
-#include "asm/Relocation.h"
-
 namespace aasm {
     class AddressLiteral final {
     public:
@@ -28,6 +21,14 @@ namespace aasm {
         [[nodiscard]]
         const Symbol* symbol() const noexcept {
             return m_symbol;
+        }
+
+        bool operator==(const AddressLiteral &rhs) const noexcept {
+            if (this == &rhs) {
+                return true;
+            }
+
+            return m_symbol == rhs.m_symbol && m_displacement == rhs.m_displacement;
         }
 
     private:

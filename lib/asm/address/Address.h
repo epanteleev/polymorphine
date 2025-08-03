@@ -2,13 +2,15 @@
 
 #include <cstdint>
 #include <ostream>
-#include <utility>
 
+#include "asm/symbol/Symbol.h"
 #include "asm/Common.h"
+#include "asm/Relocation.h"
 #include "asm/Register.h"
 
 #include "AddressBaseDisp.h"
 #include "AddressIndexScale.h"
+#include "AddressLiteral.h"
 
 namespace aasm {
     class Address final {
@@ -38,21 +40,24 @@ namespace aasm {
         }
 
         template<typename Addr>
-        requires std::same_as<Addr, AddressBaseDisp> || std::same_as<Addr, AddressIndexScale>
+        requires std::same_as<Addr, AddressBaseDisp> || std::same_as<Addr, AddressIndexScale> || std::same_as<Addr, AddressLiteral>
         [[nodiscard]]
         const Addr* as() const noexcept {
             return std::get_if<Addr>(&m_address);
         }
 
         [[nodiscard]]
-        GPReg base() const noexcept {
-            const auto visit = [&](const auto& addr) {
-                return addr.m_base;
-            };
-            return std::visit(visit, m_address);
+        std::optional<GPReg> base() const noexcept {
+            if (const auto as_base_disp = as<AddressBaseDisp>()) {
+                return as_base_disp->m_base;
+            }
+            if (const auto as_index_scale = as<AddressIndexScale>()) {
+                return as_index_scale->m_base;
+            }
+            return std::nullopt;
         }
 
-        std::variant<AddressBaseDisp, AddressIndexScale> m_address;
+        std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 
     inline std::ostream& operator<<(std::ostream & os, const Address & addr) {

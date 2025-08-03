@@ -6,7 +6,10 @@
 
 namespace aasm::details {
     constexpr std::optional<std::uint8_t> prefix(std::uint8_t size, const GPReg src, const Address& dest) noexcept {
-        auto code = R(src) | X(dest) | B(dest.base());
+        auto code = R(src) | X(dest);
+        if (const auto base = dest.base(); base.has_value()) {
+            code |= B(base.value());
+        }
         if (size == 8) {
             code |= constants::REX_W;
         } else {
@@ -49,7 +52,11 @@ namespace aasm::details {
     }
 
     constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const Address& src) {
-        const auto rex = constants::REX | X(src) | B(src.base());
+        auto rex = constants::REX | X(src);
+        if (const auto base = src.base(); base.has_value()) {
+            rex |= B(base.value());
+        }
+
         if (size == 8) {
             return rex | constants::REX_W;
         }
@@ -83,6 +90,64 @@ namespace aasm::details {
         if (const auto prefix = details::prefix(size, op1); prefix.has_value()) {
             buffer.emit8(prefix.value());
         }
+    }
+
+    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
+    constexpr void encode_M(Buffer& buffer, const std::uint8_t size, const Address& addr) {
+        if (size == 2) {
+            add_word_op_size(buffer);
+        }
+        auto rex = constants::REX | X(addr);
+        if (const auto base = addr.base(); base.has_value()) {
+            rex |= B(base.value());
+        }
+        if (rex != constants::REX) {
+            buffer.emit8(rex);
+        }
+
+        switch (size) {
+            case 1: buffer.emit8(B_CODING); break;
+            case 2: [[fallthrough]];
+            case 4: [[fallthrough]];
+            case 8: buffer.emit8(CODING); break;
+            default: die("Invalid size for mov instruction: {}", size);
+        }
+        addr.encode(buffer, MODRM >> 3);
+    }
+
+    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
+    constexpr void encode_I(Buffer& buffer, const std::uint8_t size, const std::int32_t imm) {
+        switch (size) {
+            case 1: {
+                buffer.emit8(B_CODING);
+                buffer.emit8(checked_cast<std::int8_t>(imm));
+                break;
+            }
+            case 2: {
+                add_word_op_size(buffer);
+                buffer.emit8(CODING);
+                buffer.emit16(checked_cast<std::int16_t>(imm));
+                break;
+            }
+            case 4: {
+                buffer.emit8(CODING);
+                buffer.emit32(checked_cast<std::int32_t>(imm));
+                break;
+            }
+            default: die("Invalid size for pop instruction: {}", size);
+        }
+    }
+
+    template<std::uint8_t CODING, CodeBuffer Buffer>
+    constexpr void encode_O(Buffer& buffer, const std::uint8_t size, const GPReg reg) {
+        if (size == 2) {
+            add_word_op_size(buffer);
+        }
+        if (const auto rex = constants::REX | B(reg); rex != constants::REX) {
+            buffer.emit8(rex);
+        }
+
+        buffer.emit8(CODING + reg3(reg));
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>

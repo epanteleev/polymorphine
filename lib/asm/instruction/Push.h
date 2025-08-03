@@ -10,31 +10,15 @@ namespace aasm::details {
 
         template <CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
+            static constexpr std::uint8_t PUSH_R = 0x50;
             switch (m_size) {
-                case 8: {
-                    emit_push(buffer);
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(buffer);
-                    emit_push(buffer);
-                    break;
-                }
+                case 8: [[fallthrough]];
+                case 2: details::encode_O<PUSH_R>(buffer, m_size, m_reg); break;
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }
 
     private:
-        static constexpr std::uint8_t PUSH_R = 0x50;
-
-        template<CodeBuffer C>
-        constexpr void emit_push(C& c) const {
-            if (const auto rex = constants::REX | B(m_reg); rex != constants::REX) {
-                c.emit8(rex);
-            }
-            c.emit8(PUSH_R + reg3(m_reg));
-        }
-
         std::uint8_t m_size;
         GPReg m_reg;
     };
@@ -53,34 +37,15 @@ namespace aasm::details {
 
         template<CodeBuffer buffer>
         constexpr void emit(buffer& c) const {
+            static constexpr std::uint8_t PUSH_M = 0xFF;
             switch (m_size) {
-                case 8: {
-                    emit_push(c);
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(c);
-                    emit_push(c);
-                    break;
-                }
+                case 8: [[fallthrough]];
+                case 2: details::encode_M<PUSH_M, PUSH_M, 0x30>(c, m_size, m_addr); break;
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }
 
     private:
-        static constexpr std::uint8_t PUSH_M = 0xFF;
-
-        template<CodeBuffer C>
-        constexpr void emit_push(C& c) const noexcept {
-            unsigned char rex = constants::REX | X(m_addr) | B(m_addr.base());
-            if (rex != constants::REX) {
-                c.emit8(rex);
-            }
-
-            c.emit8(PUSH_M);
-            m_addr.encode(c, 6);
-        }
-
         const Address m_addr;
         std::uint8_t m_size;
     };
@@ -98,31 +63,12 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            switch (m_size) {
-                case 4: {
-                    buffer.emit8(PUSH_IMM);
-                    buffer.emit32(checked_cast<std::int32_t>(m_imm));
-                    break;
-                }
-                case 2: {
-                    add_word_op_size(buffer);
-                    buffer.emit8(PUSH_IMM);
-                    buffer.emit16(checked_cast<std::int16_t>(m_imm));
-                    break;
-                }
-                case 1: {
-                    buffer.emit8(PUSH_IMM_8);
-                    buffer.emit8(checked_cast<std::int8_t>(m_imm));
-                    break;
-                }
-                default: die("Invalid size for pop instruction: {}", m_size);
-            }
+            static constexpr std::uint8_t PUSH_IMM = 0x68;
+            static constexpr std::uint8_t PUSH_IMM_8 = 0x6A;
+            details::encode_I<PUSH_IMM_8, PUSH_IMM>(buffer, m_size, m_imm);
         }
 
     private:
-        static constexpr std::uint8_t PUSH_IMM = 0x68;
-        static constexpr std::uint8_t PUSH_IMM_8 = 0x6A;
-
         std::int64_t m_imm;
         std::uint8_t m_size;
     };
