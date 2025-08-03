@@ -112,7 +112,7 @@ namespace aasm::details {
             case 8: buffer.emit8(CODING); break;
             default: die("Invalid size for mov instruction: {}", size);
         }
-        addr.encode(buffer, MODRM >> 3);
+        addr.encode(buffer, MODRM);
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
@@ -187,20 +187,20 @@ namespace aasm::details {
         switch (size) {
             case 1: {
                 buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
                 buffer.emit8(static_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
                 buffer.emit8(CODING);
-                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
                 buffer.emit16(static_cast<std::int16_t>(imm));
                 break;
             }
             case 4: [[fallthrough]];
             case 8: {
                 buffer.emit8(CODING);
-                buffer.emit8(0xC0 | reg3(dst) | MODRM);
+                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
                 buffer.emit32(static_cast<std::int32_t>(imm));
                 break;
             }
@@ -236,56 +236,26 @@ namespace aasm::details {
         }
     }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
-        emit_op_prologue(buffer, size, dst);
-        switch (size) {
-            case 1: {
-                buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | reg3(dst));
-                buffer.emit8(checked_cast<std::int8_t>(imm));
-                break;
-            }
-            case 2: {
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit16(checked_cast<std::int16_t>(imm));
-                break;
-            }
-            case 4: {
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            case 8: {
-                buffer.emit8(constants::REX | B(dst) | constants::REX_W);
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            default: die("Invalid size for mov instruction: {}", size);
-        }
-    }
-
     template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
     constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         emit_op_prologue(buffer, size, dst);
         switch (size) {
             case 1: {
                 buffer.emit8(B_CODING);
-                dst.encode(buffer, MODRM >> 3);
+                dst.encode(buffer, MODRM);
                 buffer.emit8(checked_cast<std::int8_t>(imm));
                 break;
             }
             case 2: {
                 buffer.emit8(CODING);
-                dst.encode(buffer, MODRM >> 3);
+                dst.encode(buffer, MODRM);
                 buffer.emit16(checked_cast<std::int16_t>(imm));
                 break;
             }
             case 4: [[fallthrough]];
             case 8: {
                 buffer.emit8(CODING);
-                dst.encode(buffer, MODRM >> 3);
+                dst.encode(buffer, MODRM);
                 buffer.emit32(imm);
                 break;
             }

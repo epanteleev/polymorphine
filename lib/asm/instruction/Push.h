@@ -40,7 +40,7 @@ namespace aasm::details {
             static constexpr std::uint8_t PUSH_M = 0xFF;
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: details::encode_M<PUSH_M, PUSH_M, 0x30>(c, m_size, m_addr); break;
+                case 2: details::encode_M<PUSH_M, PUSH_M, 6>(c, m_size, m_addr); break;
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }
