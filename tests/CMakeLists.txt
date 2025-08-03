@@ -1,4 +1,5 @@
 include(../cmake/GoogleTest.cmake)
+include(CTest)
 
 function(add_test_executable target)
     add_executable(${target} ${target}.cpp

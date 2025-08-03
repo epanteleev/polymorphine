@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 # Permanently enable compile commands for cmake debugging purposes
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(cmake/Sanitizers.cmake)
+include(cmake/BuildType.cmake)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 

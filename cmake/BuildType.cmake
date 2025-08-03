@@ -1,6 +1,6 @@
 
 # CMake module to register sanitizers for debugging
-function(register_sanitizer name flags)
+function(register_build_type name flags)
     string(TOUPPER ${name} PREFIX)
     message(STATUS "Registering sanitizer: ${PREFIX} with flags: ${flags}")
     # Add the sanitizer configuration type
@@ -13,5 +13,6 @@ function(register_sanitizer name flags)
     set(CMAKE_SHARED_LINKER_FLAGS_${PREFIX} "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${flags}" PARENT_SCOPE)
 endfunction()
 
-register_sanitizer(Asan "-fsanitize=address")
-register_sanitizer(Usan "-fsanitize=undefined")
+register_build_type(Asan "-fsanitize=address")
+register_build_type(Usan "-fsanitize=undefined")
+register_build_type(Coverage "-fprofile-arcs -ftest-coverage")
