@@ -13,6 +13,9 @@ function(add_test_executable target)
 
     gtest_discover_tests(${target})
     add_test(NAME ${target} COMMAND ${target})
+    if (GCOVR_FOUND)
+        add_dependencies(coverage ${target})
+    endif()
 endfunction()
 
 add_test_executable(ordered_set_tests)

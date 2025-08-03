@@ -46,14 +46,18 @@ bool LocalValue::operator==(const LocalValue &other) const noexcept {
 
 void LocalValue::add_user(Instruction* user) {
     const auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction*>) {
-            val->add_user(user);
-        } else {
-            static_assert(false, "Somthing was wrong");
-        }
+        val->add_user(user);
     };
 
     std::visit(visitor, m_value);
+}
+
+std::span<const Instruction * const> LocalValue::users() const noexcept {
+    const auto visitor = [&]<typename T>(const T &val) {
+        return val->users();
+    };
+
+    return std::visit(visitor, m_value);
 }
 
 

@@ -13,6 +13,11 @@ public:
 
     void add_user(const Instruction* user);
 
+    [[nodiscard]]
+    std::span<const Instruction* const> users() const noexcept {
+        return m_users;
+    }
+
 protected:
     const Type* m_ty;
     std::vector<const Instruction*> m_users;

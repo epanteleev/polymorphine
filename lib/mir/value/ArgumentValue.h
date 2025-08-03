@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <vector>
 #include <iosfwd>
+#include <span>
 
 #include "mir/mir_frwd.h"
 
@@ -21,6 +22,11 @@ public:
     void add_user(const Instruction* user);
 
     [[nodiscard]]
+    std::span<const Instruction* const> users() const noexcept {
+        return m_users;
+    }
+
+    [[nodiscard]]
     std::size_t index() const noexcept {
         return m_index;
     }
@@ -28,5 +34,5 @@ public:
 private:
     const std::size_t m_index;
     const NonTrivialType* m_type;
-    std::vector<const Instruction*> m_used_in;
+    std::vector<const Instruction*> m_users;
 };

@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/BuildType.cmake)
+if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    include(cmake/Gcovr.cmake)
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 

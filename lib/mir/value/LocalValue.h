@@ -2,6 +2,7 @@
 
 #include <expected>
 #include <iosfwd>
+#include <span>
 #include <variant>
 
 #include "mir/mir_frwd.h"
@@ -34,6 +35,9 @@ public:
     bool operator==(const LocalValue& other) const noexcept;
 
     void add_user(Instruction* user);
+
+    [[nodiscard]]
+    std::span<const Instruction* const> users() const noexcept;
 
     friend std::ostream& operator<<(std::ostream& os, const LocalValue& obj);
     static std::expected<LocalValue, Error> try_from(const Value& value);
