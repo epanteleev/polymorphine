@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/BuildType.cmake)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -O3 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
 
 function(register_static_library NAME)
     add_library(${NAME} STATIC ${ARGN})
@@ -21,6 +21,7 @@ function(register_static_library NAME)
             $<$<CONFIG:Debug>:DEBUG>
             $<$<CONFIG:Release>:NDEBUG>
     )
+    try_setup_coverage_options(${NAME})
     target_compile_options(${NAME} PRIVATE -fPIC)
     target_link_libraries(${NAME} PRIVATE stdc++exp)
 endfunction()
@@ -51,6 +52,7 @@ add_library(ckoof SHARED
         lib/asm/Relocation.h
 )
 
+try_setup_coverage_options(ckoof)
 target_link_libraries(ckoof PRIVATE stdc++exp)
 target_include_directories(ckoof PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>
