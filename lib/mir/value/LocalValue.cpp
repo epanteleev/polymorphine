@@ -33,15 +33,7 @@ bool LocalValue::operator==(const LocalValue &other) const noexcept {
         return true;
     }
 
-    if (is<ArgumentValue>() && other.is<ArgumentValue>()) {
-        return get<ArgumentValue>() == other.get<ArgumentValue>();
-    }
-
-    if (is<ValueInstruction>() && other.is<ValueInstruction>()) {
-        return get<ValueInstruction>() == other.get<ValueInstruction>();
-    }
-
-    return false;
+    return m_value == other.m_value && m_type == other.m_type;
 }
 
 void LocalValue::add_user(Instruction* user) {

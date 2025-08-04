@@ -9,10 +9,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const Call& call);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t CALL = 0xE8;
             buffer.emit8(CALL);
             buffer.emit32(INT32_MAX);
+            return Relocation(RelType::R_X86_64_PC32, buffer.size(), 0, m_name);
         }
 
         [[nodiscard]]

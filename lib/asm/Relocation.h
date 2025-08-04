@@ -20,6 +20,18 @@ namespace aasm {
             m_displacement(displacement),
             m_symbol(symbol) {}
 
+        [[nodiscard]]
+        const Symbol* symbol() const noexcept { return m_symbol; }
+
+        [[nodiscard]]
+        std::string_view symbol_name() const noexcept { return m_symbol->name(); }
+
+        [[nodiscard]]
+        std::uint32_t offset() const noexcept { return m_offset; }
+
+        [[nodiscard]]
+        RelType type() const noexcept { return m_type; }
+
     private:
         RelType m_type;
         std::uint32_t m_offset;

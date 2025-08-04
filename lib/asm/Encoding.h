@@ -93,7 +93,7 @@ namespace aasm::details {
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr void encode_M(Buffer& buffer, const std::uint8_t size, const Address& addr) {
+    constexpr std::optional<Relocation> encode_M(Buffer& buffer, const std::uint8_t size, const Address& addr) {
         if (size == 2) {
             add_word_op_size(buffer);
         }
@@ -112,7 +112,7 @@ namespace aasm::details {
             case 8: buffer.emit8(CODING); break;
             default: die("Invalid size for mov instruction: {}", size);
         }
-        addr.encode(buffer, MODRM);
+        return addr.encode(buffer, MODRM);
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
@@ -151,7 +151,7 @@ namespace aasm::details {
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const Address& dest) {
+    constexpr std::optional<Relocation> encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const Address& dest) {
         emit_op_prologue(buffer, size, src, dest);
         switch (size) {
             case 1: buffer.emit8(B_CODING); break;
@@ -160,12 +160,12 @@ namespace aasm::details {
             case 8: buffer.emit8(CODING); break;
             default: die("Invalid size for mov instruction: {}", size);
         }
-        dest.encode(buffer, reg3(src));
+        return dest.encode(buffer, reg3(src));
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RM(Buffer& buffer, const std::uint8_t size, const Address& src, const GPReg dest) {
-        encode_MR<B_CODING, CODING>(buffer, size, dest, src);
+    constexpr std::optional<Relocation> encode_RM(Buffer& buffer, const std::uint8_t size, const Address& src, const GPReg dest) {
+        return encode_MR<B_CODING, CODING>(buffer, size, dest, src);
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
@@ -237,27 +237,27 @@ namespace aasm::details {
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr void encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
+    constexpr std::optional<Relocation> encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
         emit_op_prologue(buffer, size, dst);
         switch (size) {
             case 1: {
                 buffer.emit8(B_CODING);
-                dst.encode(buffer, MODRM);
+                const auto reloc = dst.encode(buffer, MODRM);
                 buffer.emit8(checked_cast<std::int8_t>(imm));
-                break;
+                return reloc;
             }
             case 2: {
                 buffer.emit8(CODING);
-                dst.encode(buffer, MODRM);
+                const auto reloc = dst.encode(buffer, MODRM);
                 buffer.emit16(checked_cast<std::int16_t>(imm));
-                break;
+                return reloc;
             }
             case 4: [[fallthrough]];
             case 8: {
                 buffer.emit8(CODING);
-                dst.encode(buffer, MODRM);
+                const auto reloc = dst.encode(buffer, MODRM);
                 buffer.emit32(imm);
-                break;
+                return reloc;
             }
             default: die("Invalid size for mov instruction: {}", size);
         }

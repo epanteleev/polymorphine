@@ -8,6 +8,7 @@
 class JitAssembler final {
     explicit JitAssembler(std::uint8_t* buffer) noexcept: m_buffer(buffer) {}
 
+    friend class RelocResolver;
 public:
     void emit8(const std::uint8_t opcode) {
         m_buffer[m_size++] = opcode;

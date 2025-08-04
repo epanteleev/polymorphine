@@ -10,7 +10,7 @@ namespace aasm {
         friend std::ostream &operator<<(std::ostream &os, const AddressLiteral &address);
 
         template<CodeBuffer Buffer>
-        constexpr Relocation encode(Buffer &buffer, const std::uint32_t modrm_pattern) const {
+        constexpr std::optional<Relocation> encode(Buffer &buffer, const std::uint32_t modrm_pattern) const {
             static constexpr std::uint8_t MODRM = 0x05; // ModR/M byte for direct addressing
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
             buffer.emit32(0);

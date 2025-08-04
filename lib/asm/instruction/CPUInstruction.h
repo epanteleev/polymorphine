@@ -57,4 +57,13 @@ namespace aasm {
         std::visit(visitor, inst.m_inst);
         return os;
     }
+
+    template<typename T>
+    concept MemoryInstruction =
+        std::same_as<T, details::Call> ||
+        std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
+        std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
+        std::is_same_v<T, details::AddMR> || std::is_same_v<T, details::AddRM> || std::is_same_v<T, details::AddMI> ||
+        std::is_same_v<T, details::SubMR> || std::is_same_v<T, details::SubRM> || std::is_same_v<T, details::SubMI> ||
+        std::is_same_v<T, details::CmpMR> || std::is_same_v<T, details::CmpRM> || std::is_same_v<T, details::CmpMI>;
 }

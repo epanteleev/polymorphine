@@ -36,14 +36,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream& os, const PopM& popm);
 
         template<CodeBuffer C>
-        constexpr void emit(C &c) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(C &c) const {
             static constexpr std::uint8_t POP_M = 0x8F;
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: {
-                    details::encode_M<POP_M, POP_M, 0>(c, m_size, m_addr);
-                    break;
-                }
+                case 2: return details::encode_M<POP_M, POP_M, 0>(c, m_size, m_addr);
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }

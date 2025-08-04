@@ -64,10 +64,11 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const AddMI& add);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t ADD_MI = 0x81;
             static constexpr std::uint8_t ADD_MI_8 = 0x80;
-            encode_MI32<ADD_MI_8, ADD_MI, 0>(buffer, m_size, m_src, m_dst);
+            return encode_MI32<ADD_MI_8, ADD_MI, 0>(buffer, m_size, m_src, m_dst);
         }
 
     private:
@@ -91,10 +92,11 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const AddRM& add);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t ADD_RM = 0x03;
             static constexpr std::uint8_t ADD_RM_8 = 0x02;
-            encode_RM<ADD_RM_8, ADD_RM>(buffer, m_size, m_src, m_dst);
+            return encode_RM<ADD_RM_8, ADD_RM>(buffer, m_size, m_src, m_dst);
         }
 
     private:
@@ -118,10 +120,11 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const AddMR& add);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t ADD_MR = 0x01;
             static constexpr std::uint8_t ADD_MR_8 = 0x00;
-            encode_MR<ADD_MR_8, ADD_MR>(buffer, m_size, m_src, m_dst);
+            return encode_MR<ADD_MR_8, ADD_MR>(buffer, m_size, m_src, m_dst);
         }
 
     private:

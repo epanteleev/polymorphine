@@ -23,7 +23,7 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
-        void encode(C& c, unsigned int modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
             const auto has_sib = m_index.code() || reg3(m_base) == reg3(rsp) || scale > 1;
 
             /* Explicit m_displacement must be used with BP or R13. */
@@ -58,6 +58,8 @@ namespace aasm {
             } else if (has_displacement) {
                 c.emit8(m_displacement);
             }
+
+            return std::nullopt;
         }
 
         [[nodiscard]]

@@ -18,7 +18,7 @@ namespace aasm {
         friend std::ostream& operator<<(std::ostream & os, const AddressBaseDisp & addr);
 
         template<CodeBuffer C>
-        void encode(C& c, unsigned int modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
             const auto has_sib = m_base == rsp;
             const auto has_displacement = m_displacement || m_base == rbp;
 
@@ -48,6 +48,8 @@ namespace aasm {
             } else if (has_displacement) {
                 c.emit8(m_displacement);
             }
+
+            return std::nullopt;
         }
 
     private:

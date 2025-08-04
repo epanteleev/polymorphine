@@ -36,11 +36,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const PushM& pushm);
 
         template<CodeBuffer buffer>
-        constexpr void emit(buffer& c) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(buffer& c) const {
             static constexpr std::uint8_t PUSH_M = 0xFF;
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: details::encode_M<PUSH_M, PUSH_M, 6>(c, m_size, m_addr); break;
+                case 2: return details::encode_M<PUSH_M, PUSH_M, 6>(c, m_size, m_addr); break;
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }
