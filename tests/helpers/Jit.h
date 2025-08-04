@@ -1,8 +1,9 @@
 #pragma once
 
 #include "lir/x64/lir.h"
+#include "lir/x64/asm/jit/JitModule.h"
 
-ObjModule do_jit_compile(const Module& module, bool verbose = false);
+AsmModule jit_compile(const Module& module, bool verbose = false);
 
 /**
  * Performs JIT compilation and assembly of the given module.
@@ -10,4 +11,13 @@ ObjModule do_jit_compile(const Module& module, bool verbose = false);
  * @param verbose If true, prints the intermediate representations after each compilation step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitCodeBlob do_compile_and_assembly(const Module& module, bool verbose = false);
+JitModule jit_compile_and_assembly(const Module& module, bool verbose = false);
+
+/**
+ * Performs JIT compilation and assembly of the given module with external symbols.
+ * @param external_symbols A map of external symbol names to their addresses.
+ * @param module The module to be compiled.
+ * @param verbose If true, prints the intermediate representations after each compilation step.
+ * @return A JitCodeBlob containing the compiled code.
+ */
+JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, bool verbose);

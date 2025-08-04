@@ -40,35 +40,35 @@ static Module create_wrappers_reversed(const IntegerType* ty, Fn&& fn) {
 
 TEST(CallTest, call_i32) {
     const auto module = create_wrappers(SignedIntegerType::i32(), Value::i32);
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::int32_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }
 
 TEST(CallTest, call_i32_reversed) {
     const auto module = create_wrappers_reversed(SignedIntegerType::i32(), Value::i32);
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::int32_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }
 
 TEST(CallTest, call_i64) {
     const auto module = create_wrappers(SignedIntegerType::i64(), Value::i64);
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::int64_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }
 
 TEST(CallTest, call_u32) {
     const auto module = create_wrappers(UnsignedIntegerType::u32(), Value::u32);
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::uint32_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }
 
 TEST(CallTest, call_u64) {
     const auto module = create_wrappers(UnsignedIntegerType::u64(), Value::u64);
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::uint64_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }
@@ -100,7 +100,7 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
 
 TEST(CallTest, return_arg_i32) {
     const auto module = return_arg(SignedIntegerType::i32(), Value::i32(10));
-    const auto code = do_compile_and_assembly(module);
+    const auto code = jit_compile_and_assembly(module);
     const auto fn = code.code_start_as<std::int32_t(std::int32_t)>("return_arg").value();
     ASSERT_EQ(fn(32), 42);
 }
@@ -174,7 +174,7 @@ static Module clamp(const IntegerType* ty) {
 
 template<typename Fn>
 static void verify_clamp(const Module& module) {
-    auto code = do_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module);
 
     const auto clamp = code.code_start_as<Fn>("clamp").value();
 

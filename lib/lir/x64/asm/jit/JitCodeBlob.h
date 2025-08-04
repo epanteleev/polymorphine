@@ -30,48 +30,19 @@ public:
  */
 class JitCodeBlob final {
 public:
-    JitCodeBlob(std::shared_ptr<aasm::SymbolTable> symbol_table, std::unordered_map<const aasm::Symbol*, JitCodeChunk> &&offset_table,
-                std::uint8_t* code_buffer_start, std::uint8_t* buffer_start, const std::size_t size) noexcept:
-        m_symbol_table(std::move(symbol_table)),
+    JitCodeBlob(std::unordered_map<const aasm::Symbol*, JitCodeChunk> &&offset_table,
+        const std::span<std::uint8_t> code_buffer) noexcept:
         m_offset_table(std::move(offset_table)),
-        m_code_buffer_start(code_buffer_start),
-        m_buffer_start(buffer_start),
-        m_size(size) {}
-
-    ~JitCodeBlob() noexcept {
-        const auto err = munmap(m_buffer_start, m_size);
-        assert_perror(err);
-    }
+        m_code_buffer(code_buffer) {}
 
     /**
      * Finds the start of the code section for a given function name.
-     * @return start address of the code section if found, otherwise an error.
+     * @return start the address of the code section if found, otherwise an error.
      */
     [[nodiscard]]
-    std::expected<std::uint8_t*, Error> code_start(const std::string& name) const {
-        const auto sym = m_symbol_table->find(name);
-        if (!sym.has_value()) {
-            return std::unexpected(Error::NotFoundError);
-        }
-
-        if (const auto it = m_offset_table.find(sym.value()); it != m_offset_table.end()) {
-            return m_code_buffer_start + it->second.offset;
-        }
-
-        return std::unexpected(Error::NotFoundError);
-    }
-
-    /**
-     * Finds the start of the code section for a given function name and casts it to a specific type.
-     * @tparam T the type to cast the code section to.
-     * @return pointer to the code section cast to type T if found, otherwise an error.
-     */
-    template<typename T>
-    requires std::is_function_v<T>
-    [[nodiscard]]
-    std::expected<T*, Error> code_start_as(const std::string& name) const {
-        if (const auto code = code_start(name); code.has_value()) {
-            return reinterpret_cast<T*>(code.value());
+    std::expected<std::uint8_t*, Error> code_start(const aasm::Symbol* name) const {
+        if (const auto it = m_offset_table.find(name); it != m_offset_table.end()) {
+            return m_code_buffer.data() + it->second.offset;
         }
 
         return std::unexpected(Error::NotFoundError);
@@ -80,11 +51,8 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const JitCodeBlob& blob);
 
 private:
-    std::shared_ptr<aasm::SymbolTable> m_symbol_table;
     std::unordered_map<const aasm::Symbol*, JitCodeChunk> m_offset_table;
-    std::uint8_t* m_code_buffer_start;
-    std::uint8_t* m_buffer_start;
-    std::size_t m_size{0};
+    std::span<std::uint8_t> m_code_buffer;
 };
 
 std::ostream & operator<<(std::ostream &os, const JitCodeBlob &blob);

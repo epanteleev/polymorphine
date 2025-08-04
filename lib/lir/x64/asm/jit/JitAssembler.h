@@ -3,10 +3,10 @@
 #include <cstring>
 
 #include "JitCodeBlob.h"
-#include "lir/x64/asm/ObjModule.h"
+#include "lir/x64/asm/AsmModule.h"
 
 class JitAssembler final {
-    explicit JitAssembler(std::uint8_t* buffer) noexcept: m_buffer(buffer) {}
+    explicit JitAssembler(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
 
     friend class RelocResolver;
 public:
@@ -44,12 +44,10 @@ public:
 
     [[nodiscard]]
     std::uint8_t* data() const noexcept {
-        return m_buffer;
+        return m_buffer.data();
     }
 
-    static JitCodeBlob assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const ObjModule& module);
-
 private:
-    std::uint8_t* m_buffer;
+    std::span<std::uint8_t> m_buffer;
     std::size_t m_size{0};
 };

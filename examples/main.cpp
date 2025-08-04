@@ -4,6 +4,7 @@
 
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
+#include "lir/x64/asm/jit/JitModule.h"
 
 Module ret_constant() {
     ModuleBuilder builder;
@@ -187,7 +188,7 @@ int main() {
     auto mach = codegen.result();
 
     static std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols{};
-    const auto buffer = JitAssembler::assembly(external_symbols, mach);
+    const auto buffer = JitModule::assembly(external_symbols, mach);
 
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
     const auto res = fn();

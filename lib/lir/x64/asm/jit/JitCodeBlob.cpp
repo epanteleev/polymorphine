@@ -11,7 +11,7 @@ std::ostream & operator<<(std::ostream &os, const JitCodeBlob &blob) {
         for (std::size_t i = 0; i < code_chunk.size; i += 16) {
             os << std::setfill('0') << std::setw(8) << std::hex << (code_chunk.offset + i) << ": ";
             for (std::size_t j = 0; j < 16 && (i + j) < code_chunk.size; j++) {
-                os << std::setfill('0') << std::setw(2) << static_cast<int>(blob.m_code_buffer_start[code_chunk.offset + i + j]) << " ";
+                os << std::setfill('0') << std::setw(2) << static_cast<int>(blob.m_code_buffer[code_chunk.offset + i + j]) << " ";
             }
             os << std::dec << std::endl;
         }

@@ -1,20 +1,28 @@
-#include <sys/mman.h>
+#include "JitModule.h"
 
 #include "JitAssembler.h"
 #include "asm/SizeEvaluator.h"
 #include "utility/Align.h"
 
 static constexpr auto PAGE_SIZE = 4096;
-static std::pair<std::uint8_t*, std::uint8_t*> map_memory(const std::size_t plt_size, const std::size_t code_buffer_size) {
 
-    const auto memory = static_cast<std::uint8_t*>(mmap(nullptr, plt_size + code_buffer_size,
+struct MmapAllocation final {
+    std::span<std::uint8_t> memory;
+    std::span<std::uint8_t> plt_table;
+    std::span<std::uint8_t> code_buffer;
+};
+
+static MmapAllocation map_memory(const std::size_t plt_size, const std::size_t code_buffer_size) {
+    const auto plt_table_size = align_up(plt_size, PAGE_SIZE);
+    const auto total_size = plt_table_size + code_buffer_size;
+    const auto memory = static_cast<std::uint8_t*>(mmap(nullptr, total_size,
                                               PROT_READ | PROT_WRITE | PROT_EXEC,
                                               MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 
-    return {memory, memory + plt_size};
+    return {std::span(memory, total_size), std::span(memory, plt_table_size), std::span(memory + plt_table_size, code_buffer_size)};
 }
 
-static std::size_t module_size_eval(const ObjModule& masm) {
+static std::size_t module_size_eval(const AsmModule& masm) {
     std::size_t acc = 0;
     for (const auto& emitter : masm.assembler() | std::views::values) {
         acc += aasm::SizeEvaluator::emit(emitter);
@@ -23,18 +31,15 @@ static std::size_t module_size_eval(const ObjModule& masm) {
     return acc;
 }
 
-
 class RelocResolver final {
 public:
     explicit RelocResolver(const std::unordered_map<const aasm::Symbol*, std::size_t>& plt_table,
-        const ObjModule& module,
-        const std::size_t buffer_size,
-        std::uint8_t* buffer) noexcept:
+        const AsmModule& module,
+        const std::span<std::uint8_t> code_buffer, const std::size_t code_buffer_offset) noexcept:
         m_plt_table(plt_table),
         m_module(module),
-        m_buffer_size(buffer_size),
-        m_mapped_code_buffer(buffer),
-        jit_assembler(buffer) {}
+        jit_assembler(code_buffer),
+        m_code_buffer_offset(code_buffer_offset) {}
 
     void run() {
         resolve_and_patch_labels();
@@ -74,7 +79,7 @@ private:
         if (external == m_plt_table.end()) {
             die("PLT relocation for label '{}' not found in external symbols", reloc.symbol_name());
         }
-        const auto offset = static_cast<std::int64_t>(external->second) - (static_cast<std::int32_t>(reloc.offset()) + 8);
+        const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + static_cast<std::int64_t>(m_code_buffer_offset));
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit PLT patching", offset);
         }
@@ -97,23 +102,21 @@ private:
     }
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;
-    const ObjModule& m_module;
-    std::size_t m_buffer_size;
-    std::uint8_t* m_mapped_code_buffer;
+    const AsmModule& m_module;
     JitAssembler jit_assembler;
+    std::size_t m_code_buffer_offset;
 
     std::unordered_map<const aasm::Symbol*, std::vector<aasm::Relocation>> relocation_table;
     std::unordered_map<const aasm::Symbol*, JitCodeChunk> offset_table;
 };
 
-
-JitCodeBlob JitAssembler::assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const ObjModule& module) {
+JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, const AsmModule &module) {
     const auto code_buffer_size = module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
-    const auto [plt_table_start, mapped_code_buffer] = map_memory(plt_size, code_buffer_size);
+    const auto memory = map_memory(plt_size, code_buffer_size);
 
     std::unordered_map<const aasm::Symbol*, std::size_t> plt_table;
-    std::span plt_table_span(reinterpret_cast<std::uint64_t*>(plt_table_start), plt_size / sizeof(std::uint64_t));
+    std::span plt_table_span{reinterpret_cast<std::uint64_t*>(memory.plt_table.data()), memory.plt_table.size() / sizeof(std::uint64_t)};
 
     std::size_t plt_table_offset{};
     for (const auto& [symbol, address] : external_symbols) {
@@ -122,7 +125,13 @@ JitCodeBlob JitAssembler::assembly(const std::unordered_map<const aasm::Symbol*,
         plt_table.emplace(symbol, sizeof(std::int64_t) * (plt_table_offset-1));
     }
 
-    RelocResolver resolver(plt_table, module, code_buffer_size, mapped_code_buffer);
+    RelocResolver resolver(plt_table, module, memory.code_buffer, memory.plt_table.size());
     resolver.run();
-    return {module.symbol_table(), resolver.result(), mapped_code_buffer, plt_table_start, code_buffer_size};
+
+    JitCodeBlob code_blob(std::move(resolver.result()), memory.code_buffer);
+    return {module.symbol_table(), memory.memory, std::move(code_blob)};
+}
+
+std::ostream & operator<<(std::ostream &os, const JitModule &blob) {
+    return os << blob.m_code_blob;
 }

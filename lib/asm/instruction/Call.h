@@ -19,7 +19,7 @@ namespace aasm::details {
                 case Linkage::INTERNAL: {
                     static constexpr std::uint8_t CALL = 0xE8;
                     buffer.emit8(CALL);
-                    buffer.emit32(0);
+                    buffer.emit32(INT32_MAX);
                     return Relocation(RelType::R_X86_64_PC32, buffer.size(), 0, m_name);
                 }
                 default: die("Unsupported linkage type for call: {}", static_cast<std::uint8_t>(m_name->linkage()));
@@ -50,11 +50,7 @@ namespace aasm::details {
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t CALL = 0xFF;
-            buffer.emit8(constants::REX_W);
-            buffer.emit8(CALL);
-            buffer.emit8(0x15); // CALL r/m64
-            buffer.emit64(INT64_MAX);
-            return Relocation(RelType::R_X86_64_PLT32, buffer.size(), 0, m_addr.as<AddressLiteral>()->symbol());
+            return details::encode_M<CALL, CALL, 2>(buffer, 8, m_addr);
         }
 
     private:

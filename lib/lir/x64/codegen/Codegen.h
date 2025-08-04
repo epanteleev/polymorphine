@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lir/x64/asm/ObjModule.h"
+#include "lir/x64/asm/AsmModule.h"
 #include "lir/x64/module/LIRModule.h"
 
 class Codegen {
@@ -11,8 +11,8 @@ public:
 
     void run();
 
-    ObjModule result() {
-        return ObjModule(m_symbol_table, std::move(m_assemblers));
+    AsmModule result() {
+        return AsmModule(m_symbol_table, std::move(m_assemblers));
     }
 
 private:

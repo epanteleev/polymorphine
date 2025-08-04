@@ -54,7 +54,7 @@ static void verify_data_and_control_flow_edges(const Module& module) {
     }
 }
 
-ObjModule do_jit_compile(const Module &module, const bool verbose) {
+AsmModule jit_compile(const Module &module, const bool verbose) {
     verify_data_and_control_flow_edges(module);
     if (verbose) {
         std::cout << module << std::endl;
@@ -76,11 +76,27 @@ ObjModule do_jit_compile(const Module &module, const bool verbose) {
     return obj;
 }
 
-JitCodeBlob do_compile_and_assembly(const Module& module, const bool verbose) {
-    auto obj = do_jit_compile(module, verbose);
+JitModule jit_compile_and_assembly(const Module& module, const bool verbose) {
+    auto obj = jit_compile(module, verbose);
 
     static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
-    const auto buffer = JitAssembler::assembly(external_symbols, std::move(obj));
+    const auto buffer = JitModule::assembly(external_symbols, obj);
+    if (verbose) {
+        std::cout << buffer << std::endl;
+    }
+
+    return buffer;
+}
+
+JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const bool verbose) {
+    const auto obj = jit_compile(module, true);
+    std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols_;
+    for (const auto& [name, addr] : external_symbols) {
+        const auto symbol = obj.symbol_table()->add(name, aasm::Linkage::INTERNAL);
+        external_symbols_[symbol.first] = addr;
+    }
+
+    const auto buffer = JitModule::assembly(external_symbols_, obj);
     if (verbose) {
         std::cout << buffer << std::endl;
     }
