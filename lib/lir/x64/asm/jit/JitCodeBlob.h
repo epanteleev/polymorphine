@@ -31,14 +31,15 @@ public:
 class JitCodeBlob final {
 public:
     JitCodeBlob(std::shared_ptr<aasm::SymbolTable> symbol_table, std::unordered_map<const aasm::Symbol*, JitCodeChunk> &&offset_table,
-                std::uint8_t* buffer, const std::size_t size) noexcept:
+                std::uint8_t* code_buffer_start, std::uint8_t* buffer_start, const std::size_t size) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_offset_table(std::move(offset_table)),
-        m_buffer(buffer),
+        m_code_buffer_start(code_buffer_start),
+        m_buffer_start(buffer_start),
         m_size(size) {}
 
     ~JitCodeBlob() noexcept {
-        const auto err = munmap(m_buffer, m_size);
+        const auto err = munmap(m_buffer_start, m_size);
         assert_perror(err);
     }
 
@@ -54,7 +55,7 @@ public:
         }
 
         if (const auto it = m_offset_table.find(sym.value()); it != m_offset_table.end()) {
-            return m_buffer + it->second.offset;
+            return m_code_buffer_start + it->second.offset;
         }
 
         return std::unexpected(Error::NotFoundError);
@@ -81,7 +82,8 @@ public:
 private:
     std::shared_ptr<aasm::SymbolTable> m_symbol_table;
     std::unordered_map<const aasm::Symbol*, JitCodeChunk> m_offset_table;
-    std::uint8_t* m_buffer;
+    std::uint8_t* m_code_buffer_start;
+    std::uint8_t* m_buffer_start;
     std::size_t m_size{0};
 };
 

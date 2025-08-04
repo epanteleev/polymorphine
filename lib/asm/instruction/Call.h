@@ -14,12 +14,12 @@ namespace aasm::details {
             switch (m_name->linkage()) {
                 case Linkage::EXTERNAL: {
                     static constexpr std::uint8_t CALL = 0xFF;
-                    return details::encode_M<CALL, CALL, 3>(buffer, 8, Address(m_name));
+                    return details::encode_M<CALL, CALL, 2>(buffer, 8, Address(m_name));
                 }
                 case Linkage::INTERNAL: {
                     static constexpr std::uint8_t CALL = 0xE8;
                     buffer.emit8(CALL);
-                    buffer.emit32(INT32_MAX);
+                    buffer.emit32(0);
                     return Relocation(RelType::R_X86_64_PC32, buffer.size(), 0, m_name);
                 }
                 default: die("Unsupported linkage type for call: {}", static_cast<std::uint8_t>(m_name->linkage()));

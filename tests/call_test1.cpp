@@ -21,7 +21,6 @@ JitCodeBlob do_compile_and_assembly(const std::unordered_map<const aasm::Symbol*
 }
 
 TEST(CallTest, call_external) {
-    GTEST_SKIP();
     ModuleBuilder builder;
     {
         FunctionPrototype prototype(SignedIntegerType::i32(), {}, "call_external");

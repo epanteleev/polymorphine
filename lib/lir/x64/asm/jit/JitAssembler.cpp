@@ -36,10 +36,13 @@ public:
         m_mapped_code_buffer(buffer),
         jit_assembler(buffer) {}
 
-    JitCodeBlob run() {
+    void run() {
         resolve_and_patch_labels();
         try_resolve_relocations();
-        return {m_module.symbol_table(), std::move(offset_table), m_mapped_code_buffer, m_buffer_size};
+    }
+
+    std::unordered_map<const aasm::Symbol*, JitCodeChunk> result() {
+        return std::move(offset_table);
     }
 
 private:
@@ -71,11 +74,11 @@ private:
         if (external == m_plt_table.end()) {
             die("PLT relocation for label '{}' not found in external symbols", reloc.symbol_name());
         }
-        const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + 8);
+        const auto offset = static_cast<std::int64_t>(external->second) - (static_cast<std::int32_t>(reloc.offset()) + 8);
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit PLT patching", offset);
         }
-        jit_assembler.patch32(static_cast<std::int64_t>(reloc.offset()), offset);
+        jit_assembler.patch32(static_cast<std::int64_t>(reloc.offset()) - sizeof(std::int32_t), offset);
     }
 
     void try_patch_relocation(const aasm::Relocation& reloc) {
@@ -120,5 +123,6 @@ JitCodeBlob JitAssembler::assembly(const std::unordered_map<const aasm::Symbol*,
     }
 
     RelocResolver resolver(plt_table, module, code_buffer_size, mapped_code_buffer);
-    return resolver.run();
+    resolver.run();
+    return {module.symbol_table(), resolver.result(), mapped_code_buffer, plt_table_start, code_buffer_size};
 }
