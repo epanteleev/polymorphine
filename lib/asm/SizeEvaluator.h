@@ -13,6 +13,7 @@ namespace aasm {
         constexpr void emit64(const std::uint64_t) noexcept { m_size += 8; }
 
         constexpr void patch32(std::uint32_t, std::int32_t) noexcept {}
+        constexpr void patch64(std::uint64_t, std::int64_t) noexcept {}
 
         [[nodiscard]]
         constexpr std::size_t size() const noexcept {

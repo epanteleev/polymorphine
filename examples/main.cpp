@@ -186,7 +186,8 @@ int main() {
     codegen.run();
     auto mach = codegen.result();
 
-    const auto buffer = JitAssembler::assembly(std::move(mach));
+    static std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols{};
+    const auto buffer = JitAssembler::assembly(external_symbols, mach);
 
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
     const auto res = fn();

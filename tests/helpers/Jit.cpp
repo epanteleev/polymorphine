@@ -54,7 +54,7 @@ static void verify_data_and_control_flow_edges(const Module& module) {
     }
 }
 
-JitCodeBlob do_jit_compilation(const Module& module, const bool verbose) {
+ObjModule do_jit_compile(const Module &module, const bool verbose) {
     verify_data_and_control_flow_edges(module);
     if (verbose) {
         std::cout << module << std::endl;
@@ -73,7 +73,14 @@ JitCodeBlob do_jit_compilation(const Module& module, const bool verbose) {
         std::cout << obj << std::endl;
     }
 
-    const auto buffer = JitAssembler::assembly(std::move(obj));
+    return obj;
+}
+
+JitCodeBlob do_compile_and_assembly(const Module& module, const bool verbose) {
+    auto obj = do_jit_compile(module, verbose);
+
+    static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
+    const auto buffer = JitAssembler::assembly(external_symbols, std::move(obj));
     if (verbose) {
         std::cout << buffer << std::endl;
     }

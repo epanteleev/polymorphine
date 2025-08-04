@@ -65,6 +65,7 @@ public:
     }
 
     void call(const aasm::Symbol* name) { m_asm.call(name); }
+    void call(const aasm::Address& addr) { m_asm.call(addr); }
 
     void leave() { m_asm.leave(); }
 

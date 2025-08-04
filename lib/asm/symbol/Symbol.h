@@ -19,6 +19,9 @@ namespace aasm {
         [[nodiscard]]
         std::string_view name() const noexcept { return m_name; }
 
+        [[nodiscard]]
+        Linkage linkage() const noexcept { return m_linkage; }
+
         friend std::ostream &operator<<(std::ostream &os, const Symbol &symbol);
 
     private:

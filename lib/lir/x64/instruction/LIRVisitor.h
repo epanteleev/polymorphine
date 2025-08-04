@@ -31,7 +31,7 @@ public:
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(LIRCondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
-    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args) = 0;
+    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) = 0;
     virtual void vcall(std::span<LIRVal const> args) = 0;
     virtual void icall(const LIRVal& out, const LIRVal& pointer, std::span<LIRVal const> args) = 0;
     virtual void ivcall(const LIRVal& pointer, std::span<LIRVal const> args) = 0;

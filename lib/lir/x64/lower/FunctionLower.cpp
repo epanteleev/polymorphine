@@ -65,6 +65,14 @@ static LIRCondType unsigned_cond_type(const IcmpPredicate predicate) noexcept {
     }
 }
 
+static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
+    switch (linkage) {
+        case FunctionLinkage::EXTERN: return LIRLinkage::EXTERNAL;
+        case FunctionLinkage::INTERNAL: return LIRLinkage::INTERNAL;
+        default: die("Unsupported function linkage type in LIR");
+    }
+}
+
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
@@ -155,7 +163,7 @@ void FunctionLower::accept(Call *inst) {
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto call = m_bb->inst(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args)));
+    const auto call = m_bb->inst(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), linkage_from_mir(proto.linkage())));
     const auto copy_ret = cont->inst(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
 }

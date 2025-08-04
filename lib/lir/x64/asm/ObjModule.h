@@ -2,13 +2,14 @@
 
 #include <unordered_map>
 #include <iomanip>
+#include <memory>
 
 #include "MasmEmitter.h"
 #include "asm/symbol/SymbolTable.h"
 
 class ObjModule final {
 public:
-    explicit ObjModule(aasm::SymbolTable&& symbol_table, std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer>&& modules) noexcept:
+    explicit ObjModule(std::shared_ptr<aasm::SymbolTable> symbol_table, std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer>&& modules) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_modules(std::move(modules)) {}
 
@@ -16,14 +17,14 @@ public:
         return m_modules;
     }
 
-    aasm::SymbolTable&& symbol_table() noexcept {
-        return std::move(m_symbol_table);
+    std::shared_ptr<aasm::SymbolTable> symbol_table() const noexcept {
+        return m_symbol_table;
     }
 
     friend std::ostream& operator<<(std::ostream &os, const ObjModule &module);
 
 private:
-    aasm::SymbolTable m_symbol_table; // Symbol table for the module
+    std::shared_ptr<aasm::SymbolTable> m_symbol_table; // Symbol table for the module
     std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer> m_modules;
 };
 

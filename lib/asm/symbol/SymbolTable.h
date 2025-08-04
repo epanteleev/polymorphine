@@ -13,7 +13,7 @@ namespace aasm {
     class SymbolTable final {
     public:
         std::pair<const Symbol*, bool> add(const std::string_view name, const Linkage linkage) {
-            if (const auto it = m_symbol_map.find(std::string(name)); it != m_symbol_map.end()) {
+            if (const auto it = m_symbol_map.find(std::string(name)); it != m_symbol_map.end()) { //TODO string creation
                 return {it->second, false};
             }
 

@@ -147,7 +147,7 @@ private:
 
     }
 
-    void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args) override ;
+    void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, LIRLinkage) override;
 
     void vcall(std::span<LIRVal const> args) override {
 

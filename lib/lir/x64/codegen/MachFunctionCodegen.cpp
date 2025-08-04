@@ -7,8 +7,16 @@
 #include "emitters/MovGPEmit.h"
 #include "emitters/StoreGPEmit.h"
 
-static aasm::CondType cvt_from(const LIRCondType cond) {
+static aasm::CondType cvt_from(const LIRCondType cond) noexcept {
     return static_cast<aasm::CondType>(cond);
+}
+
+static aasm::Linkage cvt_linkage(const LIRLinkage linkage) noexcept {
+    switch (linkage) {
+        case LIRLinkage::INTERNAL: return aasm::Linkage::INTERNAL;
+        case LIRLinkage::EXTERNAL: return aasm::Linkage::EXTERNAL;
+        default: die("Unsupported LIRLinkage type");
+    }
 }
 
 GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
@@ -95,8 +103,8 @@ void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_tr
     m_as.jcc(cond, target_false);
 }
 
-void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args) {
-    const auto [symbol, _] = m_symbol_tab.add(name, aasm::Linkage::INTERNAL);
+void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) {
+    const auto [symbol, _] = m_symbol_tab.add(name, cvt_linkage(linkage));
     m_as.call(symbol);
 }
 

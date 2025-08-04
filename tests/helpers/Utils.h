@@ -31,7 +31,11 @@ public:
         m_size += 8;
     }
 
-    void patch32(std::uint32_t offset, std::uint32_t value) noexcept {
+    void patch32(std::uint32_t offset, const std::uint32_t value) noexcept {
+        std::memcpy(&m_buffer[offset], &value, sizeof(value));
+    }
+
+    void patch64(std::uint64_t offset, const std::uint64_t value) noexcept {
         std::memcpy(&m_buffer[offset], &value, sizeof(value));
     }
 

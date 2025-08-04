@@ -33,6 +33,10 @@ public:
         std::memcpy(&m_buffer[offset], &value, sizeof(value));
     }
 
+    void patch64(const std::uint64_t offset, const std::uint64_t value) {
+        std::memcpy(&m_buffer[offset], &value, sizeof(value));
+    }
+
     [[nodiscard]]
     std::size_t size() const noexcept {
         return m_size;
@@ -43,11 +47,9 @@ public:
         return m_buffer;
     }
 
-    static JitCodeBlob assembly(ObjModule&& module);
+    static JitCodeBlob assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const ObjModule& module);
 
 private:
-    static constexpr auto PAGE_SIZE = 4096;
-
     std::uint8_t* m_buffer;
     std::size_t m_size{0};
 };

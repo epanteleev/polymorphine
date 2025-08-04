@@ -117,6 +117,10 @@ namespace aasm {
             m_instructions.emplace_back(details::Call(name));
         }
 
+        constexpr void call(const Address& addr) {
+            m_instructions.emplace_back(details::CallM(addr));
+        }
+
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
         }

@@ -21,6 +21,9 @@ namespace aasm {
         explicit constexpr Address(const GPReg base, const std::int32_t displacement = 0) noexcept:
                     m_address(AddressBaseDisp(base, displacement)) {}
 
+        explicit constexpr Address(const Symbol* symbol, const std::uint32_t displacement = 0) noexcept:
+            m_address(AddressLiteral(symbol, displacement)) {}
+
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
 
         bool operator==(const Address & other) const noexcept {

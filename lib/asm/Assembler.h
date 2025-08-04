@@ -47,7 +47,7 @@ namespace aasm::details {
 
             } else if constexpr (MemoryInstruction<T>) {
                 if (const auto reloc = inst.emit(buffer); reloc.has_value()) {
-                    m_relocations.emplace_back(reloc.value());
+                    m_relocations.emplace_back(std::move(reloc.value()));
                 }
 
             } else {
@@ -86,7 +86,7 @@ namespace aasm::details {
         const std::vector<X64Instruction> &m_instructions;
 
         std::vector<std::int32_t> offsets_from_start; // instruction index to offset from code block start
-        std::vector<std::vector<std::int32_t> > unresolved_labels; // Hashmap from 'label' to vector of offsets where jmp operand must be patched.
+        std::vector<std::vector<std::int32_t>> unresolved_labels; // Hashmap from 'label' to vector of offsets where jmp operand must be patched.
 
         std::vector<Relocation> m_relocations;
     };

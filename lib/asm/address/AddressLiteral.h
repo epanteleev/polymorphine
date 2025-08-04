@@ -13,9 +13,12 @@ namespace aasm {
         constexpr std::optional<Relocation> encode(Buffer &buffer, const std::uint32_t modrm_pattern) const {
             static constexpr std::uint8_t MODRM = 0x05; // ModR/M byte for direct addressing
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
-            buffer.emit32(0);
-
-            return Relocation(RelType::R_X86_64_GOTPCREL, buffer.size(), m_displacement, m_symbol);
+            buffer.emit32(INT32_MAX);
+            switch (m_symbol->linkage()) {
+                case Linkage::EXTERNAL: return Relocation(RelType::R_X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
+                case Linkage::INTERNAL: return Relocation(RelType::R_X86_64_PC32, buffer.size(), m_displacement, m_symbol);
+                default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(m_symbol->linkage()));
+            }
         }
 
         [[nodiscard]]

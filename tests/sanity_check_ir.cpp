@@ -18,7 +18,7 @@ static Module ret_i32(const std::int32_t value) {
 
 TEST(SanityCheck, ret_i32) {
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
-        const auto buffer = do_jit_compilation(ret_i32(i));
+        const auto buffer = do_compile_and_assembly(ret_i32(i));
         const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
@@ -38,7 +38,7 @@ static Module ret_i64(const std::int64_t value) {
 
 TEST(SanityCheck, ret_i64) {
     for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
-        const auto buffer = do_jit_compilation(ret_i64(i));
+        const auto buffer = do_compile_and_assembly(ret_i64(i));
         const auto fn = reinterpret_cast<long(*)()>(buffer.code_start("ret_one").value());
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
@@ -65,7 +65,7 @@ static Module ret_i8_u8(const std::int8_t value) {
 
 TEST(SanityCheck, ret_i8_u8) {
     for (const auto i: {0, 1, -1, 42, -42, 100, -100, INT8_MAX, INT8_MIN}) {
-        const auto buffer = do_jit_compilation(ret_i8_u8(static_cast<std::int8_t>(i)));
+        const auto buffer = do_compile_and_assembly(ret_i8_u8(static_cast<std::int8_t>(i)));
         const auto fn_i8 = reinterpret_cast<std::int8_t(*)()>(buffer.code_start("ret_i8").value());
         const auto fn_u8 = reinterpret_cast<std::uint8_t(*)()>(buffer.code_start("ret_u8").value());
         const auto res_i8 = fn_i8();
@@ -87,7 +87,7 @@ static Module ret_i32_arg() {
 }
 
 TEST(SanityCheck, ret_i32_arg) {
-    const auto buffer = do_jit_compilation(ret_i32_arg());
+    const auto buffer = do_compile_and_assembly(ret_i32_arg());
     const auto fn = reinterpret_cast<int(*)(int)>(buffer.code_start("ret_i32").value());
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
         const auto res = fn(i);
@@ -109,7 +109,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
 }
 
 TEST(SanityCheck, add_i32_args) {
-    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i32()), true);
+    const auto buffer = do_compile_and_assembly(add_i32_args(SignedIntegerType::i32()), true);
     const auto fn = reinterpret_cast<int(*)(int, int)>(buffer.code_start("add").value());
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
@@ -122,7 +122,7 @@ TEST(SanityCheck, add_i32_args) {
 }
 
 TEST(SanityCheck, add_i64_args) {
-    const auto buffer = do_jit_compilation(add_i32_args(SignedIntegerType::i64()));
+    const auto buffer = do_compile_and_assembly(add_i32_args(SignedIntegerType::i64()));
     const auto fn = reinterpret_cast<long(*)(long, long)>(buffer.code_start("add").value());
 
     std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
@@ -149,7 +149,7 @@ static Module branch() {
 }
 
 TEST(SanityCheck, branch1) {
-    const auto buffer = do_jit_compilation(branch(), true);
+    const auto buffer = do_compile_and_assembly(branch(), true);
     std::cout << buffer << std::endl;
     const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
     const auto res = fn();
@@ -208,7 +208,7 @@ TEST(SanityCheck, is_i32_predicate) {
     const auto values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
 
     for (const auto j: values) {
-        const auto buffer0 = do_jit_compilation(is_predicate(SignedIntegerType::i32(), Value::i32(j)));
+        const auto buffer0 = do_compile_and_assembly(is_predicate(SignedIntegerType::i32(), Value::i32(j)));
         const auto is_neg = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_neg").value());
         const auto is_le = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_le").value());
         const auto is_gt = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_gt").value());
@@ -242,7 +242,7 @@ TEST(SanityCheck, is_u32_predicate) {
     const auto values = {0U, 1U, 2U, 42U, 100U, 1000U, UINT32_MAX};
 
     for (const auto j: values) {
-        const auto buffer0 = do_jit_compilation(is_predicate(UnsignedIntegerType::u32(), Value::u32(j)), true);
+        const auto buffer0 = do_compile_and_assembly(is_predicate(UnsignedIntegerType::u32(), Value::u32(j)), true);
         const auto is_neg = buffer0.code_start_as<std::int8_t(unsigned int)>("is_neg").value();
         const auto is_le = buffer0.code_start_as<std::int8_t(unsigned int)>("is_le").value();
         const auto is_gt = buffer0.code_start_as<std::int8_t(unsigned int)>("is_gt").value();
@@ -294,7 +294,7 @@ TEST(SanityCheck, stack_alloc) {
     };
 
     for (const auto& val: values) {
-        const auto buffer = do_jit_compilation(stack_alloc(val));
+        const auto buffer = do_compile_and_assembly(stack_alloc(val));
         const auto fn = buffer.code_start_as<std::int8_t()>("stackalloc").value();
         const auto res = fn();
         ASSERT_EQ(res, 42) << "Failed for value: " << val;
@@ -331,7 +331,7 @@ TEST(SanityCheck, branch_u32_predicate) {
     const auto values = {0U, 1U, 2U, 42U, 100U, 1000U, UINT32_MAX};
 
     for (const auto j: values) {
-        const auto buffer0 = do_jit_compilation(is_predicate_branch(UnsignedIntegerType::u32(), Value::u32(j)));
+        const auto buffer0 = do_compile_and_assembly(is_predicate_branch(UnsignedIntegerType::u32(), Value::u32(j)));
         const auto is_neg = buffer0.code_start_as<std::int8_t(unsigned int)>("is_neg").value();
         const auto is_le = buffer0.code_start_as<std::int8_t(unsigned int)>("is_le").value();
         const auto is_gt = buffer0.code_start_as<std::int8_t(unsigned int)>("is_gt").value();
@@ -388,7 +388,7 @@ TEST(SanityCheck, swap_signed) {
     };
 
     for (const auto& ty: sign_types) {
-        const auto buffer = do_jit_compilation(swap(ty));
+        const auto buffer = do_compile_and_assembly(swap(ty));
         const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
 
         std::int64_t a = 42;
@@ -409,7 +409,7 @@ TEST(SanityCheck, swap_unsigned) {
     };
 
     for (const auto& ty: sign_types) {
-        const auto buffer = do_jit_compilation(swap(ty));
+        const auto buffer = do_compile_and_assembly(swap(ty));
         const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
 
         std::uint64_t a = 42;
@@ -423,7 +423,7 @@ TEST(SanityCheck, swap_unsigned) {
 
 TEST(SanityCheck, swap_ptr) {
     const auto ty = PointerType::ptr();
-    const auto buffer = do_jit_compilation(swap(ty));
+    const auto buffer = do_compile_and_assembly(swap(ty));
     const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
 
     int a = 42;
