@@ -57,7 +57,7 @@ public:
      * Returns true if this interval is bordering the other interval.
      */
     [[nodiscard]]
-    bool follows_to(const LiveInterval& other) const noexcept {
+    bool follows(const LiveInterval& other) const noexcept {
         if (this == &other) { return false; }
         if (intersects(other)) {
             return false;

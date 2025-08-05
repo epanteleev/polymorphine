@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "RegisterAllocation.h"
 #include "RegSet.h"
 
@@ -22,12 +20,11 @@ public:
     static constexpr auto analysis_kind = AnalysisType::LinearScan;
 
 private:
-    LinearScanBase(const LIRFuncData &obj_func_data, const FixedRegisters& fixed_registers, const LiveIntervals& intervals, const LiveIntervalsGroups& groups) noexcept:
+    LinearScanBase(const LIRFuncData &obj_func_data, details::RegSet<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups) noexcept:
         m_obj_func_data(obj_func_data),
-        m_fixed_registers(fixed_registers),
         m_intervals(intervals),
         m_groups(groups),
-        m_reg_set(details::RegSet<CC>::create(m_fixed_registers.arguments())) {}
+        m_reg_set(std::move(reg_set)) {}
 
     struct IntervalEntry final {
         IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
@@ -53,14 +50,19 @@ public:
         const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
-        std::cout << "Groups\n" << *joins << std::endl;
-        return {*data, *fixed_registers, *intervals, *joins};
+        return {*data, details::RegSet<CC>::create(fixed_registers->arguments()), *intervals, *joins};
     }
 
 private:
     void allocate_fixed_registers() {
-        for (const auto& [lir, reg]: m_fixed_registers) {
-            m_reg_allocation.emplace(lir, reg);
+        for (const auto& group: m_groups) {
+            if (!group.m_fixed_register.has_value()) {
+                continue;
+            }
+
+            for (const auto& lir: group.m_values) {
+                m_reg_allocation.emplace(lir, group.m_fixed_register.value());
+            }
         }
     }
 
@@ -99,7 +101,6 @@ private:
                 if (real_interval->start() > unhandled_interval->finish()) {
                     if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                         m_reg_set.push(reg_opt.value());
-                        std::cout << "Push " << reg_opt.value() << " to free set for " << entry.m_vreg << std::endl;
                     }
                     return true;
                 }
@@ -110,10 +111,6 @@ private:
                 m_inactive_intervals.emplace_back(entry);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.push(reg_opt.value());
-                    if (reg_opt.value() == aasm::r8) {
-                        std::cout << "erer";
-                    }
-                    std::cout << "Push " << reg_opt.value() << " to free set for " << entry.m_vreg << std::endl;
                 }
 
                 return true;
@@ -143,40 +140,38 @@ private:
             remove_interval_if(m_inactive_intervals, unactive_eraser);
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
-                const auto real_interval = get_real_interval(unhandled);
+                const auto group = m_groups.try_get_group(unhandled.m_vreg);
+                if (!group.has_value()) {
+                    // No group for this vreg, we can skip it.
+                    continue;
+                }
+
+                const LiveInterval* real_interval = &group.value()->m_interval;
                 if (real_interval->start() > unhandled_interval->finish()) {
                     // No need to check further, the intervals are sorted.
                     break;
                 }
 
-                const auto fixed_reg_groups = try_get_fixed_register(unhandled.m_vreg);
+                const auto fixed_reg_groups = group.value()->fixed_register();
                 if (!fixed_reg_groups.has_value()) {
+                    // This group does not have a fixed register, we can skip it too.
                     continue;
                 }
 
                 if (!real_interval->intersects(*unhandled_interval)) {
+                    // This interval does not intersect with the unhandled interval, skip it.
                     continue;
                 }
 
-                alloc_fixed_reg_for_group(unhandled.m_vreg);
                 m_active_intervals.emplace_back(unhandled);
                 if (const auto reg_opt = fixed_reg_groups.value().as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
-                    std::cout << "Remove fixed register " << reg_opt.value() << " for " << unhandled.m_vreg << std::endl;
                 }
             }
 
             allocate_vreg(vreg);
             m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
-    }
-
-    std::optional<GPVReg> try_get_fixed_register(const LIRVal& vreg) const {
-        if (const auto group_opt = m_groups.try_get_fixed_register(vreg); group_opt.has_value()) {
-            return group_opt;
-        }
-
-        return m_fixed_registers.get(vreg);
     }
 
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {
@@ -199,47 +194,23 @@ private:
         }
     }
 
-    void alloc_fixed_reg_for_group(const LIRVal& vreg) {
-        const auto group = m_groups.try_get_group(vreg);
-        if (!group.has_value()) {
-            return;
-        }
-
-        const auto group_reg = m_groups.try_get_fixed_register(vreg);
-        if (!group_reg.has_value()) {
-            return;
-        }
-
-        for (const auto& group_vreg: group.value()->m_values) {
-            m_reg_allocation.emplace(group_vreg, group_reg.value());
-        }
-    }
-
     void allocate_vreg(const LIRVal& vreg) {
         if (m_reg_allocation.contains(vreg)) {
             return;
         }
         const auto group = m_groups.try_get_group(vreg);
         if (group.has_value()) {
-            const auto group_reg = m_groups.try_get_fixed_register(vreg);
-            if (group_reg.has_value()) {
-                for (const auto& group_vreg: group.value()->m_values) {
-                    m_reg_allocation.emplace(group_vreg, group_reg.value());
-                }
-
-            } else {
-                const auto reg = m_reg_set.top();
-                for (const auto& group_vreg: group.value()->m_values) {
-                    m_reg_allocation.emplace(group_vreg, reg);
-                }
-                m_reg_set.pop();
+            assertion(!group.value()->m_fixed_register.has_value(), "Group with fixed register should not be allocated here");
+            const auto reg = m_reg_set.top();
+            for (const auto& group_vreg: group.value()->m_values) {
+                m_reg_allocation.emplace(group_vreg, reg);
             }
+            m_reg_set.pop();
             return;
         }
 
         const auto reg = m_reg_set.top();
         const auto pair = m_reg_allocation.try_emplace(vreg, reg);
-        std::cout << "Allocating " << vreg << " to " << reg << std::endl;
         if (pair.second) m_reg_set.pop();
     }
 
@@ -250,7 +221,6 @@ private:
     }
 
     const LIRFuncData& m_obj_func_data;
-    const FixedRegisters& m_fixed_registers;
     const LiveIntervals& m_intervals;
     const LiveIntervalsGroups& m_groups;
 

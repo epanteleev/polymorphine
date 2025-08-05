@@ -7,7 +7,20 @@ public:
         m_values(std::move(values)),
         m_fixed_register(fixed_register) {}
 
-    void merge_interval(const LiveInterval& other) {
+    const LiveInterval& interval() const noexcept {
+        return m_interval;
+    }
+
+    std::span<const LIRVal> members() const noexcept {
+        return m_values;
+    }
+
+    const std::optional<GPVReg>& fixed_register() const noexcept {
+        return m_fixed_register;
+    }
+
+    void add_member(const LIRVal& val, const LiveInterval& other) {
+        m_values.push_back(val);
         m_interval.merge_with(other);
     }
 
@@ -19,6 +32,7 @@ public:
 class LiveIntervalsGroups final: public AnalysisPassResult {
 public:
     using group_iterator = std::deque<Group>::iterator;
+    using const_group_iterator = std::deque<Group>::const_iterator;
 
     explicit LiveIntervalsGroups(std::deque<Group>&& groups, LIRValMap<group_iterator>&& group_mapping) noexcept:
         m_groups(std::move(groups)),
@@ -33,20 +47,12 @@ public:
         return std::nullopt;
     }
 
-    std::optional<GPVReg> try_get_fixed_register(const LIRVal& vreg) const {
-        if (const auto it = m_group_mapping.find(vreg); it != m_group_mapping.end()) {
-            return it->second->m_fixed_register;
-        }
-
-        return std::nullopt;
+    const_group_iterator begin() const {
+        return m_groups.begin();
     }
 
-    std::optional<const LiveInterval*> try_get_group_interval(const LIRVal& vreg) const {
-        if (const auto it = m_group_mapping.find(vreg); it != m_group_mapping.end()) {
-            return &it->second->m_interval;
-        }
-
-        return std::nullopt;
+    const_group_iterator end() const {
+        return m_groups.end();
     }
 
     friend std::ostream& operator<<(std::ostream& os, const LiveIntervalsGroups& groups);
@@ -58,12 +64,13 @@ private:
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervalsGroups &groups) {
     for (const auto& group: groups.m_groups) {
-        os << "Group: " << group.m_interval << std::endl << " Values: ";
-        for (const auto& val: group.m_values) {
+        os << "Group: " << group.interval() << std::endl << " Values: ";
+        for (const auto& val: group.members()) {
             os << val << " ";
         }
-        if (group.m_fixed_register.has_value()) {
-            os << "Fixed Register: " << group.m_fixed_register.value();
+        const auto& fixed_register = group.fixed_register();
+        if (fixed_register.has_value()) {
+            os << "Fixed Register: " << fixed_register.value();
         }
         os << "\n";
     }
