@@ -64,7 +64,7 @@ public:
         }
 
         const auto pred = [&](const LiveRange& interval) {
-            return interval.end() == other.start();
+            return interval.end() == other.start() || interval.start() == other.finish();
         };
 
         return std::ranges::any_of(m_intervals, pred); //TODO 'binary search'???

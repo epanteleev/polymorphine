@@ -48,10 +48,6 @@ private:
     void setup_intervals() {
         m_unhandled_intervals.reserve(m_intervals.intervals().size());
         for (auto& [lir_val, interval]: m_intervals.intervals()) {
-            if (lir_val.arg().has_value()) {
-                continue; // Do not handle arguments.
-            }
-
             m_unhandled_intervals.emplace_back(&interval, lir_val);
         }
 
@@ -85,37 +81,26 @@ private:
     }
 
     void do_joining() {
-        while (!m_unhandled_intervals.empty()) {
-            const auto current = m_unhandled_intervals.back();
-            m_unhandled_intervals.pop_back();
-
-            if (current.m_vreg.isa(gen())) {
+        for (const auto& [interval, vreg]: std::ranges::reverse_view(m_unhandled_intervals)) {
+            if (vreg.isa(gen())) {
                 continue;
             }
 
-            if (has_intersected_fixed_register(current)) {
+            const auto group_opt = m_group_mapping.find(vreg);
+            if (group_opt != m_group_mapping.end()) {
+                // This interval is already part of a group, we can skip it.
                 continue;
             }
 
-            for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
-                if (unhandled.m_vreg.isa(gen())) {
+            for (auto group = m_groups.begin(); group != m_groups.end(); ++group) {
+                if (!interval->follows_to(group->m_interval)) {
                     continue;
                 }
 
-                const auto actual_interval = try_get_group_interval(current);
-                const auto entry_actual_interval = try_get_group_interval(unhandled);
-                if (entry_actual_interval->start() > actual_interval->finish()) {
-                    // No need to check further, the intervals are sorted.
-                    break;
-                }
-
-                if (entry_actual_interval->intersects(*actual_interval)) {
-                    continue;
-                }
-
-                if (join_and_erase_active_intervals(unhandled, current)) {
-                    break;
-                }
+                group->m_values.push_back(vreg);
+                group->merge_interval(*interval);
+                m_group_mapping.emplace(vreg, group);
+                break;
             }
         }
     }
