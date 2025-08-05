@@ -97,7 +97,8 @@ private:
             }
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
-                if (entry.m_interval->intersects(*unhandled_interval)) {
+                const auto real_interval = get_real_interval(entry);
+                if (real_interval->intersects(*unhandled_interval)) {
                     return false;
                 }
                 m_inactive_intervals.emplace_back(entry);
@@ -112,7 +113,8 @@ private:
             remove_interval_if(m_active_intervals, active_eraser);
 
             const auto unactive_eraser = [&](const IntervalEntry& entry) {
-                if (!entry.m_interval->intersects(*unhandled_interval)) {
+                const auto real_interval = get_real_interval(entry);
+                if (!real_interval->intersects(*unhandled_interval)) {
                     return false;
                 }
                 // This interval is still active, we need to keep it.
@@ -128,21 +130,22 @@ private:
             remove_interval_if(m_inactive_intervals, unactive_eraser);
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
-                if (unhandled.m_interval->start() < unhandled_interval->finish()) {
+                const auto real_interval = get_real_interval(unhandled);
+                if (real_interval->start() < unhandled_interval->finish()) {
                     break;
                 }
 
-                if (!m_fixed_registers.contains(unhandled.m_vreg)) {
+                const auto fixed_reg_groups = m_groups.try_get_fixed_register(unhandled.m_vreg);
+                if (!fixed_reg_groups.has_value()) {
                     continue;
                 }
 
-                if (!unhandled.m_interval->intersects(*unhandled_interval)) {
+                if (!real_interval->intersects(*unhandled_interval)) {
                     continue;
                 }
 
                 m_active_intervals.emplace_back(unhandled);
-                const auto reg = m_reg_allocation.at(unhandled.m_vreg);
-                if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                if (const auto reg_opt = fixed_reg_groups.value().as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
                 }
             }
@@ -150,6 +153,14 @@ private:
             allocate_vreg(m_reg_set, vreg);
             m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
+    }
+
+    const LiveInterval* get_real_interval(const IntervalEntry& entry) const {
+        if (const auto it = m_groups.try_get_group(entry.m_vreg); it.has_value()) {
+            return &it.value()->m_interval;
+        }
+
+        return entry.m_interval;
     }
 
     template<typename Fn>

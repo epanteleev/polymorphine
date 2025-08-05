@@ -65,14 +65,23 @@ private:
                 continue;
             }
 
+            const auto actual_interval = try_get_group_interval(current);
             for (const auto& unhandled: m_unhandled_intervals) {
                 if (unhandled.m_vreg.isa(gen())) {
                     continue;
                 }
 
-                if (join_and_erase_active_intervals(unhandled, current)) {
-                    break;
+                if (unhandled.m_interval->intersects(*current.m_interval)) {
+                    continue;
                 }
+
+                const auto entry_actual_interval = try_get_group_interval(unhandled);
+                if (!entry_actual_interval->follows_to(*actual_interval)) {
+                    // This interval is not followed by the unhandled interval, we can remove it.
+                    continue;
+                }
+
+                if (join_and_erase_active_intervals(unhandled, current)) break;
             }
         }
     }
@@ -82,42 +91,32 @@ private:
      * @return true if the entries were joined, false if they were not.
      */
     bool join_and_erase_active_intervals(const IntervalEntry& first, const IntervalEntry& second) {
-        if (first.m_interval->intersects(*second.m_interval)) {
-            return false;
-        }
-
-        const auto entry_actual_interval = try_get_group_interval(first.m_vreg)
-            .value_or(first.m_interval); // Use the group interval if it exists, otherwise use the entry's interval.
-
-        const auto actual_interval = try_get_group_interval(second.m_vreg)
-            .value_or(second.m_interval); // Use the group interval if it exists, otherwise use the unhandled interval.
-
-        if (!entry_actual_interval->follows_to(*actual_interval)) {
-            // This interval is not followed by the unhandled interval, we can remove it.
-            return false;
-        }
-
         const auto fixed_reg1 = m_fixed_regs.get(first.m_vreg);
         const auto fixed_reg2 = m_fixed_regs.get(second.m_vreg);
-        if (fixed_reg1 == fixed_reg2 || // Both values are in the same fixed register. Do join.
-            (!fixed_reg1.has_value() && fixed_reg2.has_value()) || // One value is in a fixed register, the other is not. Do join regardless.
-            (fixed_reg1.has_value() && !fixed_reg2.has_value())) {
-            register_group(first, second);
+
+        if (fixed_reg1 == fixed_reg2) {
+            register_group(first, second, fixed_reg1);
+
+        } else if (!fixed_reg1.has_value() && fixed_reg2.has_value()) {
+            register_group(first, second, fixed_reg2);
+
+        } else if (fixed_reg1.has_value() && !fixed_reg2.has_value()) {
+            register_group(first, second, fixed_reg1);
         }
 
         return true;
     }
 
-    std::optional<const LiveInterval *> try_get_group_interval(const LIRVal &vreg) const {
-        if (const auto it = m_group_mapping.find(vreg); it != m_group_mapping.end()) {
+    const LiveInterval * try_get_group_interval(const IntervalEntry& entry) const {
+        if (const auto it = m_group_mapping.find(entry.m_vreg); it != m_group_mapping.end()) {
             // This interval is part of a group, we need to merge it with the group.
-            return std::make_optional(&it->second->m_interval);
+            return &it->second->m_interval;
         }
 
-        return std::nullopt;
+        return entry.m_interval;
     }
 
-    void register_group(const IntervalEntry& first, const IntervalEntry& second) {
+    void register_group(const IntervalEntry& first, const IntervalEntry& second, const std::optional<GPVReg>& fixed_reg) {
         if (const auto it = m_group_mapping.find(first.m_vreg); it != m_group_mapping.end()) {
             auto& group = *it->second;
             group.m_values.push_back(second.m_vreg);
@@ -141,7 +140,7 @@ private:
             }
 
             // Neither vreg1 nor vreg2 are in a group, we need to create a new group.
-            m_groups.emplace_back(LiveInterval::create(std::move(intervals)), std::vector{first.m_vreg, second.m_vreg});
+            m_groups.emplace_back(LiveInterval::create(std::move(intervals)), std::vector{first.m_vreg, second.m_vreg}, fixed_reg);
             m_group_mapping.emplace(first.m_vreg, std::prev(m_groups.end()));
             m_group_mapping.emplace(second.m_vreg, std::prev(m_groups.end()));
         }

@@ -95,6 +95,8 @@ public:
         return LiveInterval(std::move(intervals), max);
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const LiveInterval& interval);
+
 private:
     explicit LiveInterval(std::vector<LiveRange>&& intervals, const std::uint32_t end) noexcept:
         m_intervals(std::move(intervals)),
@@ -123,3 +125,11 @@ private:
     std::vector<LiveRange> m_intervals;
     std::uint32_t m_finish;
 };
+
+inline std::ostream & operator<<(std::ostream &os, const LiveInterval &interval) {
+    for (const auto& range : interval) {
+        os << range << " ";
+    }
+
+    return os;
+}

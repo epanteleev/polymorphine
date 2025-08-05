@@ -73,6 +73,13 @@ static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
     }
 }
 
+void FunctionLower::setup_arguments() {
+    for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
+        const auto copy = m_bb->inst(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
+        memorize(&arg, copy->def(0));
+    }
+}
+
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {

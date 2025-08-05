@@ -48,11 +48,7 @@ private:
         return std::make_unique<LIRFuncData>(function.name(), std::move(args));
     }
 
-    void setup_arguments() {
-        for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
-            memorize(&arg, lir_arg);
-        }
-    }
+    void setup_arguments();
 
     void traverse_instructions() {
         for (const auto &bb: m_dom_ordering) {
