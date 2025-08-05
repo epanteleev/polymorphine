@@ -179,6 +179,61 @@ TEST(Fib, u64) {
     }
 }
 
+static Module recursive_fib(const IntegerType* ty) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(ty, {ty}, "fib_recursive");
+    auto copy1 = prototype;
+    auto copy2 = prototype;
+
+    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+
+    auto n = data.arg(0);
+    auto ret_addr = data.alloc(ty);
+
+    auto base_case = data.icmp(IcmpPredicate::Le, n, Value::i64(1));
+    auto if_then = data.create_basic_block();
+    auto if_end = data.create_basic_block();
+    auto if_else = data.create_basic_block();
+    data.br_cond(base_case, if_then, if_else);
+
+    data.switch_block(if_then);
+    data.store(ret_addr, n);
+    data.br(if_end);
+
+    data.switch_block(if_else);
+    auto sub = data.sub(n, Value::i64(1));
+    auto cont = data.create_basic_block();
+    auto call1 = data.call(std::move(copy1), cont, {sub});
+
+    data.switch_block(cont);
+    auto sub2 = data.sub(n, Value::i64(2));
+    auto cont1 = data.create_basic_block();
+    auto call2 = data.call(std::move(copy2), cont1, {sub2});
+    data.switch_block(cont1);
+
+    auto add = data.add(call1, call2);
+    data.store(ret_addr, add);
+    data.br(if_end);
+    data.switch_block(if_end);
+
+    auto ret_val = data.load(ty, ret_addr);
+    data.ret(ret_val);
+
+    return builder.build();
+}
+
+TEST(Fib, RecursiveFib) {
+    GTEST_SKIP();
+    const auto buffer = jit_compile_and_assembly(recursive_fib(SignedIntegerType::i64()), true);
+    const auto fn = buffer.code_start_as<long(long)>("fib_recursive").value();
+
+    for (long i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
 int main(int argc, char **argv) {
     error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);

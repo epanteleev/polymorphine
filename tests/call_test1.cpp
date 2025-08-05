@@ -144,6 +144,60 @@ TEST(CallTest, clamp2) {
     ASSERT_EQ(fn(10, 15, 20), 15);
 }
 
+long arg_locator(int a0, int a1, int a2, int a3, int a4, int a5) {
+    long ret = 0;
+    ret |= static_cast<long>(a0) << 0;
+    ret |= static_cast<long>(a1) << 8;
+    ret |= static_cast<long>(a2) << 16;
+    ret |= static_cast<long>(a3) << 24;
+    ret |= static_cast<long>(a4) << 32;
+    ret |= static_cast<long>(a5) << 40;
+    return ret;
+}
+
+long arg_shuffle(int a0, int a1, int a2, int a3, int a4, int a5) {
+    return arg_locator(a5, a4, a3, a2, a1, a0);
+}
+
+static Module argument_shuffle() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(), SignedIntegerType::i32(),
+                                                          SignedIntegerType::i32(), SignedIntegerType::i32(), SignedIntegerType::i32()}, "arg_shuffle");
+    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto a0 = data.arg(5);
+    const auto a1 = data.arg(4);
+    const auto a2 = data.arg(3);
+    const auto a3 = data.arg(2);
+    const auto a4 = data.arg(1);
+    const auto a5 = data.arg(0);
+
+    FunctionPrototype arg_locator(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(),
+                                                                               SignedIntegerType::i32(), SignedIntegerType::i32(),
+                                                                               SignedIntegerType::i32(), SignedIntegerType::i32()},
+                                                     "arg_locator", FunctionLinkage::EXTERN);
+
+    const auto cont = data.create_basic_block();
+    const auto ret_val = data.call(std::move(arg_locator), cont, {a0, a1, a2, a3, a4, a5});
+    data.switch_block(cont);
+
+    data.ret(ret_val);
+    return builder.build();
+}
+
+TEST(CallTest, argument_shuffle) {
+    GTEST_SKIP();
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"arg_locator", reinterpret_cast<std::size_t>(&arg_locator)}
+    };
+
+    const auto module = argument_shuffle();
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(int, int, int, int, int, int)>("arg_shuffle").value();
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6), arg_shuffle(1, 2, 3, 4, 5, 6));
+}
+
+
 int main(int argc, char **argv) {
     error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);

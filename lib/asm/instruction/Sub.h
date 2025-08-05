@@ -126,7 +126,7 @@ namespace aasm::details {
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t SUB_MR = 0x29;
             static constexpr std::uint8_t SUB_MR_8 = 0x28;
-            return encode_RM<SUB_MR_8, SUB_MR>(buffer, m_size, m_src, m_dest);
+            return encode_MR<SUB_MR_8, SUB_MR>(buffer, m_size, m_src, m_dest);
         }
 
     private:

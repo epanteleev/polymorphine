@@ -45,14 +45,12 @@ public:
 private:
     void setup_intervals() {
         m_unhandled_intervals.reserve(m_intervals.intervals().size());
-        m_active_intervals.reserve(m_intervals.intervals().size());
-
         for (auto& [lir_val, interval]: m_intervals.intervals()) {
             if (lir_val.arg().has_value()) {
-                m_active_intervals.emplace_back(&interval, lir_val);
-            } else {
-                m_unhandled_intervals.emplace_back(&interval, lir_val);
+                continue; // Do not handle arguments.
             }
+
+            m_unhandled_intervals.emplace_back(&interval, lir_val);
         }
 
         const auto pred = [](const IntervalEntry& lhs, const IntervalEntry& rhs) {
@@ -65,35 +63,11 @@ private:
     void do_joining() {
         while (!m_unhandled_intervals.empty()) {
             const auto current = m_unhandled_intervals.back();
-            auto& [unhandled_interval, vreg] = current;
             m_unhandled_intervals.pop_back();
 
-            if (vreg.isa(gen())) {
+            if (current.m_vreg.isa(gen())) {
                 continue;
             }
-
-            const auto active_eraser = [&](const IntervalEntry& entry) {
-                const auto real_interval = try_get_group_interval(entry);
-                if (real_interval->intersects(*unhandled_interval)) {
-                    return false;
-                }
-                m_inactive_intervals.emplace_back(entry);
-                return true;
-            };
-
-            remove_interval_if(m_active_intervals, active_eraser);
-
-            const auto unactive_eraser = [&](const IntervalEntry& entry) {
-                const auto real_interval = try_get_group_interval(entry);
-                if (!real_interval->intersects(*unhandled_interval)) {
-                    return false;
-                }
-                // This interval is still active, we need to keep it.
-                m_active_intervals.emplace_back(entry);
-                return true;
-            };
-
-            remove_interval_if(m_inactive_intervals, unactive_eraser);
 
             if (has_intersected_fixed_register(current)) {
                 continue;
@@ -106,6 +80,11 @@ private:
 
                 const auto actual_interval = try_get_group_interval(current);
                 const auto entry_actual_interval = try_get_group_interval(unhandled);
+                if (entry_actual_interval->start() > actual_interval->finish()) {
+                    // No need to check further, the intervals are sorted.
+                    break;
+                }
+
                 if (entry_actual_interval->intersects(*actual_interval)) {
                     continue;
                 }
@@ -125,7 +104,13 @@ private:
             if (unhandled.m_vreg.isa(gen())) {
                 continue;
             }
+
             const auto entry_actual_interval = try_get_group_interval(unhandled);
+            if (entry_actual_interval->start() > actual_interval->finish()) {
+                // No need to check further, the intervals are sorted.
+                break;
+            }
+
             if (!entry_actual_interval->intersects(*actual_interval)) {
                 continue;
             }
@@ -139,18 +124,6 @@ private:
         return false;
     }
 
-    template<typename Fn>
-    void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
-        for (auto it = intervals.begin(); it != intervals.end();) {
-            if (fn(*it)) {
-                std::swap(*it, intervals.back());
-                intervals.pop_back();
-            } else {
-                ++it;
-            }
-        }
-    }
-
     /**
      * Joins the given entry with the unhandled interval if they do not intersect.
      * @return false if the entries were joined, true if they were not.
@@ -159,6 +132,11 @@ private:
         const auto fixed_reg1 = try_get_fixed_register(first.m_vreg);
         const auto fixed_reg2 = try_get_fixed_register(second.m_vreg);
 
+        if (fixed_reg1 == fixed_reg2) {
+            // Both intervals do not have a fixed register, we can join them.
+            register_group(first, second, fixed_reg1);
+            return false;
+        }
         if (!fixed_reg1.has_value() && fixed_reg2.has_value()) {
             register_group(first, second, fixed_reg2);
             return false;
@@ -222,8 +200,6 @@ private:
     const FixedRegisters& m_fixed_regs;
 
     std::vector<IntervalEntry> m_unhandled_intervals;
-    std::vector<IntervalEntry> m_active_intervals;
-    std::vector<IntervalEntry> m_inactive_intervals;
 
     std::deque<Group> m_groups;
     LIRValMap<LiveIntervalsGroups::group_iterator> m_group_mapping{};

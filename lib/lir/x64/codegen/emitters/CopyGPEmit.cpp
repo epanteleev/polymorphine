@@ -15,6 +15,7 @@ void CopyGPEmit::emit(const aasm::Address &out, aasm::GPReg in) {
 }
 
 void CopyGPEmit::emit(const aasm::Address &out, const aasm::Address &in) {
+    unimplemented();
 }
 
 void CopyGPEmit::emit(const aasm::GPReg out, const std::int64_t in) {

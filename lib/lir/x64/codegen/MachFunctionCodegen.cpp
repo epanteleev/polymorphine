@@ -6,6 +6,7 @@
 #include "emitters/LoadGPEmit.h"
 #include "emitters/MovGPEmit.h"
 #include "emitters/StoreGPEmit.h"
+#include "emitters/SubIntEmit.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) noexcept {
     return static_cast<aasm::CondType>(cond);
@@ -42,6 +43,13 @@ void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const 
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
+}
+
+void MachFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+    SubIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type) {

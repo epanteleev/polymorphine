@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "RegisterAllocation.h"
 #include "RegSet.h"
 
@@ -92,13 +94,25 @@ private:
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
+                const auto reg = m_reg_allocation.at(entry.m_vreg);
+                if (real_interval->start() > unhandled_interval->finish()) {
+                    if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
+                        m_reg_set.push(reg_opt.value());
+                        std::cout << "Push " << reg_opt.value() << " to free set for " << entry.m_vreg << std::endl;
+                    }
+                    return true;
+                }
+
                 if (real_interval->intersects(*unhandled_interval)) {
                     return false;
                 }
                 m_inactive_intervals.emplace_back(entry);
-                const auto reg = m_reg_allocation.at(entry.m_vreg);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.push(reg_opt.value());
+                    if (reg_opt.value() == aasm::r8) {
+                        std::cout << "erer";
+                    }
+                    std::cout << "Push " << reg_opt.value() << " to free set for " << entry.m_vreg << std::endl;
                 }
 
                 return true;
@@ -108,6 +122,10 @@ private:
 
             const auto unactive_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
+                if (real_interval->start() > unhandled_interval->finish()) {
+                    return true;
+                }
+
                 if (!real_interval->intersects(*unhandled_interval)) {
                     return false;
                 }
@@ -125,6 +143,10 @@ private:
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
                 const auto real_interval = get_real_interval(unhandled);
+                if (real_interval->start() > unhandled_interval->finish()) {
+                    // No need to check further, the intervals are sorted.
+                    break;
+                }
 
                 const auto fixed_reg_groups = try_get_fixed_register(unhandled.m_vreg);
                 if (!fixed_reg_groups.has_value()) {
@@ -139,6 +161,7 @@ private:
                 m_active_intervals.emplace_back(unhandled);
                 if (const auto reg_opt = fixed_reg_groups.value().as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
+                    std::cout << "Remove fixed register " << reg_opt.value() << " for " << unhandled.m_vreg << std::endl;
                 }
             }
 
@@ -215,6 +238,7 @@ private:
 
         const auto reg = m_reg_set.top();
         const auto pair = m_reg_allocation.try_emplace(vreg, reg);
+        std::cout << "Allocating " << vreg << " to " << reg << std::endl;
         if (pair.second) m_reg_set.pop();
     }
 

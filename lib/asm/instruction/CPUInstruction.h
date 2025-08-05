@@ -40,7 +40,7 @@ namespace aasm {
             details::Ret,
             details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
             details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
-            details::SubRR, details::SubRI, details::SubRM, details::SubMI,
+            details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
             details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
             details::Jmp, details::Jcc,
             details::SetCCR,

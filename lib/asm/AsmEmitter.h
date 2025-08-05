@@ -93,6 +93,10 @@ namespace aasm {
             m_instructions.emplace_back(details::SubRM(size, src, dst));
         }
 
+        constexpr void sub(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(details::SubMR(size, src, dst));
+        }
+
         constexpr void cmp(const std::uint8_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(details::CmpRR(size, src, dst));
         }

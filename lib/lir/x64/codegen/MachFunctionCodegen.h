@@ -87,9 +87,7 @@ private:
 
     void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
 
-    void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
-
-    }
+    void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
 
     void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
 

@@ -7,6 +7,7 @@ void MovGPEmit::emit(const aasm::Address &out, const aasm::GPReg in) {
 }
 
 void MovGPEmit::emit(const aasm::Address &out, const aasm::Address &in) {
+    unimplemented();
 }
 
 void MovGPEmit::emit(const aasm::Address &out, const std::int64_t in) {
