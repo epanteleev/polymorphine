@@ -39,6 +39,21 @@ public:
         return m_liveness.at(bb).live_out();
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const LivenessAnalysisInfo& info);
 private:
     std::unordered_map<const LIRBlock*, LiveInfo> m_liveness;
 };
+
+inline std::ostream & operator<<(std::ostream &os, const LivenessAnalysisInfo &info) {
+    for (const auto& [bb, live_info]: info.m_liveness) {
+        os << "Block " << bb->id() << ": Live In: ";
+        for (const auto& reg: live_info.live_in()) {
+            os << reg << " ";
+        }
+        os << "Live Out: ";
+        for (const auto& reg: live_info.live_out()) {
+            os << reg << " ";
+        }
+    }
+    return os;
+}

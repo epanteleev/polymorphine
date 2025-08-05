@@ -27,22 +27,32 @@ public:
 
         auto changed = false;
         do {
-            for (const auto& bb: m_ordering) {
-                LIRValSet live_out;
+            changed = false;
+            for (const auto& bb: std::ranges::reverse_view(m_ordering)) {
+                auto& [live_in, live_out] = m_liveness.at(bb);
+
                 for (const auto succ: bb->successors()) {
                     // live_out = b.live_out ∪ succ.live_in
-                    const auto live_in_succ = m_liveness.find(succ);
-                    if (live_in_succ == m_liveness.end()) {
-                        continue;
-                    }
-
-                    for (const auto& live_in_reg: live_in_succ->second.first) {
-                        live_out.insert(live_in_reg);
+                    const auto& [live_in_succ, _] = m_liveness.at(succ);
+                    for (const auto& reg: live_in_succ) {
+                        changed |= live_out.insert(reg).second;
                     }
                 }
 
-                changed = add_all_live_out(bb, live_out);
-                compute_new_live_in(bb, std::move(live_out));
+                // union = (b.old_live_in ∪ b.old_live_out
+                // live_in = (union – b.live_kill) ∪ b.live_gen
+                for (const auto live_out_v: live_out) {
+                    live_in.insert(live_out_v);
+                }
+
+                auto& [kill, gen] = m_kill_gen_set.at(bb);
+                for (const auto& kill_reg: kill) {
+                    live_in.erase(kill_reg);
+                }
+
+                for (const auto& gen_reg: gen) {
+                    live_in.insert(gen_reg);
+                }
             }
 
         } while (changed);
@@ -64,33 +74,6 @@ public:
     }
 
 private:
-    /**
-     * Performs: b.live_out = b.live_out ∪ new_live_out
-     */
-    bool add_all_live_out(const basic_block* bb, const LIRValSet& new_live_out) {
-        auto& live_out_bb = m_liveness.at(bb).second;
-        auto changed = false;
-        for (const auto& succ: new_live_out) {
-            changed |= live_out_bb.insert(succ).second;
-        }
-
-        return changed;
-    }
-
-    /**
-    * Performs: live_in = (b.live_out – b.live_kill) ∪ b.live_gen
-    */
-    void compute_new_live_in(const basic_block* bb, LIRValSet&& new_live_out) {
-        LIRValSet live_in(std::move(new_live_out));
-        const auto& kill_gen = m_kill_gen_set.at(bb);
-
-        auto predicate = [&](const LIRVal& reg) -> bool {
-            return kill_gen.first.contains(reg);
-        };
-        std::erase_if(live_in, predicate);
-        m_liveness.at(bb).first = std::move(live_in);
-    }
-
     void compute_local_live_set() {
         for (const auto bb: m_ordering) {
             LIRValSet gen;
