@@ -79,15 +79,15 @@ static Module clamp() {
     const auto min_val = data.arg(1);
     const auto max_val = data.arg(2);
 
-    auto cont1 = data.create_basic_block();
-    FunctionPrototype proto_max(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
-    const auto clamped = data.call(std::move(proto_max), cont1, {a, min_val});
-    data.switch_block(cont1);
-
     const auto cont = data.create_basic_block();
     FunctionPrototype proto_min(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
-    const auto clamped_final = data.call(std::move(proto_min), cont, {clamped, max_val});
+    const auto clamped = data.call(std::move(proto_min), cont, {a, max_val});
     data.switch_block(cont);
+
+    auto cont1 = data.create_basic_block();
+    FunctionPrototype proto_max(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
+    const auto clamped_final = data.call(std::move(proto_max), cont1, {clamped, min_val});
+    data.switch_block(cont1);
 
     data.ret(clamped_final);
     return builder.build();
@@ -104,7 +104,44 @@ TEST(CallTest, clamp) {
     const auto fn = code.code_start_as<long(long, long, long)>("clamp").value();
     ASSERT_EQ(fn(10, 5, 15), 10);
     ASSERT_EQ(fn(20, 5, 15), 15);
-    ASSERT_EQ(fn(10, 20, 15), 15);
+    ASSERT_EQ(fn(10, 15, 20), 15);
+}
+
+static Module clamp2() {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "clamp");
+    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto a = data.arg(0);
+    const auto min_val = data.arg(1);
+    const auto max_val = data.arg(2);
+
+    auto cont1 = data.create_basic_block();
+    FunctionPrototype proto_max(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
+    const auto clamped = data.call(std::move(proto_max), cont1, {a, min_val});
+    data.switch_block(cont1);
+
+    const auto cont = data.create_basic_block();
+    FunctionPrototype proto_min(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
+    const auto clamped_final = data.call(std::move(proto_min), cont, {clamped, max_val});
+    data.switch_block(cont);
+
+    data.ret(clamped_final);
+    return builder.build();
+}
+
+TEST(CallTest, clamp2) {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"min", reinterpret_cast<std::size_t>(&min)},
+        {"max", reinterpret_cast<std::size_t>(&max)}
+    };
+
+    const auto module = clamp2();
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(long, long, long)>("clamp").value();
+    ASSERT_EQ(fn(10, 5, 15), 10);
+    ASSERT_EQ(fn(20, 5, 15), 15);
+    ASSERT_EQ(fn(10, 15, 20), 15);
 }
 
 int main(int argc, char **argv) {

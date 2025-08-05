@@ -49,7 +49,7 @@ private:
 
 inline std::ostream& operator<<(std::ostream &os, const FixedRegisters &regs) {
     for (const auto& [val, reg] : regs.m_reg_map) {
-        os << val << "-> " << reg;
+        os << val << "-> " << reg << ' ';
     }
 
     return os;

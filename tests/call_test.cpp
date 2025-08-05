@@ -174,7 +174,7 @@ static Module clamp(const IntegerType* ty) {
 
 template<typename Fn>
 static void verify_clamp(const Module& module) {
-    auto code = jit_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module, true);
 
     const auto clamp = code.code_start_as<Fn>("clamp").value();
 

@@ -58,7 +58,7 @@ private:
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervalsGroups &groups) {
     for (const auto& group: groups.m_groups) {
-        os << "Group: " << group.m_interval << " Values: ";
+        os << "Group: " << group.m_interval << std::endl << " Values: ";
         for (const auto& val: group.m_values) {
             os << val << " ";
         }

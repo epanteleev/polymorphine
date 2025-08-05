@@ -56,14 +56,8 @@ public:
 
 private:
     void allocate_fixed_registers() {
-        for (const auto& [lir, rax_reg]: m_fixed_registers) {
-            m_reg_allocation.emplace(lir, rax_reg);
-
-            // Activate group
-            const auto group_opt = m_groups.try_get_group(lir);
-            if (group_opt.has_value()) {
-                m_group_reg_mapping.emplace(group_opt.value(), rax_reg);
-            }
+        for (const auto& [lir, reg]: m_fixed_registers) {
+            m_reg_allocation.emplace(lir, reg);
         }
     }
 
@@ -131,11 +125,8 @@ private:
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
                 const auto real_interval = get_real_interval(unhandled);
-                if (real_interval->start() < unhandled_interval->finish()) {
-                    break;
-                }
 
-                const auto fixed_reg_groups = m_groups.try_get_fixed_register(unhandled.m_vreg);
+                const auto fixed_reg_groups = try_get_fixed_register(unhandled.m_vreg);
                 if (!fixed_reg_groups.has_value()) {
                     continue;
                 }
@@ -144,15 +135,24 @@ private:
                     continue;
                 }
 
+                alloc_fixed_reg_for_group(unhandled.m_vreg);
                 m_active_intervals.emplace_back(unhandled);
                 if (const auto reg_opt = fixed_reg_groups.value().as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
                 }
             }
 
-            allocate_vreg(m_reg_set, vreg);
+            allocate_vreg(vreg);
             m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
+    }
+
+    std::optional<GPVReg> try_get_fixed_register(const LIRVal& vreg) const {
+        if (const auto group_opt = m_groups.try_get_fixed_register(vreg); group_opt.has_value()) {
+            return group_opt;
+        }
+
+        return  m_fixed_registers.get(vreg);
     }
 
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {
@@ -175,29 +175,47 @@ private:
         }
     }
 
-    void allocate_vreg(details::RegSet<CC>& reg_set, const LIRVal& vreg) {
-        const auto group_opt = m_groups.try_get_group(vreg);
-        if (!group_opt.has_value()) {
-            if (const auto pair = m_reg_allocation.try_emplace(vreg, reg_set.top()); pair.second) {
-                reg_set.pop();
+    void alloc_fixed_reg_for_group(const LIRVal& vreg) {
+        const auto group = m_groups.try_get_group(vreg);
+        if (!group.has_value()) {
+            return;
+        }
+
+        const auto group_reg = m_groups.try_get_fixed_register(vreg);
+        if (!group_reg.has_value()) {
+            return;
+        }
+
+        for (const auto& group_vreg: group.value()->m_values) {
+            m_reg_allocation.emplace(group_vreg, group_reg.value());
+        }
+    }
+
+    void allocate_vreg(const LIRVal& vreg) {
+        if (m_reg_allocation.contains(vreg)) {
+            return;
+        }
+        const auto group = m_groups.try_get_group(vreg);
+        if (group.has_value()) {
+            const auto group_reg = m_groups.try_get_fixed_register(vreg);
+            if (group_reg.has_value()) {
+                for (const auto& group_vreg: group.value()->m_values) {
+                    m_reg_allocation.emplace(group_vreg, group_reg.value());
+                }
+
+            } else {
+                const auto reg = m_reg_set.top();
+                for (const auto& group_vreg: group.value()->m_values) {
+                    m_reg_allocation.emplace(group_vreg, reg);
+                }
+                m_reg_set.pop();
             }
-
             return;
         }
 
-        const auto group = group_opt.value();
-        if (const auto it = m_group_reg_mapping.find(group); it != m_group_reg_mapping.end()) {
-            // This group already has a register allocated.
-            m_reg_allocation.try_emplace(vreg, it->second);
-            return;
-        }
-
-        // Allocate a register for the group.
-        const auto reg = reg_set.top();
-        const auto pair = m_reg_allocation.try_emplace(vreg, reg_set.top());
-        if (pair.second) reg_set.pop();
-
-        m_group_reg_mapping.emplace(group, reg);
+        const auto reg = m_reg_set.top();
+        const auto pair = m_reg_allocation.try_emplace(vreg, reg);
+        if (pair.second) m_reg_set.pop();
     }
 
     void do_stack_alloc(const LIRVal& vreg) {
@@ -216,8 +234,6 @@ private:
     LIRValMap<GPVReg> m_reg_allocation{};
     // Size of the 'gen' values in the local area.
     std::int32_t m_local_area_size{0};
-
-    std::unordered_map<const Group*, GPVReg> m_group_reg_mapping{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_inactive_intervals{};

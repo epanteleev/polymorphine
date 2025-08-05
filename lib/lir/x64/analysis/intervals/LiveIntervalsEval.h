@@ -46,7 +46,6 @@ public:
     static LiveIntervalsEval create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto liveness = cache->analyze<LivenessAnalysis>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-
         return LiveIntervalsEval(*data, *liveness, *preorder);
     }
 
@@ -58,7 +57,7 @@ private:
         for (const auto arg: m_obj_func_data.args()) {
             std::unordered_map<const LIRBlock*, LiveRange> intervals;
             if (live_out.contains(arg)) {
-                intervals.emplace(begin, LiveRange(0, size));
+                intervals.emplace(begin, LiveRange(0, size-1));
             } else {
                 intervals.emplace(begin, LiveRange(0, 0));
             }
@@ -67,7 +66,7 @@ private:
     }
 
     void setup_locals() {
-        std::uint32_t inst_number = -1;
+        std::uint32_t inst_number{};
         for (const auto bb: m_ordering) {
             const auto start = inst_number+1;
             const auto& live_out = m_liveness.live_out(bb);
@@ -77,7 +76,7 @@ private:
                 for (const auto& def: LIRVal::try_from(&inst)) {
                     std::unordered_map<const LIRBlock*, LiveRange> intervals;
                     if (live_out.contains(def)) {
-                        intervals.emplace(bb, LiveRange(inst_number, start + bb->size()));
+                        intervals.emplace(bb, LiveRange(inst_number, start + bb->size()-1));
                     } else {
                         intervals.emplace(bb, LiveRange(inst_number, inst_number));
                     }
@@ -89,7 +88,7 @@ private:
     }
 
     void eval_usages() {
-        std::uint32_t inst_number = -1;
+        std::uint32_t inst_number{};
         for (const auto bb: m_ordering) {
             const auto start = inst_number+1;
             const auto& live_out = m_liveness.live_out(bb);
@@ -98,7 +97,7 @@ private:
                 auto& live_range = m_intervals.at(vreg);
                 auto interval = live_range.find(bb);
                 if (interval == live_range.end()) {
-                    live_range.emplace(bb, LiveRange(start, start + bb->size()));
+                    live_range.emplace(bb, LiveRange(start, start + bb->size()-1));
                 } else {
                     interval->second.propagate(start + bb->size());
                 }

@@ -170,7 +170,7 @@ TEST(Fib, i64) {
 }
 
 TEST(Fib, u64) {
-    const auto buffer = jit_compile_and_assembly(fib(UnsignedIntegerType::u64(), Value::u64));
+    const auto buffer = jit_compile_and_assembly(fib(UnsignedIntegerType::u64(), Value::u64), true);
     const auto fn = buffer.code_start_as<std::uint64_t(std::uint64_t)>("fib").value();
 
     for (std::uint64_t i = 0; i < 20; ++i) {
