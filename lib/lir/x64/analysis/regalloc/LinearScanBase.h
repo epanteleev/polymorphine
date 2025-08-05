@@ -53,6 +53,7 @@ public:
         const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
+        std::cout << "Groups\n" << *joins << std::endl;
         return {*data, *fixed_registers, *intervals, *joins};
     }
 
@@ -175,7 +176,7 @@ private:
             return group_opt;
         }
 
-        return  m_fixed_registers.get(vreg);
+        return m_fixed_registers.get(vreg);
     }
 
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {

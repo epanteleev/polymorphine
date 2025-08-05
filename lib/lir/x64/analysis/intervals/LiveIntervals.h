@@ -14,7 +14,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const LiveIntervals& intervals);
 
-    std::span<LiveRange const> intervals(const LIRVal& val) const noexcept {
+    const LiveInterval& intervals(const LIRVal& val) const noexcept {
         return m_intervals.at(val);
     }
 

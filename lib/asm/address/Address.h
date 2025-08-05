@@ -61,6 +61,14 @@ namespace aasm {
             return std::nullopt;
         }
 
+        std::size_t hash() const noexcept {
+            const auto hash_fn = []<typename T0>(const T0& val) {
+                return val.hash();
+            };
+
+            return std::visit(hash_fn, m_address);
+        }
+
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 

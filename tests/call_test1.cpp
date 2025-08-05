@@ -186,7 +186,6 @@ static Module argument_shuffle() {
 }
 
 TEST(CallTest, argument_shuffle) {
-    GTEST_SKIP();
     const std::unordered_map<std::string, std::size_t> external_symbols = {
         {"arg_locator", reinterpret_cast<std::size_t>(&arg_locator)}
     };

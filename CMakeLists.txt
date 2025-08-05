@@ -48,6 +48,7 @@ add_library(ckoof SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
+        lib/lir/x64/asm/GPVRegMap.h
 )
 
 try_setup_coverage_options(ckoof)

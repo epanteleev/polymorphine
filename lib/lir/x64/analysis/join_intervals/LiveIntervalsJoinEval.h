@@ -3,6 +3,7 @@
 #include "LiveIntervalsGroups.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/module/LIRBlock.h"
+#include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/operand/OperandMatcher.h"
 
 template<call_conv::CallConv CC>
@@ -29,6 +30,7 @@ private:
 public:
     void run() {
         setup_intervals();
+        setup_groups();
         do_joining();
     }
 
@@ -58,6 +60,28 @@ private:
         };
 
         std::ranges::sort(m_unhandled_intervals, pred);
+    }
+
+    void setup_groups() {
+        GPVRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
+        for (auto& [lir_val, fixed_reg]: m_fixed_regs) {
+            auto [vec, _] = m_reg_to_lir_val.try_emplace(fixed_reg, std::vector<LIRVal>{});
+            vec->second.push_back(lir_val);
+        }
+
+        for (auto& [fixed_reg, lir_values]: m_reg_to_lir_val) {
+            std::vector<LiveRange> new_intervals;
+            new_intervals.reserve(lir_values.size());
+            for (const auto& lir_val: lir_values) {
+                for (auto& interval: m_intervals.intervals(lir_val)) {
+                    new_intervals.emplace_back(interval);
+                }
+            }
+            m_groups.emplace_back(LiveInterval::create(std::move(new_intervals)), std::move(lir_values), fixed_reg);
+            for (const auto lir_val: m_groups.back().m_values) {
+                m_group_mapping.emplace(lir_val, std::prev(m_groups.end()));
+            }
+        }
     }
 
     void do_joining() {
@@ -164,6 +188,17 @@ private:
         }
 
         return m_fixed_regs.get(vreg);
+    }
+    void register_group(const IntervalEntry& first, const GPVReg& fixed_reg) {
+        std::vector<LiveRange> intervals;
+        intervals.reserve(first.m_interval->size());
+        for (const auto& interval : *first.m_interval) {
+            intervals.emplace_back(interval);
+        }
+
+        // Neither vreg1 nor vreg2 are in a group, we need to create a new group.
+        m_groups.emplace_back(LiveInterval::create(std::move(intervals)), std::vector{first.m_vreg}, fixed_reg);
+        m_group_mapping.emplace(first.m_vreg, std::prev(m_groups.end()));
     }
 
     void register_group(const IntervalEntry& first, const IntervalEntry& second, const std::optional<GPVReg>& fixed_reg) {
