@@ -2,7 +2,6 @@
 
 
 namespace call_conv {
-
     template<typename CC>
     concept CallConv = requires {
         { CC::GP_ARGUMENT_REGISTERS } -> std::ranges::range;

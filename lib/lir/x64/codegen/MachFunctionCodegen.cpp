@@ -7,6 +7,7 @@
 #include "emitters/MovGPEmit.h"
 #include "emitters/StoreGPEmit.h"
 #include "emitters/SubIntEmit.h"
+#include "asm/reg/RegSet.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) noexcept {
     return static_cast<aasm::CondType>(cond);
@@ -87,6 +88,34 @@ void MachFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value
     const auto pointer_reg = m_reg_allocation[pointer];
     const auto value_op = convert_to_gp_op(value);
     StoreGPEmit::emit(m_as, value.size(), pointer_reg, value_op);
+}
+
+void MachFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
+    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size();
+    if (total_size == 0) {
+        return;
+    }
+
+    for (const auto &reg: reg_set) {
+        m_as.pop(8, reg);
+    }
+    if (total_size % 16 == 0) {
+        m_as.sub(8, 8, aasm::rsp);
+    }
+}
+
+void MachFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
+    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size();
+    if (total_size == 0) {
+        return;
+    }
+
+    if (total_size % 16 == 0) {
+        m_as.sub(8, 8, aasm::rsp);
+    }
+    for (auto rev = reg_set.rbegin(); rev != reg_set.rend(); ++rev) {
+        m_as.push(8, *rev);
+    }
 }
 
 void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {

@@ -8,3 +8,5 @@
 #include "codegen/Codegen.h"
 
 #include "asm/jit/JitAssembler.h"
+
+#include "transform/Transform.h"

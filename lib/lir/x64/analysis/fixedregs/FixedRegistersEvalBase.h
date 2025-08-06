@@ -81,43 +81,26 @@ private:
 
     private:
         void gen(const LIRVal &out) override {}
-
         void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void div_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void setcc_i(const LIRVal &out, LIRCondType cond_type) override {}
-
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {}
-
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {}
-
         void neg_i(const LIRVal &out, const LIROperand &in) override {}
-
         void not_i(const LIRVal &out, const LIROperand &in) override {}
-
         void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
-
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
-
+        void up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {}
+        void down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {}
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
-
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
-
         void jmp(const LIRBlock *bb) override {}
 
         void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}

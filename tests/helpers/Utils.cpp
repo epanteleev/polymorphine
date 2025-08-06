@@ -1,7 +1,7 @@
 #include "Utils.h"
 
 #include <iomanip>
-#include <iostream>
+#include <ostream>
 
 void print_hex(const std::uint8_t *data, std::size_t size) {
     std::cout << "Hex: ";

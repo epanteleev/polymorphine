@@ -17,6 +17,9 @@ public:
         auto inst_ptr = inst.get();
         const auto id = m_instructions.push_back(std::move(inst));
         inst_ptr->connect(id, this);
+        if constexpr (std::derived_from<U, LIRControlInstruction>) {
+            make_edges(inst_ptr);
+        }
         return inst_ptr;
     }
 
@@ -26,6 +29,11 @@ public:
     [[nodiscard]]
     std::span<LIRBlock* const> successors() const {
         return last()->successors();
+    }
+
+    [[nodiscard]]
+    const LIRBlock* succ(const std::size_t idx) const {
+        return last()->succ(idx);
     }
 
     friend class LIRFuncData;

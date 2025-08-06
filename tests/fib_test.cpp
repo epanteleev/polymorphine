@@ -224,7 +224,6 @@ static Module recursive_fib(const IntegerType* ty) {
 }
 
 TEST(Fib, RecursiveFib) {
-    GTEST_SKIP();
     const auto buffer = jit_compile_and_assembly(recursive_fib(SignedIntegerType::i64()), true);
     const auto fn = buffer.code_start_as<long(long)>("fib_recursive").value();
 

@@ -2,8 +2,9 @@
 
 #include <iostream>
 
-#include "mir/instruction/ValueInstruction.h"
-#include "mir/value/LocalValue.h"
+#include "lir/x64/lir.h"
+#include "lir/x64/codegen/CodegenPrepare.h"
+#include "mir/mir.h"
 
 static void verify_def_use_chain(std::string_view name, const BasicBlock* bb) {
     for (const auto& inst: bb->instructions()) {
@@ -61,7 +62,10 @@ AsmModule jit_compile(const Module &module, const bool verbose) {
     }
     Lowering lower(module);
     lower.run();
-    const auto result = lower.result();
+    auto result = lower.result();
+
+    CodegenPrepare prepare(result);
+    prepare.run();
     if (verbose) {
         std::cout << result << std::endl;
     }

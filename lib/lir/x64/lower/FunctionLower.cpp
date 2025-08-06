@@ -1,5 +1,6 @@
 #include "FunctionLower.h"
 
+#include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "mir/mir.h"
@@ -154,9 +155,10 @@ void FunctionLower::accept(CondBranch *cond_branch) {
 }
 
 void FunctionLower::accept(Call *inst) {
+    m_bb->inst(LIRAdjustStack::down_stack());
+
     std::vector<LIROperand> args;
     args.reserve(inst->operands().size());
-
     for (const auto &arg: inst->operands()) {
         const auto arg_vreg = get_lir_operand(arg);
         const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
@@ -171,6 +173,7 @@ void FunctionLower::accept(Call *inst) {
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
     const auto call = m_bb->inst(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), linkage_from_mir(proto.linkage())));
+    cont->inst(LIRAdjustStack::up_stack());
     const auto copy_ret = cont->inst(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
 }

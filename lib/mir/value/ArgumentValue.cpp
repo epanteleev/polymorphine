@@ -1,4 +1,4 @@
-#include <iostream>
+#include <ostream>
 
 #include "mir/value/ArgumentValue.h"
 #include "mir/instruction/Instruction.h"

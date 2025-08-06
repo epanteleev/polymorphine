@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lir/x64/lir_frwd.h"
+#include "asm/asm_frwd.h"
 
 class LIRVisitor {
 public:
@@ -25,6 +26,9 @@ public:
 
     virtual void mov_i(const LIRVal& in1, const LIROperand& in2) = 0;
     virtual void store_i(const LIRVal& pointer, const LIROperand& value) = 0;
+    virtual void up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) = 0;
+    virtual void down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) = 0;
+
     virtual void copy_i(const LIRVal& out, const LIROperand& in) = 0;
     virtual void load_i(const LIRVal& out, const LIRVal& pointer) = 0;
 

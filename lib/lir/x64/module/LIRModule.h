@@ -26,6 +26,10 @@ public:
         return m_functions | std::views::values;
     }
 
+    decltype(auto) functions() noexcept {
+        return m_functions | std::views::values;
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const LIRModule &module);
 
 private:

@@ -33,13 +33,6 @@ private:
     friend class FunctionData;
 
     static void make_def_use_chain(Instruction* inst);
-
-    template<IsTerminator T>
-    static void make_edges(T *inst)  {
-        for (auto block: inst->successors()) {
-            block->m_predecessors.push_back(inst->owner());
-        }
-    }
 };
 
 

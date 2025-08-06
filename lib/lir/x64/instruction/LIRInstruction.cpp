@@ -1,6 +1,5 @@
 #include "LIRInstruction.h"
 
-#include <utility>
 
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {

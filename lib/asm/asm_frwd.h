@@ -5,4 +5,5 @@ namespace aasm {
     class AsmEmitter;
     class GPReg;
     class Symbol;
+    class GPRegSet;
 }

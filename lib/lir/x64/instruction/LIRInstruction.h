@@ -6,7 +6,7 @@
 enum class LIRInstKind: std::uint8_t {
     Mov,
     Store,
-    Cmp
+    Cmp,
 };
 
 class LIRInstruction final: public LIRInstructionBase {

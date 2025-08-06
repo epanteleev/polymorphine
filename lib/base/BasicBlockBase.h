@@ -44,6 +44,14 @@ public:
     }
 
     /**
+     * Return the predecessor block at the given index.
+     */
+    const Derived* pred(const std::size_t idx) const {
+        assertion(idx < m_predecessors.size(), "Index {} is out of range for predecessors", idx);
+        return m_predecessors.at(idx);
+    }
+
+    /**
      * Returns the instructions in the block.
      */
     [[nodiscard]]
@@ -89,6 +97,13 @@ protected:
     void set_id(const std::size_t id) noexcept {
         assertion(std::in_range<std::uint32_t>(id), "id={} is out of range", id);
         m_id = id;
+    }
+
+    template<typename T>
+    static void make_edges(T *inst)  {
+        for (auto block: inst->successors()) {
+            block->m_predecessors.push_back(inst->owner());
+        }
     }
 
     std::size_t m_id;

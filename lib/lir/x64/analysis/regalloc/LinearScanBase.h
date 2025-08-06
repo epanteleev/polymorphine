@@ -56,12 +56,13 @@ public:
 private:
     void allocate_fixed_registers() {
         for (const auto& group: m_groups) {
-            if (!group.m_fixed_register.has_value()) {
+            const auto fixed_reg = group.fixed_register();
+            if (!fixed_reg.has_value()) {
                 continue;
             }
 
             for (const auto& lir: group.m_values) {
-                m_reg_allocation.emplace(lir, group.m_fixed_register.value());
+                m_reg_allocation.emplace(lir, fixed_reg.value());
             }
         }
     }

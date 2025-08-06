@@ -29,7 +29,7 @@ namespace aasm {
         static constexpr auto NUMBER_OF_GP_REGS = 16;
 
         constexpr explicit GPReg(const RegEncoding code) noexcept: m_code(code) {}
-        constexpr explicit GPReg() = default;
+        constexpr GPReg() = default;
 
         [[nodiscard]]
         constexpr std::uint8_t code() const noexcept {

@@ -4,6 +4,7 @@
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "lir/x64/module/LIRBlock.h"
+#include "asm/reg/RegSet.h"
 
 namespace {
     class LIRInstructionPrinter final: public LIRVisitor {
@@ -65,6 +66,22 @@ namespace {
 
         void store_i(const LIRVal &pointer, const LIROperand &value) override {
             m_os << "store_i pointer(" << pointer << ") value(" << value << ')';
+        }
+
+        void up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {
+            m_os << "up_stack [";
+            for (const auto& reg: reg_set) {
+                m_os << reg.name(8) << ' ';
+            }
+            m_os << "] stack_size(" << stack_size << ')';
+        }
+
+        void down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {
+            m_os << "down_stack [";
+            for (const auto& reg: reg_set) {
+                m_os << reg.name(8) << ' ';
+            }
+            m_os << "] stack_size(" << stack_size << ')';
         }
 
         void copy_i(const LIRVal &out, const LIROperand &in) override {

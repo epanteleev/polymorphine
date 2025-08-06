@@ -23,7 +23,7 @@ public:
         return m_successors.at(idx);
     }
 
-private:
+protected:
     std::vector<LIRBlock* > m_successors;
 };
 

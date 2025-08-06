@@ -38,7 +38,7 @@ public:
     }
 
     [[nodiscard]]
-    const LIRBlock* owner() const noexcept {
+    LIRBlock* owner() const noexcept {
         assertion(m_owner != nullptr, "owner is null");
         return m_owner;
     }
@@ -52,7 +52,7 @@ public:
 protected:
     friend class LIRBlock;
 
-    void connect(std::size_t idx, const LIRBlock* owner) {
+    void connect(std::size_t idx, LIRBlock* owner) {
         m_id = idx;
         m_owner = owner;
     }
@@ -71,7 +71,7 @@ protected:
     }
 
     std::size_t m_id;
-    const LIRBlock* m_owner;
+    LIRBlock* m_owner;
     std::vector<LIROperand> m_inputs;
 };
 
