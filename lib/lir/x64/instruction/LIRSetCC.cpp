@@ -1,5 +1,6 @@
 #include "LIRSetCC.h"
 #include <ostream>
+#include <utility>
 
 std::ostream & operator<<(std::ostream &os, const LIRCondType &cond) {
     switch (cond) {

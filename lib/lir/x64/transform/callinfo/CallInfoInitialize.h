@@ -53,7 +53,7 @@ private:
         }
     }
 
-    void initialize_data(LIRAdjustStack * adjust_inst, const LIRBlock* call_holder_bb, const LIRValSet& live_set) {
+    void initialize_data(LIRAdjustStack* adjust_inst, const LIRBlock* call_holder_bb, const LIRValSet& live_set) {
         const auto call = find_call_instruction(call_holder_bb);
         const auto no_return_val = call->defs().empty();
         for (const auto& lir_val: live_set) {

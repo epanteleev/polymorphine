@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <iosfwd>
-#include <utility>
 
 /**
  * Represents a constant value in the LIR (Low-Level Intermediate Representation).
@@ -10,10 +9,10 @@
  */
 class LirCst final {
     enum class Kind : std::uint8_t {
-        Int8,
-        Int16,
-        Int32,
-        Int64,
+        Int8 = 1,
+        Int16 = 2,
+        Int32 = 4,
+        Int64 = 8
     };
 
     constexpr LirCst(const std::int64_t value, const Kind kind) noexcept
@@ -22,13 +21,7 @@ class LirCst final {
 public:
     [[nodiscard]]
     constexpr std::uint8_t size() const noexcept {
-        switch (m_kind) {
-            case Kind::Int8: return 1;
-            case Kind::Int16: return 2;
-            case Kind::Int32: return 4;
-            case Kind::Int64: return 8;
-            default: std::unreachable();
-        }
+        return static_cast<std::uint8_t>(m_kind);
     }
 
     [[nodiscard]]
