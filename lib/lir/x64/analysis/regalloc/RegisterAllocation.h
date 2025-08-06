@@ -7,8 +7,9 @@
 
 class RegisterAllocation final: public AnalysisPassResult {
 public:
-    explicit RegisterAllocation(LIRValMap<GPVReg>&& reg_allocation, std::int32_t local_area_size) noexcept:
+    explicit RegisterAllocation(LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
         m_reg_allocation(std::move(reg_allocation)),
+        m_used_callee_saved_regs(std::move(used_callee_saved_regs)),
         m_local_area_size(local_area_size) {}
 
     friend std::ostream& operator<<(std::ostream& os, const RegisterAllocation& regs);
@@ -22,9 +23,15 @@ public:
         return m_local_area_size;
     }
 
+    [[nodiscard]]
+    std::span<const aasm::GPReg> used_callee_saved_regs() const noexcept {
+        return m_used_callee_saved_regs;
+    }
+
 private:
-    LIRValMap<GPVReg> m_reg_allocation;
-    std::int32_t m_local_area_size;
+    const LIRValMap<GPVReg> m_reg_allocation;
+    const std::vector<aasm::GPReg> m_used_callee_saved_regs{};
+    const std::int32_t m_local_area_size;
 };
 
 inline std::ostream & operator<<(std::ostream &os, const RegisterAllocation &regs) {

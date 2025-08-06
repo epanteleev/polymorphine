@@ -48,23 +48,9 @@ private:
         }
     }
 
-    void emit_prologue() {
-        if (m_reg_allocation.local_area_size() == 0) {
-            return;
-        }
+    void emit_prologue();
 
-        m_as.push(8, aasm::rbp);
-        m_as.copy(8, aasm::rsp, aasm::rbp);
-        m_as.add(8, -m_reg_allocation.local_area_size(), aasm::rsp);
-    }
-
-    void emit_epilogue() {
-        if (m_reg_allocation.local_area_size() == 0) {
-            return;
-        }
-
-        m_as.leave();
-    }
+    void emit_epilogue();
 
     void traverse_instructions() {
         for (const auto& bb: m_preorder) {

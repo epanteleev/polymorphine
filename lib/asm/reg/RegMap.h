@@ -4,6 +4,7 @@
 #include <bitset>
 
 #include "Register.h"
+#include "utility/BitUtils.h"
 
 namespace aasm {
     template<typename V>
@@ -26,7 +27,7 @@ namespace aasm {
 
             Iterator& operator++() noexcept {
                 m_idx++;
-                m_idx = m_reg_map.find_next_set_bit(m_idx);
+                m_idx = bitutils::find_next_set_bit(m_reg_map.m_has_values, m_idx);
                 return *this;
             }
 
@@ -86,7 +87,7 @@ namespace aasm {
 
         [[nodiscard]]
         const_iterator begin() noexcept {
-            return Iterator(*this, find_next_set_bit(0));
+            return Iterator(*this, bitutils::find_next_set_bit(m_has_values, 0));
         }
 
         [[nodiscard]]
@@ -95,14 +96,6 @@ namespace aasm {
         }
 
     private:
-        std::size_t find_next_set_bit(const std::size_t start) const noexcept {
-            for (std::size_t i = start; i < GPReg::NUMBER_OF_GP_REGS; ++i) {
-                if (m_has_values.test(i)) return i;
-            }
-
-            return GPReg::NUMBER_OF_GP_REGS; // No set bit found
-        }
-
         std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
         std::array<std::pair<GPReg, V>, GPReg::NUMBER_OF_GP_REGS> m_regs; //TODO not to call default constructor
     };

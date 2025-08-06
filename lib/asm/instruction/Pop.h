@@ -24,7 +24,7 @@ namespace aasm::details {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const PopR &popr) {
-        return os << "pop" << prefix_size(popr.m_size) << ' ' << popr.m_reg.name(popr.m_size);
+        return os << "pop" << prefix_size(popr.m_size) << " %" << popr.m_reg.name(popr.m_size);
     }
 
     class PopM final {

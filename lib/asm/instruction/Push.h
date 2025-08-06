@@ -24,7 +24,7 @@ namespace aasm::details {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const PushR &pushr) {
-        return os << "push" << prefix_size(pushr.m_size) << ' ' << pushr.m_reg.name(pushr.m_size);
+        return os << "push" << prefix_size(pushr.m_size) << " %" << pushr.m_reg.name(pushr.m_size);
     }
 
     class PushM final {

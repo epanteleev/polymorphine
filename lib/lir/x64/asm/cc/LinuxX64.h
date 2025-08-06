@@ -44,7 +44,7 @@ namespace call_conv {
             aasm::rdx,
             aasm::rdi,
             aasm::rsi,
-            aasm::rbp,
+            //aasm::rbp, Exclude rbp from the available registers, it is used for stack frame pointer.
             aasm::rsp,
             aasm::r8,
             aasm::r9,

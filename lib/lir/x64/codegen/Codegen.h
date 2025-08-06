@@ -3,7 +3,7 @@
 #include "lir/x64/asm/AsmModule.h"
 #include "lir/x64/module/LIRModule.h"
 
-class Codegen {
+class Codegen final {
 public:
     explicit Codegen(const LIRModule &module) noexcept:
         m_module(module),

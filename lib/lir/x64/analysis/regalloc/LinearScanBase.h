@@ -37,13 +37,15 @@ private:
 
 public:
     void run() {
+        m_used_callee_saved_regs.reserve(CC::GP_CALLEE_SAVE_REGISTERS.size());
+
         allocate_fixed_registers();
         setup_unhandled_intervals();
         do_register_allocation();
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation), m_local_area_size);
+        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_local_area_size);
     }
 
     static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
@@ -62,7 +64,7 @@ private:
             }
 
             for (const auto& lir: group.m_values) {
-                m_reg_allocation.emplace(lir, fixed_reg.value());
+                allocate_register(lir, fixed_reg.value());
             }
         }
     }
@@ -168,7 +170,7 @@ private:
                 m_reg_set.remove(fixed_reg_groups.value());
             }
 
-            allocate_vreg(vreg);
+            select_vreg(vreg);
             m_active_intervals.emplace_back(unhandled_interval, vreg);
         }
     }
@@ -181,8 +183,59 @@ private:
         return entry.m_interval;
     }
 
+    void select_vreg(const LIRVal& vreg) {
+        if (m_reg_allocation.contains(vreg)) {
+            return;
+        }
+        const auto group = m_groups.try_get_group(vreg);
+        if (group.has_value()) {
+            assertion(!group.value()->fixed_register().has_value(), "Group with fixed register should not be allocated here");
+            const auto reg = m_reg_set.top();
+            for (const auto& group_vreg: group.value()->m_values) {
+                allocate_register(group_vreg, reg);
+            }
+            m_reg_set.pop();
+            return;
+        }
+
+        const auto reg = m_reg_set.top();
+        allocate_register(vreg, reg);
+        m_reg_set.pop();
+    }
+
+    void allocate_register(const LIRVal& vreg, const GPVReg& reg) {
+        if (const auto gp_reg= reg.as_gp_reg(); gp_reg.has_value()) {
+            allocate_register(vreg, gp_reg.value());
+            return;
+        }
+
+        auto [_, has] = m_reg_allocation.try_emplace(vreg, reg);
+        assertion(has, "Register already allocated for LIRVal");
+    }
+
+    void allocate_register(const LIRVal& vreg, const aasm::GPReg reg) {
+        auto [_, has] = m_reg_allocation.try_emplace(vreg, reg);
+        if (!std::ranges::contains(CC::GP_CALLEE_SAVE_REGISTERS, reg)) {
+            // This is a caller-save register, we can skip it.
+            return;
+        }
+
+        assertion(has, "Register already allocated for LIRVal");
+        if (std::ranges::contains(m_used_callee_saved_regs, reg)) {
+            return; // Already added
+        }
+
+        m_used_callee_saved_regs.push_back(reg);
+    }
+
+    void do_stack_alloc(const LIRVal& vreg) {
+        const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
+        m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, -offset));
+        m_local_area_size = offset;
+    }
+
     template<typename Fn>
-    void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
+    static void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
         for (auto it = intervals.begin(); it != intervals.end();) {
             if (fn(*it)) {
                 std::swap(*it, intervals.back());
@@ -193,38 +246,12 @@ private:
         }
     }
 
-    void allocate_vreg(const LIRVal& vreg) {
-        if (m_reg_allocation.contains(vreg)) {
-            return;
-        }
-        const auto group = m_groups.try_get_group(vreg);
-        if (group.has_value()) {
-            assertion(!group.value()->m_fixed_register.has_value(), "Group with fixed register should not be allocated here");
-            const auto reg = m_reg_set.top();
-            for (const auto& group_vreg: group.value()->m_values) {
-                m_reg_allocation.emplace(group_vreg, reg);
-            }
-            m_reg_set.pop();
-            return;
-        }
-
-        const auto reg = m_reg_set.top();
-        const auto pair = m_reg_allocation.try_emplace(vreg, reg);
-        if (pair.second) m_reg_set.pop();
-    }
-
-    void do_stack_alloc(const LIRVal& vreg) {
-        const auto offset = align_up(m_local_area_size, vreg.size()) + vreg.size();
-        m_reg_allocation.try_emplace(vreg, aasm::Address(aasm::rbp, -offset));
-        m_local_area_size = offset;
-    }
-
     const LIRFuncData& m_obj_func_data;
     const LiveIntervals& m_intervals;
     const LiveIntervalsGroups& m_groups;
 
     details::RegSet<CC> m_reg_set;
-
+    std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     LIRValMap<GPVReg> m_reg_allocation{};
     // Size of the 'gen' values in the local area.
     std::int32_t m_local_area_size{0};

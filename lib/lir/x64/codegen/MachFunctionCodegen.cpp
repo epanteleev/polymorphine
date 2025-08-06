@@ -21,6 +21,36 @@ static aasm::Linkage cvt_linkage(const LIRLinkage linkage) noexcept {
     }
 }
 
+static bool is_no_prologue(const RegisterAllocation& reg_allocation) noexcept {
+    return reg_allocation.local_area_size() == 0 &&
+           reg_allocation.used_callee_saved_regs().empty();
+}
+
+void MachFunctionCodegen::emit_prologue() {
+    if (is_no_prologue(m_reg_allocation)) {
+        return;
+    }
+
+    m_as.push(8, aasm::rbp);
+    m_as.copy(8, aasm::rsp, aasm::rbp);
+    m_as.add(8, -m_reg_allocation.local_area_size(), aasm::rsp);
+    for (const auto& reg: m_reg_allocation.used_callee_saved_regs()) {
+        m_as.push(8, reg);
+    }
+}
+
+void MachFunctionCodegen::emit_epilogue() {
+    if (is_no_prologue(m_reg_allocation)) {
+        return;
+    }
+
+    for (const auto& reg: std::ranges::reverse_view(m_reg_allocation.used_callee_saved_regs())) {
+        m_as.pop(8, reg);
+    }
+
+    m_as.leave();
+}
+
 GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
@@ -91,7 +121,7 @@ void MachFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value
 }
 
 void MachFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
-    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size();
+    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
     if (total_size == 0) {
         return;
     }
@@ -100,12 +130,12 @@ void MachFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t st
         m_as.pop(8, reg);
     }
     if (total_size % 16 == 0) {
-        m_as.sub(8, 8, aasm::rsp);
+        m_as.add(8, 8, aasm::rsp);
     }
 }
 
 void MachFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
-    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size();
+    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
     if (total_size == 0) {
         return;
     }
@@ -113,7 +143,7 @@ void MachFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t 
     if (total_size % 16 == 0) {
         m_as.sub(8, 8, aasm::rsp);
     }
-    for (auto rev = reg_set.rbegin(); rev != reg_set.rend(); ++rev) {
+    for (auto rev = reg_set.rbegin(); rev != reg_set.rend(); --rev) {
         m_as.push(8, *rev);
     }
 }

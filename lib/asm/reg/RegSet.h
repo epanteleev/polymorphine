@@ -2,6 +2,7 @@
 #include <bitset>
 
 #include "Register.h"
+#include "utility/BitUtils.h"
 
 namespace aasm {
     class GPRegSet final {
@@ -23,24 +24,24 @@ namespace aasm {
 
             Iterator& operator--() noexcept {
                 m_idx--;
-                m_idx = m_reg_map.find_prev_set_bit(m_idx);
+                m_idx = bitutils::find_prev_set_bit(m_reg_map.m_has_values, m_idx);
                 return *this;
             }
 
             Iterator& operator++() noexcept {
                 m_idx++;
-                m_idx = m_reg_map.find_next_set_bit(m_idx);
+                m_idx = bitutils::find_next_set_bit(m_reg_map.m_has_values, m_idx);
                 return *this;
             }
 
             Iterator operator--(int) noexcept {
-                Iterator temp = *this;
-                ++*this;
+                const Iterator temp = *this;
+                --*this;
                 return temp;
             }
 
             Iterator operator++(int) noexcept {
-                Iterator temp = *this;
+                const Iterator temp = *this;
                 ++*this;
                 return temp;
             }
@@ -78,7 +79,7 @@ namespace aasm {
         }
 
         [[nodiscard]]
-        const_iterator find(const GPReg reg) noexcept {
+        const_iterator find(const GPReg reg) const noexcept {
             if (!contains(reg)) {
                 return end();
             }
@@ -87,7 +88,7 @@ namespace aasm {
 
         [[nodiscard]]
         const_iterator begin() const noexcept {
-            return Iterator(*this, find_next_set_bit(0));
+            return Iterator(*this, bitutils::find_next_set_bit(m_has_values, 0));
         }
 
         [[nodiscard]]
@@ -97,7 +98,7 @@ namespace aasm {
 
         [[nodiscard]]
         const_iterator rbegin() const noexcept {
-            return Iterator(*this, find_prev_set_bit(GPReg::NUMBER_OF_GP_REGS));
+            return Iterator(*this, bitutils::find_prev_set_bit(m_has_values, GPReg::NUMBER_OF_GP_REGS-1));
         }
 
         [[nodiscard]]
@@ -106,24 +107,7 @@ namespace aasm {
         }
 
     private:
-        [[nodiscard]]
-        std::size_t find_next_set_bit(const std::size_t start) const noexcept {
-            for (std::size_t i = start; i < GPReg::NUMBER_OF_GP_REGS; ++i) {
-                if (m_has_values.test(i)) return i;
-            }
-
-            return GPReg::NUMBER_OF_GP_REGS; // No set bit found
-        }
-
-        [[nodiscard]]
-        std::size_t find_prev_set_bit(const std::size_t start) const noexcept {
-            for (std::size_t i = start; i > 0; --i) {
-                if (m_has_values.test(i - 1)) return i - 1;
-            }
-            return -1; // No set bit found
-        }
-
         std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
-        std::array<GPReg, GPReg::NUMBER_OF_GP_REGS> m_regs{}; //TODO not to call default constructor
+        GPReg m_regs[GPReg::NUMBER_OF_GP_REGS];
     };
 }
