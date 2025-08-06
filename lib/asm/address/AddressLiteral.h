@@ -34,10 +34,6 @@ namespace aasm {
             return m_symbol == rhs.m_symbol && m_displacement == rhs.m_displacement;
         }
 
-        std::size_t hash() const noexcept {
-            return std::hash<const Symbol*>()(m_symbol) ^ std::hash<std::uint32_t>()(m_displacement);
-        }
-
     private:
         const Symbol* m_symbol;
         std::uint32_t m_displacement;

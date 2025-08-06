@@ -72,8 +72,8 @@ private:
 
     class LIRInstTraverse final: public LIRVisitor {
     public:
-        explicit LIRInstTraverse(LIRValMap<GPVReg>& vreg_rax) noexcept:
-            m_reg_map(vreg_rax) {}
+        explicit LIRInstTraverse(LIRValMap<aasm::GPReg>& fixed_reg) noexcept:
+            m_fixed_reg(fixed_reg) {}
 
         void run(const LIRInstructionBase& inst) {
             const_cast<LIRInstructionBase&>(inst).visit(*this);
@@ -123,10 +123,10 @@ private:
         void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, LIRLinkage linkage) override {
-            m_reg_map.emplace(out, aasm::rax);
+            m_fixed_reg.emplace(out, aasm::rax);
             ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
             for (const auto& arg: args) {
-                m_reg_map.emplace(arg, arguments.get_reg());
+                m_fixed_reg.emplace(arg, arguments.get_reg());
             }
         }
 
@@ -138,16 +138,16 @@ private:
 
         void ret(const std::span<const LIRVal> ret_values) override {
             if (ret_values.size() == 1) {
-                m_reg_map.emplace(ret_values[0], aasm::rax);
+                m_fixed_reg.emplace(ret_values[0], aasm::rax);
             }
         }
 
-        LIRValMap<GPVReg>& m_reg_map;
+        LIRValMap<aasm::GPReg>& m_fixed_reg;
     };
 
     const LIRFuncData& m_obj_func_data;
 
-    std::vector<GPVReg> m_args{};
-    LIRValMap<GPVReg> m_reg_map{};
+    std::vector<aasm::GPReg> m_args{};
+    LIRValMap<aasm::GPReg> m_reg_map{};
 };
 

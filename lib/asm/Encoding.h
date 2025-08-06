@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "address/Address.h"
-#include "Register.h"
+#include "reg/Register.h"
 
 namespace aasm::details {
     constexpr std::optional<std::uint8_t> prefix(std::uint8_t size, const GPReg src, const Address& dest) noexcept {

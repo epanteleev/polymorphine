@@ -1,5 +1,5 @@
 #pragma once
-#include "asm/Register.h"
+#include "../reg/Register.h"
 
 namespace aasm::details {
     class MovRR final {

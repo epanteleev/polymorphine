@@ -26,7 +26,10 @@ namespace aasm {
             R15 = 15,
         };
 
+        static constexpr auto NUMBER_OF_GP_REGS = 16;
+
         constexpr explicit GPReg(const RegEncoding code) noexcept: m_code(code) {}
+        constexpr explicit GPReg() = default;
 
         [[nodiscard]]
         constexpr std::uint8_t code() const noexcept {
@@ -45,10 +48,6 @@ namespace aasm {
 
         [[nodiscard]]
         std::string_view name(std::size_t size) const noexcept;
-
-        std::size_t hash() const noexcept {
-            return static_cast<std::size_t>(m_code);
-        }
 
     private:
         RegEncoding m_code;

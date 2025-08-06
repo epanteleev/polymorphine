@@ -1,9 +1,9 @@
 #pragma once
 
 #include "LiveIntervalsGroups.h"
+#include "asm/reg/RegMap.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/module/LIRBlock.h"
-#include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/operand/OperandMatcher.h"
 
 template<call_conv::CallConv CC>
@@ -36,7 +36,7 @@ public:
 
 private:
     void setup_groups() {
-        GPVRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
+        aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
         // Collect all LIR values that are mapped to fixed registers.
         for (auto& [lir_val, fixed_reg]: m_fixed_regs) {
             auto [vec, _] = m_reg_to_lir_val.try_emplace(fixed_reg, std::vector<LIRVal>{});

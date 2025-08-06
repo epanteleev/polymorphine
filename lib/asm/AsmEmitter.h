@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Register.h"
+#include "reg/Register.h"
 #include "address/Address.h"
 #include "AsmBuffer.h"
 #include "instruction/CPUInstruction.h"

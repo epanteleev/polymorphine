@@ -1,7 +1,7 @@
 #pragma once
 
 #include "address/Address.h"
-#include "asm/Register.h"
+#include "reg/Register.h"
 #include "asm/AsmBuffer.h"
 #include "asm/AsmEmitter.h"
 

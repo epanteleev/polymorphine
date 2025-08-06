@@ -7,9 +7,9 @@
 
 class FixedRegisters final: public AnalysisPassResult {
 public:
-    using const_iterator = LIRValMap<GPVReg>::const_iterator;
+    using const_iterator = LIRValMap<aasm::GPReg>::const_iterator;
 
-    explicit FixedRegisters(LIRValMap<GPVReg>&& rax_map, std::vector<GPVReg>&& arg_map) noexcept:
+    explicit FixedRegisters(LIRValMap<aasm::GPReg>&& rax_map, std::vector<aasm::GPReg>&& arg_map) noexcept:
         m_reg_map(std::move(rax_map)),
         m_args_map(std::move(arg_map)) {}
 
@@ -28,11 +28,11 @@ public:
         return m_reg_map.contains(val);
     }
 
-    std::span<GPVReg const> arguments() const noexcept {
+    std::span<aasm::GPReg const> arguments() const noexcept {
         return m_args_map;
     }
 
-    std::optional<GPVReg> get(const LIRVal& val) const noexcept {
+    std::optional<aasm::GPReg> get(const LIRVal& val) const noexcept {
         if (const auto it = m_reg_map.find(val); it != m_reg_map.end()) {
             return it->second;
         }
@@ -42,9 +42,9 @@ public:
 
 private:
     // Maps LIR values to fixed registers. It also contains argument values.
-    const LIRValMap<GPVReg> m_reg_map;
+    const LIRValMap<aasm::GPReg> m_reg_map;
     // Maps argument values to registers
-    const std::vector<GPVReg> m_args_map;
+    const std::vector<aasm::GPReg> m_args_map;
 };
 
 inline std::ostream& operator<<(std::ostream &os, const FixedRegisters &regs) {

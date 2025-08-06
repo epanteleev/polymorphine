@@ -2,7 +2,7 @@
 
 class Group final {
 public:
-    explicit Group(LiveInterval&& interval, std::vector<LIRVal>&& values, const std::optional<GPVReg> &fixed_register) noexcept:
+    explicit Group(LiveInterval&& interval, std::vector<LIRVal>&& values, const std::optional<aasm::GPReg> &fixed_register) noexcept:
         m_interval(std::move(interval)),
         m_values(std::move(values)),
         m_fixed_register(fixed_register) {}
@@ -15,7 +15,7 @@ public:
         return m_values;
     }
 
-    const std::optional<GPVReg>& fixed_register() const noexcept {
+    const std::optional<aasm::GPReg>& fixed_register() const noexcept {
         return m_fixed_register;
     }
 
@@ -26,7 +26,7 @@ public:
 
     LiveInterval m_interval;
     std::vector<LIRVal> m_values;
-    std::optional<GPVReg> m_fixed_register;
+    std::optional<aasm::GPReg> m_fixed_register;
 };
 
 class LiveIntervalsGroups final: public AnalysisPassResult {

@@ -164,9 +164,7 @@ private:
                 }
 
                 m_active_intervals.emplace_back(unhandled);
-                if (const auto reg_opt = fixed_reg_groups.value().as_gp_reg(); reg_opt.has_value()) {
-                    m_reg_set.remove(reg_opt.value());
-                }
+                m_reg_set.remove(fixed_reg_groups.value());
             }
 
             allocate_vreg(vreg);
