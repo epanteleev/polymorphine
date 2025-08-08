@@ -16,7 +16,6 @@ endfunction()
 # Try to set up coverage options for a target if '-DCMAKE_BUILD_TYPE=Coverage'
 function(try_setup_coverage_options target)
     if (NOT CMAKE_BUILD_TYPE STREQUAL "Coverage")
-        message(STATUS "Skipping coverage setup for target ${target} as CMAKE_BUILD_TYPE is not 'Coverage'")
         return()
     endif ()
 

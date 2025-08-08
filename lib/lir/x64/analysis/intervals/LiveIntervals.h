@@ -27,9 +27,9 @@ private:
 };
 
 inline std::ostream & operator<<(std::ostream &os, const LiveIntervals &intervals) {
-    for (const auto& [vreg, intervals] : intervals.m_intervals) {
-        os << vreg << " -> ";
-        for (const auto& interval: intervals) {
+    for (const auto& [lir_val, live_interval] : intervals.m_intervals) {
+        os << lir_val << " -> ";
+        for (const auto& interval: live_interval) {
             os << interval << " ";
         }
     }

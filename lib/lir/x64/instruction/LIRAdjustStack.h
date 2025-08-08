@@ -6,6 +6,8 @@
 enum class LIRAdjustKind: std::uint8_t {
     UpStack,
     DownStack,
+    Prologue,
+    Epilogue,
 };
 
 class LIRAdjustStack final: public LIRInstructionBase {
@@ -23,7 +25,7 @@ public:
     }
 
     void increase_stack_size(const std::size_t size) {
-        m_stack_size += size;
+        m_overflow_argument_area_size += size;
     }
 
     [[nodiscard]]
@@ -39,8 +41,16 @@ public:
         return std::make_unique<LIRAdjustStack>(LIRAdjustKind::DownStack);
     }
 
+    static std::unique_ptr<LIRAdjustStack> prologue() {
+        return std::make_unique<LIRAdjustStack>(LIRAdjustKind::Prologue);
+    }
+
+    static std::unique_ptr<LIRAdjustStack> epilogue() {
+        return std::make_unique<LIRAdjustStack>(LIRAdjustKind::Epilogue);
+    }
+
 private:
-    std::size_t m_stack_size{};
+    std::size_t m_overflow_argument_area_size{};
     aasm::GPRegSet m_caller_saved_regs{};
     LIRAdjustKind m_adjust_kind;
 };

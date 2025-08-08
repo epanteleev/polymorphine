@@ -21,7 +21,6 @@ class LIRFunctionCodegen final: public LIRVisitor {
 public:
     void run() {
         setup_basic_block_labels();
-        emit_prologue();
         traverse_instructions();
     }
 
@@ -47,10 +46,6 @@ private:
             m_bb_labels.emplace(bb, label);
         }
     }
-
-    void emit_prologue();
-
-    void emit_epilogue();
 
     void traverse_instructions() {
         for (const auto& bb: m_preorder) {
@@ -122,6 +117,10 @@ private:
     void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override;
 
     void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override;
+
+    void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override;
+
+    void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override;
 
     void copy_i(const LIRVal &out, const LIROperand &in) override;
 

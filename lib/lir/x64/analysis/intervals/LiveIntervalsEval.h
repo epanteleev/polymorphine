@@ -30,14 +30,14 @@ public:
 
     std::unique_ptr<LiveIntervals> result() {
         LIRValMap<LiveInterval> all_intervals;
-        for (auto& [vreg, intervals]: m_intervals) {
-            std::vector<LiveRange> intervals_for_vreg;
-            intervals_for_vreg.reserve(intervals.size());
+        for (auto& [lir_val, intervals]: m_intervals) {
+            std::vector<LiveRange> intervals_for_lir_val;
+            intervals_for_lir_val.reserve(intervals.size());
             for (const auto &interval: intervals | std::views::values) {
-                intervals_for_vreg.emplace_back(interval);
+                intervals_for_lir_val.emplace_back(interval);
             }
 
-            all_intervals.emplace(vreg, LiveInterval::create(std::move(intervals_for_vreg)));
+            all_intervals.emplace(lir_val, LiveInterval::create(std::move(intervals_for_lir_val), get_hint(lir_val)));
         }
 
         return std::make_unique<LiveIntervals>(std::move(all_intervals));
@@ -52,15 +52,9 @@ public:
 private:
     void setup_arguments() {
         const auto begin = m_obj_func_data.first();
-        const auto& live_out = m_liveness.live_out(begin);
-        const auto size = begin->size();
         for (const auto arg: m_obj_func_data.args()) {
             std::unordered_map<const LIRBlock*, LiveRange> intervals;
-            if (live_out.contains(arg)) {
-                intervals.emplace(begin, LiveRange(0, size-1));
-            } else {
-                intervals.emplace(begin, LiveRange(0, 0));
-            }
+            intervals.emplace(begin, LiveRange(0, 0));
             m_intervals.emplace(arg, std::move(intervals));
         }
     }
@@ -68,19 +62,11 @@ private:
     void setup_locals() {
         std::uint32_t inst_number{};
         for (const auto bb: m_ordering) {
-            const auto start = inst_number+1;
-            const auto& live_out = m_liveness.live_out(bb);
             for (const auto& inst: bb->instructions()) {
                 inst_number += 1;
-
                 for (const auto& def: LIRVal::try_from(&inst)) {
                     std::unordered_map<const LIRBlock*, LiveRange> intervals;
-                    if (live_out.contains(def)) {
-                        intervals.emplace(bb, LiveRange(inst_number, start + bb->size()-1));
-                    } else {
-                        intervals.emplace(bb, LiveRange(inst_number, inst_number));
-                    }
-
+                    intervals.emplace(bb, LiveRange(inst_number, inst_number));
                     m_intervals.emplace(def, std::move(intervals));
                 }
             }
@@ -91,14 +77,18 @@ private:
         std::uint32_t inst_number{};
         for (const auto bb: m_ordering) {
             const auto start = inst_number+1;
-            const auto& live_out = m_liveness.live_out(bb);
+            const auto call_terminator = bb->last()->isa(call());
 
-            for (const auto& vreg: live_out) {
-                auto& live_range = m_intervals.at(vreg);
-                auto interval = live_range.find(bb);
-                if (interval == live_range.end()) {
+            for (const auto& lir_val: m_liveness.live_out(bb)) {
+                auto& live_range = m_intervals.at(lir_val);
+                if (const auto interval = live_range.find(bb); interval == live_range.end()) {
                     live_range.emplace(bb, LiveRange(start, start + bb->size()-1));
+
                 } else {
+                    if (call_terminator) {
+                        m_call_live_out.emplace(lir_val);
+                    }
+
                     interval->second.propagate(start + bb->size());
                 }
             }
@@ -106,16 +96,16 @@ private:
             for (const auto& inst: bb->instructions()) {
                 inst_number += 1;
                 for (const auto& in: inst.inputs()) {
-                    const auto vreg_opt = LIRVal::try_from(in);
-                    if (!vreg_opt.has_value()) {
+                    const auto lir_val_opt = LIRVal::try_from(in);
+                    if (!lir_val_opt.has_value()) {
                         continue;
                     }
-                    const auto& vreg = vreg_opt.value();
 
-                    auto& live_range = m_intervals.at(vreg);
-                    auto interval = live_range.find(bb);
-                    if (interval == live_range.end()) {
+                    const auto& lir_val = lir_val_opt.value();
+                    auto& live_range = m_intervals.at(lir_val);
+                    if (auto interval = live_range.find(bb); interval == live_range.end()) {
                         live_range.emplace(bb, LiveRange(start, inst_number));
+
                     } else {
                         interval->second.propagate(inst_number);
                     }
@@ -124,8 +114,17 @@ private:
         }
     }
 
+    IntervalHint get_hint(const LIRVal& lir_val) const noexcept {
+        if (m_call_live_out.contains(lir_val)) {
+            return IntervalHint::CALL_LIVE_OUT;
+        }
+
+        return IntervalHint::NOTHING;
+    }
+
     const LIRFuncData& m_obj_func_data;
     const LivenessAnalysisInfo& m_liveness;
     const Ordering<LIRBlock>& m_ordering;
     LIRValMap<std::unordered_map<const LIRBlock*, LiveRange>> m_intervals{};
+    LIRValSet m_call_live_out{};
 };

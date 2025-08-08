@@ -88,7 +88,11 @@ public:
     }
 
     const T &at(std::size_t index) const {
-        return *m_list.at(index)->data;
+        return *m_list.at(index)->get();
+    }
+
+    T &at(std::size_t index) {
+        return *m_list.at(index)->get();
     }
 
     Iterator<iterator> begin() {

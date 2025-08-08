@@ -49,6 +49,8 @@ private:
                 initialize_data(adjust_stack, adjust_stack->owner(), live_out);
                 break;
             }
+            case LIRAdjustKind::Prologue: break; // Skip it for now
+            case LIRAdjustKind::Epilogue: initialize_prologue_and_epilogue(adjust_stack); break;
             default: die("Unsupported LIRAdjustKind: {}", static_cast<int>(adjust_stack->adjust_kind()));
         }
     }
@@ -71,6 +73,11 @@ private:
         adjust_inst->increase_stack_size(evaluate_overflow_area_size(call));
     }
 
+    void initialize_prologue_and_epilogue(LIRAdjustStack* epilogue) const {
+        epilogue->increase_stack_size(m_max_caller_overflow_area_size);
+        prologue()->increase_stack_size(m_max_caller_overflow_area_size);
+    }
+
     void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) noexcept {
         if (!std::ranges::contains(CC::GP_CALLER_SAVE_REGISTERS, gp_reg)) {
             // If the register is a caller-saved register, we need to add it to the adjust stack.
@@ -86,8 +93,16 @@ private:
             return 0;
         }
 
-        const auto overflow_args = call->inputs().size() - CC::GP_ARGUMENT_REGISTERS.size();
-        return overflow_args * 8;
+        const auto overflow_args = (call->inputs().size() - CC::GP_ARGUMENT_REGISTERS.size()) * 8;
+        return m_max_caller_overflow_area_size = std::max(m_max_caller_overflow_area_size, overflow_args);
+    }
+
+    LIRAdjustStack* prologue() const {
+        const auto begin_block = m_func_data.first();
+        auto& first_instruction = begin_block->at(0);
+        const auto prologue = dynamic_cast<LIRAdjustStack *>(&first_instruction);
+        assertion(prologue != nullptr, "must be");
+        return prologue;
     }
 
     static const LIRCall* find_call_instruction(const LIRBlock* bb) {
@@ -99,5 +114,6 @@ private:
 
     const RegisterAllocation& m_reg_allocation;
     const LivenessAnalysisInfo& m_liveness_info;
+    std::size_t m_max_caller_overflow_area_size{};
     LIRFuncData& m_func_data;
 };

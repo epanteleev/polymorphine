@@ -26,31 +26,6 @@ static bool is_no_prologue(const RegisterAllocation& reg_allocation) noexcept {
            reg_allocation.used_callee_saved_regs().empty();
 }
 
-void LIRFunctionCodegen::emit_prologue() {
-    if (is_no_prologue(m_reg_allocation)) {
-        return;
-    }
-
-    m_as.push(8, aasm::rbp);
-    m_as.copy(8, aasm::rsp, aasm::rbp);
-    m_as.sub(8, m_reg_allocation.local_area_size(), aasm::rsp);
-    for (const auto& reg: m_reg_allocation.used_callee_saved_regs()) {
-        m_as.push(8, reg);
-    }
-}
-
-void LIRFunctionCodegen::emit_epilogue() {
-    if (is_no_prologue(m_reg_allocation)) {
-        return;
-    }
-
-    for (const auto& reg: std::ranges::reverse_view(m_reg_allocation.used_callee_saved_regs())) {
-        m_as.pop(8, reg);
-    }
-
-    m_as.leave();
-}
-
 GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
@@ -148,6 +123,31 @@ void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::si
     }
 }
 
+void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) {
+    if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
+        return;
+    }
+
+    m_as.push(8, aasm::rbp);
+    m_as.copy(8, aasm::rsp, aasm::rbp);
+    m_as.sub(8, m_reg_allocation.local_area_size(), aasm::rsp);
+    for (const auto& reg: m_reg_allocation.used_callee_saved_regs()) {
+        m_as.push(8, reg);
+    }
+}
+
+void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) {
+    if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
+        return;
+    }
+
+    for (const auto& reg: std::ranges::reverse_view(m_reg_allocation.used_callee_saved_regs())) {
+        m_as.pop(8, reg);
+    }
+
+    m_as.leave();
+}
+
 void LIRFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
@@ -176,7 +176,6 @@ void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, st
 }
 
 void LIRFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
-    emit_epilogue();
 #ifndef NDEBUG
     const auto values_num = ret_values.size();
     if (values_num == 1) {

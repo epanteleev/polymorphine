@@ -60,6 +60,13 @@ public:
     }
 
     /**
+     * Get instruction by index.
+     */
+    Inst& at(std::size_t idx) {
+        return m_instructions.at(idx);
+    }
+
+    /**
      * Returns number of instructions in the block.
      */
     [[nodiscard]]

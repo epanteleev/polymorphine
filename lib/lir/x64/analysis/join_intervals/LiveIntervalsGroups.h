@@ -22,6 +22,11 @@ public:
         return m_fixed_register;
     }
 
+    [[nodiscard]]
+    IntervalHint hint() const noexcept {
+        return m_interval.hint();
+    }
+
     void add_member(const LIRVal& val, const LiveInterval& other) {
         m_values.push_back(val);
         m_interval.merge_with(other);

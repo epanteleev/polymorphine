@@ -89,11 +89,11 @@ private:
 
     void do_register_allocation() {
         while (!m_unhandled_intervals.empty()) {
-            auto [unhandled_interval, vreg] = m_unhandled_intervals.back();
+            auto [unhandled_interval, lir_val] = m_unhandled_intervals.back();
             m_unhandled_intervals.pop_back();
 
-            if (vreg.isa(gen())) {
-                do_stack_alloc(vreg);
+            if (lir_val.isa(gen())) {
+                do_stack_alloc(lir_val);
                 continue;
             }
 
@@ -173,8 +173,8 @@ private:
                 m_reg_set.remove(fixed_gp_reg.value());
             }
 
-            select_vreg(vreg);
-            m_active_intervals.emplace_back(unhandled_interval, vreg);
+            select_virtual_reg(lir_val, unhandled_interval->hint());
+            m_active_intervals.emplace_back(unhandled_interval, lir_val);
         }
     }
 
@@ -186,36 +186,36 @@ private:
         return entry.m_interval;
     }
 
-    void select_vreg(const LIRVal& vreg) {
-        if (m_reg_allocation.contains(vreg)) {
+    void select_virtual_reg(const LIRVal& lir_val, const IntervalHint hint) {
+        if (m_reg_allocation.contains(lir_val)) {
             return;
         }
-        const auto group = m_groups.try_get_group(vreg);
+        const auto group = m_groups.try_get_group(lir_val);
         if (group.has_value()) {
             assertion(!group.value()->fixed_register().has_value(), "Group with fixed register should not be allocated here");
-            const auto reg = m_reg_set.top();
+            const auto reg = m_reg_set.top(group.value()->hint());
             for (const auto& group_vreg: group.value()->m_values) {
                 allocate_register(group_vreg, reg);
             }
             return;
         }
 
-        const auto reg = m_reg_set.top();
-        allocate_register(vreg, reg);
+        const auto reg = m_reg_set.top(hint);
+        allocate_register(lir_val, reg);
     }
 
-    void allocate_register(const LIRVal& vreg, const GPVReg& reg) {
+    void allocate_register(const LIRVal& lir_val, const GPVReg& reg) {
         if (const auto gp_reg= reg.as_gp_reg(); gp_reg.has_value()) {
-            allocate_register(vreg, gp_reg.value());
+            allocate_register(lir_val, gp_reg.value());
             return;
         }
 
-        auto [_, has] = m_reg_allocation.try_emplace(vreg, reg);
+        auto [_, has] = m_reg_allocation.try_emplace(lir_val, reg);
         assertion(has, "Register already allocated for LIRVal");
     }
 
-    void allocate_register(const LIRVal& vreg, const aasm::GPReg reg) {
-        auto [_, has] = m_reg_allocation.try_emplace(vreg, reg);
+    void allocate_register(const LIRVal& lir_val, const aasm::GPReg reg) {
+        auto [_, has] = m_reg_allocation.try_emplace(lir_val, reg);
         assertion(has, "Register already allocated for LIRVal");
         if (!std::ranges::contains(CC::GP_CALLEE_SAVE_REGISTERS, reg)) {
             // This is a caller-save register, we can skip it.
@@ -229,8 +229,8 @@ private:
         m_used_callee_saved_regs.push_back(reg);
     }
 
-    void do_stack_alloc(const LIRVal& vreg) {
-        auto [_, has] = m_reg_allocation.try_emplace(vreg, m_reg_set.stack_alloc(vreg.size()));
+    void do_stack_alloc(const LIRVal& lir_val) {
+        auto [_, has] = m_reg_allocation.try_emplace(lir_val, m_reg_set.stack_alloc(lir_val.size()));
         assertion(has, "Register already allocated for LIRVal");
     }
 

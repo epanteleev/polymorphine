@@ -75,9 +75,19 @@ static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
 }
 
 void FunctionLower::setup_arguments() {
+    m_bb->inst(LIRAdjustStack::prologue());
     for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
         const auto copy = m_bb->inst(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
         memorize(&arg, copy->def(0));
+    }
+}
+
+void FunctionLower::traverse_instructions() {
+    for (const auto &bb: m_dom_ordering) {
+        m_bb = m_bb_mapping.at(bb);
+        for (auto &inst: bb->instructions()) {
+            inst.visit(*this);
+        }
     }
 }
 
@@ -179,6 +189,7 @@ void FunctionLower::accept(Call *inst) {
 }
 
 void FunctionLower::accept(Return *inst) {
+    m_bb->inst(LIRAdjustStack::epilogue());
     m_bb->inst(LIRReturn::ret());
 }
 
@@ -189,6 +200,7 @@ void FunctionLower::accept(ReturnValue *inst) {
 
     const auto ret_val = get_lir_operand(inst->ret_value());
     const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_type->size_of(), ret_val));
+    m_bb->inst(LIRAdjustStack::epilogue());
     m_bb->inst(LIRReturn::ret(copy->def(0)));
 }
 

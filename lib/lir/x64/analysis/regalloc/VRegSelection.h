@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/asm/cc/LinuxX64.h"
 #include "utility/Align.h"
 
@@ -18,11 +19,28 @@ namespace details {
         }
 
         [[nodiscard]]
-        aasm::GPReg top() noexcept {
-            assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
-            const auto reg = m_free_regs.back();
-            m_free_regs.pop_back();
-            return reg;
+        aasm::GPReg top(const IntervalHint hint) noexcept {
+            switch (hint) {
+                case IntervalHint::NOTHING: {
+                    for (const auto reg: std::ranges::reverse_view(m_free_regs)) {
+                        if (!std::ranges::contains(CC::GP_CALLER_SAVE_REGISTERS, reg)) {
+                            continue;
+                        }
+
+                        remove(reg);
+                        return reg;
+                    }
+
+                    [[fallthrough]];
+                }
+                case IntervalHint::CALL_LIVE_OUT: {
+                    assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
+                    const auto reg = m_free_regs.back();
+                    m_free_regs.pop_back();
+                    return reg;
+                }
+                default: std::unreachable();
+            }
         }
 
         void push(const aasm::GPReg reg) noexcept {

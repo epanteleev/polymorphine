@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IntervalHint.h"
+
 /**
  * Represents a live interval of a virtual register in LIR function.
  * A live interval is a set of LiveRange intervals that are sorted by their start point.
@@ -26,6 +28,11 @@ public:
     [[nodiscard]]
     std::uint32_t finish() const noexcept {
         return m_intervals.back().end();
+    }
+
+    [[nodiscard]]
+    IntervalHint hint() const noexcept {
+        return m_hint;
     }
 
     /**
@@ -81,6 +88,7 @@ public:
             m_intervals.emplace_back(interval);
         }
 
+        m_hint = join_hints(m_hint, other.hint());
         canonicalize(m_intervals);
     }
 
@@ -88,19 +96,20 @@ public:
      * Creates a LiveInterval from a vector of LiveRange.
      * The vector must not be empty.
      */
-    static LiveInterval create(std::vector<LiveRange>&& intervals) noexcept {
+    static LiveInterval create(std::vector<LiveRange>&& intervals, const IntervalHint hint) noexcept {
         assertion(!intervals.empty(), "LiveInterval must have at least one interval");
 
         const auto max = canonicalize(intervals);
-        return LiveInterval(std::move(intervals), max);
+        return LiveInterval(std::move(intervals), max, hint);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const LiveInterval& interval);
 
 private:
-    explicit LiveInterval(std::vector<LiveRange>&& intervals, const std::uint32_t end) noexcept:
+    explicit LiveInterval(std::vector<LiveRange>&& intervals, const std::uint32_t end, const IntervalHint hint) noexcept:
         m_intervals(std::move(intervals)),
-        m_finish(end) {}
+        m_finish(end),
+        m_hint(hint) {}
 
     /**
      * 1. Sorts the intervals by their start point.
@@ -124,6 +133,7 @@ private:
     // Sorted by start point set of intervals.
     std::vector<LiveRange> m_intervals;
     std::uint32_t m_finish;
+    IntervalHint m_hint;
 };
 
 inline std::ostream & operator<<(std::ostream &os, const LiveInterval &interval) {

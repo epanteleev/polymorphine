@@ -3,6 +3,7 @@
 #include "LiveIntervalsGroups.h"
 #include "asm/reg/RegMap.h"
 #include "base/analysis/AnalysisPass.h"
+#include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/OperandMatcher.h"
@@ -48,13 +49,16 @@ private:
             std::vector<LiveRange> new_intervals;
             new_intervals.reserve(lir_values.size());
 
+            auto acc = IntervalHint::CALL_LIVE_OUT;
             for (const auto& lir_val: lir_values) {
-                for (auto& interval: m_intervals.intervals(lir_val)) {
+                const auto& intervals = m_intervals.intervals(lir_val);
+                acc = join_hints(acc, intervals.hint());
+                for (auto& interval: intervals) {
                     new_intervals.emplace_back(interval);
                 }
             }
 
-            m_groups.emplace_back(LiveInterval::create(std::move(new_intervals)), std::move(lir_values), fixed_reg);
+            m_groups.emplace_back(LiveInterval::create(std::move(new_intervals), acc), std::move(lir_values), fixed_reg);
             for (const auto lir_val: m_groups.back().members()) {
                 m_group_mapping.emplace(lir_val, std::prev(m_groups.end()));
             }

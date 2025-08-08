@@ -12,8 +12,16 @@ namespace x64::matchers {
 
         return false;
     };
+
+    constexpr bool call(const LIRInstructionBase* inst) {
+        return dynamic_cast<const LIRCall*>(inst) != nullptr;
+    }
 }
 
 consteval auto parallel_copy() {
     return x64::matchers::parallel_copy;
+}
+
+consteval auto call() {
+    return x64::matchers::call;
 }

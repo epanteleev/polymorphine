@@ -50,14 +50,7 @@ private:
 
     void setup_arguments();
 
-    void traverse_instructions() {
-        for (const auto &bb: m_dom_ordering) {
-            m_bb = m_bb_mapping.at(bb);
-            for (auto &inst: bb->instructions()) {
-                inst.visit(*this);
-            }
-        }
-    }
+    void traverse_instructions();
 
     void setup_bb_mapping() {
         for (const auto& bb: m_function.basic_blocks()) {
