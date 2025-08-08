@@ -6,7 +6,7 @@
 #include "asm/symbol/Symbol.h"
 #include "asm/Common.h"
 #include "asm/Relocation.h"
-#include "../reg/Register.h"
+#include "asm/reg/Register.h"
 
 #include "AddressBaseDisp.h"
 #include "AddressIndexScale.h"
@@ -59,6 +59,15 @@ namespace aasm {
                 return as_index_scale->m_base;
             }
             return std::nullopt;
+        }
+
+        [[nodiscard]]
+        std::size_t hash() const noexcept {
+            const auto hash_fn = []<typename T0>(const T0& val) {
+                return val.hash();
+            };
+
+            return std::visit(hash_fn, m_address);
         }
 
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;

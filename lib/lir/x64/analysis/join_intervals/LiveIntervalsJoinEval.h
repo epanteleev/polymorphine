@@ -3,6 +3,7 @@
 #include "LiveIntervalsGroups.h"
 #include "asm/reg/RegMap.h"
 #include "base/analysis/AnalysisPass.h"
+#include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/OperandMatcher.h"
 
@@ -36,7 +37,7 @@ public:
 
 private:
     void setup_groups() {
-        aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
+        GPVRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
         // Collect all LIR values that are mapped to fixed registers.
         for (auto& [lir_val, fixed_reg]: m_fixed_regs) {
             auto [vec, _] = m_reg_to_lir_val.try_emplace(fixed_reg, std::vector<LIRVal>{});
@@ -71,6 +72,9 @@ private:
                 // This interval is already part of a group, we can skip it.
                 continue;
             }
+            if (contains_fixed_mem_slot(vreg)) {
+                continue; // This is memory location. Shouldn't be joined.
+            }
 
             for (auto group = m_groups.begin(); group != m_groups.end(); ++group) {
                 if (!interval.follows(group->m_interval)) {
@@ -82,6 +86,18 @@ private:
                 break;
             }
         }
+    }
+
+    bool contains_fixed_mem_slot(const LIRVal& vreg) const noexcept {
+        const auto gp_reg = m_fixed_regs.get(vreg);
+        if (!gp_reg.has_value()) {
+            return false; // Not a fixed register
+        }
+        if (const auto addr = gp_reg->as_address(); addr.has_value()) {
+            return true;
+        }
+
+        return false; // Not a memory location
     }
 
     const LiveIntervals& m_intervals;

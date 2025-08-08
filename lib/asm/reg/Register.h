@@ -49,6 +49,11 @@ namespace aasm {
         [[nodiscard]]
         std::string_view name(std::size_t size) const noexcept;
 
+        [[nodiscard]]
+        std::size_t hash() const noexcept {
+            return static_cast<std::size_t>(m_code);
+        }
+
     private:
         RegEncoding m_code;
     };

@@ -49,8 +49,16 @@ public:
     }
 
     template<typename Op>
-    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t> || std::is_same_v<Op, aasm::Address>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
     void add(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.add(size, src, dst);
+    }
+
+    void add(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        if (src == 0) {
+            return; // No need to add zero
+        }
+
         m_asm.add(size, src, dst);
     }
 

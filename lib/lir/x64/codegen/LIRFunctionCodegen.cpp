@@ -1,4 +1,4 @@
-#include "MachFunctionCodegen.h"
+#include "LIRFunctionCodegen.h"
 
 #include "emitters/AddIntEmit.h"
 #include "emitters/CmpGPEmit.h"
@@ -26,7 +26,7 @@ static bool is_no_prologue(const RegisterAllocation& reg_allocation) noexcept {
            reg_allocation.used_callee_saved_regs().empty();
 }
 
-void MachFunctionCodegen::emit_prologue() {
+void LIRFunctionCodegen::emit_prologue() {
     if (is_no_prologue(m_reg_allocation)) {
         return;
     }
@@ -39,7 +39,7 @@ void MachFunctionCodegen::emit_prologue() {
     }
 }
 
-void MachFunctionCodegen::emit_epilogue() {
+void LIRFunctionCodegen::emit_epilogue() {
     if (is_no_prologue(m_reg_allocation)) {
         return;
     }
@@ -51,7 +51,7 @@ void MachFunctionCodegen::emit_epilogue() {
     m_as.leave();
 }
 
-GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
+GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
     }
@@ -62,28 +62,28 @@ GPOp MachFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     die("Invalid LIROperand");
 }
 
-aasm::GPReg MachFunctionCodegen::convert_to_gp_reg(const LIRVal &val) const {
+aasm::GPReg LIRFunctionCodegen::convert_to_gp_reg(const LIRVal &val) const {
     const auto allocation = m_reg_allocation[val];
     const auto gp_reg = allocation.as_gp_reg();
     assertion(gp_reg.has_value(), "Invalid GPVReg for LIRVal");
     return gp_reg.value();
 }
 
-void MachFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+void LIRFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
-void MachFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     SubIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
-void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type) {
+void LIRFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type) {
     const auto out_reg = m_reg_allocation[out];
     const auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, aasm::GPReg>) {
@@ -99,13 +99,13 @@ void MachFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type
     out_reg.visit(visitor);
 }
 
-void MachFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
+void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     CmpGPEmit::emit(m_as, in1.size(), in1_reg, in2_reg);
 }
 
-void MachFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
+void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     const auto in1_reg = m_reg_allocation[in1];
     const auto add_opt = in1_reg.as_address();
     assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
@@ -114,13 +114,13 @@ void MachFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     MovGPEmit::emit(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
-void MachFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
+void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
     const auto pointer_reg = m_reg_allocation[pointer];
     const auto value_op = convert_to_gp_op(value);
     StoreGPEmit::emit(m_as, value.size(), pointer_reg, value_op);
 }
 
-void MachFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
+void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
     const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
     if (total_size == 0) {
         return;
@@ -134,7 +134,7 @@ void MachFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t st
     }
 }
 
-void MachFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
+void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
     const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
     if (total_size == 0) {
         return;
@@ -148,34 +148,34 @@ void MachFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t 
     }
 }
 
-void MachFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
+void LIRFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
 }
 
-void MachFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
+void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = m_reg_allocation[pointer];
     LoadGPEmit::emit(m_as, out.size(), out_reg, pointer_reg);
 }
 
-void MachFunctionCodegen::jmp(const LIRBlock *bb) {
+void LIRFunctionCodegen::jmp(const LIRBlock *bb) {
     const auto target = m_bb_labels.at(bb);
     m_as.jmp(target);
 }
 
-void MachFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
+void LIRFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
     const auto target_false = m_bb_labels.at(on_false);
     const auto cond = aasm::invert(cvt_from(cond_type));
     m_as.jcc(cond, target_false);
 }
 
-void MachFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) {
+void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_linkage(linkage));
     m_as.call(symbol);
 }
 
-void MachFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
+void LIRFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
     emit_epilogue();
 #ifndef NDEBUG
     const auto values_num = ret_values.size();

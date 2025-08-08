@@ -1,25 +1,28 @@
 #pragma once
 
 #include "lir/x64/asm/cc/LinuxX64.h"
+#include "utility/Align.h"
 
 namespace details {
     template<call_conv::CallConv CC>
-    class RegSet final {
+    class VRegSelection final {
     public:
         using stack = std::vector<aasm::GPReg>;
 
-        explicit RegSet(stack&& free_regs) noexcept:
+        explicit VRegSelection(stack&& free_regs) noexcept:
             m_free_regs(std::move(free_regs)) {}
 
-        [[nodiscard]]
-        aasm::GPReg top() const noexcept {
-            assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
-            return m_free_regs.back();
+        aasm::Address stack_alloc(const std::size_t size) noexcept {
+            m_local_area_size = align_up(m_local_area_size, size) + size;
+            return aasm::Address(aasm::rbp, -m_local_area_size);
         }
 
-        void pop() noexcept {
-            assertion(!m_free_regs.empty(), "Attempted to pop from an empty register set");
+        [[nodiscard]]
+        aasm::GPReg top() noexcept {
+            assertion(!m_free_regs.empty(), "Attempted to access top of an empty register set");
+            const auto reg = m_free_regs.back();
             m_free_regs.pop_back();
+            return reg;
         }
 
         void push(const aasm::GPReg reg) noexcept {
@@ -39,8 +42,13 @@ namespace details {
             return m_free_regs.empty();
         }
 
+        [[nodiscard]]
+        std::int32_t local_area_size() const noexcept {
+            return m_local_area_size;
+        }
+
         template<std::ranges::range Range>
-        static RegSet create(Range&& arg_regs) {
+        static VRegSelection create(Range&& arg_regs) {
             stack regs{};
             regs.reserve(CC::ALL_GP_REGISTERS.size());
 
@@ -52,10 +60,11 @@ namespace details {
                 regs.push_back(reg);
             }
 
-            return RegSet(std::move(regs));
+            return VRegSelection(std::move(regs));
         }
 
     private:
         stack m_free_regs{};
+        std::int32_t m_local_area_size{0};
     };
 }

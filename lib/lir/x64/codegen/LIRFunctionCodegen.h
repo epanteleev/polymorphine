@@ -10,8 +10,8 @@
 #include "lir/x64/module/LIRFuncData.h"
 
 
-class MachFunctionCodegen final: public LIRVisitor {
-    explicit MachFunctionCodegen(const LIRFuncData &data,
+class LIRFunctionCodegen final: public LIRVisitor {
+    explicit LIRFunctionCodegen(const LIRFuncData &data,
                                  const RegisterAllocation &reg_allocation, const Ordering<LIRBlock>& preorder, aasm::SymbolTable& symbol_table):
         m_data(data),
         m_reg_allocation(reg_allocation),
@@ -29,10 +29,10 @@ public:
         return std::move(m_as);
     }
 
-    static MachFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data, aasm::SymbolTable& symbol_tab) {
+    static LIRFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data, aasm::SymbolTable& symbol_tab) {
         const auto register_allocation = cache->analyze<LinearScanLinuxX64>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return MachFunctionCodegen(*data, *register_allocation, *preorder, symbol_tab);
+        return LIRFunctionCodegen(*data, *register_allocation, *preorder, symbol_tab);
     }
 
 private:

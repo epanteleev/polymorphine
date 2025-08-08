@@ -15,6 +15,9 @@ void CopyGPEmit::emit(const aasm::Address &out, aasm::GPReg in) {
 }
 
 void CopyGPEmit::emit(const aasm::Address &out, const aasm::Address &in) {
+    if (out == in) {
+        return;
+    }
     unimplemented();
 }
 

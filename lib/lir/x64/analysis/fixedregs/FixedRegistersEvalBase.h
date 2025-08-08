@@ -28,43 +28,42 @@ public:
         return std::make_unique<FixedRegisters>(std::move(m_reg_map), std::move(m_args));
     }
 
-    static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData> *, const LIRFuncData *data) {
+    static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData>*, const LIRFuncData *data) {
         return FixedRegistersEvalBase(*data);
     }
 
 private:
-    template<typename Reg, std::size_t N>
-    class ArgumentAllocator final {
-    public:
-        explicit ArgumentAllocator(const std::array<Reg, N>& regs):
-            m_regs(regs) {}
-
-        Reg get_reg() noexcept {
-            if (m_gp_reg_pos < N) {
-                return m_regs[m_gp_reg_pos++];
-            }
-
-            unimplemented();
-        }
-
-    private:
-        std::size_t m_gp_reg_pos{};
-        const std::array<Reg, N>& m_regs;
-    };
+    aasm::Address arg_stack_alloc(const std::size_t size) noexcept {
+        m_arg_area_size = align_up(m_arg_area_size, size) + size;
+        return aasm::Address(aasm::rbp, 8+m_arg_area_size);
+    }
 
     void handle_argument_values() {
-        ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
-        for (const auto& arg: m_obj_func_data.args()) {
-            const auto reg = arguments.get_reg();
-            m_reg_map.emplace(arg, reg);
-            m_args.emplace_back(reg);
+        for (const auto& [idx, arg_reg]: std::ranges::views::enumerate(CC::GP_ARGUMENT_REGISTERS)) {
+            if (idx >= m_obj_func_data.args().size()) {
+                break; // No more arguments to process
+            }
+
+            const auto& arg = m_obj_func_data.arg(idx);
+            m_reg_map.emplace(arg, arg_reg);
+            m_args.emplace_back(arg_reg);
+        }
+
+        if (m_obj_func_data.args().size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
+            return; // No need to allocate overflow area for arguments.
+        }
+
+        const auto overflow_args = m_obj_func_data.args().size() - CC::GP_ARGUMENT_REGISTERS.size();
+        for (std::size_t i{}; i < overflow_args; ++i) {
+            const auto arg = m_obj_func_data.arg(CC::GP_ARGUMENT_REGISTERS.size() + i);
+            m_reg_map.emplace(arg, arg_stack_alloc(8));
         }
     }
 
     void handle_basic_blocks() {
         for (const auto& bb: m_obj_func_data.basic_blocks()) {
             for (const auto& inst: bb.instructions()) {
-                LIRInstTraverse traverser(m_reg_map);
+                LIRInstTraverse traverser(m_reg_map, m_arg_area_size);
                 traverser.run(inst);
             }
         }
@@ -72,8 +71,9 @@ private:
 
     class LIRInstTraverse final: public LIRVisitor {
     public:
-        explicit LIRInstTraverse(LIRValMap<aasm::GPReg>& fixed_reg) noexcept:
-            m_fixed_reg(fixed_reg) {}
+        explicit LIRInstTraverse(LIRValMap<GPVReg>& fixed_reg, std::uint32_t& arg_area_size) noexcept:
+            m_fixed_reg(fixed_reg),
+            m_arg_area_size(arg_area_size) {}
 
         void run(const LIRInstructionBase& inst) {
             const_cast<LIRInstructionBase&>(inst).visit(*this);
@@ -105,11 +105,30 @@ private:
 
         void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
+        aasm::Address arg_stack_alloc(const std::size_t size) noexcept {
+            m_arg_area_size += 8;
+            return aasm::Address(aasm::rsp, -m_arg_area_size);
+        }
+
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, LIRLinkage linkage) override {
             m_fixed_reg.emplace(out, aasm::rax);
-            ArgumentAllocator arguments(CC::GP_ARGUMENT_REGISTERS);
-            for (const auto& arg: args) {
-                m_fixed_reg.emplace(arg, arguments.get_reg());
+            for (const auto& [idx, arg_reg]: std::ranges::views::enumerate(CC::GP_ARGUMENT_REGISTERS)) {
+                if (idx >= args.size()) {
+                    break; // No more arguments to process
+                }
+
+                m_fixed_reg.emplace(args[idx], arg_reg);
+            }
+
+            if (args.size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
+                return; // No need to allocate overflow area for arguments.
+            }
+
+            const auto overflow_args = args.size() - CC::GP_ARGUMENT_REGISTERS.size();
+            for (std::size_t i{}; i < overflow_args; ++i) {
+                const auto arg = args[CC::GP_ARGUMENT_REGISTERS.size() + i];
+                const auto reg = arg_stack_alloc(8);
+                m_fixed_reg.emplace(arg, reg);
             }
         }
 
@@ -125,12 +144,14 @@ private:
             }
         }
 
-        LIRValMap<aasm::GPReg>& m_fixed_reg;
+        LIRValMap<GPVReg>& m_fixed_reg;
+        std::uint32_t& m_arg_area_size;
     };
 
     const LIRFuncData& m_obj_func_data;
 
     std::vector<aasm::GPReg> m_args{};
-    LIRValMap<aasm::GPReg> m_reg_map{};
+    LIRValMap<GPVReg> m_reg_map{};
+    std::uint32_t m_arg_area_size{};
 };
 
