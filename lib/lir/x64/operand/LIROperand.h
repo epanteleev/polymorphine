@@ -8,10 +8,10 @@
 
 class LIROperand final {
 public:
-    constexpr LIROperand(LirCst operand) noexcept:
+    constexpr LIROperand(const LirCst& operand) noexcept:
         m_operand(operand) {}
 
-    constexpr LIROperand(LIRVal operand) noexcept:
+    constexpr LIROperand(const LIRVal& operand) noexcept:
         m_operand(operand) {}
 
     [[nodiscard]]

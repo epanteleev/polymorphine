@@ -68,7 +68,7 @@ private:
 
             try_add_register(adjust_inst, gp_reg.value());
         }
-        adjust_inst->increase_stack_size(m_reg_allocation.local_area_size());
+        adjust_inst->increase_stack_size(evaluate_overflow_area_size(call));
     }
 
     void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) noexcept {
@@ -79,6 +79,15 @@ private:
 
         // Add the register to the adjust stack instruction.
         adjust_inst->add_reg(gp_reg);
+    }
+
+    std::size_t evaluate_overflow_area_size(const LIRCall* call) noexcept {
+        if (call->inputs().size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
+            return 0;
+        }
+
+        const auto overflow_args = call->inputs().size() - CC::GP_ARGUMENT_REGISTERS.size();
+        return overflow_args * 8;
     }
 
     static const LIRCall* find_call_instruction(const LIRBlock* bb) {

@@ -24,6 +24,11 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t frame_size() const noexcept {
+        return m_used_callee_saved_regs.size() * 8 + m_local_area_size;
+    }
+
+    [[nodiscard]]
     std::span<const aasm::GPReg> used_callee_saved_regs() const noexcept {
         return m_used_callee_saved_regs;
     }

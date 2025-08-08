@@ -39,12 +39,13 @@ private:
     }
 
     void handle_argument_values() {
-        for (const auto& [idx, arg_reg]: std::ranges::views::enumerate(CC::GP_ARGUMENT_REGISTERS)) {
+        for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
             if (idx >= m_obj_func_data.args().size()) {
                 break; // No more arguments to process
             }
 
             const auto& arg = m_obj_func_data.arg(idx);
+            const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
             m_reg_map.emplace(arg, arg_reg);
             m_args.emplace_back(arg_reg);
         }
@@ -63,7 +64,7 @@ private:
     void handle_basic_blocks() {
         for (const auto& bb: m_obj_func_data.basic_blocks()) {
             for (const auto& inst: bb.instructions()) {
-                LIRInstTraverse traverser(m_reg_map, m_arg_area_size);
+                LIRInstTraverse traverser(m_reg_map);
                 traverser.run(inst);
             }
         }
@@ -71,9 +72,8 @@ private:
 
     class LIRInstTraverse final: public LIRVisitor {
     public:
-        explicit LIRInstTraverse(LIRValMap<GPVReg>& fixed_reg, std::uint32_t& arg_area_size) noexcept:
-            m_fixed_reg(fixed_reg),
-            m_arg_area_size(arg_area_size) {}
+        explicit LIRInstTraverse(LIRValMap<GPVReg>& fixed_reg) noexcept:
+            m_fixed_reg(fixed_reg) {}
 
         void run(const LIRInstructionBase& inst) {
             const_cast<LIRInstructionBase&>(inst).visit(*this);
@@ -97,27 +97,30 @@ private:
         void not_i(const LIRVal &out, const LIROperand &in) override {}
         void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
-        void up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {}
-        void down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) override {}
+        void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
+        void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
         void jmp(const LIRBlock *bb) override {}
 
         void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        aasm::Address arg_stack_alloc(const std::size_t size) noexcept {
+        aasm::Address arg_stack_alloc() noexcept {
+            const auto addr = aasm::Address(aasm::rsp, m_arg_area_size);
             m_arg_area_size += 8;
-            return aasm::Address(aasm::rsp, -m_arg_area_size);
+            return addr;
         }
 
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, LIRLinkage linkage) override {
             m_fixed_reg.emplace(out, aasm::rax);
-            for (const auto& [idx, arg_reg]: std::ranges::views::enumerate(CC::GP_ARGUMENT_REGISTERS)) {
+            for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
                 if (idx >= args.size()) {
                     break; // No more arguments to process
                 }
 
-                m_fixed_reg.emplace(args[idx], arg_reg);
+                const auto& arg = args[idx];
+                const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
+                m_fixed_reg.emplace(arg, arg_reg);
             }
 
             if (args.size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
@@ -127,8 +130,7 @@ private:
             const auto overflow_args = args.size() - CC::GP_ARGUMENT_REGISTERS.size();
             for (std::size_t i{}; i < overflow_args; ++i) {
                 const auto arg = args[CC::GP_ARGUMENT_REGISTERS.size() + i];
-                const auto reg = arg_stack_alloc(8);
-                m_fixed_reg.emplace(arg, reg);
+                m_fixed_reg.emplace(arg, arg_stack_alloc());
             }
         }
 
@@ -145,7 +147,7 @@ private:
         }
 
         LIRValMap<GPVReg>& m_fixed_reg;
-        std::uint32_t& m_arg_area_size;
+        std::uint32_t m_arg_area_size{};
     };
 
     const LIRFuncData& m_obj_func_data;

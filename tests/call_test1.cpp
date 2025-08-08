@@ -196,10 +196,9 @@ TEST(CallTest, argument_shuffle) {
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6), arg_shuffle(1, 2, 3, 4, 5, 6));
 }
 
-static Module argument_shuffle1() {
+static Module argument_shuffle7(const IntegerType* ty) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64(),
-                                                          SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "arg_shuffle");
+    FunctionPrototype prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle");
     auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
     const auto aa = data.arg(6);
@@ -210,10 +209,7 @@ static Module argument_shuffle1() {
     const auto a4 = data.arg(1);
     const auto a5 = data.arg(0);
 
-    FunctionPrototype arg_locator(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64(),
-                                                          SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()},
-                                                     "arg_locator1", FunctionLinkage::EXTERN);
-
+    FunctionPrototype arg_locator(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_locator7", FunctionLinkage::EXTERN);
     const auto cont = data.create_basic_block();
     const auto ret_val = data.call(std::move(arg_locator), cont, {aa, a0, a1, a2, a3, a4, a5});
     data.switch_block(cont);
@@ -222,7 +218,95 @@ static Module argument_shuffle1() {
     return builder.build();
 }
 
-static long arg_locator1(long a0, long a1, long a2, long a3, long a4, long a5, long a6) {
+template<std::integral T>
+static long arg_locator7(T a0, T a1, T a2, T a3, T a4, T a5, T a6) {
+    long ret = 0;
+    ret |= static_cast<long>(a0) << 0;
+    ret |= static_cast<long>(a1) << 8;
+    ret |= static_cast<long>(a2) << 16;
+    ret |= static_cast<long>(a3) << 24;
+    ret |= static_cast<long>(a4) << 32;
+    ret |= static_cast<long>(a5) << 40;
+    ret |= static_cast<long>(a6) << 48;
+    return ret;
+}
+
+template<std::integral T>
+static long arg_shuffle7(T a0, T a1, T a2, T a3, T a4, T a5, T a6) {
+    return arg_locator7<T>(a6, a5, a4, a3, a2, a1, a0);
+}
+
+TEST(CallTest, argument_shuffle7_i64) {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"arg_locator7", reinterpret_cast<std::size_t>(&arg_locator7<long>)}
+    };
+
+    const auto module = argument_shuffle7(SignedIntegerType::i64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(long, long, long, long, long, long, long)>("arg_shuffle").value();
+    std::cout << arg_shuffle7<long>(1L, 2L, 3L, 4L, 5L, 6L, 7L);
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<long>(1L, 2L, 3L, 4L, 5L, 6L, 7L));
+}
+
+TEST(CallTest, argument_shuffle7_i32) {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"arg_locator7", reinterpret_cast<std::size_t>(&arg_locator7<int>)}
+    };
+
+    const auto module = argument_shuffle7(SignedIntegerType::i32());
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(int, int, int, int, int, int, int)>("arg_shuffle").value();
+    std::cout << arg_shuffle7<int>(1, 2, 3, 4, 5, 6, 7);
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<int>(1, 2, 3, 4, 5, 6, 7));
+}
+
+TEST(CallTest, argument_shuffle7_i16) {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"arg_locator7", reinterpret_cast<std::size_t>(&arg_locator7<short>)}
+    };
+
+    const auto module = argument_shuffle7(SignedIntegerType::i16());
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(short, short, short, short, short, short, short)>("arg_shuffle").value();
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<short>(1, 2, 3, 4, 5, 6, 7));
+}
+
+TEST(CallTest, argument_shuffle7_i8) {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
+        {"arg_locator7", reinterpret_cast<std::size_t>(&arg_locator7<char>)}
+    };
+
+    const auto module = argument_shuffle7(SignedIntegerType::i8());
+    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto fn = code.code_start_as<long(char, char, char, char, char, char, char)>("arg_shuffle").value();
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<char>(1, 2, 3, 4, 5, 6, 7));
+}
+
+static Module argument_shuffle8(const IntegerType* ty) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle");
+    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+    const auto ab = data.arg(7);
+    const auto aa = data.arg(6);
+    const auto a0 = data.arg(5);
+    const auto a1 = data.arg(4);
+    const auto a2 = data.arg(3);
+    const auto a3 = data.arg(2);
+    const auto a4 = data.arg(1);
+    const auto a5 = data.arg(0);
+
+    FunctionPrototype arg_locator(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty, ty}, "arg_locator8", FunctionLinkage::EXTERN);
+    const auto cont = data.create_basic_block();
+    const auto ret_val = data.call(std::move(arg_locator), cont, {ab, aa, a0, a1, a2, a3, a4, a5});
+    data.switch_block(cont);
+
+    data.ret(ret_val);
+    return builder.build();
+}
+
+template<std::integral T>
+static long arg_locator8(T a0, T a1, T a2, T a3, T a4, T a5, T a6, T a7) {
     long ret = 0;
     ret |= a0 << 0;
     ret |= a1 << 8;
@@ -231,23 +315,24 @@ static long arg_locator1(long a0, long a1, long a2, long a3, long a4, long a5, l
     ret |= a4 << 32;
     ret |= a5 << 40;
     ret |= a6 << 48;
+    ret |= a7 << 56;
     return ret;
 }
 
-static long arg_shuffle1(long a0, long a1, long a2, long a3, long a4, long a5, long a6) {
-    return arg_locator1(a6, a5, a4, a3, a2, a1, a0);
+template<std::integral T>
+static long arg_shuffle8(T a0, T a1, T a2, T a3, T a4, T a5, T a6, T a7) {
+    return arg_locator8(a7, a6, a5, a4, a3, a2, a1, a0);
 }
 
-TEST(CallTest, argument_shuffle1) {
-    GTEST_SKIP();
+TEST(CallTest, argument_shuffle8_i64) {
     const std::unordered_map<std::string, std::size_t> external_symbols = {
-        {"arg_locator1", reinterpret_cast<std::size_t>(&arg_locator1)}
+        {"arg_locator8", reinterpret_cast<std::size_t>(&arg_locator8<long>)}
     };
 
-    const auto module = argument_shuffle1();
+    const auto module = argument_shuffle8(SignedIntegerType::i64());
     const auto code = jit_compile_and_assembly(external_symbols, module, true);
-    const auto fn = code.code_start_as<long(long, long, long, long, long, long, long)>("arg_shuffle").value();
-    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle1(1, 2, 3, 4, 5, 6, 7));
+    const auto fn = code.code_start_as<long(long, long, long, long, long, long, long, long)>("arg_shuffle").value();
+    ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7, 8), arg_shuffle8(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L));
 }
 
 int main(int argc, char **argv) {

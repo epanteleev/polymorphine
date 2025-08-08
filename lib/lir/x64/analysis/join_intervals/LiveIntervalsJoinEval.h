@@ -64,6 +64,7 @@ private:
     void do_joining() {
         for (const auto& [vreg, interval]: m_intervals.intervals()) {
             if (vreg.isa(gen())) {
+                // Skip stack alloc values
                 continue;
             }
 
@@ -72,12 +73,15 @@ private:
                 // This interval is already part of a group, we can skip it.
                 continue;
             }
-            if (contains_fixed_mem_slot(vreg)) {
-                continue; // This is memory location. Shouldn't be joined.
-            }
 
             for (auto group = m_groups.begin(); group != m_groups.end(); ++group) {
+                if (contains_fixed_mem_slot(*group)) {
+                    // The group has a fixed vreg on stack slot. Do not join it.
+                    continue;
+                }
+
                 if (!interval.follows(group->m_interval)) {
+                    // No way to join intervals. Skip it
                     continue;
                 }
 
@@ -88,16 +92,14 @@ private:
         }
     }
 
-    bool contains_fixed_mem_slot(const LIRVal& vreg) const noexcept {
-        const auto gp_reg = m_fixed_regs.get(vreg);
-        if (!gp_reg.has_value()) {
-            return false; // Not a fixed register
-        }
-        if (const auto addr = gp_reg->as_address(); addr.has_value()) {
-            return true;
+    static bool contains_fixed_mem_slot(const Group& group) noexcept {
+        const auto& reg = group.fixed_register();
+        if (!reg.has_value()) {
+            return false;
         }
 
-        return false; // Not a memory location
+        const auto& mem = reg.value().as_address();
+        return mem.has_value();
     }
 
     const LiveIntervals& m_intervals;

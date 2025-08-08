@@ -67,8 +67,16 @@ public:
     }
 
     template<typename Op>
-    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t> || std::is_same_v<Op, aasm::Address>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
     void sub(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.sub(size, src, dst);
+    }
+
+    void sub(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        if (src == 0) {
+            return;
+        }
+
         m_asm.sub(size, src, dst);
     }
 

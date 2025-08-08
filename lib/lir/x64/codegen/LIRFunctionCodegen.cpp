@@ -33,7 +33,7 @@ void LIRFunctionCodegen::emit_prologue() {
 
     m_as.push(8, aasm::rbp);
     m_as.copy(8, aasm::rsp, aasm::rbp);
-    m_as.add(8, -m_reg_allocation.local_area_size(), aasm::rsp);
+    m_as.sub(8, m_reg_allocation.local_area_size(), aasm::rsp);
     for (const auto& reg: m_reg_allocation.used_callee_saved_regs()) {
         m_as.push(8, reg);
     }
@@ -120,29 +120,29 @@ void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value)
     StoreGPEmit::emit(m_as, value.size(), pointer_reg, value_op);
 }
 
-void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
-    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
-    if (total_size == 0) {
-        return;
-    }
-
+void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) {
     for (const auto &reg: reg_set) {
         m_as.pop(8, reg);
     }
-    if (total_size % 16 == 0) {
-        m_as.add(8, 8, aasm::rsp);
+
+    auto size_to_adjust = caller_overflow_area_size;
+    if (const auto remains = (m_reg_allocation.frame_size()+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
+        size_to_adjust += remains;
+    }
+    if (size_to_adjust != 0) {
+        m_as.add(8, size_to_adjust, aasm::rsp);
     }
 }
 
-void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, std::size_t stack_size) {
-    const auto total_size = m_reg_allocation.local_area_size() + 8 * reg_set.size() + m_reg_allocation.used_callee_saved_regs().size() * 8;
-    if (total_size == 0) {
-        return;
+void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) {
+    auto size_to_adjust = caller_overflow_area_size;
+    if (const auto remains = (m_reg_allocation.frame_size()+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
+        size_to_adjust += remains;
+    }
+    if (size_to_adjust != 0) {
+        m_as.sub(8, size_to_adjust, aasm::rsp);
     }
 
-    if (total_size % 16 == 0) {
-        m_as.sub(8, 8, aasm::rsp);
-    }
     for (auto rev = reg_set.rbegin(); rev != reg_set.rend(); --rev) {
         m_as.push(8, *rev);
     }
