@@ -108,6 +108,8 @@ private:
 
     }
 
+    void accept(Select *select) override {}
+
     void lower_flag2int(const Unary *inst);
     void lower_load(const Unary *inst);
     void make_setcc(const Unary *inst, LIRCondType cond_type);

@@ -27,11 +27,11 @@ private:
 
     struct IntervalEntry final {
         IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
-            m_interval(interval),
-            m_vreg(vreg) {}
+            interval(interval),
+            lir_val(vreg) {}
 
-        const LiveInterval* m_interval;
-        LIRVal m_vreg;
+        const LiveInterval* interval;
+        LIRVal lir_val;
     };
 
 public:
@@ -81,7 +81,7 @@ private:
         }
 
         const auto pred = [](const IntervalEntry& lhs, const IntervalEntry& rhs) {
-            return lhs.m_interval->begin()->start() > rhs.m_interval->begin()->start();
+            return lhs.interval->begin()->start() > rhs.interval->begin()->start();
         };
 
         std::ranges::sort(m_unhandled_intervals, pred);
@@ -99,7 +99,7 @@ private:
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
-                const auto reg = m_reg_allocation.at(entry.m_vreg);
+                const auto reg = m_reg_allocation.at(entry.lir_val);
                 if (real_interval->start() > unhandled_interval->finish()) {
                     if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                         m_reg_set.push(reg_opt.value());
@@ -131,7 +131,7 @@ private:
                 }
                 // This interval is still active, we need to keep it.
                 m_active_intervals.emplace_back(entry);
-                const auto reg = m_reg_allocation.at(entry.m_vreg);
+                const auto reg = m_reg_allocation.at(entry.lir_val);
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
                 }
@@ -142,7 +142,7 @@ private:
             remove_interval_if(m_inactive_intervals, unactive_eraser);
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
-                const auto group = m_groups.try_get_group(unhandled.m_vreg);
+                const auto group = m_groups.try_get_group(unhandled.lir_val);
                 if (!group.has_value()) {
                     // No group for this vreg, we can skip it.
                     continue;
@@ -179,19 +179,18 @@ private:
     }
 
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {
-        if (const auto it = m_groups.try_get_group(entry.m_vreg); it.has_value()) {
-            return &it.value()->m_interval;
+        if (const auto it = m_groups.try_get_group(entry.lir_val); it.has_value()) {
+            return &it.value()->interval();
         }
 
-        return entry.m_interval;
+        return entry.interval;
     }
 
     void select_virtual_reg(const LIRVal& lir_val, const IntervalHint hint) {
         if (m_reg_allocation.contains(lir_val)) {
             return;
         }
-        const auto group = m_groups.try_get_group(lir_val);
-        if (group.has_value()) {
+        if (const auto group = m_groups.try_get_group(lir_val); group.has_value()) {
             assertion(!group.value()->fixed_register().has_value(), "Group with fixed register should not be allocated here");
             const auto reg = m_reg_set.top(group.value()->hint());
             for (const auto& group_vreg: group.value()->m_values) {

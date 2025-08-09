@@ -67,6 +67,7 @@ namespace aasm {
             return m_index;
         }
 
+        [[nodiscard]]
         std::size_t hash() const noexcept {
             return std::hash<std::int32_t>()(m_displacement) ^ m_base.hash() ^ m_index.hash() ^ std::hash<std::uint8_t>()(scale);
         }

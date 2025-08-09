@@ -53,6 +53,7 @@ namespace aasm {
         }
 
 
+        [[nodiscard]]
         std::size_t hash() const noexcept {
             return std::hash<std::int32_t>()(m_displacement) ^ m_base.hash();
         }

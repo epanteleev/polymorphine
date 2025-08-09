@@ -100,6 +100,8 @@ private:
 
     void setcc_i(const LIRVal &out, LIRCondType cond_type) override;
 
+    void cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override;
+
     void cmp_i(const LIROperand &in1, const LIROperand &in2) override;
 
     void neg_i(const LIRVal &out, const LIROperand &in) override {

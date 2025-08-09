@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "Select.h"
 #include "mir/instruction/Alloc.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/instruction/Store.h"
@@ -28,7 +29,7 @@ namespace {
 
     private:
         void print_val(const Instruction* inst) const {
-            os << '%' << inst->id() << " = ";
+            os << '%' << inst->id() << 'x' << inst->owner()->id() << " = ";
         }
 
         static std::string_view binaryOpToString(const BinaryOp op) {
@@ -152,9 +153,18 @@ namespace {
         }
 
         void accept(GetElementPtr *gep) override {
-            os << '%' << gep->id() << " = gep ";
+            print_val(gep);
+            os << "gep ";
             os << *gep->access_type();
             os << ' ' << gep->pointer() << ", " << gep->index();
+        }
+
+        void accept(Select *select) override {
+            print_val(select);
+            os << "select ";
+            os << *select->type();
+            os << ' ' << select->condition() << ", ";
+            os << select->on_true() << ", " << select->on_false();
         }
 
         std::ostream& os;

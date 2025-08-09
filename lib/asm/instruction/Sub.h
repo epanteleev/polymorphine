@@ -14,7 +14,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t SUB_RR = 0x29;
             static constexpr std::uint8_t SUB_RR_8 = 0x28;
-            encode_RR<SUB_RR_8, SUB_RR>(buffer, m_size, m_src, m_dst);
+            encode_MR<SUB_RR_8, SUB_RR>(buffer, m_size, m_src, m_dst);
         }
 
     private:

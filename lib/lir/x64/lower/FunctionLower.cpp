@@ -1,8 +1,9 @@
-#include "FunctionLower.h"
-
+#include "lir/x64/lower/FunctionLower.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
+#include "lir/x64/instruction/LIRCondType.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
+
 #include "mir/mir.h"
 
 /**

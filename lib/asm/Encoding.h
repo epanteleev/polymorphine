@@ -110,7 +110,7 @@ namespace aasm::details {
             case 2: [[fallthrough]];
             case 4: [[fallthrough]];
             case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for mov instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
         return addr.encode(buffer, MODRM);
     }
@@ -134,7 +134,7 @@ namespace aasm::details {
                 buffer.emit32(checked_cast<std::int32_t>(imm));
                 break;
             }
-            default: die("Invalid size for pop instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
     }
 
@@ -158,7 +158,7 @@ namespace aasm::details {
             case 2: [[fallthrough]];
             case 4: [[fallthrough]];
             case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for mov instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
         return dest.encode(buffer, reg3(src));
     }
@@ -169,14 +169,14 @@ namespace aasm::details {
     }
 
     template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RR(Buffer& buffer, const std::uint8_t size, const GPReg src, const GPReg dest) {
+    constexpr void encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const GPReg dest) {
         emit_op_prologue(buffer, size, src, dest);
         switch (size) {
             case 1: buffer.emit8(B_CODING); break;
             case 2: [[fallthrough]];
             case 4: [[fallthrough]];
             case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for mov instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
         buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
     }
@@ -204,7 +204,7 @@ namespace aasm::details {
                 buffer.emit32(static_cast<std::int32_t>(imm));
                 break;
             }
-            default: die("Invalid size for add instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
     }
 
@@ -232,7 +232,7 @@ namespace aasm::details {
                 buffer.emit64(imm);
                 break;
             }
-            default: die("Invalid size for mov instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
     }
 
@@ -259,7 +259,7 @@ namespace aasm::details {
                 buffer.emit32(imm);
                 return reloc;
             }
-            default: die("Invalid size for mov instruction: {}", size);
+            default: die("Invalid size for instruction: {}", size);
         }
     }
 }

@@ -20,4 +20,5 @@ public:
     virtual void accept(Alloc* alloc) = 0;
     virtual void accept(IcmpInstruction *icmp) = 0;
     virtual void accept(GetElementPtr* gep) = 0;
+    virtual void accept(Select* select) = 0;
 };

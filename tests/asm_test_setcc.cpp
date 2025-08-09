@@ -3,29 +3,6 @@
 #include "helpers/Utils.h"
 #include "asm/asm.h"
 
-template<std::ranges::range R>
-[[maybe_unused]]
-static void check_bytes_setcc(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(aasm::CondType type), R&& scales) {
-    ASSERT_EQ(codes.size(), names.size());
-    ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
-
-    for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
-        aasm::AsmEmitter a = fn(scale);
-        const auto asm_buffer = a.to_buffer();
-        std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
-        const auto size = to_byte_buffer(asm_buffer, v);
-        auto& code = codes[idx];
-
-        ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
-        for (std::size_t i = 0; i < code.size(); ++i) {
-            ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
-        }
-
-        auto& name = names[idx];
-        ASSERT_EQ(name, make_string(asm_buffer)) << "Mismatch at scale=" << scale;
-    }
-}
-
 static std::vector cond_types = {
     aasm::CondType::O,
     aasm::CondType::NO,
@@ -89,7 +66,7 @@ TEST(Asm, setcc1) {
         return a;
     };
 
-    check_bytes_setcc(codes, names, generator, cond_types);
+    check_bytes_cc(codes, names, generator, cond_types);
 }
 
 TEST(Asm, setcc2) {
@@ -137,7 +114,7 @@ TEST(Asm, setcc2) {
         return a;
     };
 
-    check_bytes_setcc(codes, names, generator, cond_types);
+    check_bytes_cc(codes, names, generator, cond_types);
 }
 
 TEST(Asm, setcc3) {
@@ -185,7 +162,7 @@ TEST(Asm, setcc3) {
         return a;
     };
 
-    check_bytes_setcc(codes, names, generator, cond_types);
+    check_bytes_cc(codes, names, generator, cond_types);
 }
 
 int main(int argc, char **argv) {

@@ -1,5 +1,5 @@
 #pragma once
-#include "../reg/Register.h"
+
 
 namespace aasm::details {
     class MovRR final {
@@ -13,7 +13,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t MOV_RR = 0x89;
             static constexpr std::uint8_t MOV_RR_8 = 0x88;
-            encode_RR<MOV_RR_8, MOV_RR>(buffer, m_size, m_src, m_dest);
+            encode_MR<MOV_RR_8, MOV_RR>(buffer, m_size, m_src, m_dest);
         }
 
     private:

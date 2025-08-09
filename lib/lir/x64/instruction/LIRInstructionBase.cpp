@@ -2,7 +2,7 @@
 #include <ranges>
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
-#include "lir/x64/instruction/LIRSetCC.h"
+#include "lir/x64/instruction/LIRCondType.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "asm/reg/RegSet.h"
 
@@ -42,6 +42,10 @@ namespace {
 
         void setcc_i(const LIRVal &out, LIRCondType cond_type) override {
             m_os << "setcc_i " << cond_type << " out(" << out << ")";
+        }
+
+        void cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {
+            m_os << "cmov_i" << "cond(" << cond_type << ')' << " out(" << out << ") in1(" << in1 << ") in2(" << in2 << ')';
         }
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {

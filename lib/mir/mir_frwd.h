@@ -19,6 +19,7 @@ class Alloc;
 class IcmpInstruction;
 class GetElementPtr;
 class Call;
+class Select;
 
 class BasicBlock;
 

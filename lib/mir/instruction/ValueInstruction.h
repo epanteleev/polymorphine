@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Instruction.h"
+#include "mir/instruction/Instruction.h"
 
 class ValueInstruction : public Instruction {
 public:

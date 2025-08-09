@@ -12,7 +12,7 @@ namespace aasm::details {
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMP_RR = 0x39;
             static constexpr std::uint8_t CMP_RR_8 = 0x38;
-            encode_RR<CMP_RR_8, CMP_RR>(buffer, m_size, m_src, m_dst);
+            encode_MR<CMP_RR_8, CMP_RR>(buffer, m_size, m_src, m_dst);
         }
 
     private:

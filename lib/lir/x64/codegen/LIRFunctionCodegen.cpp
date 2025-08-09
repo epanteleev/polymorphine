@@ -74,6 +74,9 @@ void LIRFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type)
     out_reg.visit(visitor);
 }
 
+void LIRFunctionCodegen::cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) {
+}
+
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);

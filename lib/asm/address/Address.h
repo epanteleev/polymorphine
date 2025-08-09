@@ -74,8 +74,8 @@ namespace aasm {
     };
 
     inline std::ostream& operator<<(std::ostream & os, const Address & addr) {
-        const auto visit = [&](const auto& addr) {
-            os << addr;
+        const auto visit = [&](const auto& address) {
+            os << address;
         };
         std::visit(visit, addr.m_address);
         return os;

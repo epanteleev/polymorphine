@@ -87,6 +87,30 @@ static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, con
     return check_bytes(codes, names, fn, std::views::iota(0U, codes.size()));
 }
 
+
+template<std::ranges::range R>
+[[maybe_unused]]
+static void check_bytes_cc(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(aasm::CondType type), R&& scales) {
+    ASSERT_EQ(codes.size(), names.size());
+    ASSERT_GT(codes.size(), 0U) << "No codes provided for testing";
+
+    for (const auto& [idx, scale] : std::ranges::views::enumerate(scales)) {
+        aasm::AsmEmitter a = fn(scale);
+        const auto asm_buffer = a.to_buffer();
+        std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
+        const auto size = to_byte_buffer(asm_buffer, v);
+        auto& code = codes[idx];
+
+        ASSERT_EQ(size, code.size()) << "Mismatch at scale=" << scale;
+        for (std::size_t i = 0; i < code.size(); ++i) {
+            ASSERT_EQ(v[i], code[i]) << "Mismatch at index=" << i << " scale=" << scale;
+        }
+
+        auto& name = names[idx];
+        ASSERT_EQ(name, make_string(asm_buffer)) << "Mismatch at scale=" << scale;
+    }
+}
+
 template<std::signed_integral T>
 [[maybe_unused]]
 static constexpr T add_overflow(T a, T b) {

@@ -19,6 +19,7 @@
 #include "SetCC.h"
 #include "Leave.h"
 #include "Call.h"
+#include "CMov.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -38,6 +39,7 @@ namespace aasm {
             details::PopR, details::PopM,
             details::PushR, details::PushM, details::PushI,
             details::Ret,
+            details::CMovRR, details::CMovRM,
             details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
             details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
             details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
@@ -60,6 +62,7 @@ namespace aasm {
 
     template<typename T>
     concept MemoryInstruction =
+        std::same_as<T, details::CMovRM> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
