@@ -40,11 +40,11 @@ namespace aasm {
         }
 
         // Conditional Move
-        constexpr void cmov(const std::uint8_t size, const GPReg src, const GPReg dst, const CondType cond) {
+        constexpr void cmov(const std::uint8_t size, const CondType cond, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(details::CMovRR(size, src, dst, cond));
         }
 
-        constexpr void cmov(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) {
+        constexpr void cmov(const std::uint8_t size, const CondType cond, const Address& src, const GPReg dst) {
             m_instructions.emplace_back(details::CMovRM(size, src, dst, cond));
         }
 

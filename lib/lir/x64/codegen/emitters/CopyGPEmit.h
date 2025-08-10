@@ -6,7 +6,7 @@
 
 class CopyGPEmit final: public GPUnaryOutVisitor {
 public:
-    static void emit(MasmEmitter& as, std::uint8_t size, const GPVReg& out, const GPOp& in) {
+    static void emit(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
         CopyGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }

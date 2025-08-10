@@ -1,5 +1,6 @@
 #include "lir/x64/lower/FunctionLower.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
+#include "lir/x64/instruction/LIRCMove.h"
 #include "lir/x64/instruction/LIRCondType.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
@@ -65,6 +66,22 @@ static LIRCondType unsigned_cond_type(const IcmpPredicate predicate) noexcept {
         case IcmpPredicate::Le: return LIRCondType::NA;
         default: die("Unsupported unsigned condition type in flag2int");
     }
+}
+
+static LIRCondType cond_type(const Value& cond) noexcept {
+    if (cond.isa(icmp(signed_v(), signed_v()))) {
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
+        return signed_cond_type(icmp->predicate());
+    }
+
+    if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
+        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
+        return unsigned_cond_type(icmp->predicate());
+    }
+
+    die("Unsupported condition type");
 }
 
 static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
@@ -146,23 +163,10 @@ void FunctionLower::accept(Branch *branch) {
 }
 
 void FunctionLower::accept(CondBranch *cond_branch) {
-    const auto& cond = cond_branch->condition();
     const auto true_target = m_bb_mapping.at(cond_branch->on_true());
     const auto false_target = m_bb_mapping.at(cond_branch->on_false());
 
-    if (cond.isa(icmp(signed_v(), signed_v()))) {
-        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
-        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
-        m_bb->inst(LIRCondBranch::jcc(signed_cond_type(icmp->predicate()), true_target, false_target));
-
-    } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
-        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
-        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
-        m_bb->inst(LIRCondBranch::jcc(unsigned_cond_type(icmp->predicate()), true_target, false_target));
-
-    } else {
-        die("Unsupported condition type in cond branch");
-    }
+    m_bb->inst(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
 }
 
 void FunctionLower::accept(Call *inst) {
@@ -195,7 +199,7 @@ void FunctionLower::accept(Return *inst) {
 }
 
 void FunctionLower::accept(ReturnValue *inst) {
-    const auto ret_value = inst->ret_value();
+    const auto& ret_value = inst->ret_value();
     const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
@@ -241,6 +245,14 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
     m_bb->inst(LIRInstruction::cmp(lhs, rhs));
+}
+
+void FunctionLower::accept(Select *select) {
+    const auto on_true = get_lir_operand(select->on_true());
+    const auto on_false = get_lir_operand(select->on_false());
+
+    const auto cmov = m_bb->inst(LIRCMove::cmov(cond_type(select->condition()), on_true, on_false));
+    memorize(select, cmov->def(0));
 }
 
 void FunctionLower::lower_flag2int(const Unary *inst) {

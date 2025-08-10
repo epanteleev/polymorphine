@@ -61,7 +61,7 @@ TEST(Asm, cmov_reg_reg) {
 
     const auto generator = [](aasm::CondType type) {
         aasm::AsmEmitter a;
-        a.cmov(2, aasm::r12, aasm::r13, type);
+        a.cmov(2, type, aasm::r12, aasm::r13);
         return a;
     };
 
@@ -108,7 +108,7 @@ TEST(Asm, cmov_reg_mem) {
     };
     const auto generator = [](aasm::CondType type) {
         aasm::AsmEmitter a;
-        a.cmov(8, aasm::Address(aasm::r12, aasm::r13,4, 8), aasm::r12, type);
+        a.cmov(8, type, aasm::Address(aasm::r12, aasm::r13,4, 8), aasm::r12);
         return a;
     };
 

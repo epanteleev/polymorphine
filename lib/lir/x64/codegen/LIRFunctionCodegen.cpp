@@ -8,6 +8,7 @@
 #include "emitters/StoreGPEmit.h"
 #include "emitters/SubIntEmit.h"
 #include "asm/reg/RegSet.h"
+#include "emitters/CMovGPEmit.h"
 
 static aasm::CondType cvt_from(const LIRCondType cond) noexcept {
     return static_cast<aasm::CondType>(cond);
@@ -75,6 +76,10 @@ void LIRFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type)
 }
 
 void LIRFunctionCodegen::cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+    CMovGPEmit::emit(m_as, out.size(), cvt_from(cond_type), out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {

@@ -5,6 +5,7 @@
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Binary.h"
 #include "mir/instruction/Compare.h"
+#include "mir/instruction/Select.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/TerminateValueInstruction.h"
@@ -54,6 +55,11 @@ public:
     [[nodiscard]]
     Value flag2int(const IntegerType* to_type, const Value& flag) const {
         return m_bb->push_back(Unary::flag2int(to_type, flag));
+    }
+
+    [[nodiscard]]
+    Value select(const Value& cond, const Value& lhs, const Value& rhs) const {
+        return m_bb->push_back(Select::select(cond, lhs, rhs));
     }
 
     [[nodiscard]]
