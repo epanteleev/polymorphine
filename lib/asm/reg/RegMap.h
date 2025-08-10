@@ -77,12 +77,12 @@ namespace aasm {
         using const_reference = const std::pair<GPReg, V>&;
 
         [[nodiscard]]
-        constexpr std::size_t size() const noexcept {
+        std::size_t size() const noexcept {
             return m_has_values.count();
         };
 
         [[nodiscard]]
-        constexpr bool empty() const noexcept {
+        bool empty() const noexcept {
             return m_has_values.none();
         }
 

@@ -7,39 +7,20 @@
 namespace aasm {
     class GPReg final {
     public:
-        enum class RegEncoding: std::uint8_t {
-            AX  = 0,    /* 0b000 */
-            CX  = 1,    /* 0b001 */
-            DX  = 2,    /* 0b010 */
-            BX  = 3,    /* 0b011 */
-            SP  = 4,    /* 0b100 */
-            BP  = 5,    /* 0b101 */
-            SI  = 6,    /* 0b110 */
-            DI  = 7,    /* 0b111 */
-            R8  = 8,
-            R9  = 9,
-            R10 = 10,
-            R11 = 11,
-            R12 = 12,
-            R13 = 13,
-            R14 = 14,
-            R15 = 15,
-        };
-
         static constexpr auto NUMBER_OF_GP_REGS = 16;
 
-        constexpr explicit GPReg(const RegEncoding code) noexcept: m_code(code) {}
+        constexpr explicit GPReg(const std::uint8_t code) noexcept: m_code(code) {}
         constexpr GPReg() = default;
 
         [[nodiscard]]
         constexpr std::uint8_t code() const noexcept {
-            return static_cast<uint8_t>(m_code);
+            return m_code;
         }
 
         [[nodiscard]]
         constexpr bool is_64_bit_reg() const noexcept {
             const auto coding = static_cast<uint8_t>(m_code);
-            return coding >= static_cast<uint8_t>(RegEncoding::R8) && coding <= static_cast<uint8_t>(RegEncoding::R15);
+            return coding >= 8 && coding <= 15;
         }
 
         constexpr bool operator==(const GPReg & other) const {
@@ -51,29 +32,29 @@ namespace aasm {
 
         [[nodiscard]]
         std::size_t hash() const noexcept {
-            return static_cast<std::size_t>(m_code);
+            return m_code;
         }
 
     private:
-        RegEncoding m_code;
+        std::uint8_t m_code;
     };
 
-    static constexpr GPReg rax(GPReg::RegEncoding::AX);
-    static constexpr GPReg rbx(GPReg::RegEncoding::BX);
-    static constexpr GPReg rsi(GPReg::RegEncoding::SI);
-    static constexpr GPReg rdi(GPReg::RegEncoding::DI);
-    static constexpr GPReg rcx(GPReg::RegEncoding::CX);
-    static constexpr GPReg rdx(GPReg::RegEncoding::DX);
-    static constexpr GPReg rbp(GPReg::RegEncoding::BP);
-    static constexpr GPReg rsp(GPReg::RegEncoding::SP);
-    static constexpr GPReg r8(GPReg::RegEncoding::R8);
-    static constexpr GPReg r9(GPReg::RegEncoding::R9);
-    static constexpr GPReg r10(GPReg::RegEncoding::R10);
-    static constexpr GPReg r11(GPReg::RegEncoding::R11);
-    static constexpr GPReg r12(GPReg::RegEncoding::R12);
-    static constexpr GPReg r13(GPReg::RegEncoding::R13);
-    static constexpr GPReg r14(GPReg::RegEncoding::R14);
-    static constexpr GPReg r15(GPReg::RegEncoding::R15);
+    static constexpr GPReg rax(0);
+    static constexpr GPReg rcx(1);
+    static constexpr GPReg rdx(2);
+    static constexpr GPReg rbx(3);
+    static constexpr GPReg rsp(4);
+    static constexpr GPReg rbp(5);
+    static constexpr GPReg rsi(6);
+    static constexpr GPReg rdi(7);
+    static constexpr GPReg r8(8);
+    static constexpr GPReg r9(9);
+    static constexpr GPReg r10(10);
+    static constexpr GPReg r11(11);
+    static constexpr GPReg r12(12);
+    static constexpr GPReg r13(13);
+    static constexpr GPReg r14(14);
+    static constexpr GPReg r15(15);
 
     static constexpr std::array gp_regs = {
         rax, rcx, rdx, rbx,

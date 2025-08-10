@@ -16,7 +16,7 @@ namespace aasm {
 
     public:
         using value_type      = GPReg;
-        using reference       = const GPReg&;
+        using reference       = const GPReg;
         using difference_type = std::ptrdiff_t;
         using const_reference = reference;
 
@@ -61,20 +61,26 @@ namespace aasm {
         using iterator   = RegSetIterator;
         using reference  = GPReg&;
 
+        GPRegSet() noexcept = default;
+        constexpr GPRegSet(const std::initializer_list<GPReg> list) noexcept {
+            for (const auto& reg : list) {
+                m_has_values.set(reg.code());
+            }
+        }
+
         [[nodiscard]]
-        constexpr std::size_t size() const noexcept {
+        std::size_t size() const noexcept {
             return m_has_values.count();
         };
 
         [[nodiscard]]
-        constexpr bool empty() const noexcept {
+        bool empty() const noexcept {
             return m_has_values.none();
         }
 
-        GPReg& emplace(const GPReg reg) noexcept {
+        GPReg emplace(const GPReg& reg) noexcept {
             m_has_values.set(reg.code());
-            m_regs[reg.code()] = reg;
-            return m_regs[reg.code()];
+            return reg;
         }
 
         [[nodiscard]]
@@ -104,11 +110,10 @@ namespace aasm {
     private:
         friend class RegSetIterator;
         std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
-        GPReg m_regs[GPReg::NUMBER_OF_GP_REGS]{};
     };
 
     inline RegSetIterator::reference RegSetIterator::operator*() const noexcept {
-        return m_reg_set->m_regs[m_idx];
+        return GPReg(m_idx);
     }
 
     inline RegSetIterator & RegSetIterator::operator++() noexcept {
