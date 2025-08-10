@@ -14,7 +14,7 @@ public:
 private:
     friend class GPBinaryVisitor;
 
-    explicit CMovGPEmit(MasmEmitter& as, aasm::CondType cond_type, const std::uint8_t size) noexcept:
+    explicit CMovGPEmit(MasmEmitter& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
         m_size(size),
         m_cond_type(cond_type),
         m_as(as) {}
