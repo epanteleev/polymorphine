@@ -2,8 +2,9 @@
 #include <ranges>
 
 #include "lir/x64/instruction/LIRInstructionBase.h"
-#include "lir/x64/instruction/LIRCondType.h"
 #include "lir/x64/module/LIRBlock.h"
+
+#include "asm/instruction/CondType.h"
 #include "asm/reg/RegSet.h"
 
 namespace {
@@ -40,11 +41,11 @@ namespace {
 
         }
 
-        void setcc_i(const LIRVal &out, LIRCondType cond_type) override {
+        void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {
             m_os << "setcc_i " << cond_type << " out(" << out << ")";
         }
 
-        void cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {
+        void cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {
             m_os << "cmov_i" << "cond(" << cond_type << ')' << " out(" << out << ") in1(" << in1 << ") in2(" << in2 << ')';
         }
 
@@ -110,7 +111,7 @@ namespace {
             bb->print_short_name(m_os);
         }
 
-        void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {
+        void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {
             m_os << "j" << cond_type << " ";
             on_true->print_short_name(m_os);
             m_os << ", ";

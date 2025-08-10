@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace aasm {
     enum class CondType: std::uint8_t {
         O   = 0x0, // Overflow

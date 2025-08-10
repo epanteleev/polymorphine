@@ -1,7 +1,3 @@
-//
-// Created by epanteleev on 8/5/25.
-//
-
 #include "SubIntEmit.h"
 
 void SubIntEmit::emit(aasm::GPReg out, aasm::GPReg in1, aasm::GPReg in2) {

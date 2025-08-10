@@ -42,19 +42,19 @@ public:
 
 class LIRCondBranch final: public LIRControlInstruction {
 public:
-    explicit LIRCondBranch(const LIRCondType kind, std::vector<LIROperand>&& uses,
+    explicit LIRCondBranch(const aasm::CondType kind, std::vector<LIROperand>&& uses,
                        std::vector<LIRBlock* >&& successors) :
         LIRControlInstruction(std::move(uses), std::move(successors)),
         m_kind(kind) {}
 
     void visit(LIRVisitor &visitor) override;
 
-    static std::unique_ptr<LIRCondBranch> jcc(const LIRCondType kind, LIRBlock *on_true, LIRBlock *on_false) {
+    static std::unique_ptr<LIRCondBranch> jcc(const aasm::CondType kind, LIRBlock *on_true, LIRBlock *on_false) {
         return std::make_unique<LIRCondBranch>(kind, std::vector<LIROperand>{}, std::vector{on_true, on_false});
     }
 
 private:
-    const LIRCondType m_kind;
+    const aasm::CondType m_kind;
 };
 
 class LIRReturn final: public LIRControlInstruction {

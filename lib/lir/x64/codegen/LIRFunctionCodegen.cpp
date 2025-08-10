@@ -10,10 +10,6 @@
 #include "asm/reg/RegSet.h"
 #include "emitters/CMovGPEmit.h"
 
-static aasm::CondType cvt_from(const LIRCondType cond) noexcept {
-    return static_cast<aasm::CondType>(cond);
-}
-
 static aasm::Linkage cvt_linkage(const LIRLinkage linkage) noexcept {
     switch (linkage) {
         case LIRLinkage::INTERNAL: return aasm::Linkage::INTERNAL;
@@ -59,11 +55,11 @@ void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const L
     SubIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
-void LIRFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type) {
+void LIRFunctionCodegen::setcc_i(const LIRVal &out, const aasm::CondType cond_type) {
     const auto out_reg = m_reg_allocation[out];
     const auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, aasm::GPReg>) {
-            m_as.setcc(cvt_from(cond_type), val);
+            m_as.setcc(cond_type, val);
 
         } else if constexpr (std::is_same_v<T, aasm::Address>) {
 
@@ -75,11 +71,11 @@ void LIRFunctionCodegen::setcc_i(const LIRVal &out, const LIRCondType cond_type)
     out_reg.visit(visitor);
 }
 
-void LIRFunctionCodegen::cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) {
+void LIRFunctionCodegen::cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) {
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    CMovGPEmit::emit(m_as, out.size(), cvt_from(cond_type), out_reg, in1_reg, in2_reg);
+    CMovGPEmit::emit(m_as, out.size(), cond_type, out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
@@ -172,9 +168,9 @@ void LIRFunctionCodegen::jmp(const LIRBlock *bb) {
     m_as.jmp(target);
 }
 
-void LIRFunctionCodegen::jcc(const LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
+void LIRFunctionCodegen::jcc(const aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
     const auto target_false = m_bb_labels.at(on_false);
-    const auto cond = aasm::invert(cvt_from(cond_type));
+    const auto cond = aasm::invert(cond_type);
     m_as.jcc(cond, target_false);
 }
 
@@ -184,12 +180,5 @@ void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, st
 }
 
 void LIRFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {
-#ifndef NDEBUG
-    const auto values_num = ret_values.size();
-    if (values_num == 1) {
-        const auto ret_val = convert_to_gp_reg(ret_values[0]);
-        assertion(ret_val == aasm::rax, "Return value must be in rax register");
-    }
-#endif
     m_as.ret();
 }

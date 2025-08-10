@@ -1,13 +1,12 @@
 #pragma once
 
+#include "asm/asm.h"
 #include "lir/x64/lir_frwd.h"
 #include "lir/x64/asm/visitors/GPUnaryVisitor.h"
 
-class MasmEmitter;
-
 class CmpGPEmit final: public GPUnaryVisitor {
 public:
-    static void emit(MasmEmitter& as, std::uint8_t size, const GPOp& out, const GPOp& in) {
+    static void emit(MasmEmitter& as, const std::uint8_t size, const GPOp& out, const GPOp& in) {
         CmpGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }
@@ -15,8 +14,9 @@ public:
 private:
     friend class GPUnaryVisitor;
 
-    explicit CmpGPEmit(MasmEmitter& as, std::uint8_t size) noexcept
-        : m_size(size), m_as(as) {}
+    explicit CmpGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as) {}
 
     void emit(aasm::GPReg out, aasm::GPReg in) override;
     void emit(aasm::GPReg out, const aasm::Address &in) override;

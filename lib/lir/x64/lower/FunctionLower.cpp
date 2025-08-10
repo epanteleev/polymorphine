@@ -1,7 +1,6 @@
 #include "lir/x64/lower/FunctionLower.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/instruction/LIRCMove.h"
-#include "lir/x64/instruction/LIRCondType.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
 
@@ -39,14 +38,14 @@ static LirCst make_constant(const Type& type, const T integer) noexcept {
  * @param predicate The IcmpPredicate representing the condition.
  * @return The corresponding LIRCondType.
  */
-static LIRCondType signed_cond_type(const IcmpPredicate predicate) noexcept {
+static aasm::CondType signed_cond_type(const IcmpPredicate predicate) noexcept {
     switch (predicate) {
-        case IcmpPredicate::Eq: return LIRCondType::E;
-        case IcmpPredicate::Ne: return LIRCondType::NE;
-        case IcmpPredicate::Gt: return LIRCondType::G;
-        case IcmpPredicate::Ge: return LIRCondType::GE;
-        case IcmpPredicate::Lt: return LIRCondType::NGE;
-        case IcmpPredicate::Le: return LIRCondType::NG;
+        case IcmpPredicate::Eq: return aasm::CondType::E;
+        case IcmpPredicate::Ne: return aasm::CondType::NE;
+        case IcmpPredicate::Gt: return aasm::CondType::G;
+        case IcmpPredicate::Ge: return aasm::CondType::GE;
+        case IcmpPredicate::Lt: return aasm::CondType::NGE;
+        case IcmpPredicate::Le: return aasm::CondType::NG;
         default: die("Unsupported signed condition type in flag2int");
     }
 }
@@ -56,19 +55,19 @@ static LIRCondType signed_cond_type(const IcmpPredicate predicate) noexcept {
  * @param predicate The IcmpPredicate representing the condition.
  * @return The corresponding LIRCondType.
  */
-static LIRCondType unsigned_cond_type(const IcmpPredicate predicate) noexcept {
+static aasm::CondType unsigned_cond_type(const IcmpPredicate predicate) noexcept {
     switch (predicate) {
-        case IcmpPredicate::Eq: return LIRCondType::E;
-        case IcmpPredicate::Ne: return LIRCondType::NE;
-        case IcmpPredicate::Gt: return LIRCondType::A;
-        case IcmpPredicate::Ge: return LIRCondType::AE;
-        case IcmpPredicate::Lt: return LIRCondType::NAE;
-        case IcmpPredicate::Le: return LIRCondType::NA;
+        case IcmpPredicate::Eq: return aasm::CondType::E;
+        case IcmpPredicate::Ne: return aasm::CondType::NE;
+        case IcmpPredicate::Gt: return aasm::CondType::A;
+        case IcmpPredicate::Ge: return aasm::CondType::AE;
+        case IcmpPredicate::Lt: return aasm::CondType::NAE;
+        case IcmpPredicate::Le: return aasm::CondType::NA;
         default: die("Unsupported unsigned condition type in flag2int");
     }
 }
 
-static LIRCondType cond_type(const Value& cond) noexcept {
+static aasm::CondType cond_type(const Value& cond) noexcept {
     if (cond.isa(icmp(signed_v(), signed_v()))) {
         const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
@@ -294,7 +293,7 @@ void FunctionLower::lower_load(const Unary *inst) {
     }
 }
 
-void FunctionLower::make_setcc(const Unary *inst, const LIRCondType cond_type) {
+void FunctionLower::make_setcc(const Unary *inst, const aasm::CondType cond_type) {
     const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type));
     memorize(inst, setcc->def(0));
 }

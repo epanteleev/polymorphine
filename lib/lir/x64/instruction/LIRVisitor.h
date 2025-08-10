@@ -17,8 +17,8 @@ public:
     virtual void xor_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shl_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shr_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
-    virtual void setcc_i(const LIRVal& out, LIRCondType cond_type) = 0;
-    virtual void cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void setcc_i(const LIRVal& out, aasm::CondType cond_type) = 0;
+    virtual void cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void parallel_copy(const LIRVal& out, std::span<LIRVal const> inputs) = 0;
 
     virtual void cmp_i(const LIROperand& in1, const LIROperand& in2) = 0;
@@ -36,7 +36,7 @@ public:
     virtual void load_i(const LIRVal& out, const LIRVal& pointer) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;
-    virtual void jcc(LIRCondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
+    virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
     virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) = 0;
     virtual void vcall(std::span<LIRVal const> args) = 0;

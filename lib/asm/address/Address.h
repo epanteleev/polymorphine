@@ -21,7 +21,7 @@ namespace aasm {
         explicit constexpr Address(const GPReg base, const std::int32_t displacement = 0) noexcept:
                     m_address(AddressBaseDisp(base, displacement)) {}
 
-        explicit constexpr Address(const Symbol* symbol, const std::uint32_t displacement = 0) noexcept:
+        explicit constexpr Address(const Symbol* symbol, const std::int32_t displacement = 0) noexcept:
             m_address(AddressLiteral(symbol, displacement)) {}
 
         friend std::ostream& operator<<(std::ostream & os, const Address & addr);
@@ -35,7 +35,7 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
-        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, std::uint32_t modrm_pattern) const {
             const auto visit = [&](const auto& addr) {
                 return addr.encode(c, modrm_pattern);
             };

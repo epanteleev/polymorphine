@@ -90,8 +90,8 @@ private:
         void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-        void setcc_i(const LIRVal &out, LIRCondType cond_type) override {}
-        void cmov_i(LIRCondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {}
+        void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {}
+        void cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {}
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {}
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {}
         void neg_i(const LIRVal &out, const LIROperand &in) override {}
@@ -106,7 +106,7 @@ private:
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
         void jmp(const LIRBlock *bb) override {}
 
-        void jcc(LIRCondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
+        void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
         aasm::Address arg_stack_alloc() noexcept {
             const auto addr = aasm::Address(aasm::rsp, m_arg_area_size);

@@ -3,7 +3,7 @@
 namespace aasm {
     class AddressLiteral final {
     public:
-        explicit AddressLiteral(const Symbol* symbol, const std::uint32_t displacement) noexcept:
+        explicit AddressLiteral(const Symbol* symbol, const std::int32_t displacement) noexcept:
             m_symbol(symbol),
             m_displacement(displacement) {}
 
@@ -36,12 +36,12 @@ namespace aasm {
 
         [[nodiscard]]
         std::size_t hash() const noexcept {
-            return std::hash<const Symbol*>()(m_symbol) ^ std::hash<std::uint32_t>()(m_displacement);
+            return std::hash<const Symbol*>()(m_symbol) ^ std::hash<std::int32_t>()(m_displacement);
         }
 
     private:
         const Symbol* m_symbol;
-        std::uint32_t m_displacement;
+        std::int32_t m_displacement;
     };
 
     inline std::ostream &operator<<(std::ostream &os, const AddressLiteral &address) {
