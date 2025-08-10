@@ -2,64 +2,67 @@
 
 #include <bitset>
 
+#include "asm/asm_frwd.h"
 #include "Register.h"
 #include "utility/BitUtils.h"
 
 namespace aasm {
+    class RegSetIterator final {
+        explicit RegSetIterator(const GPRegSet* reg_map, const std::size_t idx) noexcept:
+            m_reg_set(reg_map),
+            m_idx(idx) {}
+
+        friend class GPRegSet;
+
+    public:
+        using value_type      = GPReg;
+        using reference       = const GPReg&;
+        using difference_type = std::ptrdiff_t;
+        using const_reference = reference;
+
+        RegSetIterator() noexcept = default;
+
+        reference operator*() const noexcept;
+
+        RegSetIterator& operator++() noexcept;
+        RegSetIterator operator++(int) noexcept {
+            const RegSetIterator temp = *this;
+            ++*this;
+            return temp;
+        }
+
+        RegSetIterator& operator--() noexcept;
+        RegSetIterator operator--(int) noexcept {
+            const RegSetIterator temp = *this;
+            --*this;
+            return temp;
+        }
+
+        bool operator==(const RegSetIterator& other) const noexcept {
+            if (this == &other) {
+                return true;
+            }
+
+            return m_reg_set == other.m_reg_set && m_idx == other.m_idx;
+        }
+
+        bool operator!=(const RegSetIterator& other) const noexcept {
+            return !(*this == other);
+        }
+
+    private:
+        const GPRegSet* m_reg_set{};
+        std::size_t m_idx{};
+    };
+
     class GPRegSet final {
     public:
-        class Iterator final {
-            explicit Iterator(const GPRegSet& reg_map, const std::size_t idx) noexcept: m_reg_map(reg_map), m_idx(idx) {}
-            friend class GPRegSet;
-        public:
-            using pointer = const GPReg*;
-            using reference = const GPReg&;
-
-            reference operator*() const noexcept {
-                return m_reg_map.m_regs[m_idx];
-            }
-
-            pointer operator->() const noexcept {
-                return &m_reg_map.m_regs[m_idx];
-            }
-
-            Iterator& operator--() noexcept {
-                m_idx--;
-                m_idx = bitutils::find_prev_set_bit(m_reg_map.m_has_values, m_idx);
-                return *this;
-            }
-
-            Iterator& operator++() noexcept {
-                m_idx++;
-                m_idx = bitutils::find_next_set_bit(m_reg_map.m_has_values, m_idx);
-                return *this;
-            }
-
-            Iterator operator--(int) noexcept {
-                const Iterator temp = *this;
-                --*this;
-                return temp;
-            }
-
-            Iterator operator++(int) noexcept {
-                const Iterator temp = *this;
-                ++*this;
-                return temp;
-            }
-
-            bool operator==(const Iterator& other) const noexcept {
-                return &m_reg_map == &other.m_reg_map && m_idx == other.m_idx;
-            }
-
-        private:
-            const GPRegSet& m_reg_map;
-            std::size_t m_idx;
-        };
-
-        using const_iterator = Iterator;
+        using value_type = GPReg;
+        using iterator   = RegSetIterator;
+        using reference  = GPReg&;
 
         [[nodiscard]]
-        constexpr auto size() const noexcept {
+        constexpr std::size_t size() const noexcept {
             return m_has_values.count();
         };
 
@@ -80,35 +83,46 @@ namespace aasm {
         }
 
         [[nodiscard]]
-        const_iterator find(const GPReg reg) const noexcept {
+        iterator find(const GPReg reg) const noexcept {
             if (!contains(reg)) {
                 return end();
             }
-            return Iterator(*this, reg.code());
+
+            return RegSetIterator(this, reg.code());
         }
 
         [[nodiscard]]
-        const_iterator begin() const noexcept {
-            return Iterator(*this, bitutils::find_next_set_bit(m_has_values, 0));
+        iterator begin() const noexcept {
+            return RegSetIterator(this, bitutils::find_next_set_bit(m_has_values, 0));
         }
 
         [[nodiscard]]
-        const_iterator end() const noexcept {
-            return Iterator(*this, GPReg::NUMBER_OF_GP_REGS);
-        }
-
-        [[nodiscard]]
-        const_iterator rbegin() const noexcept {
-            return Iterator(*this, bitutils::find_prev_set_bit(m_has_values, GPReg::NUMBER_OF_GP_REGS-1));
-        }
-
-        [[nodiscard]]
-        const_iterator rend() const noexcept {
-            return Iterator(*this, GPReg::NUMBER_OF_GP_REGS);
+        iterator end() const noexcept {
+            return RegSetIterator(this, GPReg::NUMBER_OF_GP_REGS);
         }
 
     private:
+        friend class RegSetIterator;
         std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
-        GPReg m_regs[GPReg::NUMBER_OF_GP_REGS];
+        GPReg m_regs[GPReg::NUMBER_OF_GP_REGS]{};
     };
+
+    inline RegSetIterator::reference RegSetIterator::operator*() const noexcept {
+        return m_reg_set->m_regs[m_idx];
+    }
+
+    inline RegSetIterator & RegSetIterator::operator++() noexcept {
+        m_idx++;
+        m_idx = bitutils::find_next_set_bit(m_reg_set->m_has_values, m_idx);
+        return *this;
+    }
+
+    inline RegSetIterator & RegSetIterator::operator--() noexcept {
+        m_idx--;
+        m_idx = bitutils::find_prev_set_bit(m_reg_set->m_has_values, m_idx);
+        return *this;
+    }
 }
+
+static_assert(std::ranges::range<aasm::GPRegSet>, "should be");
+static_assert(std::ranges::bidirectional_range<aasm::GPRegSet>, "should be");

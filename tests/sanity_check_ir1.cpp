@@ -112,6 +112,7 @@ TEST(SanityCheck1, min_max_select_i64) {
 }
 
 int main(int argc, char **argv) {
+
     error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

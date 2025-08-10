@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <ranges>
 #include "asm/reg/RegMap.h"
 #include "utility/Error.h"
 
@@ -80,6 +81,11 @@ TEST(RegMap, try_emplace) {
     ASSERT_FALSE(inserted2);
     ASSERT_EQ(it2->first, aasm::rax);
     ASSERT_EQ(it2->second, 42); // Should not change the value
+
+    for (auto rev: std::ranges::reverse_view(reg_map)) {
+        ASSERT_EQ(rev.first, aasm::rax);
+        ASSERT_EQ(rev.second, 42);
+    }
 }
 
 TEST(RegMap, try_emplace_vec) {

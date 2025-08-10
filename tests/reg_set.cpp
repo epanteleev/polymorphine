@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <ranges>
 #include <gtest/gtest.h>
 
 #include "asm/reg/RegSet.h"
@@ -19,7 +20,7 @@ TEST(RegSet, traverse) {
     reg_map.emplace(aasm::rbx);
     ASSERT_EQ(reg_map.size(), 2);
 
-    std::array regs = {
+    const std::array regs = {
         aasm::rbx,
         aasm::r14,
     };
@@ -47,9 +48,8 @@ TEST(RegSet, traverse_reverse) {
     };
 
     std::size_t idx{};
-    ASSERT_EQ(*reg_map.rbegin(), regs[idx]) << "Unexpected register at index: " << idx;
-    for (auto it = reg_map.rbegin(); it != reg_map.rend(); --it) {
-        ASSERT_EQ(*it, regs[idx]) << "Unexpected register at index: " << idx;
+    for (const auto& reg: std::ranges::reverse_view(reg_map)) {
+        ASSERT_EQ(reg, regs[idx]) << "Unexpected register at index: " << idx;
         ++idx;
     }
 }

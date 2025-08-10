@@ -12,6 +12,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fconcepts-diagnostics-depth=100")
+
 
 function(register_static_library NAME)
     add_library(${NAME} STATIC ${ARGN})

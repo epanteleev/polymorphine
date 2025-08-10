@@ -75,7 +75,7 @@ namespace {
 
         void print_adjust_stack(std::string_view name, const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) const noexcept {
             m_os << name << " [";
-            for (const auto& reg: reg_set) {
+            for (const auto reg: reg_set) {
                 m_os << reg.name(8) << ' ';
             }
 

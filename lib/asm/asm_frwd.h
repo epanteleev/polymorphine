@@ -6,5 +6,7 @@ namespace aasm {
     class GPReg;
     class Symbol;
     class GPRegSet;
+    template<typename V>
+    class GPRegMap;
     enum class CondType: std::uint8_t;
 }
