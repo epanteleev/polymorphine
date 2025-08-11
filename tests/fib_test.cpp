@@ -4,7 +4,7 @@
 #include "helpers/Jit.h"
 
 template<typename Fn>
-Module fib(const IntegerType* ty, Fn&& fn) {
+static Module fib(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     FunctionPrototype prototype(ty, {ty}, "fib");
 

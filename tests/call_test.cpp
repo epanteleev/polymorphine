@@ -174,8 +174,17 @@ static Module clamp(const IntegerType* ty) {
 
 template<typename Fn>
 static void verify_clamp(const Module& module) {
-    auto code = jit_compile_and_assembly(module, true);
+    const auto obj = jit_compile(module, true);
+    const auto max = obj.function("max");
+    const auto min = obj.function("min");
+    const auto clamp_asm = obj.function("clamp");
 
+    ASSERT_EQ(max.value()->size(), 12) << "Max assembler instruction list mismatch";
+    ASSERT_EQ(min.value()->size(), 12) << "Min assembler instruction list mismatch";
+    ASSERT_EQ(clamp_asm.value()->size(), 9) << "Clamp assembler instruction list mismatch";
+
+    static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
+    const auto code = JitModule::assembly(external_symbols, obj);
     const auto clamp = code.code_start_as<Fn>("clamp").value();
 
     ASSERT_EQ(clamp(10, 0, 20), 10);

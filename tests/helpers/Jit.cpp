@@ -81,7 +81,7 @@ AsmModule jit_compile(const Module &module, const bool verbose) {
 }
 
 JitModule jit_compile_and_assembly(const Module& module, const bool verbose) {
-    auto obj = jit_compile(module, verbose);
+    const auto obj = jit_compile(module, verbose);
 
     static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
     const auto buffer = JitModule::assembly(external_symbols, obj);

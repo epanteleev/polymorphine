@@ -24,8 +24,6 @@ namespace aasm {
 
         template<CodeBuffer C>
         std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
-            const auto has_sib = m_index.code() || reg3(m_base) == reg3(rsp) || scale > 1;
-
             /* Explicit m_displacement must be used with BP or R13. */
             const auto has_displacement = m_displacement || m_base == rbp;
 
@@ -42,15 +40,11 @@ namespace aasm {
             }
             c.emit8(modrm);
 
-            /* SIB */
-            if (has_sib) {
-                // SIB: [7-6] scale, [5-3] index, [2-0] m_base
-                std::uint8_t sib = (scale == 2 ? 1 :
+            std::uint8_t sib = (scale == 2 ? 1 :
                         scale == 4 ? 2 :
                         scale == 8 ? 3 : 0) << 6;
-                sib |= reg3(m_index) << 3 | reg3(m_base);
-                c.emit8(sib);
-            }
+            sib |= reg3(m_index) << 3 | reg3(m_base);
+            c.emit8(sib);
 
             /* Displacement */
             if (!std::in_range<int8_t>(m_displacement)) {

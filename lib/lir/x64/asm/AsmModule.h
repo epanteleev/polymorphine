@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <iomanip>
 #include <memory>
+#include <expected>
 
 #include "MasmEmitter.h"
 #include "asm/symbol/SymbolTable.h"
@@ -19,6 +20,19 @@ public:
 
     std::shared_ptr<aasm::SymbolTable> symbol_table() const noexcept {
         return m_symbol_table;
+    }
+
+    std::expected<const aasm::AsmBuffer*, Error> function(const std::string& name) const noexcept {
+        const auto symbol = m_symbol_table->find(name);
+        if (!symbol.has_value()) {
+            return std::unexpected(Error::NotFoundError);
+        }
+        const auto it = m_modules.find(symbol.value());
+        if (it == m_modules.end()) {
+            return std::unexpected(Error::NotFoundError);
+        }
+
+        return &it->second;
     }
 
     friend std::ostream& operator<<(std::ostream &os, const AsmModule &module);

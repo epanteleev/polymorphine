@@ -31,7 +31,7 @@ namespace aasm::details {
 
     class SubRI final {
     public:
-        constexpr explicit SubRI(std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
+        constexpr explicit SubRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
             m_size(size),
             m_src(src),
             m_dst(dst) {}
