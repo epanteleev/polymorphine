@@ -35,7 +35,14 @@ TEST(Asm, popq_reg) {
         0x41, 0x5F  // 0x41 + 0x0F is the opcode for POP R15
     };
 
-    for (const auto reg: aasm::gp_regs) {
+    static constexpr std::array gp_regs = {
+        aasm::rax, aasm::rcx, aasm::rdx, aasm::rbx,
+        aasm::rsp, aasm::rbp, aasm::rsi, aasm::rdi,
+        aasm::r8,  aasm::r9,  aasm::r10, aasm::r11,
+        aasm::r12, aasm::r13, aasm::r14, aasm::r15
+    };
+
+    for (const auto reg: gp_regs) {
         a.pop(8, reg);
     }
 

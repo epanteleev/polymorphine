@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
 #include <string_view>
 
 namespace aasm {
@@ -55,13 +54,6 @@ namespace aasm {
     static constexpr GPReg r13(13);
     static constexpr GPReg r14(14);
     static constexpr GPReg r15(15);
-
-    static constexpr std::array gp_regs = {
-        rax, rcx, rdx, rbx,
-        rsp, rbp, rsi, rdi,
-        r8,  r9,  r10, r11,
-        r12, r13, r14, r15
-    };
 
     static constexpr std::uint8_t B(const GPReg arg) {
         return arg.is_64_bit_reg();

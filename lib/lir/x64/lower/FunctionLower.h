@@ -110,9 +110,8 @@ private:
 
     void accept(Select *select) override;
 
-    void lower_flag2int(const Unary *inst);
     void lower_load(const Unary *inst);
-    void make_setcc(const Unary *inst, aasm::CondType cond_type);
+    void make_setcc(const ValueInstruction *inst, aasm::CondType cond_type);
 
     template <IsLocalValueType T>
     void memorize(const T* val, const LIRVal& lir_val) {

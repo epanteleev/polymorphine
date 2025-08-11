@@ -38,19 +38,26 @@ namespace impls {
         return dynamic_cast<const Alloc*>(val) != nullptr;
     }
 
+    inline bool integral(const Value& value, const std::uint64_t cst) noexcept {
+        if (value.is<std::int64_t>()) {
+            return value.get<std::int64_t>() == static_cast<std::int64_t>(cst);
+        }
+        if (value.is<std::uint64_t>()) {
+            return value.get<std::uint64_t>() == cst;
+        }
+        return false;
+    }
 }
 
-using ValueMatcher = bool(*)(const Value&);
-
-consteval ValueMatcher constant() {
+consteval auto constant() {
     return impls::constant;
 }
 
-consteval ValueMatcher signed_v() {
+consteval auto signed_v() {
     return impls::signed_v;
 }
 
-consteval ValueMatcher unsigned_v() {
+consteval auto unsigned_v() {
     return impls::unsigned_v;
 }
 
@@ -67,4 +74,8 @@ consteval auto alloc() noexcept {
 
 consteval auto argument() noexcept {
     return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
+}
+
+consteval auto integral(const std::uint64_t cst) noexcept {
+    return [=](const Value& value) { return impls::integral(value, cst); };
 }

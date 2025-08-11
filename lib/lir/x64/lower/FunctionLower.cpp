@@ -247,29 +247,21 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
 }
 
 void FunctionLower::accept(Select *select) {
-    const auto on_true = get_lir_operand(select->on_true());
-    const auto on_false = get_lir_operand(select->on_false());
+    const auto& on_true = select->on_true();
+    const auto& on_false = select->on_false();
+    const auto on_true_lir = get_lir_operand(on_true);
+    const auto on_false_lir = get_lir_operand(on_false);
 
-    const auto cmov = m_bb->inst(LIRCMove::cmov(cond_type(select->condition()), on_true, on_false));
-    memorize(select, cmov->def(0));
-}
+    const auto cond_ty = cond_type(select->condition());
+    if (on_true.isa(integral(1)) && on_false.isa(integral(0))) {
+        make_setcc(select, cond_ty);
 
-void FunctionLower::lower_flag2int(const Unary *inst) {
-    const auto cond = inst->operand();
-    if (cond.isa(icmp(signed_v(), signed_v()))) {
-        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
-        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
-
-        make_setcc(inst, signed_cond_type(icmp->predicate()));
-
-    } else if (cond.isa(icmp(unsigned_v(), unsigned_v()))) {
-        const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
-        assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
-
-        make_setcc(inst, unsigned_cond_type(icmp->predicate()));
+    } else if (on_true.isa(integral(0)) && on_false.isa(integral(1))) {
+        make_setcc(select, aasm::invert(cond_ty));
 
     } else {
-        die("Unsupported condition type in cond branch");
+        const auto cmov = m_bb->inst(LIRCMove::cmov(cond_ty, on_true_lir, on_false_lir));
+        memorize(select, cmov->def(0));
     }
 }
 
@@ -293,14 +285,14 @@ void FunctionLower::lower_load(const Unary *inst) {
     }
 }
 
-void FunctionLower::make_setcc(const Unary *inst, const aasm::CondType cond_type) {
+void FunctionLower::make_setcc(const ValueInstruction *inst, const aasm::CondType cond_type) {
     const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type));
     memorize(inst, setcc->def(0));
 }
 
 void FunctionLower::accept(Unary *inst) {
     switch (inst->op()) {
-        case UnaryOp::Flag2Int: lower_flag2int(inst); break;
+        case UnaryOp::Flag2Int: make_setcc(inst, cond_type(inst->operand())); break;
         case UnaryOp::Load: lower_load(inst); break;
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
     }
