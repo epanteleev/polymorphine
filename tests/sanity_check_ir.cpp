@@ -10,7 +10,7 @@ static Module ret_i32(const std::int32_t value) {
     FunctionPrototype prototype(SignedIntegerType::i32(), {}, "ret_one");
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
-    auto& data = *fn_builder.value();
+    const auto& data = *fn_builder.value();
 
     data.ret(Value::i32(value));
     return builder.build();
@@ -30,7 +30,7 @@ static Module ret_i64(const std::int64_t value) {
     FunctionPrototype prototype(SignedIntegerType::i64(), {}, "ret_one");
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
-    auto& data = *fn_builder.value();
+    const auto& data = *fn_builder.value();
 
     data.ret(Value::i64(value));
     return builder.build();
@@ -99,7 +99,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
     ModuleBuilder builder;
     FunctionPrototype prototype(ty, {ty, ty}, "add");
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
-    auto& data = *fn_builder.value();
+    const auto& data = *fn_builder.value();
     const auto arg0 = data.arg(0);
     const auto arg1 = data.arg(1);
     const auto add = data.add(arg0, arg1);
@@ -301,7 +301,7 @@ TEST(SanityCheck, stack_alloc) {
     }
 }
 
-static void is_predicate_branch_impl(FunctionBuilder& data, IcmpPredicate pred, const Value& threshold) {
+static void is_predicate_branch_impl(FunctionBuilder& data, const IcmpPredicate pred, const Value& threshold) {
     const auto then = data.create_basic_block();
     const auto else_ = data.create_basic_block();
     const auto cont = data.create_basic_block();

@@ -23,7 +23,7 @@ static std::vector cond_types = {
 };
 
 TEST(Asm, setcc1) {
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "seto %r12b",
         "setno %r12b",
         "setnae %r12b",

@@ -199,7 +199,7 @@ TEST(CallTest, argument_shuffle) {
 static Module argument_shuffle7(const IntegerType* ty) {
     ModuleBuilder builder;
     FunctionPrototype prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle");
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
     const auto aa = data.arg(6);
     const auto a0 = data.arg(5);
@@ -236,13 +236,17 @@ static long arg_shuffle7(T a0, T a1, T a2, T a3, T a4, T a5, T a6) {
     return arg_locator7<T>(a6, a5, a4, a3, a2, a1, a0);
 }
 
+static const std::unordered_map<std::string, std::size_t> arg_shuffle7_sizes = {
+    {"arg_shuffle", 16}
+};
+
 TEST(CallTest, argument_shuffle7_i64) {
     const std::unordered_map<std::string, std::size_t> external_symbols = {
         {"arg_locator7", reinterpret_cast<std::size_t>(&arg_locator7<long>)}
     };
 
     const auto module = argument_shuffle7(SignedIntegerType::i64());
-    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, arg_shuffle7_sizes, true);
     const auto fn = code.code_start_as<long(long, long, long, long, long, long, long)>("arg_shuffle").value();
     std::cout << arg_shuffle7<long>(1L, 2L, 3L, 4L, 5L, 6L, 7L);
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<long>(1L, 2L, 3L, 4L, 5L, 6L, 7L));
@@ -254,7 +258,7 @@ TEST(CallTest, argument_shuffle7_i32) {
     };
 
     const auto module = argument_shuffle7(SignedIntegerType::i32());
-    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, arg_shuffle7_sizes, true);
     const auto fn = code.code_start_as<long(int, int, int, int, int, int, int)>("arg_shuffle").value();
     std::cout << arg_shuffle7<int>(1, 2, 3, 4, 5, 6, 7);
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<int>(1, 2, 3, 4, 5, 6, 7));
@@ -266,7 +270,7 @@ TEST(CallTest, argument_shuffle7_i16) {
     };
 
     const auto module = argument_shuffle7(SignedIntegerType::i16());
-    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, arg_shuffle7_sizes, true);
     const auto fn = code.code_start_as<long(short, short, short, short, short, short, short)>("arg_shuffle").value();
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<short>(1, 2, 3, 4, 5, 6, 7));
 }
@@ -277,7 +281,7 @@ TEST(CallTest, argument_shuffle7_i8) {
     };
 
     const auto module = argument_shuffle7(SignedIntegerType::i8());
-    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, arg_shuffle7_sizes, true);
     const auto fn = code.code_start_as<long(char, char, char, char, char, char, char)>("arg_shuffle").value();
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7), arg_shuffle7<char>(1, 2, 3, 4, 5, 6, 7));
 }
@@ -324,13 +328,17 @@ static long arg_shuffle8(T a0, T a1, T a2, T a3, T a4, T a5, T a6, T a7) {
     return arg_locator8(a7, a6, a5, a4, a3, a2, a1, a0);
 }
 
+static const std::unordered_map<std::string, std::size_t> arg_shuffl8_sizes = {
+    {"arg_shuffle", 21}
+};
+
 TEST(CallTest, argument_shuffle8_i64) {
     const std::unordered_map<std::string, std::size_t> external_symbols = {
         {"arg_locator8", reinterpret_cast<std::size_t>(&arg_locator8<long>)}
     };
 
     const auto module = argument_shuffle8(SignedIntegerType::i64());
-    const auto code = jit_compile_and_assembly(external_symbols, module, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, arg_shuffl8_sizes, true);
     const auto fn = code.code_start_as<long(long, long, long, long, long, long, long, long)>("arg_shuffle").value();
     ASSERT_EQ(fn(1, 2, 3, 4, 5, 6, 7, 8), arg_shuffle8(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L));
 }

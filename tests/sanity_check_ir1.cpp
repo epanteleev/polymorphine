@@ -3,7 +3,6 @@
 #include "helpers/Jit.h"
 #include "mir/mir.h"
 
-
 static Module min_max_select(const IntegerType* ty) {
     ModuleBuilder builder;
     {
@@ -219,8 +218,32 @@ TEST(SanityCheck1, is_neg2_u64) {
     }
 }
 
-int main(int argc, char **argv) {
+template<typename Fn>
+static Module select1(const IntegerType* ty, Fn&& fn) {
+    ModuleBuilder builder;
+    {
+        FunctionPrototype prototype(ty, {ty}, "is_less_1");
+        const auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto arg0 = data.arg(0);
+        const auto is_neg = data.icmp(IcmpPredicate::Ge, arg0, fn(1));
+        const auto res = data.select(is_neg, Value::i8(1), Value::i8(2));
+        data.ret(res);
+    }
+    return builder.build();
+}
 
+TEST(SanityCheck1, select1_i8) {
+    GTEST_SKIP();
+    const auto buffer = jit_compile_and_assembly(select1(SignedIntegerType::i8(), Value::i8), true);
+    const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::int8_t)>("is_less_1").value();
+
+    for (const auto i: {INT8_MIN, -100, -1, 0, 1, 100, INT8_MAX}) {
+        const auto res = is_less_1_fn(static_cast<std::int8_t>(i));
+        ASSERT_EQ(res, i < 1 ? 1 : 2) << "Failed for value: " << i;
+    }
+}
+
+int main(int argc, char **argv) {
     error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

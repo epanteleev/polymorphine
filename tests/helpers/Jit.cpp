@@ -80,7 +80,22 @@ AsmModule jit_compile(const Module &module, const bool verbose) {
 }
 
 JitModule jit_compile_and_assembly(const Module& module, const bool verbose) {
+    static std::unordered_map<std::string, std::size_t> nothing;
+    return jit_compile_and_assembly(module, nothing, verbose);
+}
+
+JitModule jit_compile_and_assembly(const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, const bool verbose) {
     const auto obj = jit_compile(module, verbose);
+    for (const auto& [name, size] : asm_size) {
+        const auto fun = obj.function(name);
+        if (!fun.has_value()) {
+            die("Function '{}' not found in module", name);
+        }
+
+        if (fun.value()->size() != size) {
+            die("Function '{}' size mismatch: expected {}, got {}", name, size, fun.value()->size());
+        }
+    }
 
     static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
     const auto buffer = JitModule::assembly(external_symbols, obj);
@@ -92,11 +107,27 @@ JitModule jit_compile_and_assembly(const Module& module, const bool verbose) {
 }
 
 JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const bool verbose) {
+    static std::unordered_map<std::string, std::size_t> nothing;
+    return jit_compile_and_assembly(external_symbols, module, nothing, verbose);
+}
+
+JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, const bool verbose) {
     const auto obj = jit_compile(module, true);
     std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols_;
     for (const auto& [name, addr] : external_symbols) {
-        const auto symbol = obj.symbol_table()->add(name, aasm::Linkage::INTERNAL);
-        external_symbols_[symbol.first] = addr;
+        const auto [symbol, _] = obj.symbol_table()->add(name, aasm::Linkage::INTERNAL);
+        external_symbols_[symbol] = addr;
+    }
+
+    for (const auto& [name, size] : asm_size) {
+        const auto fun = obj.function(name);
+        if (!fun.has_value()) {
+            die("Function '{}' not found in module", name);
+        }
+
+        if (fun.value()->size() != size) {
+            die("Function '{}' size mismatch: expected {}, got {}", name, size, fun.value()->size());
+        }
     }
 
     const auto buffer = JitModule::assembly(external_symbols_, obj);

@@ -72,8 +72,7 @@ private:
                 continue;
             }
 
-            const auto group_opt = m_group_mapping.find(vreg);
-            if (group_opt != m_group_mapping.end()) {
+            if (const auto group = m_group_mapping.find(vreg); group != m_group_mapping.end()) {
                 // This interval is already part of a group, we can skip it.
                 continue;
             }
