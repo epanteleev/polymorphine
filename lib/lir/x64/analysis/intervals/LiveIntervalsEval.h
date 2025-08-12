@@ -81,16 +81,17 @@ private:
 
             for (const auto& lir_val: m_liveness.live_out(bb)) {
                 auto& live_range = m_intervals.at(lir_val);
-                if (const auto interval = live_range.find(bb); interval == live_range.end()) {
+                const auto interval = live_range.find(bb);
+                if (interval == live_range.end()) {
                     live_range.emplace(bb, LiveRange(start, start + bb->size()-1));
-
-                } else {
-                    if (call_terminator) {
-                        m_call_live_out.emplace(lir_val);
-                    }
-
-                    interval->second.propagate(start + bb->size());
+                    continue;
                 }
+
+                if (call_terminator) {
+                    m_call_live_out.emplace(lir_val);
+                }
+
+                interval->second.propagate(start + bb->size());
             }
 
             for (const auto& inst: bb->instructions()) {

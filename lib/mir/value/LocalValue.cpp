@@ -18,7 +18,7 @@ LocalValue::LocalValue(ValueInstruction *value) noexcept:
 
 std::expected<LocalValue, Error> LocalValue::try_from(const Value &value) {
     const auto visit = [&]<typename T>(const T &val) -> std::expected<LocalValue, Error> {
-        if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction*>) {
+        if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction *>) {
             return LocalValue(val);
         } else {
             return std::unexpected(Error::CastError);

@@ -6,7 +6,7 @@
 #include "lir/x64/codegen/CodegenPrepare.h"
 #include "mir/mir.h"
 
-static void verify_def_use_chain(std::string_view name, const BasicBlock* bb) {
+static void verify_def_use_chain(const std::string_view name, const BasicBlock* bb) {
     for (const auto& inst: bb->instructions()) {
         for (const auto& operand: inst.operands()) {
             const auto local = LocalValue::try_from(operand);
@@ -14,8 +14,7 @@ static void verify_def_use_chain(std::string_view name, const BasicBlock* bb) {
                 continue;
             }
 
-            const auto& users = local.value().users();
-            if (std::ranges::contains(users, &inst)) {
+            if (const auto& users = local.value().users(); std::ranges::contains(users, &inst)) {
                 continue;
             }
 

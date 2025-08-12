@@ -17,7 +17,7 @@ std::ostream & operator<<(std::ostream &os, const FunctionLinkage &linkage);
 
 class FunctionPrototype final {
 public:
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*> arg_types, std::string&& name,
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name,
             const FunctionLinkage linkage = FunctionLinkage::INTERNAL) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
