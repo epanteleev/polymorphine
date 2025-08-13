@@ -29,6 +29,11 @@ public:
     }
 
     void copy(const std::size_t size, const std::int64_t src, const aasm::GPReg dst) {
+        // if (src == 0) { m_asm.xor_(size, dst, dst); return; }
+        m_asm.mov(size, src, dst);
+    }
+
+    void mov(const std::size_t size, const std::int64_t src, const aasm::GPReg dst) {
         m_asm.mov(size, src, dst);
     }
 

@@ -22,7 +22,7 @@ public:
     }
 
     [[nodiscard]]
-    Terminator last() const;
+    Terminator last() const noexcept;
 
     [[nodiscard]]
     std::span<BasicBlock* const> successors() const {

@@ -35,11 +35,7 @@ public:
     [[nodiscard]]
     constexpr std::uint8_t size() const noexcept {
         const auto visitor = [&]<typename T>(const T &val) {
-            if constexpr (std::is_same_v<T, LirCst> || std::is_same_v<T, LIRVal>) {
-                return val.size();
-            } else {
-                static_assert(false, "Unsupported type in Value variant");
-            }
+            return val.size();
         };
 
         return std::visit(visitor, m_operand);

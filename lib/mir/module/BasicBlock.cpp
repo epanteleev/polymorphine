@@ -4,7 +4,7 @@
 #include "utility/Error.h"
 #include "mir/value/LocalValue.h"
 
-Terminator BasicBlock::last() const {
+Terminator BasicBlock::last() const noexcept {
     const auto back = m_instructions.back();
     if (!back) {
         die("BasicBlock has no instructions");

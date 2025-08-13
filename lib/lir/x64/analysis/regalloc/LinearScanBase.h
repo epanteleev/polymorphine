@@ -44,14 +44,15 @@ public:
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<RegisterAllocation>(std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_reg_set.local_area_size());
+        return std::make_unique<RegisterAllocation>(ClobberRegs{aasm::r10, aasm::r11}, std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_reg_set.local_area_size());
     }
 
     static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
-        return {*data, details::VRegSelection<CC>::create(fixed_registers->used_argument_registers()), *intervals, *joins};
+        auto vreg_selection = details::VRegSelection<CC>::create(fixed_registers->used_argument_registers());
+        return {*data, std::move(vreg_selection), *intervals, *joins};
     }
 
 private:
@@ -148,7 +149,7 @@ private:
                     continue;
                 }
 
-                const LiveInterval* real_interval = &group.value()->m_interval;
+                const auto real_interval = &group.value()->m_interval;
                 if (real_interval->start() > unhandled_interval->finish()) {
                     // No need to check further, the intervals are sorted.
                     break;

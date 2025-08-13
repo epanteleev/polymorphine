@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lir/x64/lir_frwd.h"
+#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
-
 
 class MovGPEmit final: public GPUnaryAddrVisitor {
 public:
@@ -18,9 +18,18 @@ private:
         m_size(size),
         m_as(as) {}
 
-    void emit(const aasm::Address &out, aasm::GPReg in) override;
-    void emit(const aasm::Address &out, const aasm::Address &in) override;
-    void emit(const aasm::Address &out, std::int64_t in) override;
+    void emit(const aasm::Address &out, const aasm::GPReg in) override {
+        m_as.mov(m_size, in, out);
+    }
+
+    void emit(const aasm::Address &out, const aasm::Address &in) override {
+        unimplemented();
+    }
+
+    void emit(const aasm::Address &out, const std::int64_t in) override {
+        assertion(std::in_range<std::int32_t>(in), "Immediate value for mov must be in range of 32-bit signed integer");
+        m_as.mov(m_size, static_cast<std::int32_t>(in), out);
+    }
 
     std::uint8_t m_size;
     MasmEmitter& m_as;

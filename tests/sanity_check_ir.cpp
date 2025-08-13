@@ -388,7 +388,7 @@ TEST(SanityCheck, swap_signed) {
     };
 
     for (const auto& ty: sign_types) {
-        const auto buffer = jit_compile_and_assembly(swap(ty));
+        const auto buffer = jit_compile_and_assembly(swap(ty), true);
         const auto fn = buffer.code_start_as<void(void*, void*)>("swap").value();
 
         std::int64_t a = 42;

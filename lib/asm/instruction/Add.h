@@ -1,6 +1,4 @@
 #pragma once
-#include "asm/Encoding.h"
-
 
 namespace aasm::details {
     class AddRR final {

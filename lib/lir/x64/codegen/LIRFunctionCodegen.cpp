@@ -1,5 +1,7 @@
 #include "LIRFunctionCodegen.h"
 
+#include "asm/reg/RegSet.h"
+
 #include "emitters/AddIntEmit.h"
 #include "emitters/CmpGPEmit.h"
 #include "emitters/CopyGPEmit.h"
@@ -7,7 +9,6 @@
 #include "emitters/MovGPEmit.h"
 #include "emitters/StoreGPEmit.h"
 #include "emitters/SubIntEmit.h"
-#include "asm/reg/RegSet.h"
 #include "emitters/CMovGPEmit.h"
 
 static aasm::Linkage cvt_linkage(const LIRLinkage linkage) noexcept {
@@ -75,7 +76,7 @@ void LIRFunctionCodegen::cmov_i(aasm::CondType cond_type, const LIRVal& out, con
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    CMovGPEmit::emit(m_as, out.size(), cond_type, out_reg, in1_reg, in2_reg);
+    CMovGPEmit::emit(m_as, m_reg_allocation.clobber_regs(), out.size(), cond_type, out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
@@ -127,7 +128,7 @@ void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::si
     }
 }
 
-void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) {
+void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size) {
     if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
         return;
     }
@@ -140,7 +141,7 @@ void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, std::size_t cal
     }
 }
 
-void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) {
+void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size) {
     if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
         return;
     }

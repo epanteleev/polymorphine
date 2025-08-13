@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ClobberRegs.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/asm/GPVReg.h"
 #include "lir/x64/operand/LIRValMap.h"
@@ -7,7 +8,8 @@
 
 class RegisterAllocation final: public AnalysisPassResult {
 public:
-    explicit RegisterAllocation(LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
+    explicit RegisterAllocation(ClobberRegs&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
+        m_clobber_regs(std::move(clobber_regs)),
         m_reg_allocation(std::move(reg_allocation)),
         m_used_callee_saved_regs(std::move(used_callee_saved_regs)),
         m_local_area_size(local_area_size) {}
@@ -29,11 +31,17 @@ public:
     }
 
     [[nodiscard]]
+    const ClobberRegs& clobber_regs() const noexcept {
+        return m_clobber_regs;
+    }
+
+    [[nodiscard]]
     std::span<const aasm::GPReg> used_callee_saved_regs() const noexcept {
         return m_used_callee_saved_regs;
     }
 
 private:
+    ClobberRegs m_clobber_regs;
     const LIRValMap<GPVReg> m_reg_allocation;
     const std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     const std::int32_t m_local_area_size;

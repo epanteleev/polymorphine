@@ -233,13 +233,12 @@ static Module select1(const IntegerType* ty, Fn&& fn) {
 }
 
 TEST(SanityCheck1, select1_i8) {
-    GTEST_SKIP();
     const auto buffer = jit_compile_and_assembly(select1(SignedIntegerType::i8(), Value::i8), true);
     const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::int8_t)>("is_less_1").value();
 
     for (const auto i: {INT8_MIN, -100, -1, 0, 1, 100, INT8_MAX}) {
         const auto res = is_less_1_fn(static_cast<std::int8_t>(i));
-        ASSERT_EQ(res, i < 1 ? 1 : 2) << "Failed for value: " << i;
+        ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
     }
 }
 

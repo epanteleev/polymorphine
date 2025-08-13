@@ -2,7 +2,7 @@
 
 #include "lir/x64/lir_frwd.h"
 #include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
-
+#include "lir/x64/asm/MasmEmitter.h"
 
 class CopyGPEmit final: public GPUnaryOutVisitor {
 public:
@@ -14,15 +14,37 @@ public:
 private:
     friend class GPUnaryOutVisitor;
 
-    explicit CopyGPEmit(MasmEmitter& as, std::uint8_t size) noexcept
-        : m_size(size), m_as(as) {}
+    explicit CopyGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as) {}
 
-    void emit(aasm::GPReg out, aasm::GPReg in) override;
-    void emit(aasm::GPReg out, const aasm::Address &in) override;
-    void emit(const aasm::Address &out, aasm::GPReg in) override;
-    void emit(const aasm::Address &out, const aasm::Address &in) override;
-    void emit(aasm::GPReg out, std::int64_t in) override;
-    void emit(const aasm::Address &out, std::int64_t in) override;
+    void emit(const aasm::GPReg out, const aasm::GPReg in) override  {
+        m_as.copy(m_size, in, out);
+    }
+
+    void emit(const aasm::GPReg out, const aasm::Address &in) override {
+        m_as.mov(m_size, in, out);
+    }
+
+    void emit(const aasm::Address &out, const aasm::GPReg in) override {
+        m_as.mov(m_size, in, out);
+    }
+
+    void emit(const aasm::Address &out, const aasm::Address &in) override {
+        if (out == in) {
+            return;
+        }
+        unimplemented();
+    }
+
+    void emit(const aasm::GPReg out, const std::int64_t in) override {
+        m_as.copy(m_size, in, out);
+    }
+
+    void emit(const aasm::Address &out, const std::int64_t in) override {
+        assertion(std::in_range<std::int32_t>(in), "Immediate value for mov must be in range of 32-bit signed integer");
+        m_as.mov(m_size, static_cast<std::int32_t>(in), out);
+    }
 
     std::uint8_t m_size;
     MasmEmitter& m_as;

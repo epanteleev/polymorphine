@@ -50,7 +50,6 @@ public:
             return false;
         }
 
-        // TODO improve algo
         for (const auto& interval : m_intervals) {
             for (const auto& other_interval : other.m_intervals) {
                 if (interval.intersects(other_interval)) return true;
@@ -89,7 +88,7 @@ public:
         }
 
         m_hint = join_hints(m_hint, other.hint());
-        canonicalize(m_intervals);
+        m_finish = canonicalize(m_intervals);
     }
 
     /**
@@ -115,6 +114,7 @@ private:
      * 1. Sorts the intervals by their start point.
      * 2. Finds the maximum end point of the intervals.
      */
+    [[nodiscard]]
     static std::uint32_t canonicalize(std::vector<LiveRange>& intervals) noexcept {
         const auto sorted_intervals = [](const LiveRange& lhs, const LiveRange& rhs) {
             return lhs.start() < rhs.start();
@@ -130,7 +130,6 @@ private:
         return max_end->end();
     }
 
-    // Sorted by start point set of intervals.
     std::vector<LiveRange> m_intervals;
     std::uint32_t m_finish;
     IntervalHint m_hint;

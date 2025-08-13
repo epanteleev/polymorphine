@@ -6,6 +6,7 @@
 #include "analysis/liveness/LivenessAnalysis.h"
 
 #include "codegen/Codegen.h"
+#include "codegen/CodegenPrepare.h"
 
 #include "asm/jit/JitAssembler.h"
 

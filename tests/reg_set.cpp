@@ -42,7 +42,7 @@ TEST(RegSet, traverse_reverse) {
     reg_map.emplace(aasm::rbx);
     ASSERT_EQ(reg_map.size(), 2);
 
-    std::array regs = {
+    const std::array regs = {
         aasm::r14,
         aasm::rbx,
     };
