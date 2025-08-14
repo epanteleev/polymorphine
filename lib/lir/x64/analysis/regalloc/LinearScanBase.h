@@ -92,29 +92,6 @@ private:
         std::ranges::sort(m_unhandled_intervals, pred);
     }
 
-    void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
-        for (const auto inst: instructions) {
-            switch (const auto temp_num = details::AllocTemporalReg::allocate(inst, m_reg_allocation)) {
-                case 0: break;
-                case 1: {
-                    const auto reg = m_reg_set.top(IntervalHint::NOTHING);
-                    m_reg_set.push(reg);
-                    m_clobber_regs.emplace(inst, ClobberRegs(reg));
-                    break;
-                }
-                case 2: {
-                    const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
-                    const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
-                    m_reg_set.push(reg2);
-                    m_reg_set.push(reg1);
-                    m_clobber_regs.emplace(inst, ClobberRegs(reg1, reg2));
-                    break;
-                }
-                default: die("Unexpected number of temporal registers allocated: {}", temp_num);
-            }
-        }
-    }
-
     void do_register_allocation() {
         std::int64_t range_begin{};
         while (!m_unhandled_intervals.empty()) {
@@ -259,6 +236,29 @@ private:
         }
 
         m_used_callee_saved_regs.push_back(reg);
+    }
+
+    void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
+        for (const auto inst: instructions) {
+            switch (const auto temp_num = details::AllocTemporalReg::allocate(inst, m_reg_allocation)) {
+                case 0: break;
+                case 1: {
+                    const auto reg = m_reg_set.top(IntervalHint::NOTHING);
+                    m_reg_set.push(reg);
+                    m_clobber_regs.emplace(inst, ClobberRegs(reg));
+                    break;
+                }
+                case 2: {
+                    const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
+                    const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
+                    m_reg_set.push(reg2);
+                    m_reg_set.push(reg1);
+                    m_clobber_regs.emplace(inst, ClobberRegs(reg1, reg2));
+                    break;
+                }
+                default: die("Unexpected number of temporal registers allocated: {}", temp_num);
+            }
+        }
     }
 
     void do_stack_alloc(const LIRVal& lir_val) {

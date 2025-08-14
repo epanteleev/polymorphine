@@ -9,8 +9,8 @@
 class RegisterAllocation final: public AnalysisPassResult {
 public:
     explicit RegisterAllocation(std::unordered_map<const LIRInstructionBase*, ClobberRegs>&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
-        m_clobber_regs(clobber_regs),
         m_reg_allocation(std::move(reg_allocation)),
+        m_clobber_regs(clobber_regs),
         m_used_callee_saved_regs(std::move(used_callee_saved_regs)),
         m_local_area_size(local_area_size) {}
 
