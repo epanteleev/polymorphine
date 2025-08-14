@@ -1,0 +1,111 @@
+#pragma once
+
+#include "ClobberRegs.h"
+#include "lir/x64/operand/LIRValMap.h"
+#include "lir/x64/instruction/LIRInstruction.h"
+
+namespace details {
+    class ClobberRegsCounter final {
+    public:
+        [[nodiscard]]
+        aasm::GPReg gp_temp1() const noexcept {
+            m_used_gp_regs |= 1 << 0;
+            return aasm::rax;
+        }
+
+        [[nodiscard]]
+        aasm::GPReg gp_temp2() const noexcept {
+            m_used_gp_regs |= 1 << 1;
+            return aasm::rax;
+        }
+
+        std::uint8_t used_gp_regs() const noexcept {
+            return std::popcount(m_used_gp_regs);
+        }
+
+    private:
+        mutable std::uint8_t m_used_gp_regs{0};
+    };
+
+    class AllocTemporalReg final: public LIRVisitor {
+    public:
+        static std::uint8_t allocate(const LIRInstructionBase* inst, const LIRValMap<GPVReg>& reg_allocation) {
+            AllocTemporalReg emitter(reg_allocation);
+            const_cast<LIRInstructionBase*>(inst)->visit(emitter);
+            return emitter.m_temp_counter.used_gp_regs();
+        }
+
+    private:
+        explicit AllocTemporalReg(const LIRValMap<GPVReg>& reg_allocation) noexcept:
+            m_reg_allocation(reg_allocation) {}
+
+        [[nodiscard]]
+        GPOp convert_to_gp_op(const LIROperand &val) const;
+
+        void gen(const LIRVal &out) override {}
+
+        void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void div_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+
+        void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {}
+
+        void cmov_i(aasm::CondType cond_type, const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
+
+        void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {}
+
+        void cmp_i(const LIROperand &in1, const LIROperand &in2) override {}
+
+        void neg_i(const LIRVal &out, const LIROperand &in) override {}
+
+        void not_i(const LIRVal &out, const LIROperand &in) override {}
+
+        void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
+
+        void store_i(const LIRVal &pointer, const LIROperand &value) override {}
+
+        void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+
+        void down_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+
+        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+
+        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+
+        void copy_i(const LIRVal &out, const LIROperand &in) override {}
+
+        void load_i(const LIRVal &out, const LIRVal &pointer) override {}
+
+        void jmp(const LIRBlock *bb) override {}
+
+        void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
+
+        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) override {}
+
+        void vcall(std::span<LIRVal const> args) override {}
+
+        void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override {}
+
+        void ivcall(const LIRVal &pointer, std::span<LIRVal const> args) override {}
+
+        void ret(std::span<LIRVal const> ret_values) override {}
+
+        const LIRValMap<GPVReg>& m_reg_allocation;
+
+        ClobberRegsCounter m_temp_counter{};
+    };
+}

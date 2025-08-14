@@ -115,7 +115,6 @@ public:
     }
 
     [[nodiscard]]
-
     aasm::Label create_label() {
         return m_asm.create_label();
     }

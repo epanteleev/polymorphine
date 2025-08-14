@@ -8,8 +8,8 @@
 
 class RegisterAllocation final: public AnalysisPassResult {
 public:
-    explicit RegisterAllocation(ClobberRegs&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
-        m_clobber_regs(std::move(clobber_regs)),
+    explicit RegisterAllocation(std::unordered_map<const LIRInstructionBase*, ClobberRegs>&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
+        m_clobber_regs(clobber_regs),
         m_reg_allocation(std::move(reg_allocation)),
         m_used_callee_saved_regs(std::move(used_callee_saved_regs)),
         m_local_area_size(local_area_size) {}
@@ -31,8 +31,12 @@ public:
     }
 
     [[nodiscard]]
-    const ClobberRegs& clobber_regs() const noexcept {
-        return m_clobber_regs;
+    std::optional<const ClobberRegs*> try_get_clobber_regs(const LIRInstructionBase* inst) const noexcept {
+        if (const auto it = m_clobber_regs.find(inst); it != m_clobber_regs.end()) {
+            return &it->second;
+        }
+
+        return std::nullopt;
     }
 
     [[nodiscard]]
@@ -41,8 +45,8 @@ public:
     }
 
 private:
-    ClobberRegs m_clobber_regs;
     const LIRValMap<GPVReg> m_reg_allocation;
+    std::unordered_map<const LIRInstructionBase*, ClobberRegs> m_clobber_regs;
     const std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     const std::int32_t m_local_area_size;
 };

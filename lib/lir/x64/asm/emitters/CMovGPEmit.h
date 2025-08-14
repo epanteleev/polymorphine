@@ -1,25 +1,23 @@
 #pragma once
 
-#include "lir/x64/analysis/regalloc/ClobberRegs.h"
-#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 
 
+template<typename ClobberRegStorage, typename AsmEmit>
 class CMovGPEmit final: public GPBinaryVisitor {
 public:
-    static void emit(MasmEmitter& as, const ClobberRegs& clobber_regs, const std::uint8_t size, const aasm::CondType cond_type, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
-        CMovGPEmit emitter(clobber_regs, as, cond_type, convert_byte_size(size));
-        dispatch(emitter, out, in1, in2);
+    explicit CMovGPEmit(const ClobberRegStorage& regs, AsmEmit& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
+        m_size(convert_byte_size(size)),
+        m_cond_type(cond_type),
+        m_as(as),
+        m_clobber_regs(regs) {}
+
+    void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+        dispatch(*this, out, in1, in2);
     }
 
 private:
     friend class GPBinaryVisitor;
-
-    explicit CMovGPEmit(const ClobberRegs& regs, MasmEmitter& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
-        m_size(size),
-        m_cond_type(cond_type),
-        m_as(as),
-        m_clobber_regs(regs) {}
 
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const aasm::GPReg in2) override {
         if (in1 == in2) {
@@ -126,6 +124,6 @@ private:
 
     std::uint8_t m_size;
     aasm::CondType m_cond_type;
-    MasmEmitter& m_as;
-    const ClobberRegs& m_clobber_regs;
+    AsmEmit& m_as;
+    const ClobberRegStorage& m_clobber_regs;
 };

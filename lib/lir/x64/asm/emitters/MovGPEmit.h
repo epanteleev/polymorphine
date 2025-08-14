@@ -27,8 +27,7 @@ private:
     }
 
     void emit(const aasm::Address &out, const std::int64_t in) override {
-        assertion(std::in_range<std::int32_t>(in), "Immediate value for mov must be in range of 32-bit signed integer");
-        m_as.mov(m_size, static_cast<std::int32_t>(in), out);
+        m_as.mov(m_size, aasm::checked_cast<std::int32_t>(in), out);
     }
 
     std::uint8_t m_size;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AllocTemporalReg.h"
 #include "RegisterAllocation.h"
 #include "VRegSelection.h"
 
@@ -19,10 +20,11 @@ public:
     static constexpr auto analysis_kind = AnalysisType::LinearScan;
 
 private:
-    LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups) noexcept:
+    LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder) noexcept:
         m_obj_func_data(obj_func_data),
         m_intervals(intervals),
         m_groups(groups),
+        m_preorder(preorder),
         m_reg_set(std::move(reg_set)) {}
 
     struct IntervalEntry final {
@@ -39,20 +41,22 @@ public:
         m_used_callee_saved_regs.reserve(CC::GP_CALLEE_SAVE_REGISTERS.size());
 
         allocate_fixed_registers();
+        instruction_ordering();
         setup_unhandled_intervals();
         do_register_allocation();
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<RegisterAllocation>(ClobberRegs{aasm::r10, aasm::r11}, std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_reg_set.local_area_size());
+        return std::make_unique<RegisterAllocation>(std::move(m_clobber_regs), std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_reg_set.local_area_size());
     }
 
     static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
+        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         auto vreg_selection = details::VRegSelection<CC>::create(fixed_registers->used_argument_registers());
-        return {*data, std::move(vreg_selection), *intervals, *joins};
+        return {*data, std::move(vreg_selection), *intervals, *joins, *preorder};
     }
 
 private:
@@ -88,7 +92,31 @@ private:
         std::ranges::sort(m_unhandled_intervals, pred);
     }
 
+    void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
+        for (const auto inst: instructions) {
+            switch (const auto temp_num = details::AllocTemporalReg::allocate(inst, m_reg_allocation)) {
+                case 0: break;
+                case 1: {
+                    const auto reg = m_reg_set.top(IntervalHint::NOTHING);
+                    m_reg_set.push(reg);
+                    m_clobber_regs.emplace(inst, ClobberRegs(reg));
+                    break;
+                }
+                case 2: {
+                    const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
+                    const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
+                    m_reg_set.push(reg2);
+                    m_reg_set.push(reg1);
+                    m_clobber_regs.emplace(inst, ClobberRegs(reg1, reg2));
+                    break;
+                }
+                default: die("Unexpected number of temporal registers allocated: {}", temp_num);
+            }
+        }
+    }
+
     void do_register_allocation() {
+        std::int64_t range_begin{};
         while (!m_unhandled_intervals.empty()) {
             auto [unhandled_interval, lir_val] = m_unhandled_intervals.back();
             m_unhandled_intervals.pop_back();
@@ -176,6 +204,10 @@ private:
 
             select_virtual_reg(lir_val, unhandled_interval->hint());
             m_active_intervals.emplace_back(unhandled_interval, lir_val);
+
+            std::span inst_range(m_instruction_ordering.begin() + range_begin, unhandled_interval->start() - range_begin);
+            allocate_temporal_registers(inst_range);
+            range_begin = unhandled_interval->start();
         }
     }
 
@@ -234,6 +266,18 @@ private:
         assertion(has, "Register already allocated for LIRVal");
     }
 
+    void instruction_ordering() {
+        const auto fn = [](const std::size_t acc, const LIRBlock* bb) { return acc + bb->size(); };
+        const auto size = std::ranges::fold_left(m_preorder, 0UL, fn);
+
+        m_instruction_ordering.reserve(size);
+        for (const auto bb: m_preorder) {
+            for (const auto& inst: bb->instructions()) {
+                m_instruction_ordering.push_back(&inst);
+            }
+        }
+    }
+
     template<typename Fn>
     static void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
         for (auto it = intervals.begin(); it != intervals.end();) {
@@ -249,12 +293,16 @@ private:
     const LIRFuncData& m_obj_func_data;
     const LiveIntervals& m_intervals;
     const LiveIntervalsGroups& m_groups;
+    const Ordering<LIRBlock>& m_preorder;
 
     details::VRegSelection<CC> m_reg_set;
     std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     LIRValMap<GPVReg> m_reg_allocation{};
+    std::unordered_map<const LIRInstructionBase*, ClobberRegs> m_clobber_regs{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_inactive_intervals{};
     std::vector<IntervalEntry> m_active_intervals{};
+
+    std::vector<const LIRInstructionBase*> m_instruction_ordering{};
 };

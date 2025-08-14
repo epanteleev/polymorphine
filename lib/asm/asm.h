@@ -2,7 +2,9 @@
 
 #include "address/Address.h"
 #include "reg/Register.h"
-#include "asm/AsmBuffer.h"
-#include "asm/AsmEmitter.h"
 
-#include "asm/instruction/CPUInstruction.h"
+#include "AsmBuffer.h"
+#include "AsmEmitter.h"
+
+#include "instruction/CPUInstruction.h"
+#include "symbol/SymbolTable.h"
