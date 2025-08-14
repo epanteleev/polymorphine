@@ -1,8 +1,6 @@
 #pragma once
 
-#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-
 
 class AddIntEmit final: public GPBinaryVisitor {
 public:

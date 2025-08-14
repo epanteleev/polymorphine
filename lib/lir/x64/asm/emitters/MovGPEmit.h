@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/lir_frwd.h"
-#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
 
 class MovGPEmit final: public GPUnaryAddrVisitor {

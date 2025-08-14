@@ -1,8 +1,5 @@
 #pragma once
 
-#include "asm/asm.h"
-#include "lir/x64/lir_frwd.h"
-#include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPUnaryVisitor.h"
 
 class CmpGPEmit final: public GPUnaryVisitor {
@@ -36,8 +33,7 @@ private:
     }
 
     void emit(const aasm::GPReg out, const std::int64_t in) override {
-        assertion(std::in_range<std::int32_t>(in), "Immediate value for cmp must be in range of 32-bit signed integer");
-        m_as.cmp(m_size, static_cast<std::int32_t>(in), out);
+        m_as.cmp(m_size, aasm::checked_cast<std::int32_t>(in), out);
     }
 
     void emit(const aasm::Address &out, std::int64_t in) override {

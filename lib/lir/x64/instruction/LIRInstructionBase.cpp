@@ -41,12 +41,12 @@ namespace {
 
         }
 
-        void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {
+        void setcc_i(const LIRVal &out, const aasm::CondType cond_type) override {
             m_os << "setcc_i " << cond_type << " out(" << out << ")";
         }
 
-        void cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {
-            m_os << "cmov_i" << "cond(" << cond_type << ')' << " out(" << out << ") in1(" << in1 << ") in2(" << in2 << ')';
+        void cmov_i(const aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) override {
+            m_os << "cmov" << cond_type << "_i" << " out(" << out << ") in1(" << in1 << ") in2(" << in2 << ')';
         }
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {

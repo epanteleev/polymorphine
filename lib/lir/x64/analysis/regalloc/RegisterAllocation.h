@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ClobberRegs.h"
+#include "TemporalRegs.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/asm/GPVReg.h"
 #include "lir/x64/operand/LIRValMap.h"
@@ -8,9 +8,9 @@
 
 class RegisterAllocation final: public AnalysisPassResult {
 public:
-    explicit RegisterAllocation(std::unordered_map<const LIRInstructionBase*, ClobberRegs>&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
+    explicit RegisterAllocation(std::unordered_map<const LIRInstructionBase*, TemporalRegs>&& clobber_regs, LIRValMap<GPVReg>&& reg_allocation, std::vector<aasm::GPReg>&& used_callee_saved_regs, const std::int32_t local_area_size) noexcept:
         m_reg_allocation(std::move(reg_allocation)),
-        m_clobber_regs(clobber_regs),
+        m_temporal_regs(clobber_regs),
         m_used_callee_saved_regs(std::move(used_callee_saved_regs)),
         m_local_area_size(local_area_size) {}
 
@@ -31,8 +31,8 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<const ClobberRegs*> try_get_clobber_regs(const LIRInstructionBase* inst) const noexcept {
-        if (const auto it = m_clobber_regs.find(inst); it != m_clobber_regs.end()) {
+    std::optional<const TemporalRegs*> try_get_temporal_regs(const LIRInstructionBase* inst) const noexcept {
+        if (const auto it = m_temporal_regs.find(inst); it != m_temporal_regs.end()) {
             return &it->second;
         }
 
@@ -46,7 +46,7 @@ public:
 
 private:
     const LIRValMap<GPVReg> m_reg_allocation;
-    std::unordered_map<const LIRInstructionBase*, ClobberRegs> m_clobber_regs;
+    std::unordered_map<const LIRInstructionBase*, TemporalRegs> m_temporal_regs;
     const std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     const std::int32_t m_local_area_size;
 };

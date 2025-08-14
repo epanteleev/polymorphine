@@ -2,6 +2,7 @@
 
 #include "ValueInstruction.h"
 #include "mir/module/FunctionPrototype.h"
+#include "mir/types/TypeMatcher.h"
 
 
 class TerminateValueInstruction : public ValueInstruction {
@@ -38,6 +39,7 @@ public:
     }
 
     static std::unique_ptr<Call> call(FunctionPrototype&& proto, BasicBlock* cont, std::vector<Value>&& args) {
+        assertion(!proto.ret_type()->isa(void_type()), "Call instruction must have a non-void return type");
         return std::make_unique<Call>(std::move(proto), cont, std::move(args));
     }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AllocTemporalReg.h"
+#include "AllocTemporalRegs.h"
 #include "RegisterAllocation.h"
 #include "VRegSelection.h"
 
@@ -20,7 +20,7 @@ public:
     static constexpr auto analysis_kind = AnalysisType::LinearScan;
 
 private:
-    LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder) noexcept:
+    explicit LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder) noexcept:
         m_obj_func_data(obj_func_data),
         m_intervals(intervals),
         m_groups(groups),
@@ -56,7 +56,7 @@ public:
         const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         auto vreg_selection = details::VRegSelection<CC>::create(fixed_registers->used_argument_registers());
-        return {*data, std::move(vreg_selection), *intervals, *joins, *preorder};
+        return LinearScanBase(*data, std::move(vreg_selection), *intervals, *joins, *preorder);
     }
 
 private:
@@ -240,12 +240,12 @@ private:
 
     void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
         for (const auto inst: instructions) {
-            switch (const auto temp_num = details::AllocTemporalReg::allocate(inst, m_reg_allocation)) {
+            switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst, m_reg_allocation)) {
                 case 0: break;
                 case 1: {
                     const auto reg = m_reg_set.top(IntervalHint::NOTHING);
                     m_reg_set.push(reg);
-                    m_clobber_regs.emplace(inst, ClobberRegs(reg));
+                    m_clobber_regs.emplace(inst, TemporalRegs(reg));
                     break;
                 }
                 case 2: {
@@ -253,7 +253,7 @@ private:
                     const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
                     m_reg_set.push(reg2);
                     m_reg_set.push(reg1);
-                    m_clobber_regs.emplace(inst, ClobberRegs(reg1, reg2));
+                    m_clobber_regs.emplace(inst, TemporalRegs(reg1, reg2));
                     break;
                 }
                 default: die("Unexpected number of temporal registers allocated: {}", temp_num);
@@ -298,7 +298,7 @@ private:
     details::VRegSelection<CC> m_reg_set;
     std::vector<aasm::GPReg> m_used_callee_saved_regs{};
     LIRValMap<GPVReg> m_reg_allocation{};
-    std::unordered_map<const LIRInstructionBase*, ClobberRegs> m_clobber_regs{};
+    std::unordered_map<const LIRInstructionBase*, TemporalRegs> m_clobber_regs{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_inactive_intervals{};

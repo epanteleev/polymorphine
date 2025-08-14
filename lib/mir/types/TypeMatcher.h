@@ -22,6 +22,10 @@ namespace impls {
 
         return as_signed->size_of() == SIZE;
     }
+
+    inline bool void_type(const Type *type) noexcept {
+        return dynamic_cast<const VoidType *>(type) != nullptr;
+    }
 }
 
 consteval auto signed_type() noexcept {
@@ -52,18 +56,22 @@ consteval auto u16() noexcept {
     return impls::is_signed_with_size<UnsignedIntegerType, 2>;
 }
 
-constexpr auto i32() noexcept {
+consteval auto i32() noexcept {
     return impls::is_signed_with_size<SignedIntegerType, 4>;
 }
 
-constexpr auto u32() noexcept {
+consteval auto u32() noexcept {
     return impls::is_signed_with_size<UnsignedIntegerType, 4>;
 }
 
-constexpr auto i64() noexcept {
+consteval auto i64() noexcept {
     return impls::is_signed_with_size<SignedIntegerType, 8>;
 }
 
-constexpr auto u64() noexcept {
+consteval auto u64() noexcept {
     return impls::is_signed_with_size<UnsignedIntegerType, 8>;
+}
+
+consteval auto void_type() noexcept {
+    return impls::void_type;
 }

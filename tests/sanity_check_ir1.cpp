@@ -219,7 +219,7 @@ TEST(SanityCheck1, is_neg2_u64) {
 }
 
 template<typename Fn>
-static Module select1(const IntegerType* ty, Fn&& fn) {
+static Module is_less_1_2(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         FunctionPrototype prototype(ty, {ty}, "is_less_1");
@@ -233,11 +233,68 @@ static Module select1(const IntegerType* ty, Fn&& fn) {
 }
 
 TEST(SanityCheck1, select1_i8) {
-    const auto buffer = jit_compile_and_assembly(select1(SignedIntegerType::i8(), Value::i8), true);
+    const auto buffer = jit_compile_and_assembly(is_less_1_2(SignedIntegerType::i8(), Value::i8));
     const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::int8_t)>("is_less_1").value();
 
     for (const auto i: {INT8_MIN, -100, -1, 0, 1, 100, INT8_MAX}) {
         const auto res = is_less_1_fn(static_cast<std::int8_t>(i));
+        ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
+    }
+}
+
+TEST(SanityCheck1, select1_u16) {
+    const auto buffer = jit_compile_and_assembly(is_less_1_2(UnsignedIntegerType::u16(), Value::u16));
+    const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::uint16_t)>("is_less_1").value();
+
+    for (const auto i: {0, 1, 100, UINT16_MAX}) {
+        const auto res = is_less_1_fn(static_cast<std::uint16_t>(i));
+        ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
+    }
+}
+
+TEST(SanityCheck1, select1_i32) {
+    const auto buffer = jit_compile_and_assembly(is_less_1_2(SignedIntegerType::i32(), Value::i32), true);
+    const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::int32_t)>("is_less_1").value();
+
+    for (const auto i: {INT32_MIN, -100, -1, 0, 1, 100, INT32_MAX}) {
+        const auto res = is_less_1_fn(i);
+        ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
+    }
+}
+
+TEST(SanityCheck1, select1_u64) {
+    const auto buffer = jit_compile_and_assembly(is_less_1_2(UnsignedIntegerType::u64(), Value::u64), true);
+    const auto is_less_1_fn = buffer.code_start_as<std::int8_t(std::uint64_t)>("is_less_1").value();
+
+    for (const std::size_t i: {0UL, 1UL, 100UL, UINT64_MAX}) {
+        const auto res = is_less_1_fn(static_cast<std::uint64_t>(i));
+        ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
+    }
+}
+
+template<typename Fn>
+static Module is_less_1_2_store(const IntegerType* ty, Fn&& fn) {
+    ModuleBuilder builder;
+    {
+        FunctionPrototype prototype(VoidType::type(), {PointerType::ptr(), ty}, "is_less_1");
+        const auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto ptr = data.arg(0);
+        const auto arg0 = data.arg(1);
+        const auto is_neg = data.icmp(IcmpPredicate::Ge, arg0, fn(1));
+        const auto res = data.select(is_neg, Value::i8(1), Value::i8(2));
+        data.store(ptr, res);
+        data.ret();
+    }
+    return builder.build();
+}
+
+TEST(SanityCheck1, is_less_1_store_i64) {
+    const auto buffer = jit_compile_and_assembly(is_less_1_2_store(SignedIntegerType::i64(), Value::i64), true);
+    const auto is_less_1_fn = buffer.code_start_as<void(std::int8_t*, std::int64_t)>("is_less_1").value();
+
+    std::int8_t res{};
+    for (const auto i: {INT64_MIN, -100L, -1L, 0L, 1L, 100L, INT64_MAX}) {
+        is_less_1_fn(&res, i);
         ASSERT_EQ(res, i >= 1 ? 1 : 2) << "Failed for value: " << i;
     }
 }

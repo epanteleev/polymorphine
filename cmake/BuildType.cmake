@@ -2,7 +2,7 @@
 # Register new build types for sanitizers and coverage
 function(register_build_type name flags)
     string(TOUPPER ${name} PREFIX)
-    message(STATUS "Registering sanitizer: ${PREFIX} with flags: ${flags}")
+    message(STATUS "Registering build type: ${PREFIX} with flags: ${flags}")
     # Add the sanitizer configuration type
     list(APPEND CMAKE_CONFIGURATION_TYPES "${name}")
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <iosfwd>
 
 #include "TypeVisitor.h"
@@ -174,20 +173,3 @@ public:
         return &p;
     }
 };
-
-template<typename T>
-concept IsType = std::is_base_of_v<T, Type> ||
-                 std::is_base_of_v<T, NonTrivialType> ||
-                 std::is_base_of_v<T, PrimitiveType> ||
-                 std::is_base_of_v<T, IntegerType> ||
-                 std::is_base_of_v<T, UnsignedIntegerType> ||
-                 std::is_base_of_v<T, SignedIntegerType> ||
-                 std::is_base_of_v<T, FloatingPointType>;
-
-static_assert(IsType<Type>);
-static_assert(IsType<NonTrivialType>);
-static_assert(IsType<PrimitiveType>);
-static_assert(IsType<IntegerType>);
-static_assert(IsType<UnsignedIntegerType>);
-static_assert(IsType<SignedIntegerType>);
-static_assert(IsType<FloatingPointType>);

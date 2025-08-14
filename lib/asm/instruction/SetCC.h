@@ -3,7 +3,7 @@
 namespace aasm::details {
     class SetCCR final {
     public:
-        explicit constexpr SetCCR(CondType cond, GPReg reg) noexcept:
+        explicit constexpr SetCCR(const CondType cond, const GPReg reg) noexcept:
             m_cond(cond),
             m_reg(reg) {}
 
@@ -11,22 +11,19 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            const auto rex = constants::REX | B(m_reg);
-            if (rex != constants::REX || is_special_byte_reg(m_reg)) {
-                buffer.emit8(rex);
-            }
+            emit_op_prologue(buffer, 1, m_reg);
             buffer.emit8(0x0F);
-            buffer.emit8(static_cast<std::uint8_t>(m_cond) | 0x90);
+            buffer.emit8(0x90 | static_cast<std::uint8_t>(m_cond));
             buffer.emit8(reg3(m_reg) | 0xC0);
         }
 
         [[nodiscard]]
-        constexpr auto reg() const noexcept {
+        constexpr GPReg reg() const noexcept {
             return m_reg;
         }
 
         [[nodiscard]]
-        constexpr auto cond() const noexcept {
+        constexpr CondType cond() const noexcept {
             return m_cond;
         }
 

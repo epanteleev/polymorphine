@@ -9,7 +9,7 @@
 
 class LIRInstructionCodegen final: public LIRVisitor {
 public:
-    LIRInstructionCodegen(const ClobberRegs& clobber_regs,
+    LIRInstructionCodegen(const TemporalRegs& clobber_regs,
             const RegisterAllocation &reg_allocation,
             aasm::SymbolTable& symbol_table,
             const std::unordered_map<const LIRBlock*, aasm::Label>& bb_labels,
@@ -119,7 +119,7 @@ private:
 
     void ret(std::span<LIRVal const> ret_values) override;
 
-    const ClobberRegs& m_clobber_regs;
+    const TemporalRegs& m_clobber_regs;
     const RegisterAllocation& m_reg_allocation;
     aasm::SymbolTable& m_symbol_tab;
     const std::unordered_map<const LIRBlock*, aasm::Label>& m_bb_labels;

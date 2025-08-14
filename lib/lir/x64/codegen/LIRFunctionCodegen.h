@@ -31,7 +31,7 @@ public:
 
 private:
     void setup_basic_block_labels();
-    const ClobberRegs& clobber_reg(const LIRInstructionBase* inst) const;
+    const TemporalRegs& clobber_reg(const LIRInstructionBase* inst) const;
     void traverse_instructions();
 
     const LIRFuncData& m_data;

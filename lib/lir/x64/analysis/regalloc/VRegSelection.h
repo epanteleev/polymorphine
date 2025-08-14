@@ -83,6 +83,6 @@ namespace details {
 
     private:
         stack m_free_regs{};
-        std::int32_t m_local_area_size{0};
+        std::int32_t m_local_area_size{};
     };
 }

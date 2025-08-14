@@ -2,7 +2,6 @@
 
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 
-
 template<typename ClobberRegStorage, typename AsmEmit>
 class CMovGPEmit final: public GPBinaryVisitor {
 public:

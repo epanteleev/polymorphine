@@ -1,42 +1,42 @@
 #pragma once
 
-#include "ClobberRegs.h"
+#include "TemporalRegs.h"
 #include "lir/x64/operand/LIRValMap.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 
 namespace details {
-    class ClobberRegsCounter final {
-    public:
-        [[nodiscard]]
-        aasm::GPReg gp_temp1() const noexcept {
-            m_used_gp_regs |= 1 << 0;
-            return aasm::rax;
-        }
-
-        [[nodiscard]]
-        aasm::GPReg gp_temp2() const noexcept {
-            m_used_gp_regs |= 1 << 1;
-            return aasm::rax;
-        }
-
-        std::uint8_t used_gp_regs() const noexcept {
-            return std::popcount(m_used_gp_regs);
-        }
-
-    private:
-        mutable std::uint8_t m_used_gp_regs{0};
-    };
-
-    class AllocTemporalReg final: public LIRVisitor {
+    class AllocTemporalRegs final: public LIRVisitor {
     public:
         static std::uint8_t allocate(const LIRInstructionBase* inst, const LIRValMap<GPVReg>& reg_allocation) {
-            AllocTemporalReg emitter(reg_allocation);
+            AllocTemporalRegs emitter(reg_allocation);
             const_cast<LIRInstructionBase*>(inst)->visit(emitter);
             return emitter.m_temp_counter.used_gp_regs();
         }
 
     private:
-        explicit AllocTemporalReg(const LIRValMap<GPVReg>& reg_allocation) noexcept:
+        class TemporalRegsCounter final {
+        public:
+            [[nodiscard]]
+            aasm::GPReg gp_temp1() const noexcept {
+                m_used_gp_regs |= 1 << 0;
+                return aasm::rax;
+            }
+
+            [[nodiscard]]
+            aasm::GPReg gp_temp2() const noexcept {
+                m_used_gp_regs |= 1 << 1;
+                return aasm::rax;
+            }
+
+            std::uint8_t used_gp_regs() const noexcept {
+                return std::popcount(m_used_gp_regs);
+            }
+
+        private:
+            mutable std::uint8_t m_used_gp_regs{};
+        };
+
+        explicit AllocTemporalRegs(const LIRValMap<GPVReg>& reg_allocation) noexcept:
             m_reg_allocation(reg_allocation) {}
 
         [[nodiscard]]
@@ -105,7 +105,6 @@ namespace details {
         void ret(std::span<LIRVal const> ret_values) override {}
 
         const LIRValMap<GPVReg>& m_reg_allocation;
-
-        ClobberRegsCounter m_temp_counter{};
+        TemporalRegsCounter m_temp_counter{};
     };
 }

@@ -13,12 +13,12 @@ void LIRFunctionCodegen::setup_basic_block_labels() {
     }
 }
 
-const ClobberRegs & LIRFunctionCodegen::clobber_reg(const LIRInstructionBase *inst) const  {
-    if (const auto it = m_reg_allocation.try_get_clobber_regs(inst); it.has_value()) {
+const TemporalRegs & LIRFunctionCodegen::clobber_reg(const LIRInstructionBase *inst) const  {
+    if (const auto it = m_reg_allocation.try_get_temporal_regs(inst); it.has_value()) {
         return *it.value();
     }
 
-    static ClobberRegs empty_clobber_regs;
+    static TemporalRegs empty_clobber_regs;
     return empty_clobber_regs;
 }
 

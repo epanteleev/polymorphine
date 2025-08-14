@@ -5,7 +5,7 @@
 
 class LIRSetCC final: public LIRProducerInstructionBase {
 public:
-    explicit LIRSetCC(aasm::CondType cond_type) :
+    explicit LIRSetCC(const aasm::CondType cond_type) noexcept:
         LIRProducerInstructionBase({}),
         m_cond_type(cond_type) {}
 
