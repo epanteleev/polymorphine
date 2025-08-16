@@ -18,6 +18,7 @@ public:
         const auto id = m_instructions.push_back(std::move(inst));
         inst_ptr->connect(id, this);
 
+        make_def_use_chain(inst_ptr);
         if constexpr (std::derived_from<U, LIRControlInstruction>) {
             make_edges(inst_ptr);
         }
@@ -30,6 +31,7 @@ public:
         const auto id = m_instructions.insert_before(base->id(), std::move(inst));
         inst_ptr->connect(id, this);
 
+        make_def_use_chain(inst_ptr);
         if constexpr (std::derived_from<U, LIRControlInstruction>) {
             make_edges(base);
         }
@@ -49,7 +51,10 @@ public:
         return last()->succ(idx);
     }
 
+private:
     friend class LIRFuncData;
+
+    static void make_def_use_chain(LIRInstructionBase* inst);
 };
 
 static_assert(CodeBlock<LIRBlock>, "assumed to be");

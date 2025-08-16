@@ -32,8 +32,7 @@ static void verify_cfg(const std::string_view name, const BasicBlock* bb) {
             std::abort();
         }
 
-        const auto last = pred->last();
-        if (last.isa(any_return())) {
+        if (const auto last = pred->last(); last.isa(any_return())) {
             if (!bb->successors().empty()) {
                 std::cerr << "CFG error: BasicBlock " << pred->id()
                           << " ends with a return instruction but has successors in function '" << name << "'." << std::endl;

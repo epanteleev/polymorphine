@@ -11,7 +11,7 @@ class LIRInstructionBase {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
-    explicit LIRInstructionBase(std::vector<LIROperand> &&uses): m_id(NO_ID),
+    explicit LIRInstructionBase(std::vector<LIROperand> &&uses) noexcept: m_id(NO_ID),
                                                   m_owner(nullptr),
                                                   m_inputs(std::move(uses)) {}
 
@@ -27,9 +27,19 @@ public:
         return m_inputs.at(idx);
     }
 
-    void in(const std::size_t idx, const LIROperand& op) {
+    void in(const std::size_t idx, const LIROperand& new_op) {
         assertion(idx < m_inputs.size(), "index out of bounds");
-        m_inputs[idx] = op;
+
+        const auto& op = m_inputs[idx];
+        if (const auto lir_val = LIRVal::try_from(op); lir_val.has_value()) {
+            lir_val->kill_user(this);
+        }
+
+        m_inputs[idx] = new_op;
+
+        if (const auto lir_val = LIRVal::try_from(new_op); lir_val.has_value()) {
+            lir_val->add_user(this);
+        }
     }
 
     virtual void visit(LIRVisitor& visitor) = 0;

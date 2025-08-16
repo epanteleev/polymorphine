@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <utility>
 
 #include "LIRArg.h"
 #include "lir/x64/lir_frwd.h"
@@ -17,14 +18,14 @@ class LIRVal final {
         Call
     };
 
-    LIRVal(const std::uint8_t size, const std::uint8_t index, const LIRArg *def) noexcept:
+    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRArg *def) noexcept:
         m_size(size),
         m_index(index),
         m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    LIRVal(const std::uint8_t size, const std::uint8_t index, const LIRProducerInstructionBase *def) noexcept:
+    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRProducerInstructionBase *def) noexcept:
         m_size(size),
         m_index(index),
         m_type(Op::Inst) {
@@ -65,11 +66,12 @@ public:
     }
 
     template<typename T>
-    void visit(const T& visitor) const {
+    auto visit(const T& visitor) const {
         switch (m_type) {
-            case Op::Arg: visitor(*m_variant.m_arg); break;
-            case Op::Inst: visitor(*m_variant.m_inst); break;
-            case Op::Call: visitor(*m_variant.m_call); break;
+            case Op::Arg:  return visitor(*m_variant.m_arg);
+            case Op::Inst: return visitor(*m_variant.m_inst);
+            case Op::Call: return visitor(*m_variant.m_call);
+            default: std::unreachable();
         }
     }
 
@@ -94,8 +96,16 @@ public:
                m_variant.m_arg == rhs.m_variant.m_arg;
     }
 
+    void add_user(LIRInstructionBase *inst) const noexcept;
+    void kill_user(LIRInstructionBase *inst) const noexcept;
+
+    [[nodiscard]]
+    std::span<LIRInstructionBase* const> users() const noexcept;
+
+    friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
+
     static LIRVal from(const LIRArg* def) noexcept {
-        return {def->size(), static_cast<std::uint8_t>(def->index()), def};
+        return {def->size(), static_cast<std::uint8_t>(def->index()), const_cast<LIRArg *>(def)};
     }
 
     static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRProducerInstructionBase* def) noexcept {
@@ -108,9 +118,7 @@ public:
 
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
-    static std::span<LIRVal const> try_from(const LIRInstructionBase* inst) noexcept;
-
-    friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
+    static std::span<LIRVal const> defs(const LIRInstructionBase* inst) noexcept;
 
 private:
     [[nodiscard]]
@@ -120,9 +128,9 @@ private:
     std::uint8_t m_index;
     Op m_type;
     union {
-        const LIRArg* m_arg;
-        const LIRProducerInstructionBase* m_inst;
-        const LIRCall* m_call;
+        LIRArg* m_arg;
+        LIRProducerInstructionBase* m_inst;
+        LIRCall* m_call;
     } m_variant{};
 };
 

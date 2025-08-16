@@ -16,6 +16,27 @@ static char size_prefix(std::size_t size) {
     }
 }
 
+void LIRVal::add_user(LIRInstructionBase *inst) const noexcept {
+    const auto vis = [&]<typename T>(T& val) {
+        val.add_user(inst);
+    };
+    visit(vis);
+}
+
+void LIRVal::kill_user(LIRInstructionBase *inst) const noexcept {
+    const auto vis = [&]<typename T>(T& val) {
+        val.kill_user(inst);
+    };
+    visit(vis);
+}
+
+std::span<LIRInstructionBase * const> LIRVal::users() const noexcept {
+    const auto vis = [&]<typename T>(const T& val) {
+        return val.users();
+    };
+    return visit(vis);
+}
+
 std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
     const auto vreg = op.vreg();
     if (!vreg.has_value()) {
@@ -25,7 +46,7 @@ std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
     return vreg.value();
 }
 
-std::span<LIRVal const> LIRVal::try_from(const LIRInstructionBase *inst) noexcept {
+std::span<LIRVal const> LIRVal::defs(const LIRInstructionBase *inst) noexcept {
     if (const auto producer = dynamic_cast<const LIRProducerInstructionBase*>(inst)) {
         return producer->defs();
     }
@@ -38,7 +59,7 @@ std::span<LIRVal const> LIRVal::try_from(const LIRInstructionBase *inst) noexcep
 
 std::size_t LIRVal::id() const noexcept {
     switch (m_type) {
-        case Op::Arg: return m_variant.m_arg->index();
+        case Op::Arg:  return m_variant.m_arg->index();
         case Op::Inst: return m_variant.m_inst->id();
         case Op::Call: return m_variant.m_call->id();
         default: std::unreachable();

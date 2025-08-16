@@ -17,10 +17,24 @@ public:
         return m_defs.at(idx);
     }
 
+    void add_user(LIRInstructionBase *inst) noexcept {
+        m_used_in.push_back(inst);
+    }
+
+    void kill_user(LIRInstructionBase *inst) noexcept {
+        std::erase(m_used_in, inst);
+    }
+
+    [[nodiscard]]
+    std::span<LIRInstructionBase * const> users() const noexcept {
+        return m_used_in;
+    }
+
 protected:
     void add_def(const LIRVal& def) {
         m_defs.push_back(def);
     }
 
     std::vector<LIRVal> m_defs;
+    std::vector<LIRInstructionBase *> m_used_in;
 };

@@ -52,5 +52,4 @@ private:
     Kind m_kind;
 };
 
-
 std::ostream& operator<<(std::ostream& os, const LirCst& op) noexcept;

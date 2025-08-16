@@ -24,40 +24,8 @@ public:
     void run() {
         compute_local_live_set();
         setup_liveness();
-
-        auto changed = false;
-        do {
-            changed = false;
-            for (const auto& bb: std::ranges::reverse_view(m_ordering)) {
-                auto& [live_in, live_out] = m_liveness.at(bb);
-
-                for (const auto succ: bb->successors()) {
-                    // live_out = b.live_out ∪ succ.live_in
-                    const auto& [live_in_succ, _] = m_liveness.at(succ);
-                    for (const auto& reg: live_in_succ) {
-                        changed |= live_out.insert(reg).second;
-                    }
-                }
-
-                // union = (b.old_live_in ∪ b.old_live_out
-                // live_in = (union – b.live_kill) ∪ b.live_gen
-                for (const auto live_out_v: live_out) {
-                    live_in.insert(live_out_v);
-                }
-
-                auto& [kill, gen] = m_kill_gen_set.at(bb);
-                for (const auto& kill_reg: kill) {
-                    live_in.erase(kill_reg);
-                }
-
-                for (const auto& gen_reg: gen) {
-                    live_in.insert(gen_reg);
-                }
-            }
-
-        } while (changed);
+        compute_global_live_set();
     }
-
 
     std::unique_ptr<result_type> result() noexcept {
         std::unordered_map<const LIRBlock*, LiveInfo> liveness;
@@ -81,7 +49,7 @@ private:
 
             for (const auto& inst: bb->instructions()) {
                 if (!inst.isa(parallel_copy())) {
-                    for (auto in: inst.inputs()) {
+                    for (auto& in: inst.inputs()) {
                         const auto lir_val = LIRVal::try_from(in);
                         if (!lir_val.has_value()) {
                             continue;
@@ -95,13 +63,45 @@ private:
                     }
                 }
 
-                for (const auto& out: LIRVal::try_from(&inst)) {
+                for (const auto& out: LIRVal::defs(&inst)) {
                     kill.insert(out);
                 }
             }
 
             m_kill_gen_set.emplace(bb, std::pair(kill, gen));
         }
+    }
+
+    void compute_global_live_set() {
+        auto changed = false;
+        do {
+            changed = false;
+            for (const auto& bb: std::ranges::reverse_view(m_ordering)) {
+                auto& [live_in, live_out] = m_liveness.at(bb);
+
+                for (const auto succ: bb->successors()) {
+                    // live_out = b.live_out ∪ succ.live_in
+                    for (const auto& reg: m_liveness.at(succ).first) {
+                        changed |= live_out.insert(reg).second;
+                    }
+                }
+
+                // union = (b.old_live_in ∪ b.old_live_out
+                // live_in = (union – b.live_kill) ∪ b.live_gen
+                for (const auto live_out_v: live_out) {
+                    live_in.insert(live_out_v);
+                }
+
+                auto& [kill, gen] = m_kill_gen_set.at(bb);
+                for (const auto& kill_reg: kill) {
+                    live_in.erase(kill_reg);
+                }
+
+                for (const auto& gen_reg: gen) {
+                    live_in.insert(gen_reg);
+                }
+            }
+        } while (changed);
     }
 
     void setup_liveness() {

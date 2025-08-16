@@ -64,7 +64,7 @@ private:
         for (const auto bb: m_ordering) {
             for (const auto& inst: bb->instructions()) {
                 inst_number += 1;
-                for (const auto& def: LIRVal::try_from(&inst)) {
+                for (const auto& def: LIRVal::defs(&inst)) {
                     std::unordered_map<const LIRBlock*, LiveRange> intervals;
                     intervals.emplace(bb, LiveRange(inst_number, inst_number));
                     m_intervals.emplace(def, std::move(intervals));

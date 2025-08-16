@@ -25,6 +25,6 @@ void BasicBlock::make_def_use_chain(Instruction *inst) {
             continue;
         }
 
-        local.value().add_user(inst);
+        local->add_user(inst);
     }
 }
