@@ -4,11 +4,11 @@
 
 #include "utility/OrderedSet.h"
 #include "base/FunctionDataBase.h"
+#include "mir/instruction/InstructionMatcher.h"
 
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/module/FunctionPrototype.h"
-#include "mir/instruction/TerminateInstruction.h"
 
 
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
@@ -36,14 +36,8 @@ public:
     BasicBlock* last() const {
         const auto last_bb = m_basic_blocks.back();
         assertion(last_bb.has_value(), "last basic block is null");
-        if (last_bb.value()->last().is<ReturnValue>()) {
-            return last_bb.value();
-        }
-        if (last_bb.value()->last().is<Return>()) {
-            return last_bb.value();
-        }
-
-        die("last instruction is not a return");
+        assertion(last_bb.value()->last().isa(any_return()), "last basic block is not a return block");
+        return last_bb.value();
     }
 
     void print(std::ostream &os) const {

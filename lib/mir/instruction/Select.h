@@ -22,7 +22,9 @@ public:
         return m_values.at(2);
     }
 
-    void visit(Visitor &visitor) override;
+    void visit(Visitor &visitor) {
+        visitor.accept(this);
+    }
 
     static std::unique_ptr<Select> select(const Value& cond, const Value& true_val, const Value& false_val) {
         return std::make_unique<Select>(true_val.type(), std::vector{cond, true_val, false_val});

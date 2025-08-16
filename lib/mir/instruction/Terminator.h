@@ -4,7 +4,7 @@
 #include <span>
 #include <variant>
 
-#include "../mir_frwd.h"
+#include "mir/mir_frwd.h"
 
 template<typename T>
 concept IsTerminator = std::derived_from<T, TerminateInstruction> ||
@@ -18,42 +18,14 @@ public:
     [[nodiscard]]
     std::span<BasicBlock* const> targets() const noexcept;
 
+    template<typename Fn>
+    requires std::is_invocable_r_v<bool, Fn, const Instruction*>
+    [[nodiscard]]
+    bool isa(Fn&& matcher) const noexcept {
+        return std::visit(matcher, m_value);
+    }
+
     static std::expected<Terminator, Error> from(Instruction* inst) noexcept;
-
-    template<IsTerminator T>
-    [[nodiscard]]
-    T* as() const noexcept {
-        if constexpr (std::is_base_of_v<TerminateInstruction, T>) {
-            const auto v = *std::get_if<TerminateInstruction*>(&m_value);
-            return dynamic_cast<T*>(v);
-
-        } else if constexpr (std::is_base_of_v<TerminateValueInstruction, T>) {
-            const auto v = *std::get_if<TerminateValueInstruction*>(&m_value);
-            return dynamic_cast<T*>(v);
-
-        } else {
-            static_assert(false, "somthing was wrong");
-            return nullptr;
-        }
-    }
-
-    template<IsTerminator T>
-    [[nodiscard]]
-    bool is() const noexcept {
-        if constexpr (std::is_base_of_v<TerminateInstruction, T>) {
-            return std::holds_alternative<TerminateInstruction *>(m_value) &&
-                   dynamic_cast<T *>(std::get<TerminateInstruction *>(m_value)) != nullptr;
-
-        } else if constexpr (std::is_base_of_v<TerminateValueInstruction, T>) {
-            return std::holds_alternative<TerminateValueInstruction *>(m_value) &&
-                   dynamic_cast<T *>(std::get<TerminateValueInstruction *>(m_value)) != nullptr;
-
-        } else {
-            static_assert(false, "somthing was wrong");
-            return false;
-        }
-    }
-
 
 private:
     std::variant<TerminateInstruction *,

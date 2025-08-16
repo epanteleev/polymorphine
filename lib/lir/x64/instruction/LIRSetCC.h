@@ -9,7 +9,9 @@ public:
         LIRProducerInstructionBase({}),
         m_cond_type(cond_type) {}
 
-    void visit(LIRVisitor &visitor) override;
+    void visit(LIRVisitor &visitor) override {
+        visitor.setcc_i(def(0), m_cond_type);
+    }
 
     static std::unique_ptr<LIRSetCC> setcc(aasm::CondType cond_type) {
         auto setcc = std::make_unique<LIRSetCC>(cond_type);

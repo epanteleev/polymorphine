@@ -1,5 +1,7 @@
 #include "mir/builder/FunctionBuilder.h"
 
+#include "mir/instruction/InstructionMatcher.h"
+
 FunctionBuilder::FunctionBuilder(std::unique_ptr<FunctionData>&& functionData): m_fd(std::move(functionData)) {
     m_bb = m_fd->first();
 }
@@ -10,7 +12,7 @@ FunctionBuilder FunctionBuilder::make(FunctionPrototype &&prototype, std::vector
 
 std::unique_ptr<FunctionData> FunctionBuilder::build() noexcept {
     for (const auto& bbs = m_fd->basic_blocks(); const auto& bb : bbs) {
-        if (!bb.last().is<Return>() && !bb.last().is<ReturnValue>()) {
+        if (!bb.last().isa(any_return())) {
             continue;
         }
         if (bbs.back() == &bb) {

@@ -11,7 +11,9 @@ public:
         : Instruction(std::move(values)), m_successors(std::move(successors)) {}
 
     [[nodiscard]]
-    std::span<BasicBlock * const> successors() const noexcept;
+    std::span<BasicBlock * const> successors() const noexcept {
+        return m_successors;
+    }
     
 protected:
     std::vector<BasicBlock* > m_successors;

@@ -118,7 +118,7 @@ namespace {
             bb->print_short_name(m_os);
         }
 
-        void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {
+        void jcc(const aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {
             m_os << "j" << cond_type << " ";
             on_true->print_short_name(m_os);
             m_os << ", ";
