@@ -14,10 +14,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
         case LIRProdInstKind::Not: visitor.not_i(def(0), in(0)); break;
-        case LIRProdInstKind::Copy: {
-            visitor.copy_i(def(0), in(0));
-            break;
-        }
+        case LIRProdInstKind::Copy: visitor.copy_i(def(0), in(0)); break;
         case LIRProdInstKind::Load: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");

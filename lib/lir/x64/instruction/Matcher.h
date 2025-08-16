@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LIRCall.h"
 #include "LIRInstructionBase.h"
 #include "ParallelCopy.h"
 

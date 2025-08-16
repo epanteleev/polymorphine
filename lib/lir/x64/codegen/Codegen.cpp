@@ -1,6 +1,6 @@
 #include "Codegen.h"
 
-#include "LIRFunctionCodegen.h"
+#include "lir/x64/codegen/LIRFunctionCodegen.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/transform/callinfo/CallInfoInitialize.h"
 

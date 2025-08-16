@@ -175,8 +175,8 @@ static Module clamp(const IntegerType* ty) {
 template<typename Fn>
 static void verify_clamp(const Module& module) {
     const std::unordered_map<std::string, std::size_t> sizes = {
-        {"max", 12},
-        {"min", 12},
+        {"max", 11},
+        {"min", 11},
         {"clamp", 9}
     };
 

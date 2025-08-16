@@ -21,3 +21,6 @@ class GPVReg;
 class GPOp;
 
 class MasmEmitter;
+
+class TemporalRegs;
+class RegisterAllocation;

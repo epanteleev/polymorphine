@@ -1,17 +1,4 @@
-#include "LIRControlInstruction.h"
-
-void LIRBranch::visit(LIRVisitor &visitor) {
-    visitor.jmp(succ(0));
-}
-
-void LIRCondBranch::visit(LIRVisitor &visitor) {
-    visitor.jcc(m_kind, succ(0), succ(1));
-}
-
-void LIRReturn::visit(LIRVisitor &visitor) {
-    const auto ret_values = to_lir_vals_only(inputs());
-    visitor.ret(ret_values);
-}
+#include "LIRCall.h"
 
 void LIRCall::visit(LIRVisitor &visitor) {
     switch (m_kind) {
@@ -34,5 +21,6 @@ void LIRCall::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRCallKind::VCall: visitor.vcall(to_lir_vals_only(inputs())); break;
+        default: std::unreachable();
     }
 }

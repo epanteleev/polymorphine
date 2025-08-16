@@ -5,6 +5,7 @@
 
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
+#include "lir/x64/instruction/LIRCall.h"
 
 static char size_prefix(std::size_t size) {
     switch (size) {

@@ -5,6 +5,7 @@
 #include "LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
 #include "base/FunctionDataBase.h"
+#include "lir/x64/instruction/LIRReturn.h"
 
 
 class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {

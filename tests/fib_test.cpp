@@ -100,7 +100,7 @@ static T fib_value(T n) {
 }
 
 static const std::unordered_map<std::string, std::size_t> fib_sizes = {
-    {"fib", 37}
+    {"fib", 34}
 };
 
 TEST(Fib, i8) {
