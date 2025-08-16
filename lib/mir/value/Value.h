@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <variant>
 #include <iosfwd>
+#include <utility>
 
 #include "mir/mir_frwd.h"
 #include "mir/types/Type.h"
@@ -43,6 +44,17 @@ public:
     constexpr const Type* type() const noexcept {
         return m_type;
     }
+
+    template<std::derived_from<Type> T>
+    [[nodiscard]]
+    constexpr const T *as_type() const noexcept {
+        if (const auto ty = dynamic_cast<const T *>(m_type)) {
+            return ty;
+        }
+
+        std::unreachable();
+    }
+
 
     template <typename T, typename Visitor>
     constexpr T visit(Visitor&& visitor) const {

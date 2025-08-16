@@ -69,7 +69,7 @@ public:
     }
 
     static LivenessAnalysis create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        auto ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+        const auto ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         return LivenessAnalysis(*ordering);
     }
 
@@ -82,16 +82,16 @@ private:
             for (const auto& inst: bb->instructions()) {
                 if (!inst.isa(parallel_copy())) {
                     for (auto in: inst.inputs()) {
-                        const auto vreg = LIRVal::try_from(in);
-                        if (!vreg.has_value()) {
+                        const auto lir_val = LIRVal::try_from(in);
+                        if (!lir_val.has_value()) {
                             continue;
                         }
 
-                        if (kill.contains(vreg.value())) {
+                        if (kill.contains(lir_val.value())) {
                             continue;
                         }
 
-                        gen.insert(vreg.value());
+                        gen.insert(lir_val.value());
                     }
                 }
 

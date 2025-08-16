@@ -22,13 +22,3 @@ protected:
     const Type* m_ty;
     std::vector<const Instruction*> m_users;
 };
-
-class PhiInstruction final: public ValueInstruction {
-public:
-    PhiInstruction(NonTrivialType* ty, const std::initializer_list<Value>& values, std::vector<BasicBlock*> targets);
-
-    void visit(Visitor &visitor) override { visitor.accept(this); }
-
-private:
-    std::vector<BasicBlock*> m_entries;
-};

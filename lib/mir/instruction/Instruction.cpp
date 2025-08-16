@@ -1,12 +1,13 @@
 #include "Instruction.h"
 
 #include <iostream>
+#include <ranges>
 
-#include "Select.h"
+#include "mir/instruction/Phi.h"
+#include "mir/instruction/Select.h"
 #include "mir/instruction/Alloc.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/instruction/Store.h"
-#include "utility/Error.h"
 #include "mir/types/Type.h"
 #include "mir/value/Value.h"
 #include "mir/instruction/ValueInstruction.h"
@@ -17,11 +18,12 @@
 #include "mir/instruction/Compare.h"
 #include "mir/instruction/GetElementPtr.h"
 
+#include "utility/Error.h"
 
 namespace {
     class Printer final: public Visitor {
     public:
-        explicit Printer(std::ostream& os) : os(os) {}
+        explicit Printer(std::ostream& os) noexcept: os(os) {}
 
         void do_print(Instruction* inst) {
             inst->visit(*this);
@@ -29,7 +31,7 @@ namespace {
 
     private:
         void print_val(const Instruction* inst) const {
-            os << '%' << inst->id() << 'x' << inst->owner()->id() << " = ";
+            os << '%' << inst->owner()->id() << 'x' << inst->id() << " = ";
         }
 
         static std::string_view binaryOpToString(const BinaryOp op) {
@@ -87,8 +89,18 @@ namespace {
             os << ", label %" << cond_branch->on_false()->id();
         }
 
-        void accept(PhiInstruction *inst) override {
+        void accept(Phi *inst) override {
+            print_val(inst);
+            os << "phi " << *inst->type() << ' ' << '[';
+            for (auto [idx, incoming, target] : std::views::zip(std::views::iota(0), inst->incoming(), inst->operands())) {
+                if (idx++ != 0) {
+                    os << ", ";
+                }
 
+                os << target  << ": ";
+                incoming->print_short_name(os);
+            }
+            os << ']';
         }
 
         void accept(Return *inst) override {
@@ -96,9 +108,7 @@ namespace {
         }
 
         void accept(ReturnValue *inst) override {
-            os << "ret ";
-            os << *inst->ret_value().type();
-            os << ' ' << inst->ret_value();
+            os << "ret " << *inst->ret_value().type() << ' ' << inst->ret_value();
         }
 
         void accept(Call *inst) override {
@@ -176,7 +186,3 @@ void Instruction::print(std::ostream& os) const {
     Printer p(os);
     p.do_print(const_cast<Instruction *>(this));
 }
-
-PhiInstruction::PhiInstruction(NonTrivialType *ty,
-                               const std::initializer_list<Value> &values, std::vector<BasicBlock *> targets)
-        : ValueInstruction(ty, values), m_entries(std::move(targets)) {}

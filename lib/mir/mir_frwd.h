@@ -4,7 +4,7 @@ class Instruction;
 class Binary;
 class Unary;
 class TerminateInstruction;
-class PhiInstruction;
+class Phi;
 class ValueInstruction;
 class TerminateValueInstruction;
 class Return;

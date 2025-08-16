@@ -97,6 +97,7 @@ private:
         return m_max_caller_overflow_area_size = std::max(m_max_caller_overflow_area_size, overflow_args);
     }
 
+    [[nodiscard]]
     LIRAdjustStack* prologue() const {
         const auto begin_block = m_func_data.first();
         auto& first_instruction = begin_block->at(0);

@@ -50,7 +50,14 @@ namespace {
         }
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {
-
+            m_os << "parallel_copy out(" << out << ") inputs(";
+            for (auto [idx, input]: std::ranges::views::enumerate(inputs)) {
+                if (idx != 0) {
+                    m_os << ", ";
+                }
+                m_os << input;
+            }
+            m_os << ')';
         }
 
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {
@@ -73,7 +80,7 @@ namespace {
             m_os << "store_i pointer(" << pointer << ") value(" << value << ')';
         }
 
-        void print_adjust_stack(std::string_view name, const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) const noexcept {
+        void print_adjust_stack(const std::string_view name, const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) const noexcept {
             m_os << name << " [";
             for (const auto reg: reg_set) {
                 m_os << reg.name(8) << ' ';
@@ -151,7 +158,6 @@ namespace {
             m_os << "]";
         }
 
-    private:
         std::ostream& m_os;
     };
 }

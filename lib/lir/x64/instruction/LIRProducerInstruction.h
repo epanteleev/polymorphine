@@ -15,7 +15,6 @@ enum class LIRProdInstKind: std::uint8_t {
     Shr,
     Neg,
     Not,
-    ParallelCopy,
     Copy,
     Load,
 };

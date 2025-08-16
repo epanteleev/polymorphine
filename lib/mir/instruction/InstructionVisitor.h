@@ -15,7 +15,7 @@ public:
     virtual void accept(Switch* inst) = 0;
     virtual void accept(VCall* call) = 0;
     virtual void accept(IVCall* call) = 0;
-    virtual void accept(PhiInstruction *inst) = 0;
+    virtual void accept(Phi *inst) = 0;
     virtual void accept(Store* store) = 0;
     virtual void accept(Alloc* alloc) = 0;
     virtual void accept(IcmpInstruction *icmp) = 0;

@@ -13,18 +13,31 @@
 class LIRBlock final: public BasicBlockBase<LIRBlock, LIRInstructionBase> {
 public:
     template<std::derived_from<LIRInstructionBase> U>
-    U* inst(std::unique_ptr<U>&& inst) {
+    U* ins(std::unique_ptr<U>&& inst) {
         auto inst_ptr = inst.get();
         const auto id = m_instructions.push_back(std::move(inst));
         inst_ptr->connect(id, this);
+
         if constexpr (std::derived_from<U, LIRControlInstruction>) {
             make_edges(inst_ptr);
         }
         return inst_ptr;
     }
 
+    template<std::derived_from<LIRInstructionBase> U>
+    U* ins_before(const LIRInstructionBase* base, std::unique_ptr<U>&& inst) {
+        const auto inst_ptr = inst.get();
+        const auto id = m_instructions.insert_before(base->id(), std::move(inst));
+        inst_ptr->connect(id, this);
+
+        if constexpr (std::derived_from<U, LIRControlInstruction>) {
+            make_edges(base);
+        }
+        return inst_ptr;
+    }
+
     [[nodiscard]]
-    LIRControlInstruction* last() const;
+    const LIRControlInstruction* last() const;
 
     [[nodiscard]]
     std::span<LIRBlock* const> successors() const {

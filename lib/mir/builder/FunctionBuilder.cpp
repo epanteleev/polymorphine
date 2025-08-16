@@ -9,9 +9,7 @@ FunctionBuilder FunctionBuilder::make(FunctionPrototype &&prototype, std::vector
 }
 
 std::unique_ptr<FunctionData> FunctionBuilder::build() noexcept {
-    const auto& bbs = m_fd->basic_blocks();
-
-    for (const auto& bb : bbs) {
+    for (const auto& bbs = m_fd->basic_blocks(); const auto& bb : bbs) {
         if (!bb.last().is<Return>() && !bb.last().is<ReturnValue>()) {
             continue;
         }
@@ -21,6 +19,7 @@ std::unique_ptr<FunctionData> FunctionBuilder::build() noexcept {
 
         auto current = m_fd->remove(&bb);
         m_fd->add_basic_block(std::move(current));
+        break;
     }
     return std::move(m_fd);
 }

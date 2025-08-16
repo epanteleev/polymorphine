@@ -1,10 +1,10 @@
+#include <ostream>
+
 #include "mir/value/Value.h"
 #include "mir/types/Type.h"
-
-#include <ostream>
-#include "mir/instruction/Instruction.h"
 #include "mir/instruction/ValueInstruction.h"
-#include "ArgumentValue.h"
+#include "mir/value/ArgumentValue.h"
+#include "mir/module/BasicBlock.h"
 
 Value::Value(const ArgumentValue *value) noexcept:
     m_value(const_cast<ArgumentValue *>(value)),
@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& os, const Value& obj) {
             os << *val;
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
-            os << '%' << val->id();
+            os << '%' << val->owner()->id() << 'x' << val->id();
 
         } else {
             static_assert(false, "Unsupported type in Value variant");

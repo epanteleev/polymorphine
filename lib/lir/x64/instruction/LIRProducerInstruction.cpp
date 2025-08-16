@@ -24,11 +24,6 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.load_i(def(0), in0.value());
             break;
         }
-        case LIRProdInstKind::ParallelCopy: {
-            const auto out0 = def(0);
-            const auto vregs = to_vregs_only(inputs());
-            visitor.parallel_copy(out0, vregs);
-            break;
-        }
+        default: die("Unsupported LIRProducerInstruction kind: {}", static_cast<int>(m_kind));
     }
 }

@@ -5,6 +5,7 @@
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Binary.h"
 #include "mir/instruction/Compare.h"
+#include "mir/instruction/Phi.h"
 #include "mir/instruction/Select.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/TerminateInstruction.h"
@@ -25,46 +26,51 @@ public:
 
     [[nodiscard]]
     Value alloc(const NonTrivialType* ty) const {
-        return m_bb->push_back(Alloc::alloc(ty));
+        return m_bb->ins(Alloc::alloc(ty));
     }
 
     [[nodiscard]]
     Value load(const PrimitiveType* loaded_type, const Value& pointer) const {
-        return m_bb->push_back(Unary::load(loaded_type, pointer));
+        return m_bb->ins(Unary::load(loaded_type, pointer));
     }
 
     void store(const Value& pointer, const Value &value) const {
-        m_bb->push_back(Store::store(pointer, value));
+        m_bb->ins(Store::store(pointer, value));
     }
 
     [[nodiscard]]
     Value add(const Value& lhs, const Value& rhs) const {
-        return m_bb->push_back(Binary::add(lhs, rhs));
+        return m_bb->ins(Binary::add(lhs, rhs));
     }
 
     [[nodiscard]]
     Value sub(const Value& lhs, const Value& rhs) const {
-        return m_bb->push_back(Binary::sub(lhs, rhs));
+        return m_bb->ins(Binary::sub(lhs, rhs));
     }
 
     [[nodiscard]]
     Value icmp(IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
-        return m_bb->push_back(IcmpInstruction::icmp(predicate, lhs, rhs));
+        return m_bb->ins(IcmpInstruction::icmp(predicate, lhs, rhs));
     }
 
     [[nodiscard]]
     Value flag2int(const IntegerType* to_type, const Value& flag) const {
-        return m_bb->push_back(Unary::flag2int(to_type, flag));
+        return m_bb->ins(Unary::flag2int(to_type, flag));
     }
 
     [[nodiscard]]
     Value select(const Value& cond, const Value& lhs, const Value& rhs) const {
-        return m_bb->push_back(Select::select(cond, lhs, rhs));
+        return m_bb->ins(Select::select(cond, lhs, rhs));
+    }
+
+    [[nodiscard]]
+    Value phi(const PrimitiveType* type, std::vector<Value>&& values, std::vector<BasicBlock*>&& targets) const {
+        return m_bb->ins(Phi::phi(type, std::move(values), std::move(targets)));
     }
 
     [[nodiscard]]
     Value call(FunctionPrototype&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
-        return m_bb->push_back(Call::call(std::move(prototype), cont, std::move(args)));
+        return m_bb->ins(Call::call(std::move(prototype), cont, std::move(args)));
     }
 
     [[nodiscard]]
@@ -77,19 +83,19 @@ public:
     }
 
     void br_cond(const Value& condition, BasicBlock *true_target, BasicBlock *false_target) const {
-        m_bb->push_back(CondBranch::br_cond(condition, true_target, false_target));
+        m_bb->ins(CondBranch::br_cond(condition, true_target, false_target));
     }
 
     void br(BasicBlock* target) const {
-        m_bb->push_back(Branch::br(target));
+        m_bb->ins(Branch::br(target));
     }
 
     void ret(const Value& ret_value) const {
-        m_bb->push_back(ReturnValue::ret(ret_value));
+        m_bb->ins(ReturnValue::ret(ret_value));
     }
 
     void ret() const {
-        m_bb->push_back(Return::ret());
+        m_bb->ins(Return::ret());
     }
 
     [[nodiscard]]

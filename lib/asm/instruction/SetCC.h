@@ -17,16 +17,6 @@ namespace aasm::details {
             buffer.emit8(reg3(m_reg) | 0xC0);
         }
 
-        [[nodiscard]]
-        constexpr GPReg reg() const noexcept {
-            return m_reg;
-        }
-
-        [[nodiscard]]
-        constexpr CondType cond() const noexcept {
-            return m_cond;
-        }
-
     private:
         CondType m_cond;
         GPReg m_reg;

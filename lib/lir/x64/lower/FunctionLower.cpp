@@ -3,6 +3,8 @@
 #include "lir/x64/instruction/LIRCMove.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
+#include "lir/x64/instruction/Matcher.h"
+#include "lir/x64/instruction/ParallelCopy.h"
 
 #include "mir/mir.h"
 
@@ -92,9 +94,9 @@ static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
 }
 
 void FunctionLower::setup_arguments() {
-    m_bb->inst(LIRAdjustStack::prologue());
+    m_bb->ins(LIRAdjustStack::prologue());
     for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
-        const auto copy = m_bb->inst(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
         memorize(&arg, copy->def(0));
     }
 }
@@ -108,6 +110,38 @@ void FunctionLower::traverse_instructions() {
     }
 }
 
+void FunctionLower::setup_bb_mapping() {
+    for (const auto& bb: m_function.basic_blocks()) {
+        if (&bb == m_function.first()) {
+            m_bb_mapping.emplace(&bb, m_obj_function->first());
+            continue;
+        }
+
+        auto lir_bb = m_obj_function->create_mach_block();
+        m_bb_mapping.emplace(&bb, lir_bb);
+    }
+}
+
+static void insert_copies(ParallelCopy& p_copy) noexcept {
+    for (auto [idx, input, target]: std::views::zip(std::views::iota(0), p_copy.inputs(), p_copy.targets())) {
+        const auto lir_val = LIRVal::try_from(input);
+        assertion(lir_val.has_value(), "Expected LIRVal for ParallelCopy input");
+
+        const auto copy = target->ins_before(target->last(), LIRProducerInstruction::copy(lir_val->size(), input));
+        p_copy.in(idx, copy->def(0));
+    }
+}
+
+void FunctionLower::finalize_parallel_copies() const noexcept {
+    for (auto& bb: m_parallel_copy_owners) {
+        for (auto& inst: bb->instructions()) {
+            if (!inst.isa(parallel_copy())) break;
+
+            insert_copies(dynamic_cast<ParallelCopy&>(inst));
+        }
+    }
+}
+
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
@@ -117,8 +151,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
             return make_constant(*val.type(), v);
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction *>) {
-            const auto local = LocalValue::from(v);
-            return m_value_mapping.at(local);
+            return m_value_mapping.at(LocalValue::from(v));
 
         } else {
             static_assert(false, "Unsupported type in Value variant");
@@ -143,12 +176,12 @@ void FunctionLower::accept(Binary *inst) {
     const auto rhs = get_lir_operand(inst->rhs());
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto add = m_bb->inst(LIRProducerInstruction::add(lhs, rhs));
+            const auto add = m_bb->ins(LIRProducerInstruction::add(lhs, rhs));
             memorize(inst, add->def(0));
             break;
         }
         case BinaryOp::Subtract: {
-            const auto sub = m_bb->inst(LIRProducerInstruction::sub(lhs, rhs));
+            const auto sub = m_bb->ins(LIRProducerInstruction::sub(lhs, rhs));
             memorize(inst, sub->def(0));
             break;
         }
@@ -158,18 +191,18 @@ void FunctionLower::accept(Binary *inst) {
 
 void FunctionLower::accept(Branch *branch) {
     const auto target = m_bb_mapping.at(branch->target());
-    m_bb->inst(LIRBranch::jmp(target));
+    m_bb->ins(LIRBranch::jmp(target));
 }
 
 void FunctionLower::accept(CondBranch *cond_branch) {
     const auto true_target = m_bb_mapping.at(cond_branch->on_true());
     const auto false_target = m_bb_mapping.at(cond_branch->on_false());
 
-    m_bb->inst(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
+    m_bb->ins(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
 }
 
 void FunctionLower::accept(Call *inst) {
-    m_bb->inst(LIRAdjustStack::down_stack());
+    m_bb->ins(LIRAdjustStack::down_stack());
 
     std::vector<LIROperand> args;
     args.reserve(inst->operands().size());
@@ -178,7 +211,7 @@ void FunctionLower::accept(Call *inst) {
         const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
         assertion(type != nullptr, "Expected NonTrivialType for call argument");
 
-        const auto copy = m_bb->inst(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
         args.emplace_back(copy->def(0));
     }
     const auto cont = m_bb_mapping.at(inst->cont());
@@ -186,15 +219,15 @@ void FunctionLower::accept(Call *inst) {
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto call = m_bb->inst(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), linkage_from_mir(proto.linkage())));
-    cont->inst(LIRAdjustStack::up_stack());
-    const auto copy_ret = cont->inst(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
+    const auto call = m_bb->ins(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), linkage_from_mir(proto.linkage())));
+    cont->ins(LIRAdjustStack::up_stack());
+    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
 }
 
 void FunctionLower::accept(Return *inst) {
-    m_bb->inst(LIRAdjustStack::epilogue());
-    m_bb->inst(LIRReturn::ret());
+    m_bb->ins(LIRAdjustStack::epilogue());
+    m_bb->ins(LIRReturn::ret());
 }
 
 void FunctionLower::accept(ReturnValue *inst) {
@@ -203,9 +236,26 @@ void FunctionLower::accept(ReturnValue *inst) {
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
     const auto ret_val = get_lir_operand(inst->ret_value());
-    const auto copy = m_bb->inst(LIRProducerInstruction::copy(ret_type->size_of(), ret_val));
-    m_bb->inst(LIRAdjustStack::epilogue());
-    m_bb->inst(LIRReturn::ret(copy->def(0)));
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), ret_val));
+    m_bb->ins(LIRAdjustStack::epilogue());
+    m_bb->ins(LIRReturn::ret(copy->def(0)));
+}
+
+void FunctionLower::accept(Phi *inst) {
+    m_parallel_copy_owners.emplace(m_bb);
+
+    std::vector<LIROperand> incoming_values;
+    incoming_values.reserve(inst->incoming().size());
+
+    std::vector<LIRBlock*> incoming_targets;
+    incoming_targets.reserve(inst->incoming().size());
+
+    for (const auto [target, incoming]: std::views::zip(inst->incoming(), inst->operands())) {
+        incoming_values.emplace_back(get_lir_val(incoming));
+        incoming_targets.push_back(m_bb_mapping.at(target));
+    }
+    const auto parallel_copy = m_bb->ins(ParallelCopy::copy(std::move(incoming_values), std::move(incoming_targets)));
+    memorize(inst, parallel_copy->def(0));
 }
 
 void FunctionLower::accept(Store *store) {
@@ -215,10 +265,10 @@ void FunctionLower::accept(Store *store) {
     const auto pointer_vreg = get_lir_val(pointer);
     const auto value_vreg = get_lir_operand(value);
     if (pointer.isa(alloc())) {
-        m_bb->inst(LIRInstruction::mov(pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
 
     } else if (pointer.isa(argument())) {
-        m_bb->inst(LIRInstruction::store(pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
 
     } else {
         unimplemented();
@@ -232,7 +282,7 @@ void FunctionLower::accept(Alloc *alloc) {
         assertion(primitive_type != nullptr, "Expected PrimitiveType for allocation");
 
         const auto size = primitive_type->size_of();
-        const auto alloc_inst = m_bb->inst(LIRProducerInstruction::gen(size));
+        const auto alloc_inst = m_bb->ins(LIRProducerInstruction::gen(size));
         memorize(alloc, alloc_inst->def(0));
 
     } else {
@@ -243,7 +293,7 @@ void FunctionLower::accept(Alloc *alloc) {
 void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
-    m_bb->inst(LIRInstruction::cmp(lhs, rhs));
+    m_bb->ins(LIRInstruction::cmp(lhs, rhs));
 }
 
 void FunctionLower::accept(Select *select) {
@@ -260,7 +310,7 @@ void FunctionLower::accept(Select *select) {
         make_setcc(select, aasm::invert(cond_ty));
 
     } else {
-        const auto cmov = m_bb->inst(LIRCMove::cmov(cond_ty, on_true_lir, on_false_lir));
+        const auto cmov = m_bb->ins(LIRCMove::cmov(cond_ty, on_true_lir, on_false_lir));
         memorize(select, cmov->def(0));
     }
 }
@@ -273,11 +323,11 @@ void FunctionLower::lower_load(const Unary *inst) {
     const auto pointer_vreg = get_lir_val(pointer);
 
     if (pointer.isa(alloc())) {
-        const auto copy_inst = m_bb->inst(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
+        const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
 
     } else if (pointer.isa(argument())) {
-        const auto load_inst = m_bb->inst(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
 
     } else {
@@ -286,7 +336,7 @@ void FunctionLower::lower_load(const Unary *inst) {
 }
 
 void FunctionLower::make_setcc(const ValueInstruction *inst, const aasm::CondType cond_type) {
-    const auto setcc = m_bb->inst(LIRSetCC::setcc(cond_type));
+    const auto setcc = m_bb->ins(LIRSetCC::setcc(cond_type));
     memorize(inst, setcc->def(0));
 }
 

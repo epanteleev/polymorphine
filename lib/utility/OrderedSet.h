@@ -1,45 +1,49 @@
 #pragma once
 
-#include <deque>
 #include <optional>
 #include <memory>
 #include <vector>
 #include <functional>
+#include <list>
 
 
 template<typename T>
 class OrderedSet final {
 public:
-    using iterator = typename std::deque<std::unique_ptr<T>>::iterator;
-    using const_iterator = typename std::deque<std::unique_ptr<T>>::const_iterator;
+    using iterator = std::list<std::unique_ptr<T>>::iterator;
+    using const_iterator = std::list<std::unique_ptr<T>>::const_iterator;
 
 private:
     template<typename iterator>
     class Iterator final {
     public:
-        Iterator() = default;
-        explicit Iterator (iterator first) : current(first) {}
+        explicit Iterator() = default;
 
-        Iterator& operator++ () {
+        explicit Iterator(iterator first) noexcept:
+            current(first) {}
+
+        Iterator &operator++() {
             ++current;
             return *this;
         }
 
-        Iterator operator++ (int) { return ++*this; }
+        Iterator operator++(int) { return ++*this; }
 
-        Iterator& operator-- () {
+        Iterator &operator--() {
             --current;
             return *this;
         }
 
-        Iterator operator-- (int) { return --*this; }
+        Iterator operator--(int) {
+            return --*this;
+        }
 
-        bool operator== (const Iterator& other) const { return current == other.current; }
-        bool operator!= (const Iterator& other) const { return current != other.current; }
-        T& operator* () { return *current->get(); }
-        const T& operator* () const { return *current->get(); }
-        T* operator-> () { return current->get(); }
-        T* operator-> () const { return current->get(); }
+        bool operator==(const Iterator &other) const { return current == other.current; }
+        bool operator!=(const Iterator &other) const { return current != other.current; }
+        T &operator*() { return *current->get(); }
+        const T &operator*() const { return *current->get(); }
+        T *operator->() { return current->get(); }
+        T *operator->() const { return current->get(); }
 
         T* get() { return current->get(); }
     private:
@@ -53,6 +57,24 @@ public:
         const auto free_slot = get_free_index();
         const auto s = size();
         m_holder.push_back(std::move(ptr));
+        if (free_slot == s) {
+            m_list.push_back(--m_holder.end());
+            return s;
+        }
+
+        m_list[free_slot] = --m_holder.end();
+        return free_slot;
+    }
+
+    std::size_t insert_before(std::size_t idx, std::unique_ptr<T>&& ptr) {
+        auto iter = m_list[idx];
+        if (iter == m_holder.end()) {
+            return push_back(std::move(ptr));
+        }
+
+        const auto free_slot = get_free_index();
+        const auto s = size();
+        m_holder.insert(iter, std::move(ptr));
         if (free_slot == s) {
             m_list.push_back(--m_holder.end());
             return s;
@@ -137,5 +159,5 @@ private:
 
     std::vector<std::size_t> m_free_indices;
     std::vector<iterator> m_list;
-    std::deque<std::unique_ptr<T>> m_holder;
+    std::list<std::unique_ptr<T>> m_holder;
 };

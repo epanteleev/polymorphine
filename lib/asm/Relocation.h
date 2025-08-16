@@ -14,7 +14,7 @@ enum class RelType: std::uint8_t {
 namespace aasm {
     class Relocation final {
     public:
-        explicit Relocation(const RelType type, const std::int32_t offset, const std::uint32_t displacement, const Symbol* symbol) noexcept:
+        explicit Relocation(const RelType type, const std::int32_t offset, const std::int32_t displacement, const Symbol* symbol) noexcept:
             m_type(type),
             m_offset(offset),
             m_displacement(displacement),
@@ -35,7 +35,7 @@ namespace aasm {
     private:
         RelType m_type;
         std::int32_t m_offset;
-        std::uint32_t m_displacement;
+        std::int32_t m_displacement;
         const Symbol* m_symbol;
     };
 }

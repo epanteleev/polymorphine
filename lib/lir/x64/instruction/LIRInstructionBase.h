@@ -27,6 +27,11 @@ public:
         return m_inputs.at(idx);
     }
 
+    void in(const std::size_t idx, const LIROperand& op) {
+        assertion(idx < m_inputs.size(), "index out of bounds");
+        m_inputs[idx] = op;
+    }
+
     virtual void visit(LIRVisitor& visitor) = 0;
 
     void print(std::ostream &os) const;
@@ -52,22 +57,22 @@ public:
 protected:
     friend class LIRBlock;
 
-    void connect(std::size_t idx, LIRBlock* owner) {
+    void connect(const std::size_t idx, LIRBlock* owner) {
         m_id = idx;
         m_owner = owner;
     }
 
     [[nodiscard]]
 
-    static std::vector<LIRVal> to_vregs_only(std::span<LIROperand const> inputs) {
-        std::vector<LIRVal> vregs;
-        vregs.reserve(inputs.size());
+    static std::vector<LIRVal> to_lir_vals_only(std::span<LIROperand const> inputs) {
+        std::vector<LIRVal> lir_vals;
+        lir_vals.reserve(inputs.size());
         for (const auto& in: inputs) {
             const auto vreg = LIRVal::try_from(in);
             assertion(vreg.has_value(), "invariant");
-            vregs.push_back(vreg.value());
+            lir_vals.push_back(vreg.value());
         }
-        return vregs;
+        return lir_vals;
     }
 
     std::size_t m_id;

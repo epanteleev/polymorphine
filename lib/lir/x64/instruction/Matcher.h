@@ -1,16 +1,12 @@
 #pragma once
 
-#include "LIRProducerInstruction.h"
 #include "LIRInstructionBase.h"
+#include "ParallelCopy.h"
 
 
 namespace x64::matchers {
     constexpr bool parallel_copy(const LIRInstructionBase* inst) {
-        if (const auto value = dynamic_cast<const LIRProducerInstruction*>(inst)) {
-            return value->op() == LIRProdInstKind::ParallelCopy;
-        }
-
-        return false;
+        return dynamic_cast<const ParallelCopy*>(inst) != nullptr;
     };
 
     constexpr bool call(const LIRInstructionBase* inst) {

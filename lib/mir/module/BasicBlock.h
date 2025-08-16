@@ -9,7 +9,7 @@
 class BasicBlock final: public BasicBlockBase<BasicBlock, Instruction> {
 public:
     template<std::derived_from<Instruction> U>
-    U* push_back(std::unique_ptr<U>&& inst) {
+    U* ins(std::unique_ptr<U>&& inst) {
         auto inst_ptr = inst.get();
         const auto id = m_instructions.push_back(std::move(inst));
         inst_ptr->connect(id, this);

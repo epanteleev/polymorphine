@@ -24,6 +24,7 @@ public:
         setup_arguments();
         setup_bb_mapping();
         traverse_instructions();
+        finalize_parallel_copies();
     }
 
     static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
@@ -52,17 +53,9 @@ private:
 
     void traverse_instructions();
 
-    void setup_bb_mapping() {
-        for (const auto& bb: m_function.basic_blocks()) {
-            if (&bb == m_function.first()) {
-                m_bb_mapping.emplace(&bb, m_obj_function->first());
-                continue;
-            }
+    void setup_bb_mapping();
 
-            auto lir_bb = m_obj_function->create_mach_block();
-            m_bb_mapping.emplace(&bb, lir_bb);
-        }
-    }
+    void finalize_parallel_copies() const noexcept;
 
     LIROperand get_lir_operand(const Value& val);
 
@@ -94,9 +87,7 @@ private:
 
     }
 
-    void accept(PhiInstruction *inst) override {
-
-    }
+    void accept(Phi *inst) override;
 
     void accept(Store *store) override;
 
@@ -126,5 +117,6 @@ private:
     LIRBlock* m_bb;
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
     LocalValueMap<LIRVal> m_value_mapping;
+    std::unordered_set<LIRBlock*> m_parallel_copy_owners;
 };
 
