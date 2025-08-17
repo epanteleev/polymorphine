@@ -115,6 +115,25 @@ TEST(Asm, cmov_reg_mem) {
     check_bytes_cc(codes, names, generator, cond_types);
 }
 
+TEST(Asm, lea) {
+    std::vector<std::string> names = {
+        "leaq 8(%r12,%r13,4), %r12",
+    };
+
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x4f,0x8d,0x64,0xac,0x08}, // lea 8(%r12,%r13,4), %r12
+    };
+
+    const auto generator = [](const std::uint8_t) {
+        aasm::AsmEmitter a;
+        a.lea(aasm::r12, aasm::Address(aasm::r12, aasm::r13, 4, 8));
+        return a;
+    };
+
+    std::array scale = {8};
+    check_bytes(codes, names, generator, scale);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -20,6 +20,7 @@
 #include "Leave.h"
 #include "Call.h"
 #include "CMov.h"
+#include "Lea.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -36,6 +37,7 @@ namespace aasm {
 
     private:
         std::variant<
+            details::Lea,
             details::PopR, details::PopM,
             details::PushR, details::PushM, details::PushI,
             details::Ret,
@@ -62,6 +64,7 @@ namespace aasm {
 
     template<typename T>
     concept MemoryInstruction =
+        std::same_as<T, details::Lea> ||
         std::same_as<T, details::CMovRM> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||

@@ -7,9 +7,10 @@ class CMovGPEmit final: public GPBinaryVisitor {
 public:
     explicit CMovGPEmit(const ClobberRegStorage& regs, AsmEmit& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
         m_size(convert_byte_size(size)),
+        m_operands_size(size),
         m_cond_type(cond_type),
         m_as(as),
-        m_clobber_regs(regs) {}
+        m_temporal_regs(regs) {}
 
     void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         dispatch(*this, out, in1, in2);
@@ -59,8 +60,8 @@ private:
         }
 
         m_as.mov(m_size, in2, out);
-        m_as.mov(m_size, in1, m_clobber_regs.gp_temp1());
-        m_as.cmov(m_size, m_cond_type, m_clobber_regs.gp_temp1(), out);
+        m_as.mov(m_size, in1, m_temporal_regs.gp_temp1());
+        m_as.cmov(m_size, m_cond_type, m_temporal_regs.gp_temp1(), out);
     }
 
     void emit(aasm::GPReg out, std::int32_t in1, const aasm::Address &in2) override {
@@ -122,7 +123,8 @@ private:
     }
 
     std::uint8_t m_size;
+    std::uint8_t m_operands_size{};
     aasm::CondType m_cond_type;
     AsmEmit& m_as;
-    const ClobberRegStorage& m_clobber_regs;
+    const ClobberRegStorage& m_temporal_regs;
 };

@@ -142,6 +142,11 @@ namespace aasm {
             m_instructions.emplace_back(details::SetCCR(type, reg));
         }
 
+        // Load Effective Address
+        constexpr void lea(const GPReg dst, const Address& src) {
+            m_instructions.emplace_back(details::Lea(dst, src));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

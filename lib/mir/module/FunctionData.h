@@ -14,7 +14,7 @@
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
     friend class FunctionBuilder;
 public:
-    explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args);
+    explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args) noexcept;
 
     [[nodiscard]]
     const ArgumentValue& arg(const std::size_t index) const {
