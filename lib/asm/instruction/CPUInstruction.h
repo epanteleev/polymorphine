@@ -4,8 +4,8 @@
 
 #include "asm/Common.h"
 #include "asm/symbol/Symbol.h"
-#include "Label.h"
 #include "asm/Encoding.h"
+#include "Label.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"
@@ -21,6 +21,7 @@
 #include "Call.h"
 #include "CMov.h"
 #include "Lea.h"
+#include "Xor.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -46,6 +47,7 @@ namespace aasm {
             details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
             details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
             details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
+            details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
             details::Jmp, details::Jcc,
             details::SetCCR,
             details::Call, details::CallM,
@@ -71,5 +73,6 @@ namespace aasm {
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
         std::is_same_v<T, details::AddMR> || std::is_same_v<T, details::AddRM> || std::is_same_v<T, details::AddMI> ||
         std::is_same_v<T, details::SubMR> || std::is_same_v<T, details::SubRM> || std::is_same_v<T, details::SubMI> ||
-        std::is_same_v<T, details::CmpMR> || std::is_same_v<T, details::CmpRM> || std::is_same_v<T, details::CmpMI>;
+        std::is_same_v<T, details::CmpMR> || std::is_same_v<T, details::CmpRM> || std::is_same_v<T, details::CmpMI> ||
+        std::is_same_v<T, details::XorMR> || std::is_same_v<T, details::XorRM> || std::is_same_v<T, details::XorMI>;
 }

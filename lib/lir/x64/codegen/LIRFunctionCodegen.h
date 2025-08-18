@@ -37,9 +37,6 @@ private:
     [[nodiscard]]
     GPOp convert_to_gp_op(const LIROperand &val) const;
 
-    [[nodiscard]]
-    aasm::GPReg convert_to_gp_reg(const LIRVal &val) const;
-
     void gen(const LIRVal &out) override {}
 
     void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;

@@ -82,13 +82,6 @@ GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     die("Invalid LIROperand");
 }
 
-aasm::GPReg LIRFunctionCodegen::convert_to_gp_reg(const LIRVal &val) const {
-    const auto allocation = m_reg_allocation[val];
-    const auto gp_reg = allocation.as_gp_reg();
-    assertion(gp_reg.has_value(), "Invalid GPVReg for LIRVal");
-    return gp_reg.value();
-}
-
 void LIRFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);

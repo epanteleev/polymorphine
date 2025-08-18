@@ -126,6 +126,28 @@ namespace aasm {
             m_instructions.emplace_back(details::CmpMR(size, src, dst));
         }
 
+        // Logical Exclusive OR
+        constexpr void xxor(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::XorRR(size, src, dst));
+        }
+
+        constexpr void xxor(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
+            m_instructions.emplace_back(details::XorRI(size, src, dst));
+        }
+
+        constexpr void xxor(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::XorRM(size, src, dst));
+        }
+
+        constexpr void xxor(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(details::XorMR(size, src, dst));
+        }
+
+        constexpr void xxor(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(details::XorMI(size, src, dst));
+        }
+
+        // Call
         constexpr void call(const Symbol* name) {
             m_instructions.emplace_back(details::Call(name));
         }
@@ -134,6 +156,7 @@ namespace aasm {
             m_instructions.emplace_back(details::CallM(addr));
         }
 
+        // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
         }
