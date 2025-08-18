@@ -16,6 +16,8 @@
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/analysis/regalloc/RegisterAllocation.h"
+#include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 #include "lir/x64/operand/LIRVal.h"
 
 void LIRFunctionCodegen::setup_basic_block_labels() {
@@ -140,6 +142,24 @@ void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     MovGPEmit::emit(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
+void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto index_op = convert_to_gp_op(index);
+    const auto in2_op = convert_to_gp_op(in);
+
+    MovByIdxIntEmit emitter(m_as, in.size());
+    emitter.emit(out_reg, index_op, in2_op);
+}
+
+void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto index_op = convert_to_gp_op(index);
+    const auto pointer_op = convert_to_gp_op(pointer);
+
+    LoadByIdxIntEmit emitter(m_as, out.size());
+    emitter.emit(out_reg, pointer_op, index_op);
+}
+
 void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
     const auto pointer_reg = m_reg_allocation[pointer];
     const auto value_op = convert_to_gp_op(value);
@@ -208,6 +228,10 @@ void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = m_reg_allocation[pointer];
     LoadGPEmit::emit(m_as, out.size(), out_reg, pointer_reg);
+}
+
+void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+
 }
 
 void LIRFunctionCodegen::jmp(const LIRBlock *bb) {

@@ -97,6 +97,7 @@ private:
         void neg_i(const LIRVal &out, const LIROperand &in) override {}
         void not_i(const LIRVal &out, const LIROperand &in) override {}
         void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
+        void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override {}
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
         void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
         void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
@@ -104,6 +105,8 @@ private:
         void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
+        void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
+        void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
         void jmp(const LIRBlock *bb) override {}
 
         void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}

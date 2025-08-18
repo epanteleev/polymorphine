@@ -21,6 +21,20 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.load_i(def(0), in0.value());
             break;
         }
+        case LIRProdInstKind::LoadByIdx: {
+            const auto in0 = LIRVal::try_from(in(0));
+            assertion(in0.has_value(), "invariant");
+            const auto pointer = LIRVal::try_from(in(1));
+            assertion(pointer.has_value(), "invariant");
+            visitor.load_by_idx_i(def(0), pointer.value(), in0.value());
+            break;
+        }
+        case LIRProdInstKind::Lea: {
+            const auto in0 = LIRVal::try_from(in(0));
+            assertion(in0.has_value(), "invariant");
+            visitor.lea_i(def(0), in0.value(), in(1));
+            break;
+        }
         default: die("Unsupported LIRProducerInstruction kind: {}", static_cast<int>(m_kind));
     }
 }

@@ -5,6 +5,7 @@
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Binary.h"
 #include "mir/instruction/Compare.h"
+#include "mir/instruction/GetElementPtr.h"
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Select.h"
 #include "mir/instruction/Store.h"
@@ -49,7 +50,7 @@ public:
     }
 
     [[nodiscard]]
-    Value icmp(IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
+    Value icmp(const IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
         return m_bb->ins(IcmpInstruction::icmp(predicate, lhs, rhs));
     }
 
@@ -71,6 +72,10 @@ public:
     [[nodiscard]]
     Value call(FunctionPrototype&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
         return m_bb->ins(Call::call(std::move(prototype), cont, std::move(args)));
+    }
+
+    Value gep(const PrimitiveType* ty, const Value& pointer, const Value& index) const {
+        return m_bb->ins(GetElementPtr::gep(ty, pointer, index));
     }
 
     [[nodiscard]]

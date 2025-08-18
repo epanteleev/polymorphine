@@ -17,6 +17,8 @@ enum class LIRProdInstKind: std::uint8_t {
     Not,
     Copy,
     Load,
+    LoadByIdx,
+    Lea,
 };
 
 class LIRProducerInstruction final: public LIRProducerInstructionBase {
@@ -46,9 +48,17 @@ public:
     }
 
     static std::unique_ptr<LIRProducerInstruction> load(const std::uint8_t loaded_ty_size, const LIROperand &op) {
-        auto load = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Load, std::vector{op});
-        load->add_def(LIRVal::reg(loaded_ty_size, 0, load.get()));
-        return load;
+        return create(LIRProdInstKind::Load, loaded_ty_size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIRVal &pointer, const LIROperand &index) {
+        return create(LIRProdInstKind::LoadByIdx, loaded_ty_size, LIROperand(pointer), index);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIRVal &pointer, const LIROperand &index) {
+        auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector<LIROperand>{pointer, index});
+        lea->add_def(LIRVal::reg(size, 0, lea.get()));
+        return lea;
     }
 
     [[nodiscard]]

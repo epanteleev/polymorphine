@@ -29,8 +29,9 @@ public:
 
 class IcmpInstruction final: public Compare {
 public:
-    IcmpInstruction(IcmpPredicate pred, const Value& lhs, const Value& rhs):
-        Compare(lhs, rhs), m_pred(pred) {}
+    IcmpInstruction(const IcmpPredicate pred, const Value& lhs, const Value& rhs) noexcept:
+        Compare(lhs, rhs),
+        m_pred(pred) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -39,7 +40,7 @@ public:
         return m_pred;
     }
 
-    static std::unique_ptr<IcmpInstruction> icmp(IcmpPredicate pred, const Value& lhs, const Value& rhs) {
+    static std::unique_ptr<IcmpInstruction> icmp(const IcmpPredicate pred, const Value& lhs, const Value& rhs) {
         return std::make_unique<IcmpInstruction>(pred, lhs, rhs);
     }
 

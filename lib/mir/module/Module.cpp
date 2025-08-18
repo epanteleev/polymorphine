@@ -2,9 +2,9 @@
 
 #include <ranges>
 
-const FunctionData * Module::add_function_data(FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) {
+const FunctionData* Module::add_function_data(FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) {
     assertion(proto.arg_types().size() == args.size(),
-          "Number of arguments does not match prototype m_args={}, arg_types={}", m_args.size(), m_prototype.arg_types().size());
+          "Number of arguments does not match prototype m_args={}, arg_types={}", args.size(), proto.arg_types().size());
 
 #ifndef NDEBUG
     for (auto [a, b]: std::ranges::views::zip(args, proto.arg_types())) {

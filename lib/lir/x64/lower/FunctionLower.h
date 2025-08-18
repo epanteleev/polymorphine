@@ -95,9 +95,7 @@ private:
 
     void accept(IcmpInstruction *icmp) override;
 
-    void accept(GetElementPtr *gep) override {
-
-    }
+    void accept(GetElementPtr *gep) override;
 
     void accept(Select *select) override;
 

@@ -25,7 +25,8 @@ public:
     Value(const ValueInstruction * value) noexcept;
 
     template <IsValueType T>
-    [[nodiscard]] constexpr T get() const {
+    [[nodiscard]]
+    constexpr T get() const {
         return std::get<T>(m_value);
     }
 

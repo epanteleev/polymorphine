@@ -269,6 +269,12 @@ void FunctionLower::accept(Store *store) {
     if (pointer.isa(alloc())) {
         m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
 
+    } else if (pointer.isa(gep())) {
+        const auto gep = dynamic_cast<GetElementPtr*>(pointer.get<ValueInstruction*>());
+        const auto idx = get_lir_operand(gep->index());
+        const auto src = get_lir_val(gep->pointer());
+        m_bb->ins(LIRInstruction::mov_by_idx(src, idx, value_vreg));
+
     } else if (pointer.isa(argument())) {
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
 
@@ -278,8 +284,7 @@ void FunctionLower::accept(Store *store) {
 }
 
 void FunctionLower::accept(Alloc *alloc) {
-    const auto type = alloc->allocated_type();
-    if (type->isa(primitive())) {
+    if (const auto type = alloc->allocated_type(); type->isa(primitive())) {
         const auto primitive_type = dynamic_cast<const PrimitiveType*>(type);
         assertion(primitive_type != nullptr, "Expected PrimitiveType for allocation");
 
@@ -296,6 +301,15 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
     m_bb->ins(LIRInstruction::cmp(lhs, rhs));
+}
+
+void FunctionLower::accept(GetElementPtr *gep) {
+    const auto pointer = get_lir_val(gep->pointer());
+    const auto index = get_lir_operand(gep->index());
+    const auto type = dynamic_cast<const PrimitiveType*>(gep->type());
+    assertion(type != nullptr, "Expected PrimitiveType for GEP operation");
+    const auto gep_inst = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), pointer, index));
+    memorize(gep, gep_inst->def(0));
 }
 
 void FunctionLower::accept(Select *select) {
@@ -327,6 +341,13 @@ void FunctionLower::lower_load(const Unary *inst) {
     if (pointer.isa(alloc())) {
         const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
+
+    } else if (pointer.isa(gep())) {
+        const auto gep = dynamic_cast<GetElementPtr*>(pointer.get<ValueInstruction*>());
+        const auto idx = get_lir_operand(gep->index());
+        const auto src = get_lir_val(gep->pointer());
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, idx));
+        memorize(inst, load_inst->def(0));
 
     } else if (pointer.isa(argument())) {
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));

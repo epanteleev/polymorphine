@@ -29,13 +29,14 @@ namespace impls {
         return false;
     }
 
-    inline bool alloc(const Value& inst) noexcept {
+    template<typename T>
+    bool value_inst(const Value& inst) noexcept {
         if (!inst.is<ValueInstruction*>()) {
             return false;
         }
 
         const auto val = inst.get<ValueInstruction*>();
-        return dynamic_cast<const Alloc*>(val) != nullptr;
+        return dynamic_cast<const T*>(val) != nullptr;
     }
 
     inline bool integral(const Value& value, const std::uint64_t cst) noexcept {
@@ -69,7 +70,11 @@ consteval auto icmp(LHS&& l, RHS&& r) noexcept {
 }
 
 consteval auto alloc() noexcept {
-    return impls::alloc;
+    return impls::value_inst<Alloc>;
+}
+
+consteval auto gep() noexcept {
+    return impls::value_inst<GetElementPtr>;
 }
 
 consteval auto argument() noexcept {

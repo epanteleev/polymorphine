@@ -76,6 +76,10 @@ namespace {
             m_os << "mov_i in(" << in0 << ") in(" << in << ')';
         }
 
+        void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override {
+            m_os << "mov_by_idx_i out(" << out << ") index(" << index << ") in2(" << in2 << ')';
+        }
+
         void store_i(const LIRVal &pointer, const LIROperand &value) override {
             m_os << "store_i pointer(" << pointer << ") value(" << value << ')';
         }
@@ -111,6 +115,14 @@ namespace {
 
         void load_i(const LIRVal &out, const LIRVal &pointer) override {
             m_os << "load_i out(" << out << ") pointer(" << pointer << ')';
+        }
+
+        void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
+            m_os << "load_by_idx_i out(" << out << ") index(" << index << ") pointer(" << pointer << ')';
+        }
+
+        void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
+            m_os << "lea_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
         void jmp(const LIRBlock *bb) override {

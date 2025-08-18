@@ -5,6 +5,7 @@
 
 enum class LIRInstKind: std::uint8_t {
     Mov,
+    MovByIdx,
     Store,
     Cmp,
 };
@@ -19,6 +20,10 @@ public:
 
     static std::unique_ptr<LIRInstruction> mov(const LIRVal& dst, const LIROperand& src) {
         return std::make_unique<LIRInstruction>(LIRInstKind::Mov, std::vector<LIROperand>{dst, src});
+    }
+
+    static std::unique_ptr<LIRInstruction> mov_by_idx(const LIRVal& dst, const LIROperand& index, const LIROperand& src) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::MovByIdx, std::vector<LIROperand>{dst, index, src});
     }
 
     static std::unique_ptr<LIRInstruction> store(const LIRVal& dst, const LIROperand& src) {
