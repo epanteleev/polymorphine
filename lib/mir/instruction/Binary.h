@@ -43,6 +43,10 @@ public:
         return std::make_unique<Binary>(BinaryOp::Subtract, lhs, rhs);
     }
 
+    static std::unique_ptr<Binary> xxor(const Value &lhs, const Value &rhs) {
+        return std::make_unique<Binary>(BinaryOp::BitwiseXor, lhs, rhs);
+    }
+
 private:
     const BinaryOp m_op;
 };

@@ -24,7 +24,7 @@ namespace aasm::details {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const XorRR &xorrr) {
-        return os << "mov" << prefix_size(xorrr.m_size) << " %" << xorrr.m_src.name(xorrr.m_size) << ", %" << xorrr.m_dst.name(xorrr.m_size);
+        return os << "xor" << prefix_size(xorrr.m_size) << " %" << xorrr.m_src.name(xorrr.m_size) << ", %" << xorrr.m_dst.name(xorrr.m_size);
     }
 
     class XorRI final {

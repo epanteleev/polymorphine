@@ -11,6 +11,7 @@
 #include "lir/x64/asm/emitters/StoreGPEmit.h"
 #include "lir/x64/asm/emitters/SubIntEmit.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
+#include "lir/x64/asm/emitters/XorIntEmit.h"
 #include "lir/x64/asm/cc/CallConv.h"
 
 #include "lir/x64/instruction/LIRCall.h"
@@ -94,6 +95,14 @@ void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const L
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     SubIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
+}
+
+void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+    XorIntEmit emitter(m_as, out.size());
+    emitter.emit(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::setcc_i(const LIRVal &out, const aasm::CondType cond_type) {

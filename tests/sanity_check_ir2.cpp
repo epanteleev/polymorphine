@@ -72,6 +72,40 @@ TEST(SanityCheck2, min_max_phi_u8) {
     ASSERT_EQ(max(UINT8_MAX, 0), UINT8_MAX);
 }
 
+static Module xor_values(const IntegerType* ty) {
+    ModuleBuilder builder;
+    {
+        FunctionPrototype prototype(ty, {ty, ty}, "xor");
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto arg0 = data.arg(0);
+        const auto arg1 = data.arg(1);
+
+        const auto icmp = data.icmp(IcmpPredicate::Lt, arg0, arg1);
+        const auto res = data.xxor(arg0, arg1);
+        const auto select = data.select(icmp, Value::i32(-1), res);
+
+        data.ret(select);
+    }
+    return builder.build();
+}
+
+template<std::integral T>
+static T xor_values(T a, T b) noexcept {
+    if (a < b) return -1;
+    return a ^ b;
+}
+
+TEST(SanityCheck2, xor_values_i32) {
+    GTEST_SKIP();
+    const auto buffer = jit_compile_and_assembly(xor_values(SignedIntegerType::i32()), true);
+    const auto xor_func = buffer.code_start_as<std::int32_t(std::int32_t, std::int32_t)>("xor").value();
+
+    ASSERT_EQ(xor_func(10, 10), xor_values(10, 10));
+    ASSERT_EQ(xor_func(10, 20), xor_values(10, 20));
+    ASSERT_EQ(xor_func(-10, -20), xor_values(-10, -20));
+    ASSERT_EQ(xor_func(0, 0), xor_values(0, 0));
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

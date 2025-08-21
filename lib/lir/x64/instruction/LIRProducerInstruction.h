@@ -41,6 +41,10 @@ public:
         return create(LIRProdInstKind::Sub, lhs.size(), lhs, rhs);
     }
 
+    static std::unique_ptr<LIRProducerInstruction> xxor(const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Xor, lhs.size(), lhs, rhs);
+    }
+
     static std::unique_ptr<LIRProducerInstruction> gen(const std::uint8_t size) {
         auto gen = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Gen, std::vector<LIROperand>{});
         gen->add_def(LIRVal::reg(size, 0, gen.get()));

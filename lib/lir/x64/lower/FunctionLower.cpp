@@ -187,6 +187,11 @@ void FunctionLower::accept(Binary *inst) {
             memorize(inst, sub->def(0));
             break;
         }
+        case BinaryOp::BitwiseXor: {
+            const auto xxor = m_bb->ins(LIRProducerInstruction::xxor(lhs, rhs));
+            memorize(inst, xxor->def(0));
+            break;
+        }
         default: die("Unsupported binary operation: {}", static_cast<int>(inst->op()));
     }
 }

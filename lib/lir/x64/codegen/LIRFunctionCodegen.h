@@ -59,9 +59,7 @@ private:
 
     }
 
-    void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
-
-    }
+    void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
 
     void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
 

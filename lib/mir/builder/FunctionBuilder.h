@@ -50,6 +50,11 @@ public:
     }
 
     [[nodiscard]]
+    Value xxor(const Value& lhs, const Value& rhs) const {
+        return m_bb->ins(Binary::xxor(lhs, rhs));
+    }
+
+    [[nodiscard]]
     Value icmp(const IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
         return m_bb->ins(IcmpInstruction::icmp(predicate, lhs, rhs));
     }

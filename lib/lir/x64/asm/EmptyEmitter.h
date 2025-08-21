@@ -54,6 +54,12 @@ public:
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
     void cmp(const std::uint8_t, const Op&, const aasm::GPReg) {}
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
+    void xxor(const std::uint8_t, const Op&, const aasm::GPReg) {}
+
+    void xxor(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
+
     void call(const aasm::Symbol*) { }
     void call(const aasm::Address&) { }
 

@@ -50,7 +50,14 @@ private:
     }
 
     void emit(aasm::GPReg out, std::int32_t in1, aasm::GPReg in2) override {
-        unimplemented();
+        if (out == in2) {
+            m_as.copy(m_size, in1, m_temporal_regs.gp_temp1());
+            m_as.cmov(m_size, m_cond_type, m_temporal_regs.gp_temp1(), out);
+            return;
+        }
+
+        m_as.copy(m_size, in1, out);
+        m_as.cmov(m_size, aasm::invert(m_cond_type), in2, out);
     }
 
     void emit(const aasm::GPReg out, const std::int32_t in1, const std::int32_t in2) override {
