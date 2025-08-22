@@ -107,7 +107,20 @@ void FunctionLower::traverse_instructions() {
     for (const auto &bb: m_dom_ordering) {
         m_bb = m_bb_mapping.at(bb);
         for (auto &inst: bb->instructions()) {
-            inst.visit(*this);
+            if (inst.isa(load()) || inst.isa(any_terminate())) {
+                inst.visit(*this);
+                continue;
+            }
+
+            const auto value_inst = dynamic_cast<ValueInstruction*>(&inst);
+            if (value_inst == nullptr || value_inst->users().size() > 1) {
+                // Just handle this instruction
+                inst.visit(*this);
+                continue;
+            }
+
+            // Put the instruction into the set. It will be processed later on demand before its user.
+            m_late_schedule_instructions.emplace(value_inst);
         }
     }
 }
@@ -152,7 +165,17 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         } else if constexpr (std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
             return make_constant(*val.type(), v);
 
-        } else if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, ValueInstruction *>) {
+        } else if constexpr (std::is_same_v<T, ArgumentValue *>) {
+            return m_value_mapping.at(LocalValue::from(v));
+
+        } else if constexpr (std::is_same_v<T, ValueInstruction *>) {
+            const auto lir_val_iter = m_value_mapping.find(LocalValue::from(v));
+            if (lir_val_iter != m_value_mapping.end()) {
+                return lir_val_iter->second;
+            }
+
+            assertion(m_late_schedule_instructions.contains(v), "invariant");
+            schedule_late(v);
             return m_value_mapping.at(LocalValue::from(v));
 
         } else {
@@ -202,6 +225,7 @@ void FunctionLower::accept(Branch *branch) {
 }
 
 void FunctionLower::accept(CondBranch *cond_branch) {
+    try_schedule_late(cond_branch->condition());
     const auto true_target = m_bb_mapping.at(cond_branch->on_true());
     const auto false_target = m_bb_mapping.at(cond_branch->on_false());
 
@@ -269,9 +293,9 @@ void FunctionLower::accept(Store *store) {
     const auto pointer = store->pointer();
     const auto value = store->value();
 
-    const auto pointer_vreg = get_lir_val(pointer);
     const auto value_vreg = get_lir_operand(value);
     if (pointer.isa(alloc())) {
+        const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
 
     } else if (pointer.isa(gep())) {
@@ -281,6 +305,7 @@ void FunctionLower::accept(Store *store) {
         m_bb->ins(LIRInstruction::mov_by_idx(src, idx, value_vreg));
 
     } else if (pointer.isa(argument())) {
+        const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
 
     } else {
@@ -322,6 +347,7 @@ void FunctionLower::accept(Select *select) {
     const auto& on_false = select->on_false();
     const auto on_true_lir = get_lir_operand(on_true);
     const auto on_false_lir = get_lir_operand(on_false);
+    try_schedule_late(select->condition());
 
     const auto cond_ty = cond_type(select->condition());
     if (on_true.isa(integral(1)) && on_false.isa(integral(0))) {
@@ -336,14 +362,26 @@ void FunctionLower::accept(Select *select) {
     }
 }
 
+void FunctionLower::accept(Unary *inst) {
+    switch (inst->op()) {
+        case UnaryOp::Flag2Int: {
+            const auto cond = inst->operand();
+            try_schedule_late(cond);
+            make_setcc(inst, cond_type(cond));
+            break;
+        }
+        case UnaryOp::Load: lower_load(inst); break;
+        default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
+    }
+}
+
 void FunctionLower::lower_load(const Unary *inst) {
     const auto pointer = inst->operand();
     const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 
-    const auto pointer_vreg = get_lir_val(pointer);
-
     if (pointer.isa(alloc())) {
+        const auto pointer_vreg = get_lir_val(pointer);
         const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
 
@@ -355,6 +393,7 @@ void FunctionLower::lower_load(const Unary *inst) {
         memorize(inst, load_inst->def(0));
 
     } else if (pointer.isa(argument())) {
+        const auto pointer_vreg = get_lir_val(pointer);
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
 
@@ -368,10 +407,24 @@ void FunctionLower::make_setcc(const ValueInstruction *inst, const aasm::CondTyp
     memorize(inst, setcc->def(0));
 }
 
-void FunctionLower::accept(Unary *inst) {
-    switch (inst->op()) {
-        case UnaryOp::Flag2Int: make_setcc(inst, cond_type(inst->operand())); break;
-        case UnaryOp::Load: lower_load(inst); break;
-        default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
+void FunctionLower::try_schedule_late(const Value &cond) {
+    if (!cond.is<ValueInstruction*>()) {
+        return;
     }
+
+    const auto inst = cond.get<ValueInstruction*>();
+    try_schedule_late(inst);
+}
+
+void FunctionLower::try_schedule_late(ValueInstruction *inst) {
+    if (!m_late_schedule_instructions.contains(inst)) {
+        return;
+    }
+
+    schedule_late(inst);
+}
+
+void FunctionLower::schedule_late(ValueInstruction *inst) {
+    m_late_schedule_instructions.erase(inst);
+    inst->visit(*this);
 }

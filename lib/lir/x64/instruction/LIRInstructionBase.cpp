@@ -33,7 +33,9 @@ namespace {
 
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "xor_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
+        }
 
         void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 

@@ -96,7 +96,6 @@ static T xor_values(T a, T b) noexcept {
 }
 
 TEST(SanityCheck2, xor_values_i32) {
-    GTEST_SKIP();
     const auto buffer = jit_compile_and_assembly(xor_values(SignedIntegerType::i32()), true);
     const auto xor_func = buffer.code_start_as<std::int32_t(std::int32_t, std::int32_t)>("xor").value();
 

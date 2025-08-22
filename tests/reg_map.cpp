@@ -19,7 +19,7 @@ TEST(RegMap, size) {
     reg_map.try_emplace(aasm::rbx, 84);
     ASSERT_EQ(reg_map.size(), 2);
 
-    const std::array pairs = {
+    constexpr std::array pairs = {
         std::make_pair(aasm::rax, 42),
         std::make_pair(aasm::rbx, 84)
     };
@@ -33,7 +33,7 @@ TEST(RegMap, size) {
 }
 
 TEST(RegMap, gaps) {
-    const std::array pairs = {
+    constexpr std::array pairs = {
         std::make_pair(aasm::rax, 42),
         std::make_pair(aasm::r15, 84)
     };
@@ -52,7 +52,7 @@ TEST(RegMap, gaps) {
 }
 
 TEST(RegMap, gaps1) {
-    const std::array pairs = {
+    constexpr std::array pairs = {
         std::make_pair(aasm::rdx, 42),
         std::make_pair(aasm::r14, 84)
     };
@@ -82,9 +82,9 @@ TEST(RegMap, try_emplace) {
     ASSERT_EQ(it2->first, aasm::rax);
     ASSERT_EQ(it2->second, 42); // Should not change the value
 
-    for (auto rev: std::ranges::reverse_view(reg_map)) {
-        ASSERT_EQ(rev.first, aasm::rax);
-        ASSERT_EQ(rev.second, 42);
+    for (auto [fst, snd]: std::ranges::reverse_view(reg_map)) {
+        ASSERT_EQ(fst, aasm::rax);
+        ASSERT_EQ(snd, 42);
     }
 }
 

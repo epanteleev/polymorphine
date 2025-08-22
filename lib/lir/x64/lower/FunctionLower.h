@@ -102,10 +102,13 @@ private:
     void lower_load(const Unary *inst);
     void make_setcc(const ValueInstruction *inst, aasm::CondType cond_type);
 
+    void try_schedule_late(const Value& cond);
+    void try_schedule_late(ValueInstruction *inst);
+    void schedule_late(ValueInstruction *inst);
+
     template <IsLocalValueType T>
     void memorize(const T* val, const LIRVal& lir_val) {
-        const auto local = LocalValue::from(val);
-        m_value_mapping.emplace(local, lir_val);
+        m_value_mapping.emplace(LocalValue::from(val), lir_val);
     }
 
     std::unique_ptr<LIRFuncData> m_obj_function;
@@ -115,6 +118,9 @@ private:
     LIRBlock* m_bb;
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
     LocalValueMap<LIRVal> m_value_mapping;
+    // Inserted parallel copies in the current function for late handling.
     std::unordered_set<LIRBlock*> m_parallel_copy_owners;
+    // Temporal storage for late scheduled instructions.
+    std::unordered_set<ValueInstruction*> m_late_schedule_instructions;
 };
 
