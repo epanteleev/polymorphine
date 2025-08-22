@@ -70,9 +70,14 @@ static Module memcpy_test_module() {
 
 TEST(Memcpy, basic) {
     char dst[10] = {};
-    char src[10] = {'H', 'e', 'l', 'l', 'o', '\0'};
-    const auto func = jit_compile_and_assembly(memcpy_test_module(), true);
-    const auto memcpy_test = func.code_start_as<void(void*, void*, std::size_t)>("memcpy_test").value();
+    const char* src = "Hello";
+
+    std::unordered_map<std::string, std::size_t> asm_size {
+        {"memcpy_test", 27},
+    };
+
+    const auto func = jit_compile_and_assembly(memcpy_test_module(), asm_size, true);
+    const auto memcpy_test = func.code_start_as<void(void*, const void*, std::size_t)>("memcpy_test").value();
     memcpy_test(dst, src, 6);
     ASSERT_STREQ(dst, "Hello");
 }
