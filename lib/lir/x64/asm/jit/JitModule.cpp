@@ -65,9 +65,9 @@ private:
         for (const auto& relocation : relocation_table | std::views::values) {
             for (const auto& reloc : relocation) {
                 switch (reloc.type()) {
-                    case RelType::R_X86_64_NONE: break;
-                    case RelType::R_X86_64_PC32: try_patch_relocation(reloc); break;
-                    case RelType::R_X86_64_PLT32: try_plt_patch_relocation(reloc); break;
+                    case RelType::X86_64_NONE: break;
+                    case RelType::X86_64_PC32: try_patch_relocation(reloc); break;
+                    case RelType::X86_64_PLT32: try_plt_patch_relocation(reloc); break;
                     default: die("Unsupported relocation type: {}", static_cast<std::uint8_t>(reloc.type()));
                 }
             }

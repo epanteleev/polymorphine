@@ -15,8 +15,8 @@ namespace aasm {
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
             buffer.emit32(INT32_MAX);
             switch (m_symbol->linkage()) {
-                case Linkage::EXTERNAL: return Relocation(RelType::R_X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
-                case Linkage::INTERNAL: return Relocation(RelType::R_X86_64_PC32, buffer.size(), m_displacement, m_symbol);
+                case Linkage::EXTERNAL: return Relocation(RelType::X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
+                case Linkage::INTERNAL: return Relocation(RelType::X86_64_PC32, buffer.size(), m_displacement, m_symbol);
                 default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(m_symbol->linkage()));
             }
         }

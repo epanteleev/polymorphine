@@ -20,7 +20,7 @@ namespace aasm::details {
                     static constexpr std::uint8_t CALL = 0xE8;
                     buffer.emit8(CALL);
                     buffer.emit32(INT32_MAX);
-                    return Relocation(RelType::R_X86_64_PC32, buffer.size(), 0, m_name);
+                    return Relocation(RelType::X86_64_PC32, buffer.size(), 0, m_name);
                 }
                 default: die("Unsupported linkage type for call: {}", static_cast<std::uint8_t>(m_name->linkage()));
             }

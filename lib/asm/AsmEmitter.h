@@ -4,7 +4,7 @@
 
 #include "reg/Register.h"
 #include "address/Address.h"
-#include "AsmBuffer.h"
+#include "asm/AsmBuffer.h"
 #include "instruction/CPUInstruction.h"
 #include "symbol/Symbol.h"
 

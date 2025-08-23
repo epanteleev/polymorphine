@@ -4,11 +4,11 @@
 #include "symbol/Symbol.h"
 
 enum class RelType: std::uint8_t {
-    R_X86_64_NONE = 0,
-    R_X86_64_64 = 1,                /* word64 S + A. */
-    R_X86_64_PC32 = 2,              /* word32 S + A - P */
-    R_X86_64_PLT32 = 4,             /* word32 L + A - P */
-    R_X86_64_GOTPCREL = 9           /* word32 G + GOT + A - P */
+    X86_64_NONE = 0,
+    X86_64_64 = 1,                /* word64 S + A. */
+    X86_64_PC32 = 2,              /* word32 S + A - P */
+    X86_64_PLT32 = 4,             /* word32 L + A - P */
+    X86_64_GOTPCREL = 9           /* word32 G + GOT + A - P */
 };
 
 namespace aasm {
