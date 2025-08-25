@@ -1,6 +1,9 @@
 #pragma once
 
 namespace aasm::details {
+    static constexpr std::array<std::uint8_t, 2> MOVZX_RR = {0x0F, 0xB7};
+    static constexpr std::array<std::uint8_t, 2> MOVZX_RR_8 = {0x0F, 0xB6};
+
     class MovzxRR final {
     public:
         explicit constexpr MovzxRR(const std::uint8_t from_size, const std::uint8_t to_size, const GPReg& src, const GPReg& dest) noexcept:
@@ -14,33 +17,14 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t MOVZX_RR[] = {0x0F, 0xB7}; // for 8-bit and 16-bit source
-            static constexpr std::uint8_t MOVZX_RR_8[] = {0x0F, 0xB6}; // for 8-bit source
-
-            emit_op_prologue(buffer, m_to_size, m_src, m_dest);
-            switch (m_from_size) {
-                case 1: {
-                    switch (m_to_size) {
-                        case 2: [[fallthrough]];
-                        case 4: [[fallthrough]];
-                        case 8: buffer.emit8(MOVZX_RR_8[0]); buffer.emit8(MOVZX_RR_8[1]); break;
-                        default: die("Invalid size for instruction: {}", m_to_size);
-                    }
-                    break;
-                }
-                case 2: {
-                    switch (m_to_size) {
-                        case 2: [[fallthrough]];
-                        case 4: [[fallthrough]];
-                        case 8: buffer.emit8(MOVZX_RR[0]); buffer.emit8(MOVZX_RR[1]); break;
-                        default: die("Invalid size for instruction: {}", m_to_size);
-                    }
-                    break;
-                }
-                default: die("Invalid size for instruction: {}", m_from_size);
+            Encoder enc(buffer, MOVZX_RR_8, MOVZX_RR);
+            if (m_from_size != 1 && m_from_size != 2) {
+                die("Invalid size for instruction: {}", m_from_size);
             }
-            buffer.emit8(0xC0 | reg3(m_dest) << 3 | reg3(m_src));
+
+            return enc.encode_MR(m_to_size, m_from_size, m_dest, m_src);
         }
+
     private:
         std::uint8_t m_from_size;
         std::uint8_t m_to_size;
@@ -68,31 +52,12 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t MOVZX_RR[] = {0x0F, 0xB7};
-            static constexpr std::uint8_t MOVZX_RR_8[] = {0x0F, 0xB6};
-            emit_op_prologue(buffer, m_to_size, m_dest, m_src);
-            switch (m_from_size) {
-                case 1: {
-                    switch (m_to_size) {
-                        case 2: [[fallthrough]];
-                        case 4: [[fallthrough]];
-                        case 8: buffer.emit8(MOVZX_RR_8[0]); buffer.emit8(MOVZX_RR_8[1]); break;
-                        default: die("Invalid size for instruction: {}", m_to_size);
-                    }
-                    break;
-                }
-                case 2: {
-                    switch (m_to_size) {
-                        case 2: [[fallthrough]];
-                        case 4: [[fallthrough]];
-                        case 8: buffer.emit8(MOVZX_RR[0]); buffer.emit8(MOVZX_RR[1]); break;
-                        default: die("Invalid size for instruction: {}", m_to_size);
-                    }
-                    break;
-                }
-                default: die("Invalid size for instruction: {}", m_from_size);
+            Encoder enc(buffer, MOVZX_RR_8, MOVZX_RR);
+            if (m_from_size != 1 && m_from_size != 2) {
+                die("Invalid size for instruction: {}", m_from_size);
             }
-            return m_src.encode(buffer, reg3(m_dest));
+
+            return enc.encode_RM(m_to_size, m_from_size, m_src, m_dest);
         }
 
     private:

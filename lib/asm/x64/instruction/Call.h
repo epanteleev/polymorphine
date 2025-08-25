@@ -13,8 +13,9 @@ namespace aasm::details {
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             switch (m_name->linkage()) {
                 case Linkage::EXTERNAL: {
-                    static constexpr std::uint8_t CALL = 0xFF;
-                    return details::encode_M<CALL, CALL, 2>(buffer, 8, Address(m_name));
+                    static constexpr std::array<std::uint8_t, 1> CALL = {0xFF};
+                    Encoder enc(buffer, CALL, CALL);
+                    return enc.encode_M(2, 8, Address(m_name));
                 }
                 case Linkage::INTERNAL: {
                     static constexpr std::uint8_t CALL = 0xE8;
@@ -49,8 +50,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CALL = 0xFF;
-            return details::encode_M<CALL, CALL, 2>(buffer, 8, m_addr);
+            static constexpr std::array<std::uint8_t, 1> CALL = {0xFF};
+            Encoder enc(buffer, CALL, CALL);
+            return enc.encode_M(2, 8, m_addr);
         }
 
     private:

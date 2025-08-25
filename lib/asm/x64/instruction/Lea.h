@@ -11,8 +11,9 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            constexpr auto LEA = 0x8D;
-            return encode_RM<LEA, LEA>(buffer, 8, m_src, m_dst);
+            constexpr std::array<std::uint8_t, 1> LEA = {0x8D};
+            Encoder enc(buffer, LEA, LEA);
+            return enc.encode_RM(8, m_src, m_dst);
         }
 
     private:

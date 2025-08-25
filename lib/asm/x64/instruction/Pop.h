@@ -10,10 +10,11 @@ namespace aasm::details {
 
         template<CodeBuffer C>
         constexpr void emit(C &c) const {
-            static constexpr std::uint8_t POP_R = 0x58;
+            static constexpr std::array<std::uint8_t, 1> POP_R = {0x58};
+            Encoder enc(c, POP_R, POP_R);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: details::encode_O<POP_R>(c, m_size, m_reg); break;
+                case 2: enc.encode_O(m_size, m_reg); break;
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }
@@ -38,10 +39,11 @@ namespace aasm::details {
         template<CodeBuffer C>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(C &c) const {
-            static constexpr std::uint8_t POP_M = 0x8F;
+            static constexpr std::array<std::uint8_t, 1> POP_M = {0x8F};
+            Encoder enc(c, POP_M, POP_M);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: return details::encode_M<POP_M, POP_M, 0>(c, m_size, m_addr);
+                case 2: return enc.encode_M(0, m_size, m_addr);
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }

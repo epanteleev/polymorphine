@@ -10,10 +10,11 @@ namespace aasm::details {
 
         template <CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t PUSH_R = 0x50;
+            static constexpr std::array<std::uint8_t, 1> PUSH_R = {0x50};
+            Encoder enc(buffer, PUSH_R, PUSH_R);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: details::encode_O<PUSH_R>(buffer, m_size, m_reg); break;
+                case 2: enc.encode_O(m_size, m_reg); break;
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }
@@ -38,10 +39,11 @@ namespace aasm::details {
         template<CodeBuffer buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(buffer& c) const {
-            static constexpr std::uint8_t PUSH_M = 0xFF;
+            static constexpr std::array<std::uint8_t, 1> PUSH_M = {0xFF};
+            Encoder enc(c, PUSH_M, PUSH_M);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: return details::encode_M<PUSH_M, PUSH_M, 6>(c, m_size, m_addr); break;
+                case 2: return enc.encode_M(6, m_size, m_addr);
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }
@@ -64,9 +66,15 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t PUSH_IMM = 0x68;
-            static constexpr std::uint8_t PUSH_IMM_8 = 0x6A;
-            details::encode_I<PUSH_IMM_8, PUSH_IMM>(buffer, m_size, m_imm);
+            static constexpr std::array<std::uint8_t, 1> PUSH_IMM = {0x68};
+            static constexpr std::array<std::uint8_t, 1> PUSH_IMM_8 = {0x6A};
+            Encoder enc(buffer, PUSH_IMM_8, PUSH_IMM);
+            switch (m_size) {
+                case 1: [[fallthrough]];
+                case 2: [[fallthrough]];
+                case 4: enc.encode_I(m_size, m_imm); break;
+                default: die("Invalid size for push instruction: {}", m_size);
+            }
         }
 
     private:

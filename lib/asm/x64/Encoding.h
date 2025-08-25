@@ -92,174 +92,168 @@ namespace aasm::details {
         }
     }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr std::optional<Relocation> encode_M(Buffer& buffer, const std::uint8_t size, const Address& addr) {
-        if (size == 2) {
-            add_word_op_size(buffer);
-        }
-        auto rex = constants::REX | X(addr);
-        if (const auto base = addr.base(); base.has_value()) {
-            rex |= B(base.value());
-        }
-        if (rex != constants::REX) {
-            buffer.emit8(rex);
+    template<std::size_t N, CodeBuffer Buffer>
+    requires (N > 0)
+    class Encoder final {
+    public:
+        explicit constexpr Encoder(Buffer& buffer, const std::array<std::uint8_t, N>& b_opcodes, const std::array<std::uint8_t, N>& opcodes) noexcept:
+            m_buffer(buffer),
+            m_b_opcodes(b_opcodes),
+            m_opcodes(opcodes) {}
+
+        constexpr void encode_I(const std::uint8_t size, const std::int32_t imm) const {
+            if (size == 2) {
+                add_word_op_size(m_buffer);
+            }
+            emit_opcodes(size);
+            switch (size) {
+                case 1: [[fallthrough]];
+                case 2: [[fallthrough]];
+                case 4: emit_imm_below_i32(size, imm); break;
+                default: die("Invalid size for instruction: {}", size);
+            }
         }
 
-        switch (size) {
-            case 1: buffer.emit8(B_CODING); break;
-            case 2: [[fallthrough]];
-            case 4: [[fallthrough]];
-            case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for instruction: {}", size);
-        }
-        return addr.encode(buffer, MODRM);
-    }
+        constexpr void encode_O(const std::uint8_t size, const GPReg reg) {
+            if (size == 2) {
+                add_word_op_size(m_buffer);
+            }
+            if (const auto rex = constants::REX | B(reg); rex != constants::REX) {
+                m_buffer.emit8(rex);
+            }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_I(Buffer& buffer, const std::uint8_t size, const std::int32_t imm) {
-        switch (size) {
-            case 1: {
-                buffer.emit8(B_CODING);
-                buffer.emit8(checked_cast<std::int8_t>(imm));
-                break;
-            }
-            case 2: {
-                add_word_op_size(buffer);
-                buffer.emit8(CODING);
-                buffer.emit16(checked_cast<std::int16_t>(imm));
-                break;
-            }
-            case 4: {
-                buffer.emit8(CODING);
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            default: die("Invalid size for instruction: {}", size);
-        }
-    }
-
-    template<std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_O(Buffer& buffer, const std::uint8_t size, const GPReg reg) {
-        if (size == 2) {
-            add_word_op_size(buffer);
-        }
-        if (const auto rex = constants::REX | B(reg); rex != constants::REX) {
-            buffer.emit8(rex);
+            assertion(m_opcodes.size() == 1, "Only single opcode supported for encode_O");
+            m_buffer.emit8(m_opcodes[0] + reg3(reg));
         }
 
-        buffer.emit8(CODING + reg3(reg));
-    }
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_M(const std::uint8_t modrm, const std::uint8_t size, const Address& addr) {
+            if (size == 2) {
+                add_word_op_size(m_buffer);
+            }
+            auto rex = constants::REX | X(addr);
+            if (const auto base = addr.base(); base.has_value()) {
+                rex |= B(base.value());
+            }
+            if (rex != constants::REX) {
+                m_buffer.emit8(rex);
+            }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr std::optional<Relocation> encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const Address& dest) {
-        emit_op_prologue(buffer, size, src, dest);
-        switch (size) {
-            case 1: buffer.emit8(B_CODING); break;
-            case 2: [[fallthrough]];
-            case 4: [[fallthrough]];
-            case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for instruction: {}", size);
+            emit_opcodes(size);
+            return addr.encode(m_buffer, modrm);
         }
-        return dest.encode(buffer, reg3(src));
-    }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr std::optional<Relocation> encode_RM(Buffer& buffer, const std::uint8_t size, const Address& src, const GPReg dest) {
-        return encode_MR<B_CODING, CODING>(buffer, size, dest, src);
-    }
-
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_MR(Buffer& buffer, const std::uint8_t size, const GPReg src, const GPReg dest) {
-        emit_op_prologue(buffer, size, src, dest);
-        switch (size) {
-            case 1: buffer.emit8(B_CODING); break;
-            case 2: [[fallthrough]];
-            case 4: [[fallthrough]];
-            case 8: buffer.emit8(CODING); break;
-            default: die("Invalid size for instruction: {}", size);
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_MI32(std::uint8_t modrm, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
+            emit_op_prologue(m_buffer, size, dst);
+            emit_opcodes(size);
+            const auto reloc = dst.encode(m_buffer, modrm);
+            emit_imm_below_i32(size, imm);
+            return reloc;
         }
-        buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
-    }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr void encode_RI32(Buffer &buffer, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
-        emit_op_prologue(buffer, size, dst);
-        switch (size) {
-            case 1: {
-                buffer.emit8(B_CODING);
-                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
-                buffer.emit8(static_cast<std::int8_t>(imm));
-                break;
+        constexpr void encode_RI64(const std::uint8_t size, const std::int64_t imm, const GPReg dst) {
+            emit_op_prologue(m_buffer, size, dst);
+            assertion(m_opcodes.size() == 1 && m_b_opcodes.size() == 1, "Only single opcode supported for encode_RI64");
+            switch (size) {
+                case 1: {
+                    m_buffer.emit8(m_b_opcodes[0] | reg3(dst));
+                    m_buffer.emit8(checked_cast<std::int8_t>(imm));
+                    break;
+                }
+                case 2: {
+                    m_buffer.emit8(m_opcodes[0] | reg3(dst));
+                    m_buffer.emit16(checked_cast<std::int16_t>(imm));
+                    break;
+                }
+                case 4: {
+                    m_buffer.emit8(m_opcodes[0] | reg3(dst));
+                    m_buffer.emit32(checked_cast<std::int32_t>(imm));
+                    break;
+                }
+                case 8: {
+                    m_buffer.emit8(m_opcodes[0] | reg3(dst));
+                    m_buffer.emit64(imm);
+                    break;
+                }
+                default: die("Invalid size for instruction: {}", size);
             }
-            case 2: {
-                buffer.emit8(CODING);
-                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
-                buffer.emit16(static_cast<std::int16_t>(imm));
-                break;
-            }
-            case 4: [[fallthrough]];
-            case 8: {
-                buffer.emit8(CODING);
-                buffer.emit8(0xC0 | MODRM << 3 | reg3(dst));
-                buffer.emit32(static_cast<std::int32_t>(imm));
-                break;
-            }
-            default: die("Invalid size for instruction: {}", size);
         }
-    }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, CodeBuffer Buffer>
-    constexpr void encode_RI64(Buffer& buffer, const std::uint8_t size, const std::int64_t imm, const GPReg dst) {
-        emit_op_prologue(buffer, size, dst);
-        switch (size) {
-            case 1: {
-                buffer.emit8(B_CODING | reg3(dst));
-                buffer.emit8(checked_cast<std::int8_t>(imm));
-                break;
-            }
-            case 2: {
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit16(checked_cast<std::int16_t>(imm));
-                break;
-            }
-            case 4: {
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit32(checked_cast<std::int32_t>(imm));
-                break;
-            }
-            case 8: {
-                buffer.emit8(CODING | reg3(dst));
-                buffer.emit64(imm);
-                break;
-            }
-            default: die("Invalid size for instruction: {}", size);
+        constexpr void encode_RI32(std::uint8_t modrm, const std::uint8_t size, const std::int32_t imm, const GPReg dst) {
+            emit_op_prologue(m_buffer, size, dst);
+            emit_opcodes(size);
+            m_buffer.emit8(0xC0 | modrm << 3 | reg3(dst));
+            emit_imm_below_i32(size, imm);
         }
-    }
 
-    template<std::uint8_t B_CODING, std::uint8_t CODING, std::uint8_t MODRM, CodeBuffer Buffer>
-    constexpr std::optional<Relocation> encode_MI32(Buffer& buffer, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
-        emit_op_prologue(buffer, size, dst);
-        switch (size) {
-            case 1: {
-                buffer.emit8(B_CODING);
-                const auto reloc = dst.encode(buffer, MODRM);
-                buffer.emit8(checked_cast<std::int8_t>(imm));
-                return reloc;
-            }
-            case 2: {
-                buffer.emit8(CODING);
-                const auto reloc = dst.encode(buffer, MODRM);
-                buffer.emit16(checked_cast<std::int16_t>(imm));
-                return reloc;
-            }
-            case 4: [[fallthrough]];
-            case 8: {
-                buffer.emit8(CODING);
-                const auto reloc = dst.encode(buffer, MODRM);
-                buffer.emit32(imm);
-                return reloc;
-            }
-            default: die("Invalid size for instruction: {}", size);
+        constexpr void encode_MR(const std::uint8_t size, const GPReg src, const GPReg dest) {
+            emit_op_prologue(m_buffer, size, src, dest);
+            emit_opcodes(size);
+            m_buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
         }
-    }
+
+        constexpr void encode_MR(const std::uint8_t to_size, const std::uint8_t from_size, const GPReg src, const GPReg dest) {
+            emit_op_prologue(m_buffer, to_size, src, dest);
+            emit_opcodes(from_size);
+            m_buffer.emit8(0xC0 | reg3(src) << 3 | reg3(dest));
+        }
+
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_MR(const std::uint8_t size, const GPReg src, const Address& dest) {
+            emit_op_prologue(m_buffer, size, src, dest);
+            emit_opcodes(size);
+            return dest.encode(m_buffer, reg3(src));
+        }
+
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_RM(const std::uint8_t size, const Address& src, const GPReg dest) {
+            return encode_MR(size, dest, src);
+        }
+
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_MR(const std::uint8_t to_size, const std::uint8_t from_size, const GPReg src, const Address& dest) {
+            if (from_size == to_size) {
+                die("From and to size must be different for extension");
+            }
+
+            emit_op_prologue(m_buffer, to_size, src, dest);
+            emit_opcodes(from_size);
+            return dest.encode(m_buffer, reg3(src));
+        }
+
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_RM(const std::uint8_t to_size, const std::uint8_t from_size, const Address& src, const GPReg dest) {
+            return encode_MR(to_size, from_size, dest, src);
+        }
+
+    private:
+        constexpr void emit_opcodes(const std::array<std::uint8_t, N>& ops) const {
+            for (const auto opcode : ops) m_buffer.emit8(opcode);
+        }
+
+        constexpr void emit_opcodes(const std::uint8_t size) const {
+            switch (size) {
+                case 1: emit_opcodes(m_b_opcodes); break;
+                case 2: [[fallthrough]];
+                case 4: [[fallthrough]];
+                case 8: emit_opcodes(m_opcodes); break;
+                default: die("Invalid size for instruction: {}", size);
+            }
+        }
+
+        constexpr void emit_imm_below_i32(const std::uint8_t size, const std::int32_t imm) const {
+            switch (size) {
+                case 1: m_buffer.emit8(static_cast<std::int8_t>(imm)); break;
+                case 2: m_buffer.emit16(static_cast<std::int16_t>(imm)); break;
+                case 4: [[fallthrough]];
+                case 8: m_buffer.emit32(static_cast<std::int32_t>(imm)); break;
+                default: die("Invalid size for instruction: {}", size);
+            }
+        }
+
+        Buffer& m_buffer;
+        const std::array<std::uint8_t, N>& m_b_opcodes;
+        const std::array<std::uint8_t, N>& m_opcodes;
+    };
 }

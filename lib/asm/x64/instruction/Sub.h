@@ -12,9 +12,10 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t SUB_RR = 0x29;
-            static constexpr std::uint8_t SUB_RR_8 = 0x28;
-            encode_MR<SUB_RR_8, SUB_RR>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> SUB_RR = {0x29};
+            static constexpr std::array<std::uint8_t, 1> SUB_RR_8 = {0x28};
+            Encoder enc(buffer, SUB_RR_8, SUB_RR);
+            enc.encode_MR(m_size, m_src, m_dst);
         }
 
     private:
@@ -40,9 +41,10 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t SUB_RI = 0x81;
-            static constexpr std::uint8_t SUB_RI_8 = 0x80;
-            encode_RI32<SUB_RI_8, SUB_RI, 5>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> SUB_RI = {0x81};
+            static constexpr std::array<std::uint8_t, 1> SUB_RI_8 = {0x80};
+            Encoder enc(buffer, SUB_RI_8, SUB_RI);
+            enc.encode_RI32(5, m_size, m_src, m_dst);
         }
 
     private:
@@ -68,9 +70,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t SUB_MI = 0x81;
-            static constexpr std::uint8_t SUB_MI_8 = 0x80;
-            return encode_MI32<SUB_MI_8, SUB_MI, 5>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> SUB_MI = {0x81};
+            static constexpr std::array<std::uint8_t, 1> SUB_MI_8 = {0x80};
+            Encoder enc(buffer, SUB_MI_8, SUB_MI);
+            return enc.encode_MI32(5, m_size, m_src, m_dst);
         }
 
     private:
@@ -96,9 +99,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t SUB_RM = 0x2B;
-            static constexpr std::uint8_t SUB_RM_8 = 0x2A;
-            return encode_RM<SUB_RM_8, SUB_RM>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> SUB_RM = {0x2B};
+            static constexpr std::array<std::uint8_t, 1> SUB_RM_8 = {0x2A};
+            Encoder enc(buffer, SUB_RM_8, SUB_RM);
+            return enc.encode_RM(m_size, m_src, m_dst);
         }
 
     private:
@@ -124,9 +128,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t SUB_MR = 0x29;
-            static constexpr std::uint8_t SUB_MR_8 = 0x28;
-            return encode_MR<SUB_MR_8, SUB_MR>(buffer, m_size, m_src, m_dest);
+            static constexpr std::array<std::uint8_t, 1> SUB_MR = {0x29};
+            static constexpr std::array<std::uint8_t, 1> SUB_MR_8 = {0x28};
+            Encoder enc(buffer, SUB_MR_8, SUB_MR);
+            return enc.encode_MR(m_size, m_src, m_dest);
         }
 
     private:

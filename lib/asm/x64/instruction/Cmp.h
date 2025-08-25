@@ -10,9 +10,10 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CMP_RR = 0x39;
-            static constexpr std::uint8_t CMP_RR_8 = 0x38;
-            encode_MR<CMP_RR_8, CMP_RR>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> CMP_RR = {0x39};
+            static constexpr std::array<std::uint8_t, 1> CMP_RR_8 = {0x38};
+            Encoder enc(buffer, CMP_RR_8, CMP_RR);
+            enc.encode_MR(m_size, m_src, m_dst);
         }
 
     private:
@@ -38,13 +39,13 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            encode_RI32<CMP_RI_8, CMP_RI, 7>(buffer, m_size, m_imm, m_dst);
+            static constexpr std::array<std::uint8_t, 1> CMP_RI = {0x81};
+            static constexpr std::array<std::uint8_t, 1> CMP_RI_8 = {0x80};
+            Encoder enc(buffer, CMP_RI_8, CMP_RI);
+            enc.encode_RI32(7, m_size, m_imm, m_dst);
         }
 
     private:
-        static constexpr std::uint8_t CMP_RI = 0x81;
-        static constexpr std::uint8_t CMP_RI_8 = 0x80;
-
         std::int32_t m_imm;
         std::uint8_t m_size;
         GPReg m_dst;
@@ -67,9 +68,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CMP_MR = 0x3B;
-            static constexpr std::uint8_t CMP_MR_8 = 0x3A;
-            return encode_RM<CMP_MR_8, CMP_MR>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> CMP_MR = {0x3B};
+            static constexpr std::array<std::uint8_t, 1> CMP_MR_8 = {0x3A};
+            Encoder enc(buffer, CMP_MR_8, CMP_MR);
+            return enc.encode_RM(m_size, m_src, m_dst);
         }
 
     private:
@@ -95,9 +97,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CMP_MR = 0x3B;
-            static constexpr std::uint8_t CMP_MR_8 = 0x3A;
-            return encode_MR<CMP_MR_8, CMP_MR>(buffer, m_size, m_src, m_dst);
+            static constexpr std::array<std::uint8_t, 1> CMP_MR = {0x3B};
+            static constexpr std::array<std::uint8_t, 1> CMP_MR_8 = {0x3A};
+            Encoder enc(buffer, CMP_MR_8, CMP_MR);
+            return enc.encode_MR(m_size, m_src, m_dst);
         }
 
     private:
@@ -122,9 +125,10 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CMP_MI = 0x81;
-            static constexpr std::uint8_t CMP_MI_8 = 0x80;
-            return encode_MI32<CMP_MI_8, CMP_MI, 7>(buffer, m_size, m_imm, m_second);
+            static constexpr std::array<std::uint8_t, 1> CMP_MI = {0x81};
+            static constexpr std::array<std::uint8_t, 1> CMP_MI_8 = {0x80};
+            Encoder enc(buffer, CMP_MI_8, CMP_MI);
+            return enc.encode_MI32(7, m_size, m_imm, m_second);
         }
 
     private:
