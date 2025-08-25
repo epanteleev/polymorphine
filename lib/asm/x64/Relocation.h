@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "symbol/Symbol.h"
+#include "asm/symbol/Symbol.h"
 
 enum class RelType: std::uint8_t {
     X86_64_NONE = 0,

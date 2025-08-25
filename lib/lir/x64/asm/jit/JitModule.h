@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+#include <sys/mman.h>
 #include <cstdint>
 #include <expected>
 #include <memory>

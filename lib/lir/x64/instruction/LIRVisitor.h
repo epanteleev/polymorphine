@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lir/x64/lir_frwd.h"
-#include "asm/asm_frwd.h"
+#include "../../../asm/x64/asm_frwd.h"
 
 class LIRVisitor {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "asm/asm_frwd.h"
+#include "../../../../asm/x64/asm_frwd.h"
 #include "lir/x64/asm/GPOp.h"
 
 class GPUnaryVisitor {

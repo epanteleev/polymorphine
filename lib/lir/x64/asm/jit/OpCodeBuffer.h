@@ -3,13 +3,12 @@
 #include <cstring>
 
 #include "JitCodeBlob.h"
-#include "lir/x64/asm/AsmModule.h"
 
-class JitAssembler final {
-    explicit JitAssembler(std::span<std::uint8_t> buffer) noexcept: m_buffer(buffer) {}
-
-    friend class RelocResolver;
+class OpCodeBuffer final {
 public:
+    explicit OpCodeBuffer(const std::span<std::uint8_t> buffer) noexcept:
+        m_buffer(buffer) {}
+
     void emit8(const std::uint8_t opcode) {
         m_buffer[m_size++] = opcode;
     }

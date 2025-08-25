@@ -1,14 +1,10 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <memory>
-#include <string>
 #include <unordered_map>
-#include <sys/mman.h>
 
-#include "asm/asm_frwd.h"
 #include "asm/symbol/Symbol.h"
 #include "asm/symbol/SymbolTable.h"
 #include "utility/Error.h"

@@ -2,7 +2,7 @@
 
 #include <bitset>
 
-#include "asm/asm_frwd.h"
+#include "asm/x64/asm_frwd.h"
 #include "Register.h"
 #include "utility/BitUtils.h"
 

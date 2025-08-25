@@ -2,7 +2,7 @@
 #include <ranges>
 #include <gtest/gtest.h>
 
-#include "asm/reg/RegSet.h"
+#include "asm/x64/reg/RegSet.h"
 #include "utility/Error.h"
 
 TEST(RegSet, empty) {

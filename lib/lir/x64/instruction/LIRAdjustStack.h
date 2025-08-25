@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LIRInstructionBase.h"
-#include "asm/reg/RegSet.h"
+#include "asm/x64/reg/RegSet.h"
 
 enum class LIRAdjustKind: std::uint8_t {
     UpStack,

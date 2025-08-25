@@ -1,6 +1,6 @@
 #pragma once
 
-#include "asm/asm.h"
+#include "../../../asm/x64/asm.h"
 
 class EmptyEmitter final {
 public:

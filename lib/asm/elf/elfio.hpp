@@ -33,17 +33,18 @@
 namespace elf {
     class elfio final {
     public:
-        explicit elfio() noexcept : sections(this), segments(this), header(create_header()) {
+        explicit elfio() noexcept:
+            sections(this),
+            segments(this),
+            header(create_header()) {
             create_mandatory_sections();
         }
-
-        ~elfio() = default;
 
         //------------------------------------------------------------------------------
         //! \brief Save the ELF file to a file
         //! \param file_name The name of the file to save to
         //! \return True if successful, false otherwise
-        bool save(const std::string_view &file_name) {
+        bool save(const std::string_view file_name) {
             std::ofstream stream;
             stream.open(file_name.data(), std::ios::out | std::ios::binary);
             if (!stream) {
@@ -69,11 +70,7 @@ namespace elf {
             header->set_sections_offset(0);
 
             // Layout the first section right after the segment table
-            current_file_pos =
-                    header->get_header_size() +
-                    header->get_segment_entry_size() *
-                    static_cast<Elf_Xword>(header->get_segments_num());
-
+            current_file_pos = header->get_header_size() + header->get_segment_entry_size() * static_cast<Elf_Xword>(header->get_segments_num());
             calc_segment_alignment();
 
             bool is_still_good = layout_segments_and_their_sections();
@@ -110,9 +107,9 @@ namespace elf {
         [[nodiscard]]
         static Elf_Xword get_default_entry_size(const Elf_Word section_type) noexcept {
             switch (section_type) {
-                case SHT_RELA: return sizeof(Elf64_Rela);
-                case SHT_REL: return sizeof(Elf64_Rel);
-                case SHT_SYMTAB: return sizeof(Elf64_Sym);
+                case SHT_RELA:    return sizeof(Elf64_Rela);
+                case SHT_REL:     return sizeof(Elf64_Rel);
+                case SHT_SYMTAB:  return sizeof(Elf64_Sym);
                 case SHT_DYNAMIC: return sizeof(Elf64_Dyn);
                 default: return 0;
             }
@@ -159,7 +156,7 @@ namespace elf {
         //------------------------------------------------------------------------------
         //! \brief Create a new section
         //! \return Pointer to the created section
-        section *create_section(const std::string &name) {
+        section *create_section(const std::string_view name) {
             sections_.emplace_back(new(std::nothrow) section(name));
             section *new_section = sections_.back().get();
             new_section->set_index(static_cast<Elf_Half>(sections_.size() - 1));
@@ -278,29 +275,25 @@ namespace elf {
             return found;
         }
 
-        //------------------------------------------------------------------------------
-        //! \brief Get ordered segments
-        //! \return Vector of ordered segments
         [[nodiscard]]
         std::vector<segment *> get_ordered_segments() const {
-            std::vector<segment *> res;
-            std::deque<segment *> worklist;
-
+            std::vector<segment*> res;
             res.reserve(segments.size());
+
+            std::deque<segment*> worklist;
             for (const auto &seg: segments) {
                 worklist.emplace_back(seg.get());
             }
 
             // Bring the segments which start at address 0 to the front
-            size_t nextSlot = 0;
-            for (size_t i = 0; i < worklist.size(); ++i) {
-                if (i != nextSlot && worklist[i]->is_offset_initialized() &&
-                    worklist[i]->get_offset() == 0) {
+            size_t nextSlot{};
+            for (size_t i{}; i < worklist.size(); ++i) {
+                if (i != nextSlot && worklist[i]->is_offset_initialized() && worklist[i]->get_offset() == 0) {
                     if (worklist[nextSlot]->get_offset() == 0) {
                         ++nextSlot;
                     }
                     std::swap(worklist[i], worklist[nextSlot]);
-                    ++nextSlot;
+                    nextSlot+=1;
                 }
             }
 
@@ -308,7 +301,7 @@ namespace elf {
                 segment *seg = worklist.front();
                 worklist.pop_front();
 
-                size_t i = 0;
+                size_t i{};
                 for (; i < worklist.size(); ++i) {
                     if (is_subsequence_of(seg, worklist[i])) {
                         break;
@@ -704,11 +697,11 @@ namespace elf {
         //------------------------------------------------------------------------------
     private:
         std::unique_ptr<elf_header> header; //!< Pointer to the ELF header
-        std::vector<std::unique_ptr<section> > sections_; //!< Vector of sections
-        std::vector<std::unique_ptr<segment> > segments_; //!< Vector of segments
+        std::vector<std::unique_ptr<section>> sections_; //!< Vector of sections
+        std::vector<std::unique_ptr<segment>> segments_; //!< Vector of segments
         Elf_Xword current_file_pos{}; //!< Current file position
     };
-} // namespace ELFIO
+}
 
 #include "elfio_symbols.hpp"
 #include "elfio_relocation.hpp"

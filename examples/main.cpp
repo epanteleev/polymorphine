@@ -27,7 +27,7 @@ int main() {
     text_sec->set_type( SHT_PROGBITS );
     text_sec->set_flags( SHF_ALLOC | SHF_EXECINSTR );
     text_sec->set_addr_align( 0x10 );
-    text_sec->set_data( text, sizeof( text ) );
+    text_sec->set_data( text, sizeof(text));
 
     // Create string table section
     elf::section* str_sec = writer.sections.add( ".strtab" );
@@ -40,10 +40,10 @@ int main() {
 
     // Create symbol table section
     elf::section* sym_sec = writer.sections.add( ".symtab" );
-    sym_sec->set_type( SHT_SYMTAB );
-    sym_sec->set_info( 1 );
+    sym_sec->set_type(SHT_SYMTAB);
+    sym_sec->set_info(1);
     sym_sec->set_addr_align( 0x4 );
-    sym_sec->set_entry_size( writer.get_default_entry_size( SHT_SYMTAB ) );
+    sym_sec->set_entry_size( elf::elfio::get_default_entry_size( SHT_SYMTAB ) );
     sym_sec->set_link( str_sec->get_index() );
 
     // Create symbol table writer

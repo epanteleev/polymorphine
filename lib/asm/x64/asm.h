@@ -4,7 +4,7 @@
 #include "reg/Register.h"
 
 #include "AsmBuffer.h"
-#include "AsmEmitter.h"
+#include "asm/x64/AsmEmitter.h"
 
 #include "instruction/CPUInstruction.h"
-#include "symbol/SymbolTable.h"
+#include "asm/symbol/SymbolTable.h"

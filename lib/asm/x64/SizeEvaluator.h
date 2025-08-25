@@ -27,6 +27,15 @@ namespace aasm {
             return evaluator.size();
         }
 
+        static std::size_t module_size_eval(const AsmModule& masm) {
+            std::size_t acc{};
+            for (const auto& emitter : masm.assembler() | std::views::values) {
+                acc += emit(emitter);
+            }
+
+            return acc;
+        }
+
     private:
         std::size_t m_size{};
     };

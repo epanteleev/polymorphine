@@ -3,7 +3,7 @@
 #include <array>
 #include <bitset>
 
-#include "asm/asm_frwd.h"
+#include "../asm_frwd.h"
 #include "Register.h"
 #include "utility/BitUtils.h"
 

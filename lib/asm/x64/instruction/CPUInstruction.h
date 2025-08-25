@@ -2,9 +2,9 @@
 
 #include <ostream>
 
-#include "asm/Common.h"
+#include "asm/x64/Common.h"
 #include "asm/symbol/Symbol.h"
-#include "asm/Encoding.h"
+#include "asm/x64/Encoding.h"
 #include "Label.h"
 #include "Pop.h"
 #include "Push.h"

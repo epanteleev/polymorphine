@@ -1,7 +1,7 @@
 #include "JitModule.h"
 
-#include "JitAssembler.h"
-#include "asm/SizeEvaluator.h"
+#include "OpCodeBuffer.h"
+#include "../../../../asm/x64/SizeEvaluator.h"
 #include "utility/Align.h"
 
 static constexpr auto PAGE_SIZE = 4096;
@@ -20,15 +20,6 @@ static MmapAllocation map_memory(const std::size_t plt_size, const std::size_t c
                                               MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 
     return {std::span(memory, total_size), std::span(memory, plt_table_size), std::span(memory + plt_table_size, code_buffer_size)};
-}
-
-static std::size_t module_size_eval(const AsmModule& masm) {
-    std::size_t acc = 0;
-    for (const auto& emitter : masm.assembler() | std::views::values) {
-        acc += aasm::SizeEvaluator::emit(emitter);
-    }
-
-    return acc;
 }
 
 class RelocResolver final {
@@ -103,7 +94,7 @@ private:
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;
     const AsmModule& m_module;
-    JitAssembler jit_assembler;
+    OpCodeBuffer jit_assembler;
     std::size_t m_code_buffer_offset;
 
     std::unordered_map<const aasm::Symbol*, std::vector<aasm::Relocation>> relocation_table;
@@ -111,7 +102,7 @@ private:
 };
 
 JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, const AsmModule &module) {
-    const auto code_buffer_size = module_size_eval(module);
+    const auto code_buffer_size = aasm::SizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
     const auto memory = map_memory(plt_size, code_buffer_size);
 
@@ -128,7 +119,7 @@ JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std
     RelocResolver resolver(plt_table, module, memory.code_buffer, memory.plt_table.size());
     resolver.run();
 
-    JitCodeBlob code_blob(std::move(resolver.result()), memory.code_buffer);
+    JitCodeBlob code_blob(resolver.result(), memory.code_buffer);
     return {module.symbol_table(), memory.memory, std::move(code_blob)};
 }
 

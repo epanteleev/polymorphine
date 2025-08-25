@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include "asm/reg/Register.h"
+#include "asm/x64/reg/Register.h"
 #include "CallConv.h"
 
 namespace call_conv {

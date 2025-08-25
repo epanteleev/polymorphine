@@ -4,11 +4,6 @@
 #include "lir/x64/asm/jit/JitModule.h"
 
 /**
- * Performs JIT compilation
- */
-AsmModule jit_compile(const Module& module, bool verbose = false);
-
-/**
  * Performs JIT compilation and assembly of the given module.
  * @param module The module to be compiled.
  * @param verbose If true, prints the intermediate representations after each step.

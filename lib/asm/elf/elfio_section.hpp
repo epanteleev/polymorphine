@@ -8,8 +8,8 @@
 namespace elf {
     class section final {
     public:
-        explicit section(std::string name_) noexcept :
-            name(std::move(name_)) {}
+        explicit section(const std::string_view name_) noexcept :
+            name(name_) {}
 
         // Section info functions
         ELFIO_GET_SET_ACCESS(Elf_Word, type, header.sh_type);

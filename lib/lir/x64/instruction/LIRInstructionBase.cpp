@@ -4,8 +4,8 @@
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRBlock.h"
 
-#include "asm/instruction/CondType.h"
-#include "asm/reg/RegSet.h"
+#include "asm/x64/instruction/CondType.h"
+#include "asm/x64/reg/RegSet.h"
 
 namespace {
     class LIRInstructionPrinter final: public LIRVisitor {

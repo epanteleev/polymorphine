@@ -1,6 +1,6 @@
 #include "LIRFunctionCodegen.h"
 
-#include "asm/reg/RegSet.h"
+#include "asm/x64/reg/RegSet.h"
 #include "lir/x64/asm/MasmEmitter.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"

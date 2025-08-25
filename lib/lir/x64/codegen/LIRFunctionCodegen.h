@@ -1,6 +1,6 @@
 #pragma once
 
-#include "asm/asm.h"
+#include "../../../asm/x64/asm.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/module/LIRFuncData.h"

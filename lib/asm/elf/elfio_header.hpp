@@ -57,6 +57,6 @@ namespace elf {
         ELFIO_GET_SET_ACCESS(Elf64_Off, segments_offset, header.e_phoff);
 
     private:
-        Elf64_Ehdr header = {};
+        Elf64_Ehdr header{};
     };
 }

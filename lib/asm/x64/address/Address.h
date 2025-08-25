@@ -4,9 +4,9 @@
 #include <ostream>
 
 #include "asm/symbol/Symbol.h"
-#include "asm/Common.h"
-#include "asm/Relocation.h"
-#include "asm/reg/Register.h"
+#include "asm/x64/Common.h"
+#include "asm/x64/Relocation.h"
+#include "asm/x64/reg/Register.h"
 
 #include "AddressBaseDisp.h"
 #include "AddressIndexScale.h"

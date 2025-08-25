@@ -4,9 +4,9 @@
 
 #include "reg/Register.h"
 #include "address/Address.h"
-#include "asm/AsmBuffer.h"
+#include "AsmBuffer.h"
 #include "instruction/CPUInstruction.h"
-#include "symbol/Symbol.h"
+#include "asm/symbol/Symbol.h"
 
 namespace aasm {
     class AsmEmitter final {

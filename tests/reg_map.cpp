@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <ranges>
-#include "asm/reg/RegMap.h"
+#include "asm/x64/reg/RegMap.h"
 #include "utility/Error.h"
 
 TEST(RegMap, empty) {
