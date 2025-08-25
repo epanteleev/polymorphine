@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../../../../asm/x64/asm_frwd.h"
-
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/GPVReg.h"
 

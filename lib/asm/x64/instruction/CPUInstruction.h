@@ -22,6 +22,7 @@
 #include "CMov.h"
 #include "Lea.h"
 #include "Xor.h"
+#include "Movzx.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -48,6 +49,7 @@ namespace aasm {
             details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
             details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
             details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
+            details::MovzxRR,
             details::Jmp, details::Jcc,
             details::SetCCR,
             details::Call, details::CallM,

@@ -869,6 +869,61 @@ TEST(Asm, sub_imm_addr1) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, movzx_reg_reg1_to_qword) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x48,0x0f,0xb6,0xd0},
+        {0x48,0x0f,0xb7,0xd0},
+    };
+    const std::vector<std::string> names = {
+        "movzbq %al, %rdx",
+        "movzwq %ax, %rdx",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movzx(size,8, aasm::rax, aasm::rdx);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, movzx_reg_reg2_to_dword) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x0f,0xb6,0xf8},
+        {0x0f,0xb7,0xf8},
+    };
+    const std::vector<std::string> names = {
+        "movzbl %al, %edi",
+        "movzwl %ax, %edi",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movzx(size,4, aasm::rax, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, movzx_reg_reg1_to_word) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x66,0x0f,0xb6,0xd0},
+    };
+    const std::vector<std::string> names = {
+        "movzbw %al, %dx",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movzx(size, 2, aasm::rax, aasm::rdx);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -156,6 +156,10 @@ namespace aasm {
             m_instructions.emplace_back(details::CallM(addr));
         }
 
+        constexpr void movzx(const std::uint8_t src_size, const std::uint8_t dst_size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::MovzxRR(src_size, dst_size, src, dst));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());

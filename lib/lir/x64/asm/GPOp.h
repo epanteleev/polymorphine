@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GPVReg.h"
-#include "../../../asm/x64/asm.h"
+#include "asm/x64/asm.h"
 
 
 class GPOp final {

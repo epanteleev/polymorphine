@@ -1,6 +1,6 @@
 #include "Elf.h"
 
-#include "../../../../asm/x64/SizeEvaluator.h"
+#include "asm/x64/SizeEvaluator.h"
 #include "lir/x64/asm/jit/OpCodeBuffer.h"
 #include "lir/x64/asm/jit/JitCodeBlob.h"
 
@@ -33,8 +33,8 @@ Elf Elf::collect(const AsmModule &module) {
     OpCodeBuffer assembler{code_buffer};
     for (const auto &asm_buffer: module.assembler() | std::views::values) {
         asm_buffer.emit(assembler);
-        text_sec->set_data(reinterpret_cast<const char*>(code_buffer.data()), code_buffer.size());
     }
+    text_sec->set_data(reinterpret_cast<const char*>(code_buffer.data()), code_buffer.size());
 
     return Elf(std::move(writer));
 }

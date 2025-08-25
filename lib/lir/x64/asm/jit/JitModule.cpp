@@ -1,7 +1,7 @@
 #include "JitModule.h"
 
 #include "OpCodeBuffer.h"
-#include "../../../../asm/x64/SizeEvaluator.h"
+#include "asm/x64/SizeEvaluator.h"
 #include "utility/Align.h"
 
 static constexpr auto PAGE_SIZE = 4096;

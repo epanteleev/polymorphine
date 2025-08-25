@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../asm/x64/asm.h"
+#include "asm/x64/asm.h"
 
 class MasmEmitter final {
 public:
