@@ -49,7 +49,7 @@ namespace aasm {
             details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
             details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
             details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
-            details::MovzxRR,
+            details::MovzxRR, details::MovzxRM,
             details::Jmp, details::Jcc,
             details::SetCCR,
             details::Call, details::CallM,
@@ -70,6 +70,7 @@ namespace aasm {
     concept MemoryInstruction =
         std::same_as<T, details::Lea> ||
         std::same_as<T, details::CMovRM> ||
+        std::same_as<T, details::MovzxRM> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
