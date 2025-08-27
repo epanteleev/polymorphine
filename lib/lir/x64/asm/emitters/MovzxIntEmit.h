@@ -1,8 +1,9 @@
 #pragma once
 
-class MovsxGPEmit final: public GPUnaryOutVisitor {
+
+class MovzxGPEmit final: public GPUnaryOutVisitor {
 public:
-    explicit MovsxGPEmit(MasmEmitter &as, const std::uint8_t to_size, const std::uint8_t from_size) noexcept:
+    explicit MovzxGPEmit(MasmEmitter &as, const std::uint8_t to_size, const std::uint8_t from_size) noexcept:
         m_to_size(to_size),
         m_from_size(from_size),
         m_as(as) {}
@@ -15,11 +16,11 @@ private:
     friend class GPUnaryOutVisitor;
 
     void emit(const aasm::GPReg out, const aasm::GPReg in) override {
-        m_as.movsx(m_from_size, m_to_size, in, out);
+        m_as.movzx(m_from_size, m_to_size, in, out);
     }
 
     void emit(const aasm::GPReg out, const aasm::Address &in) override {
-        m_as.movsx(m_from_size, m_to_size, in, out);
+        m_as.movzx(m_from_size, m_to_size, in, out);
     }
 
     void emit(const aasm::Address &out, const aasm::GPReg in) override {

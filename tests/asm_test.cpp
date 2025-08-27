@@ -1038,6 +1038,42 @@ TEST(Asm, movsx_addr_reg1_to_word) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, movsxd_reg_reg) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x48,0x63,0xd2},
+    };
+    const std::vector<std::string> names = {
+        "movslq %edx, %rdx",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movsxd(size, 8, aasm::rdx, aasm::rdx);
+        return a;
+    };
+
+    auto scales = {2};
+    check_bytes(codes, names, generator, scales);
+}
+
+TEST(Asm, movsxd_reg_reg2) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x48,0x63,0xc7},
+    };
+    const std::vector<std::string> names = {
+        "movslq %edi, %rax",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movsxd(size, 8, aasm::rdi, aasm::rax);
+        return a;
+    };
+
+    auto scales = {2};
+    check_bytes(codes, names, generator, scales);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

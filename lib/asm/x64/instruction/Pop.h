@@ -3,8 +3,9 @@
 namespace aasm::details {
     class PopR final {
     public:
-        constexpr PopR(const std::uint8_t size, const GPReg reg) noexcept
-            : m_size(size), m_reg(reg) {}
+        constexpr PopR(const std::uint8_t size, const GPReg reg) noexcept:
+            m_size(size),
+            m_reg(reg) {}
 
         friend std::ostream& operator<<(std::ostream& os, const PopR& popr);
 

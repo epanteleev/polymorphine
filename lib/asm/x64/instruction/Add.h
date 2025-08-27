@@ -3,8 +3,10 @@
 namespace aasm::details {
     class AddRR final {
     public:
-        constexpr AddRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept
-            : m_size(size), m_src(src), m_dst(dst) {}
+        constexpr AddRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dst(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const AddRR& add);
 
@@ -30,8 +32,10 @@ namespace aasm::details {
 
     class AddRI final {
     public:
-        explicit AddRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept
-            : m_size(size), m_src(src), m_dst(dst) {}
+        explicit AddRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
+            m_size(size),
+            m_src(src),
+            m_dst(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const AddRI& add);
 

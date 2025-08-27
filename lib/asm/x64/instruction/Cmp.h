@@ -4,7 +4,9 @@ namespace aasm::details {
     class CmpRR final {
     public:
         constexpr CmpRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
-            m_size(size), m_src(src), m_dst(dst) {}
+            m_size(size),
+            m_src(src),
+            m_dst(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const CmpRR& cmp);
 

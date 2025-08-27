@@ -174,6 +174,14 @@ namespace aasm {
             m_instructions.emplace_back(details::MovsxRM(src_size, dst_size, src, dst));
         }
 
+        constexpr void movsxd(const std::uint8_t src_size, const std::uint8_t dst_size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::MovsxdRR(src_size, dst_size, src, dst));
+        }
+
+        constexpr void movsxd(const std::uint8_t src_size, const std::uint8_t dst_size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::MovsxdRM(src_size, dst_size, src, dst));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());

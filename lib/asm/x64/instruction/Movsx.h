@@ -19,8 +19,7 @@ namespace aasm::details {
             Encoder enc(buffer, MOVSX_RR_8, MOVSX_RR);
             switch (m_from_size) {
                 case 1: [[fallthrough]];
-                case 2: [[fallthrough]];
-                case 4: return enc.encode_MR(m_to_size, m_from_size, m_dest, m_src);
+                case 2: return enc.encode_MR(m_to_size, m_from_size, m_dest, m_src);
                 default: die("Invalid size for instruction: {}", m_from_size);
             }
         }

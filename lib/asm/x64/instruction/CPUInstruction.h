@@ -24,6 +24,7 @@
 #include "Xor.h"
 #include "Movzx.h"
 #include "Movsx.h"
+#include "Movsxd.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -52,6 +53,7 @@ namespace aasm {
             details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
             details::MovzxRR, details::MovzxRM,
             details::MovsxRR, details::MovsxRM,
+            details::MovsxdRR, details::MovsxdRM,
             details::Jmp, details::Jcc,
             details::SetCCR,
             details::Call, details::CallM,
@@ -74,6 +76,7 @@ namespace aasm {
         std::same_as<T, details::CMovRM> ||
         std::same_as<T, details::MovzxRM> ||
         std::same_as<T, details::MovsxRM> ||
+        std::same_as<T, details::MovsxdRM> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||

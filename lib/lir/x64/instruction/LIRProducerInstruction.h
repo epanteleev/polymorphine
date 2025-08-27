@@ -25,7 +25,7 @@ enum class LIRProdInstKind: std::uint8_t {
 
 class LIRProducerInstruction final: public LIRProducerInstructionBase {
 public:
-    LIRProducerInstruction(const LIRProdInstKind kind, std::vector<LIROperand>&& uses) :
+    explicit LIRProducerInstruction(const LIRProdInstKind kind, std::vector<LIROperand>&& uses) noexcept:
         LIRProducerInstructionBase(std::move(uses)),
         m_kind(kind) {}
 

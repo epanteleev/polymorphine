@@ -13,6 +13,7 @@
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
 #include "lir/x64/asm/emitters/XorIntEmit.h"
 #include "lir/x64/asm/emitters/MovsxIntEmit.h"
+#include "lir/x64/asm/emitters/MovzxIntEmit.h"
 
 #include "lir/x64/asm/cc/CallConv.h"
 
@@ -255,6 +256,13 @@ void LIRFunctionCodegen::movsx_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = convert_to_gp_op(in);
     MovsxGPEmit emitter(m_as, out.size(), in.size());
+    emitter.emit(out_reg, pointer_reg);
+}
+
+void LIRFunctionCodegen::movzx_i(const LIRVal &out, const LIROperand &in) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto pointer_reg = convert_to_gp_op(in);
+    MovzxGPEmit emitter(m_as, out.size(), in.size());
     emitter.emit(out_reg, pointer_reg);
 }
 

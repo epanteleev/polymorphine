@@ -9,7 +9,7 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
-            buffer.emit8(0xC9); // leave instruction
+            buffer.emit8(0xC9);
         }
     };
 
