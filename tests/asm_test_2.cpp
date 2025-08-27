@@ -22,7 +22,7 @@ static std::vector cond_types = {
 };
 
 TEST(Asm, cmov_reg_reg) {
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "cmovo %r12w, %r13w",
         "cmovno %r12w, %r13w",
         "cmovnae %r12w, %r13w",
@@ -116,7 +116,7 @@ TEST(Asm, cmov_reg_mem) {
 }
 
 TEST(Asm, lea) {
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "leaq 8(%r12,%r13,4), %r12",
     };
 

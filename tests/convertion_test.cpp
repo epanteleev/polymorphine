@@ -156,6 +156,115 @@ TEST(ZeroConvertion, zext_u8_to_u16) {
     ASSERT_EQ(fn(0), 0);
 }
 
+static Module trunc_cvt(const IntegerType* from, const IntegerType* to) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(from, {from}, "cvt");
+
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.trunc(to, arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(TruncConvertion, trunc_i32_to_i8) {
+    const auto module = trunc_cvt(SignedIntegerType::i32(), SignedIntegerType::i8());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<char(int)>("cvt").value();
+    ASSERT_EQ(fn(1), 1);
+    ASSERT_EQ(fn(-1), -1);
+    ASSERT_EQ(fn(127), 127);
+    ASSERT_EQ(fn(-128), -128);
+    ASSERT_EQ(fn(128), -128);
+    ASSERT_EQ(fn(255), -1);
+    ASSERT_EQ(fn(256), 0);
+}
+
+TEST(TruncConvertion, trunc_i32_to_i16) {
+    const auto module = trunc_cvt(SignedIntegerType::i32(), SignedIntegerType::i16());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<short(int)>("cvt").value();
+    ASSERT_EQ(fn(1), 1);
+    ASSERT_EQ(fn(-1), -1);
+    ASSERT_EQ(fn(32767), 32767);
+    ASSERT_EQ(fn(-32768), -32768);
+    ASSERT_EQ(fn(32768), -32768);
+    ASSERT_EQ(fn(65535), -1);
+    ASSERT_EQ(fn(65536), 0);
+}
+
+TEST(TruncConvertion, trunc_i64_to_i8) {
+    const auto module = trunc_cvt(SignedIntegerType::i64(), SignedIntegerType::i8());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<char(long)>("cvt").value();
+    ASSERT_EQ(fn(1), 1);
+    ASSERT_EQ(fn(-1), -1);
+    ASSERT_EQ(fn(127), 127);
+    ASSERT_EQ(fn(-128), -128);
+    ASSERT_EQ(fn(128), -128);
+    ASSERT_EQ(fn(255), -1);
+    ASSERT_EQ(fn(256), 0);
+    ASSERT_EQ(fn(9223372036854775807), -1);
+    ASSERT_EQ(fn(-9223372036854775807L - 1), 0);
+}
+
+static Module bitcast_cvt(const IntegerType* from, const IntegerType* to) {
+    ModuleBuilder builder;
+    FunctionPrototype prototype(from, {from}, "cvt");
+
+    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto& data = *fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.bitcast(to, arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(BitcastConvertion, bitcast_i32_to_u32) {
+    const auto module = bitcast_cvt(SignedIntegerType::i32(), UnsignedIntegerType::u32());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<unsigned int(int)>("cvt").value();
+    ASSERT_EQ(fn(1), 1U);
+    ASSERT_EQ(fn(-1), 4294967295U);
+    ASSERT_EQ(fn(127), 127U);
+    ASSERT_EQ(fn(-128), 4294967168U);
+}
+
+TEST(BitcastConvertion, bitcast_u32_to_i32) {
+    const auto module = bitcast_cvt(UnsignedIntegerType::u32(), SignedIntegerType::i32());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<int(unsigned int)>("cvt").value();
+    ASSERT_EQ(fn(1U), 1);
+    ASSERT_EQ(fn(4294967295U), -1);
+    ASSERT_EQ(fn(127U), 127);
+    ASSERT_EQ(fn(4294967168U), -128);
+}
+
+TEST(BitcastConvertion, bitcast_i64_to_u64) {
+    const auto module = bitcast_cvt(SignedIntegerType::i64(), UnsignedIntegerType::u64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<unsigned long(long)>("cvt").value();
+    ASSERT_EQ(fn(1L), 1UL);
+    ASSERT_EQ(fn(-1L), 18446744073709551615UL);
+    ASSERT_EQ(fn(127L), 127UL);
+    ASSERT_EQ(fn(-128L), 18446744073709551488UL);
+}
+
+TEST(BitcastConvertion, bitcast_u64_to_i64) {
+    const auto module = bitcast_cvt(UnsignedIntegerType::u64(), SignedIntegerType::i64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<long(unsigned long)>("cvt").value();
+    ASSERT_EQ(fn(1UL), 1L);
+    ASSERT_EQ(fn(18446744073709551615UL), -1L);
+    ASSERT_EQ(fn(127UL), 127L);
+    ASSERT_EQ(fn(18446744073709551488UL), -128L);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

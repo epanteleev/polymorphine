@@ -23,6 +23,7 @@ public:
 
     virtual void movzx_i(const LIRVal& out, const LIROperand& in) = 0;
     virtual void movsx_i(const LIRVal& out, const LIROperand& in) = 0;
+    virtual void trunc_i(const LIRVal& out, const LIROperand& in) = 0;
 
     virtual void cmp_i(const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void neg_i(const LIRVal& out, const LIROperand& in) = 0;

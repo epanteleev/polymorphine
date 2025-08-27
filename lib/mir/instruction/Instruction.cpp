@@ -68,6 +68,7 @@ namespace {
                 case UnaryOp::Int2Float: return "int2fp";
                 case UnaryOp::Float2Int: return "fp2int";
                 case UnaryOp::Load: return "load";
+                case UnaryOp::Bitcast: return "bitcast";
                 default: die("wrong type");
             }
         }

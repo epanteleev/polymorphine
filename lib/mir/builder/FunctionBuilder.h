@@ -95,6 +95,16 @@ public:
     }
 
     [[nodiscard]]
+    Value trunc(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::trunc(to_type, value));
+    }
+
+    [[nodiscard]]
+    Value bitcast(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::bitcast(to_type, value));
+    }
+
+    [[nodiscard]]
     BasicBlock* create_basic_block() const {
         return m_fd->create_basic_block();
     }

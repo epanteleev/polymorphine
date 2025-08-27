@@ -389,6 +389,24 @@ void FunctionLower::accept(Unary *inst) {
             memorize(inst, movzx->def(0));
             break;
         }
+        case UnaryOp::Trunk: {
+            const auto operand = get_lir_operand(inst->operand());
+            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            assertion(type != nullptr, "Expected PrimitiveType for Trunk operation");
+
+            const auto trunc = m_bb->ins(LIRProducerInstruction::trunc(type->size_of(), operand));
+            memorize(inst, trunc->def(0));
+            break;
+        }
+        case UnaryOp::Bitcast: {
+            const auto operand = get_lir_operand(inst->operand());
+            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            assertion(type != nullptr, "Expected PrimitiveType for Bitcast operation");
+
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), operand));
+            memorize(inst, copy->def(0));
+            break;
+        }
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
     }
 }

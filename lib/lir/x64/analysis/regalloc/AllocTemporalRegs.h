@@ -72,6 +72,8 @@ namespace details {
 
         void movsx_i(const LIRVal &out, const LIROperand &in) override {}
 
+        void trunc_i(const LIRVal &out, const LIROperand &in) override {}
+
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {}
 
         void neg_i(const LIRVal &out, const LIROperand &in) override {}

@@ -113,6 +113,7 @@ private:
 
     void movsx_i(const LIRVal &out, const LIROperand &in) override;
     void movzx_i(const LIRVal &out, const LIROperand &in) override;
+    void trunc_i(const LIRVal &out, const LIROperand &in) override;
 
     void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, LIRLinkage) override;
 

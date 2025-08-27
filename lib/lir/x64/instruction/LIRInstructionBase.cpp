@@ -70,6 +70,10 @@ namespace {
             m_os << "movsx_i out(" << out << ") in(" << in << ')';
         }
 
+        void trunc_i(const LIRVal &out, const LIROperand &in) override {
+            m_os << "trunc_i out(" << out << ") in(" << in << ')';
+        }
+
         void cmp_i(const LIROperand &in1, const LIROperand &in2) override {
             m_os << "cmp_i in1(" << in1 << ") in2(" << in2 << ')';
         }
