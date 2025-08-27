@@ -12,8 +12,9 @@ public:
 private:
     friend class GPBinaryVisitor;
 
-    explicit SubIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept
-        : m_size(size), m_as(as) {}
+    explicit SubIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as) {}
 
     void emit(aasm::GPReg out, aasm::GPReg in1, aasm::GPReg in2) override {
         unimplemented();
