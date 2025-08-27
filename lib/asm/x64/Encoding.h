@@ -244,10 +244,10 @@ namespace aasm::details {
 
         constexpr void emit_imm_below_i32(const std::uint8_t size, const std::int32_t imm) const {
             switch (size) {
-                case 1: m_buffer.emit8(static_cast<std::int8_t>(imm)); break;
-                case 2: m_buffer.emit16(static_cast<std::int16_t>(imm)); break;
+                case 1: m_buffer.emit8(checked_cast<std::int8_t>(imm)); break;
+                case 2: m_buffer.emit16(checked_cast<std::int16_t>(imm)); break;
                 case 4: [[fallthrough]];
-                case 8: m_buffer.emit32(static_cast<std::int32_t>(imm)); break;
+                case 8: m_buffer.emit32(imm); break;
                 default: die("Invalid size for instruction: {}", size);
             }
         }

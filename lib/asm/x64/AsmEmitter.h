@@ -165,6 +165,15 @@ namespace aasm {
             m_instructions.emplace_back(details::MovzxRM(src_size, dst_size, src, dst));
         }
 
+        // Move With Zero-Extend
+        constexpr void movsx(const std::uint8_t src_size, const std::uint8_t dst_size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::MovsxRR(src_size, dst_size, src, dst));
+        }
+
+        constexpr void movsx(const std::uint8_t src_size, const std::uint8_t dst_size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::MovsxRM(src_size, dst_size, src, dst));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
