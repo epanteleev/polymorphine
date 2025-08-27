@@ -189,6 +189,31 @@ namespace aasm::details {
         }
 
         [[nodiscard]]
+        constexpr std::optional<Relocation> encode_M_with_REXW(const std::uint8_t modrm, const std::uint8_t size, const Address& addr) {
+            if (size == 2) {
+                add_word_op_size(m_buffer);
+            }
+            if (auto rex = prefix(size, addr); rex.has_value()) {
+                m_buffer.emit8(rex.value());
+            }
+
+            emit_opcodes(size);
+            return addr.encode(m_buffer, modrm);
+        }
+
+        constexpr void encode_M(const std::uint8_t modrm, const std::uint8_t size, const GPReg reg) {
+            if (size == 2) {
+                add_word_op_size(m_buffer);
+            }
+            if (auto rex = prefix(size, reg); rex.has_value()) {
+                m_buffer.emit8(rex.value());
+            }
+
+            emit_opcodes(size);
+            m_buffer.emit8(0xC0 | modrm << 3 | reg3(reg));
+        }
+
+        [[nodiscard]]
         constexpr std::optional<Relocation> encode_MI32(std::uint8_t modrm, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
             emit_op_prologue(m_buffer, size, dst);
             emit_opcodes(size);

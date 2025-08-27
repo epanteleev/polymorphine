@@ -19,7 +19,7 @@ namespace aasm {
             }
             if (const auto it = instruction_to_label.find(idx); it != instruction_to_label.end()) {
                 for (const auto& label_idx: it->second) {
-                    os << "L" << label_idx << ':' << std::endl;
+                    os << Label(label_idx) << ':' << std::endl;
                 }
             }
             if (pretty_print > 0) {

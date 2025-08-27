@@ -71,6 +71,10 @@ public:
     requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
     void movsx(const std::uint8_t, const std::uint8_t, const Op &, const aasm::GPReg) {}
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void neg(const std::uint8_t, const Op &) {}
+
     void leave() { }
 
     void jmp(const aasm::Label&) {}

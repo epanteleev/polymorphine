@@ -144,6 +144,13 @@ public:
         }
     }
 
+    // Two's Complement Negation
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void neg(const std::uint8_t size, const Op& r) {
+        m_asm.neg(size, r);
+    }
+
     void leave() { m_asm.leave(); }
 
     void jmp(const aasm::Label& label) {

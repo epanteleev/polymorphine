@@ -16,8 +16,20 @@ private:
         m_size(size),
         m_as(as) {}
 
-    void emit(aasm::GPReg out, aasm::GPReg in1, aasm::GPReg in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::GPReg in1, const aasm::GPReg in2) override {
+        if (out == in1) {
+            m_as.sub(m_size, in2, out);
+            return;
+        }
+
+        if (out == in2) {
+            m_as.neg(m_size, out);
+            m_as.add(m_size, in1, out);
+            return;
+        }
+
+        m_as.copy(m_size, in1, out);
+        m_as.sub(m_size, in2, out);
     }
 
     void emit(aasm::GPReg out, aasm::GPReg in1, const aasm::Address &in2) override {

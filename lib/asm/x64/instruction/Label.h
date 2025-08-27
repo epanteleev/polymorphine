@@ -16,6 +16,6 @@ namespace aasm {
     };
 
     inline std::ostream & operator<<(std::ostream &os, const Label &label) {
-        return os << 'L' << label.id() << ':' << std::endl;
+        return os << 'L' << label.id()+1;
     }
 }

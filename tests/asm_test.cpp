@@ -1074,6 +1074,53 @@ TEST(Asm, movsxd_reg_reg2) {
     check_bytes(codes, names, generator, scales);
 }
 
+TEST(Asm, neg_reg) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0xf6,0xd8},
+        {0x66,0xf7,0xd8},
+        {0xf7,0xd8},
+        {0x48,0xf7,0xd8}
+    };
+    const std::vector<std::string> names = {
+        "negb %al",
+        "negw %ax",
+        "negl %eax",
+        "negq %rax"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.neg(size, aasm::rax);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, neg_addr) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0xf6,0x18},
+        {0x66,0xf7,0x18},
+        {0xf7,0x18},
+        {0x48,0xf7,0x18}
+    };
+    const std::vector<std::string> names = {
+        "negb (%rax)",
+        "negw (%rax)",
+        "negl (%rax)",
+        "negq (%rax)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        aasm::Address addr(aasm::rax);
+        a.neg(size, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -182,6 +182,15 @@ namespace aasm {
             m_instructions.emplace_back(details::MovsxdRM(src_size, dst_size, src, dst));
         }
 
+        // Two's Complement Negation
+        constexpr void neg(const std::uint8_t size, const GPReg r) {
+            m_instructions.emplace_back(details::NegR(size, r));
+        }
+
+        constexpr void neg(const std::uint8_t size, const Address& addr) {
+            m_instructions.emplace_back(details::NegM(size, addr));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
