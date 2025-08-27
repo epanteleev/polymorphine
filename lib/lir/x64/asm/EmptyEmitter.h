@@ -63,6 +63,14 @@ public:
     void call(const aasm::Symbol*) { }
     void call(const aasm::Address&) { }
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
+    void movzx(const std::uint8_t, const std::uint8_t, const Op &,const aasm::GPReg) {}
+
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
+    void movsx(const std::uint8_t, const std::uint8_t, const Op &, const aasm::GPReg) {}
+
     void leave() { }
 
     void jmp(const aasm::Label&) {}

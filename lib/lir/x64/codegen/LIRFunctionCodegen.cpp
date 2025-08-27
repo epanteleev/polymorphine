@@ -12,6 +12,8 @@
 #include "lir/x64/asm/emitters/SubIntEmit.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
 #include "lir/x64/asm/emitters/XorIntEmit.h"
+#include "lir/x64/asm/emitters/MovsxIntEmit.h"
+
 #include "lir/x64/asm/cc/CallConv.h"
 
 #include "lir/x64/instruction/LIRCall.h"
@@ -247,6 +249,13 @@ void LIRFunctionCodegen::jmp(const LIRBlock *bb) {
 void LIRFunctionCodegen::jcc(const aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) {
     const auto target_false = m_bb_labels.at(on_false);
     m_as.jcc(aasm::invert(cond_type), target_false);
+}
+
+void LIRFunctionCodegen::movsx_i(const LIRVal &out, const LIROperand &in) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto pointer_reg = convert_to_gp_op(in);
+    MovsxGPEmit emitter(m_as, out.size(), in.size());
+    emitter.emit(out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const LIRLinkage linkage) {

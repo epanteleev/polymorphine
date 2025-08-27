@@ -50,8 +50,6 @@ add_library(ckoof SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
-        lib/asm/x64/instruction/Movzx.h
-        lib/asm/x64/instruction/Movsx.h
 )
 
 try_setup_coverage_options(ckoof)

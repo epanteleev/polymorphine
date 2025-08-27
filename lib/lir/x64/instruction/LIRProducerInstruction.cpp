@@ -35,6 +35,8 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.lea_i(def(0), in0.value(), in(1));
             break;
         }
+        case LIRProdInstKind::Movz: visitor.movzx_i(def(0), in(0)); break;
+        case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;
         default: die("Unsupported LIRProducerInstruction kind: {}", static_cast<int>(m_kind));
     }
 }

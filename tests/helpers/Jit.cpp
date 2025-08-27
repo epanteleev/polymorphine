@@ -7,9 +7,6 @@
 
 JitModule jit_compile_and_assembly(const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, const bool verbose) {
     const auto obj = jit_compile(module, verbose);
-    if (verbose) {
-        std::cout << obj << std::endl;
-    }
     for (const auto &[name, size]: asm_size) {
         const auto fun = obj.function(name);
         if (!fun.has_value()) {

@@ -19,6 +19,8 @@ enum class LIRProdInstKind: std::uint8_t {
     Load,
     LoadByIdx,
     Lea,
+    Movz,
+    Movs,
 };
 
 class LIRProducerInstruction final: public LIRProducerInstructionBase {
@@ -63,6 +65,14 @@ public:
         auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector<LIROperand>{pointer, index});
         lea->add_def(LIRVal::reg(size, 0, lea.get()));
         return lea;
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> movzx(const std::uint8_t to_size, const LIROperand &op) {
+        return create(LIRProdInstKind::Movz, to_size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> movsx(const std::uint8_t to_size, const LIROperand &op) {
+        return create(LIRProdInstKind::Movs, to_size, op);
     }
 
     [[nodiscard]]

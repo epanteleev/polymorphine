@@ -40,6 +40,14 @@ public:
         return std::make_unique<Unary>(ty, UnaryOp::Flag2Int, value);
     }
 
+    static std::unique_ptr<Unary> sext(const IntegerType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::SignExtend, value);
+    }
+
+    static std::unique_ptr<Unary> zext(const IntegerType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::ZeroExtend, value);
+    }
+
 private:
     const UnaryOp m_op;
 };

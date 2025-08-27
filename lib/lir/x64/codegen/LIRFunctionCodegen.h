@@ -109,9 +109,10 @@ private:
 
     void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override;
 
-    void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {
+    void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {}
 
-    }
+    void movsx_i(const LIRVal &out, const LIROperand &in) override;
+    void movzx_i(const LIRVal &out, const LIROperand &in) override {}
 
     void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, LIRLinkage) override;
 

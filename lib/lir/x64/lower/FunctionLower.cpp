@@ -371,6 +371,24 @@ void FunctionLower::accept(Unary *inst) {
             break;
         }
         case UnaryOp::Load: lower_load(inst); break;
+        case UnaryOp::SignExtend: {
+            const auto operand = get_lir_operand(inst->operand());
+            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            assertion(type != nullptr, "Expected PrimitiveType for SignExtend operation");
+
+            const auto movsx = m_bb->ins(LIRProducerInstruction::movsx(type->size_of(), operand));
+            memorize(inst, movsx->def(0));
+            break;
+        }
+        case UnaryOp::ZeroExtend: {
+            const auto operand = get_lir_operand(inst->operand());
+            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            assertion(type != nullptr, "Expected PrimitiveType for ZeroExtend operation");
+
+            const auto movzx = m_bb->ins(LIRProducerInstruction::movzx(type->size_of(), operand));
+            memorize(inst, movzx->def(0));
+            break;
+        }
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
     }
 }

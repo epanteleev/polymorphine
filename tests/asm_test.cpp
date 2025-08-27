@@ -907,6 +907,25 @@ TEST(Asm, movzx_reg_reg2_to_dword) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, movsx_reg_reg2_to_dword1) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x0f,0xbe,0xff},
+        {0x0f,0xbf,0xff},
+    };
+    const std::vector<std::string> names = {
+        "movsbl %dil, %edi",
+        "movswl %di, %edi",
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.movsx(size, 4, aasm::rdi, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 TEST(Asm, movzx_reg_reg1_to_word) {
     const std::vector<std::vector<std::uint8_t>> codes = {
         {0x66,0x0f,0xb6,0xd0},

@@ -79,8 +79,19 @@ public:
         return m_bb->ins(Call::call(std::move(prototype), cont, std::move(args)));
     }
 
+    [[nodiscard]]
     Value gep(const PrimitiveType* ty, const Value& pointer, const Value& index) const {
         return m_bb->ins(GetElementPtr::gep(ty, pointer, index));
+    }
+
+    [[nodiscard]]
+    Value sext(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::sext(to_type, value));
+    }
+
+    [[nodiscard]]
+    Value zext(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::zext(to_type, value));
     }
 
     [[nodiscard]]

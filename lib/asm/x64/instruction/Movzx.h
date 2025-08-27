@@ -14,7 +14,6 @@ namespace aasm::details {
 
         friend std::ostream& operator<<(std::ostream &os, const MovzxRR& movzxrr);
 
-
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
             Encoder enc(buffer, MOVZX_RR_8, MOVZX_RR);

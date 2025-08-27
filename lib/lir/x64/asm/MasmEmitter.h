@@ -114,6 +114,19 @@ public:
     void call(const aasm::Symbol* name) { m_asm.call(name); }
     void call(const aasm::Address& addr) { m_asm.call(addr); }
 
+    // Move With Zero-Extend
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
+    void movzx(const std::uint8_t src_size, const std::uint8_t dst_size, const Op& src, const aasm::GPReg dst) {
+        m_asm.movzx(src_size, dst_size, src, dst);
+    }
+
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
+    void movsx(const std::uint8_t src_size, const std::uint8_t dst_size, const Op& src, const aasm::GPReg dst) {
+        m_asm.movsx(src_size, dst_size, src, dst);
+    }
+
     void leave() { m_asm.leave(); }
 
     void jmp(const aasm::Label& label) {
