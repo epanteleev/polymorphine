@@ -2,11 +2,10 @@
 
 #include "mir/types/Type.h"
 #include "mir/value/Value.h"
+#include "mir/value/ArgumentValue.h"
 #include "FunctionPrototype.h"
 
 #include <utility>
-
-#include "mir/value/ArgumentValue.h"
 
 std::ostream & operator<<(std::ostream &os, const FunctionLinkage &linkage) {
     switch (linkage) {

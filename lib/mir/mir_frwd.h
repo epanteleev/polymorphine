@@ -18,6 +18,7 @@ class Store;
 class Alloc;
 class IcmpInstruction;
 class GetElementPtr;
+class GetFieldPtr;
 class Call;
 class Select;
 

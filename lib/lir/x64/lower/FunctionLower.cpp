@@ -342,6 +342,10 @@ void FunctionLower::accept(GetElementPtr *gep) {
     memorize(gep, gep_inst->def(0));
 }
 
+void FunctionLower::accept(GetFieldPtr *gfp) {
+
+}
+
 void FunctionLower::accept(Select *select) {
     const auto& on_true = select->on_true();
     const auto& on_false = select->on_false();

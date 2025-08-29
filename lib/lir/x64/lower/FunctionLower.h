@@ -97,6 +97,8 @@ private:
 
     void accept(GetElementPtr *gep) override;
 
+    void accept(GetFieldPtr *gfp) override;
+
     void accept(Select *select) override;
 
     void lower_load(const Unary *inst);

@@ -11,7 +11,7 @@ public:
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
-    static consteval const PointerType * ptr() noexcept {
+    static consteval const PointerType *ptr() noexcept {
         static constexpr PointerType p;
         return &p;
     }

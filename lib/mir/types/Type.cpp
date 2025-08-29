@@ -2,10 +2,9 @@
 #include "IntegerType.h"
 #include "FloatingPointType.h"
 #include "StructType.h"
+#include "ArrayType.h"
 
 #include <ostream>
-
-#include "ArrayType.h"
 
 namespace {
     class Printer final: public type::Visitor {

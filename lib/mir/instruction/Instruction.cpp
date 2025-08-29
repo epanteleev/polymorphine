@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ranges>
 
+#include "GetFieldPtr.h"
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Select.h"
 #include "mir/instruction/Alloc.h"
@@ -163,11 +164,19 @@ namespace {
             os << icmp->lhs() << ", " << icmp->rhs();
         }
 
+        void print(const std::string_view name, const FieldAccess* fa) const {
+            print_val(fa);
+            os << name << ' ';
+            os << *fa->access_type();
+            os << ' ' << fa->pointer() << ", " << fa->index();
+        }
+
         void accept(GetElementPtr *gep) override {
-            print_val(gep);
-            os << "gep ";
-            os << *gep->access_type();
-            os << ' ' << gep->pointer() << ", " << gep->index();
+            print("gep", gep);
+        }
+
+        void accept(GetFieldPtr *gfp) override {
+            print("gfp", gfp);
         }
 
         void accept(Select *select) override {

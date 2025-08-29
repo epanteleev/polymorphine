@@ -1,12 +1,11 @@
 #include "ModuleBuilder.h"
 #include "FunctionBuilder.h"
+#include "utility/Error.h"
 
 #include <ranges>
 
-#include "utility/Error.h"
-
 std::expected<FunctionBuilder*, Error> ModuleBuilder::make_function_builder(FunctionPrototype &&prototype) {
-    auto str = std::string(prototype.name());
+    std::string str(prototype.name());
 
     std::vector<ArgumentValue> args;
     for (auto [idx, tp]: std::ranges::views::enumerate(prototype.arg_types())) {
@@ -27,5 +26,11 @@ Module ModuleBuilder::build() noexcept {
         functions[n] = b.build();
     }
 
-    return Module(std::move(functions));
+    return Module(std::move(functions), std::move(m_known_structs));
+}
+
+const StructType * ModuleBuilder::add_struct_type(std::string_view name, std::vector<const NonTrivialType *> &&field_types) {
+    const auto& [it, inserted] = m_known_structs.emplace(std::string(name), StructType::make(name, std::move(field_types)));
+    assertion(inserted, "Struct type {} already defined", name);
+    return it->second.get();
 }
