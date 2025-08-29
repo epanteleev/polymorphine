@@ -33,6 +33,8 @@ class NonTrivialType;
 class PointerType;
 class FlagType;
 class VoidType;
+class StructType;
+class ArrayType;
 
 class Value;
 class ArgumentValue;

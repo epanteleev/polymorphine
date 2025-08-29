@@ -1,11 +1,16 @@
 #include "Type.h"
+#include "IntegerType.h"
+#include "FloatingPointType.h"
+#include "StructType.h"
 
 #include <ostream>
 
+#include "ArrayType.h"
+
 namespace {
-    class Printer final: type::Visitor {
+    class Printer final: public type::Visitor {
     public:
-        explicit Printer(std::ostream &os): os(os) {}
+        explicit Printer(std::ostream &os) noexcept: os(os) {}
 
         void do_print(const Type* type) {
             const_cast<Type*>(type)->visit(*this);
@@ -34,6 +39,21 @@ namespace {
 
         void accept(VoidType *type) override {
             os << "void";
+        }
+
+        void accept(StructType *type) override {
+            os << "struct " << type->name() << " { ";
+            for (const auto& field: type->field_types()) {
+                do_print(field);
+                os << ' ';
+            }
+            os << '}';
+        }
+
+        void accept(ArrayType *type) override {
+            os << '[' << type->length() << " x ";
+            do_print(type->element_type());
+            os << ']';
         }
 
         std::ostream &os;

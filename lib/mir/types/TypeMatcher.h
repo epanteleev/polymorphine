@@ -1,4 +1,5 @@
 #pragma once
+#include "VoidType.h"
 
 namespace impls {
     inline bool signed_type(const Type *type) noexcept {

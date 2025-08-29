@@ -13,5 +13,7 @@ namespace type {
         virtual void accept(PointerType *ptr) = 0;
         virtual void accept(FlagType *type) = 0;
         virtual void accept(VoidType *type) = 0;
+        virtual void accept(StructType *type) = 0;
+        virtual void accept(ArrayType *type) = 0;
     };
 }

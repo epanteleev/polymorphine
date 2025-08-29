@@ -7,6 +7,7 @@
 #include "module/FunctionData.h"
 
 #include "types/Type.h"
+#include "types/StructType.h"
 #include "types/TypeMatcher.h"
 
 #include "instruction/Instruction.h"

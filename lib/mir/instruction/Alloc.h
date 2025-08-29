@@ -1,5 +1,7 @@
 #pragma once
+
 #include "ValueInstruction.h"
+#include "mir/types/PointerType.h"
 
 
 class Alloc final: public ValueInstruction {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ValueInstruction.h"
+#include "mir/types/FlagType.h"
 
 enum class IcmpPredicate {
     Eq,
@@ -13,7 +14,7 @@ enum class IcmpPredicate {
 
 class Compare: public ValueInstruction {
 public:
-    Compare(const Value& lhs, const Value& rhs):
+    Compare(const Value& lhs, const Value& rhs) noexcept:
         ValueInstruction(FlagType::flag(),{lhs, rhs}) {}
 
     [[nodiscard]]

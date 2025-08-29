@@ -7,6 +7,8 @@
 
 #include "mir/mir_frwd.h"
 #include "mir/types/Type.h"
+#include "mir/types/FloatingPointType.h"
+#include "mir/types/IntegerType.h"
 
 template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
