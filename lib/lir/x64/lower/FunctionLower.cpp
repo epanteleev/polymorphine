@@ -71,6 +71,9 @@ static aasm::CondType unsigned_cond_type(const IcmpPredicate predicate) noexcept
     }
 }
 
+/**
+ * Determines the condition type from a given Value.
+ */
 static aasm::CondType cond_type(const Value& cond) noexcept {
     if (cond.isa(icmp(signed_v(), signed_v()))) {
         const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
@@ -87,12 +90,27 @@ static aasm::CondType cond_type(const Value& cond) noexcept {
     die("Unsupported condition type");
 }
 
+/**
+ * Maps MIR function linkage to LIR function linkage.
+ * @param linkage The FunctionLinkage from MIR.
+ * @return The corresponding LIRLinkage.
+ */
 static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
     switch (linkage) {
         case FunctionLinkage::EXTERN: return LIRLinkage::EXTERNAL;
         case FunctionLinkage::INTERNAL: return LIRLinkage::INTERNAL;
         default: die("Unsupported function linkage type in LIR");
     }
+}
+
+/**
+ * Calculates the index for a GetFieldPtr instruction.
+ */
+static LirCst gfp_index(const GetFieldPtr* gfp) noexcept {
+    const auto access_type = gfp->access_type();
+    const auto field_type = access_type->field(gfp->index());
+    const auto idx =  static_cast<std::int64_t>(access_type->offset_of(gfp->index()) / field_type->size_of());
+    return LirCst::imm64(idx);
 }
 
 void FunctionLower::setup_arguments() {
@@ -304,6 +322,11 @@ void FunctionLower::accept(Store *store) {
         const auto src = get_lir_val(gep->pointer());
         m_bb->ins(LIRInstruction::mov_by_idx(src, idx, value_vreg));
 
+    } else if (pointer.isa(gfp())) {
+        const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
+        const auto src = get_lir_val(gfp->pointer());
+        m_bb->ins(LIRInstruction::mov_by_idx(src, gfp_index(gfp), value_vreg));
+
     } else if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
@@ -430,6 +453,12 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx = get_lir_operand(gep->index());
         const auto src = get_lir_val(gep->pointer());
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, idx));
+        memorize(inst, load_inst->def(0));
+
+    } else if (pointer.isa(gfp())) {
+        const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
+        const auto src = get_lir_val(gfp->pointer());
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, gfp_index(gfp)));
         memorize(inst, load_inst->def(0));
 
     } else if (pointer.isa(argument())) {

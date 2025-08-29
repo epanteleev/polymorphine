@@ -4,12 +4,28 @@
 
 class GetFieldPtr final: public FieldAccess {
 public:
-    explicit GetFieldPtr(const NonTrivialType* basic_type, const Value &pointer, const Value &index) noexcept:
-        FieldAccess(basic_type, pointer, index) {}
+    explicit GetFieldPtr(const StructType* basic_type, const Value &pointer, const std::size_t index) noexcept:
+        FieldAccess({pointer}),
+        m_basic_type(basic_type),
+        m_index(index) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static std::unique_ptr<GetFieldPtr> gfp(const NonTrivialType* basic_type, const Value &pointer, const Value &index) {
+    [[nodiscard]]
+    std::size_t index() const {
+        return m_index;
+    }
+
+    [[nodiscard]]
+    const StructType* access_type() const noexcept {
+        return m_basic_type;
+    }
+
+    static std::unique_ptr<GetFieldPtr> gfp(const StructType* basic_type, const Value &pointer, const std::size_t index) {
         return std::make_unique<GetFieldPtr>(basic_type, pointer, index);
     }
+
+private:
+    const StructType* m_basic_type;
+    std::size_t m_index{};
 };

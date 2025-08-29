@@ -90,8 +90,8 @@ namespace {
             m_os << "mov_i in(" << in0 << ") in(" << in << ')';
         }
 
-        void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override {
-            m_os << "mov_by_idx_i out(" << out << ") index(" << index << ") in2(" << in2 << ')';
+        void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override {
+            m_os << "mov_by_idx_i pointer(" << pointer << ") index(" << index << ") in(" << in << ')';
         }
 
         void store_i(const LIRVal &pointer, const LIROperand &value) override {

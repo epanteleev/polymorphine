@@ -153,7 +153,7 @@ void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index
     const auto index_op = convert_to_gp_op(index);
     const auto in2_op = convert_to_gp_op(in);
 
-    MovByIdxIntEmit emitter(m_as, in.size());
+    MovByIdxIntEmit emitter(temporal_reg(m_current_inst), m_as, in.size());
     emitter.emit(out_reg, index_op, in2_op);
 }
 

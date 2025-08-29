@@ -29,6 +29,7 @@ public:
 
     std::unique_ptr<result_type> result() noexcept {
         std::unordered_map<const LIRBlock*, LiveInfo> liveness;
+        liveness.reserve(m_liveness.size());
         for (auto& [bb, live_info] : m_liveness) {
             liveness.emplace(bb, LiveInfo(std::move(live_info.first), std::move(live_info.second)));
         }

@@ -77,6 +77,10 @@ consteval auto gep() noexcept {
     return impls::value_inst<GetElementPtr>;
 }
 
+consteval auto gfp() noexcept {
+    return impls::value_inst<GetFieldPtr>;
+}
+
 consteval auto argument() noexcept {
     return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
 }

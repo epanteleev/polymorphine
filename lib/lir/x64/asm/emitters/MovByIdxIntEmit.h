@@ -1,15 +1,15 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-
+template<typename ClobberRegStorage, typename AsmEmit>
 class MovByIdxIntEmit final: public GPBinaryVisitor {
 public:
-    explicit MovByIdxIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+    explicit MovByIdxIntEmit(const ClobberRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
-        m_as(as) {}
+        m_as(as),
+        m_temporal_regs(m_temporal_regs) {}
 
-    void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
-        dispatch(*this, out, in1, in2);
+    void emit(const GPVReg& out, const GPOp& index, const GPOp& value) {
+        dispatch(*this, out, index, value);
     }
 
 private:
@@ -39,8 +39,8 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, std::int32_t in1, std::int32_t in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const std::int32_t in1, const std::int32_t in2) override {
+        m_as.mov(m_size, in2, aasm::Address(out, m_size * in1));
     }
 
     void emit(aasm::GPReg out, std::int32_t in1, const aasm::Address &in2) override {
@@ -88,5 +88,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const ClobberRegStorage& m_temporal_regs;
 };

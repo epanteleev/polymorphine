@@ -48,6 +48,11 @@ public:
         return m_field_types;
     }
 
+    [[nodiscard]]
+    const NonTrivialType* field(const std::size_t index) const {
+        return m_field_types.at(index);
+    }
+
     static std::unique_ptr<StructType> make(std::string_view name, std::vector<const NonTrivialType*>&& field_types) {
         auto [alignments, size, alignment] = compute_offsets(field_types);
         return std::make_unique<StructType>(name, std::move(field_types), std::move(alignments), size, alignment);

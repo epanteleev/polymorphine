@@ -8,6 +8,7 @@ std::expected<FunctionBuilder*, Error> ModuleBuilder::make_function_builder(Func
     std::string str(prototype.name());
 
     std::vector<ArgumentValue> args;
+    args.reserve(prototype.arg_types().size());
     for (auto [idx, tp]: std::ranges::views::enumerate(prototype.arg_types())) {
         args.emplace_back(idx, tp);
     }
@@ -22,6 +23,7 @@ std::expected<FunctionBuilder*, Error> ModuleBuilder::make_function_builder(Func
 
 Module ModuleBuilder::build() noexcept {
     std::unordered_map<std::string, std::unique_ptr<FunctionData>> functions;
+    functions.reserve(m_functions.size());
     for (auto&& [n, b] : m_functions) {
         functions[n] = b.build();
     }

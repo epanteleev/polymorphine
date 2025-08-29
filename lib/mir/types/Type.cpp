@@ -41,12 +41,7 @@ namespace {
         }
 
         void accept(StructType *type) override {
-            os << "struct " << type->name() << " { ";
-            for (const auto& field: type->field_types()) {
-                do_print(field);
-                os << ' ';
-            }
-            os << '}';
+            os << "$" << type->name();
         }
 
         void accept(ArrayType *type) override {

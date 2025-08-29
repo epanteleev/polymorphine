@@ -3,13 +3,9 @@
 #include <iostream>
 #include <ranges>
 
-#include "GetFieldPtr.h"
-#include "mir/instruction/Phi.h"
-#include "mir/instruction/Select.h"
-#include "mir/instruction/Alloc.h"
 #include "mir/module/BasicBlock.h"
-#include "mir/instruction/Store.h"
 #include "mir/types/Type.h"
+#include "mir/types/StructType.h"
 #include "mir/value/Value.h"
 #include "mir/instruction/ValueInstruction.h"
 #include "mir/instruction/Binary.h"
@@ -18,6 +14,11 @@
 #include "mir/instruction/TerminateValueInstruction.h"
 #include "mir/instruction/Compare.h"
 #include "mir/instruction/GetElementPtr.h"
+#include "mir/instruction/GetFieldPtr.h"
+#include "mir/instruction/Phi.h"
+#include "mir/instruction/Select.h"
+#include "mir/instruction/Alloc.h"
+#include "mir/instruction/Store.h"
 
 #include "utility/Error.h"
 
@@ -164,10 +165,11 @@ namespace {
             os << icmp->lhs() << ", " << icmp->rhs();
         }
 
-        void print(const std::string_view name, const FieldAccess* fa) const {
+        template<typename T>
+        void print(const std::string_view name, const T* fa) const {
             print_val(fa);
             os << name << ' ';
-            os << *fa->access_type();
+            os << *static_cast<const NonTrivialType*>(fa->access_type());
             os << ' ' << fa->pointer() << ", " << fa->index();
         }
 

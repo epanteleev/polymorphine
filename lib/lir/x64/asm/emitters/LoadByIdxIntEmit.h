@@ -8,8 +8,8 @@ public:
         m_size(size),
         m_as(as) {}
 
-    void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
-        dispatch(*this, out, in1, in2);
+    void emit(const GPVReg& out, const GPOp& pointer, const GPOp& index) {
+        dispatch(*this, out, pointer, index);
     }
 
 private:
@@ -31,8 +31,8 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, aasm::GPReg in1, std::int32_t in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::GPReg in1, const std::int32_t in2) override {
+        m_as.mov(m_size, aasm::Address(in1, m_size * in2), out);
     }
 
     void emit(aasm::GPReg out, std::int32_t in1, aasm::GPReg in2) override {

@@ -17,6 +17,14 @@ const FunctionData* Module::add_function_data(FunctionPrototype &&proto, std::ve
 }
 
 std::ostream & operator<<(std::ostream &os, const Module &module) {
+    for (const auto &s: module.m_known_structs | std::views::values) {
+        os << '$' << s->name() << " = type { ";
+        for (const auto &ft: s->field_types()) {
+            os << *ft << ' ';
+        }
+        os << "}" << std::endl;
+    }
+
     for (const auto &f: module.m_functions | std::views::values) {
         f->print(os);
     }

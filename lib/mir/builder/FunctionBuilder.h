@@ -86,7 +86,7 @@ public:
     }
 
     [[nodiscard]]
-    Value gfp(const NonTrivialType* ty, const Value& pointer, const Value& index) const {
+    Value gfp(const StructType* ty, const Value& pointer, const std::size_t index) const {
         return m_bb->ins(GetFieldPtr::gfp(ty, pointer, index));
     }
 
