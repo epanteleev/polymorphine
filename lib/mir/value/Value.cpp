@@ -16,7 +16,7 @@ Value::Value(const ValueInstruction *value) noexcept:
 
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
+        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t>) {
             os << val;
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *>) {

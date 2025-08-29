@@ -9,7 +9,7 @@ public:
     GPOp(const aasm::GPReg reg) noexcept
         : m_reg(reg) {}
 
-    GPOp(const aasm::Address addr) noexcept:
+    GPOp(const aasm::Address& addr) noexcept:
         m_reg(addr) {}
 
     GPOp(const std::int64_t imm) noexcept:

@@ -3,6 +3,7 @@
 #include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
+#include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 
 namespace details {
     GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) const {
@@ -23,5 +24,15 @@ namespace details {
         EmptyEmitter empty_emitter;
         CMovGPEmit emitter( m_temp_counter, empty_emitter, cond_type, out.size());
         emitter.emit(out_reg, in1_reg, in2_reg);
+    }
+
+    void AllocTemporalRegs::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in) {
+        const auto out_reg = m_reg_allocation.at(out);
+        const auto index_op = convert_to_gp_op(index);
+        const auto in2_op = convert_to_gp_op(in);
+
+        EmptyEmitter empty_emitter;
+        MovByIdxIntEmit emitter(m_temp_counter, empty_emitter, in.size());
+        emitter.emit(out_reg, index_op, in2_op);
     }
 }

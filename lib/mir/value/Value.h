@@ -13,15 +13,13 @@
 template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
-    std::is_same_v<T, std::uint64_t> ||
     std::is_same_v<T, ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *>;
 
 class Value final {
 public:
     constexpr Value(double value, const FloatingPointType *type) noexcept: m_value(value), m_type(type) {}
-    constexpr Value(std::uint64_t value, const UnsignedIntegerType* type) noexcept: m_value(value), m_type(type) {}
-    constexpr Value(std::int64_t value, const SignedIntegerType * type) noexcept: m_value(value), m_type(type) {}
+    constexpr Value(std::int64_t value, const IntegerType * type) noexcept: m_value(value), m_type(type) {}
 
     Value(const ArgumentValue* value) noexcept;
     Value(const ValueInstruction * value) noexcept;
@@ -78,30 +76,29 @@ public:
         return {value, SignedIntegerType::i16()};
     }
 
-    constexpr static Value u16(std::uint16_t value) noexcept {
+    constexpr static Value u16(const std::uint16_t value) noexcept {
         return {value, UnsignedIntegerType::u16()};
     }
 
-    constexpr static Value i32(int value) noexcept {
+    constexpr static Value i32(const int value) noexcept {
         return {value, SignedIntegerType::i32()};
     }
 
-    constexpr static Value u32(std::uint32_t value) noexcept {
+    constexpr static Value u32(const std::uint32_t value) noexcept {
         return {value, UnsignedIntegerType::u32()};
     }
 
-    constexpr static Value i64(std::int64_t value) noexcept {
+    constexpr static Value i64(const std::int64_t value) noexcept {
         return {value, SignedIntegerType::i64()};
     }
 
-    constexpr static Value u64(std::uint64_t value) noexcept {
-        return {value, UnsignedIntegerType::u64()};
+    constexpr static Value u64(const std::uint64_t value) noexcept {
+        return {static_cast<std::int64_t>(value), UnsignedIntegerType::u64()};
     }
 
 private:
     std::variant<double,
         std::int64_t,
-        std::uint64_t,
         ArgumentValue*,
         ValueInstruction *> m_value;
     const Type* m_type;

@@ -186,6 +186,10 @@ private:
             allocate_temporal_registers(inst_range);
             range_begin = unhandled_interval->start();
         }
+
+        // Process the remaining instructions.
+        const std::span inst_range(m_instruction_ordering.begin() + range_begin, m_instruction_ordering.end());
+        allocate_temporal_registers(inst_range);
     }
 
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {

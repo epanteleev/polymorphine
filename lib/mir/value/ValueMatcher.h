@@ -5,7 +5,7 @@
 
 namespace impls {
     inline bool constant(const Value& value) {
-        return value.is<double>() || value.is<std::int64_t>() || value.is<std::uint64_t>();
+        return value.is<double>() || value.is<std::int64_t>();
     }
 
     inline bool signed_v(const Value& value) {
@@ -43,9 +43,7 @@ namespace impls {
         if (value.is<std::int64_t>()) {
             return value.get<std::int64_t>() == static_cast<std::int64_t>(cst);
         }
-        if (value.is<std::uint64_t>()) {
-            return value.get<std::uint64_t>() == cst;
-        }
+
         return false;
     }
 }

@@ -13,7 +13,7 @@ static Module point_struct() {
         const auto field0 = data.gfp(point_type, arg0, 0);
         const auto field1 = data.gfp(point_type, arg0, 1);
         data.store(field0, Value::i32(-42));
-        data.store(field1, Value::u64(100500));
+        data.store(field1, Value::u64(static_cast<std::int64_t>(INT_MAX)+2));
         data.ret();
     }
     {
@@ -45,9 +45,9 @@ TEST(StructAccess, init) {
     Point p{};
     init(&p);
     ASSERT_EQ(p.x, -42);
-    ASSERT_EQ(p.y, 100500);
+    ASSERT_EQ(p.y, static_cast<std::int64_t>(INT_MAX)+2);
     const auto sum = sum_fields(&p);
-    ASSERT_EQ(sum, -42 + 100500);
+    ASSERT_EQ(sum, -42 + static_cast<std::int64_t>(INT_MAX)+2);
 }
 
 int main(int argc, char **argv) {

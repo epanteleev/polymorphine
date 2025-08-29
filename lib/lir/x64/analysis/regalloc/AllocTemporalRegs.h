@@ -82,7 +82,7 @@ namespace details {
 
         void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
 
-        void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override {}
+        void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override;
 
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
 
