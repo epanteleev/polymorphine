@@ -106,11 +106,22 @@ static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
 /**
  * Calculates the index for a GetFieldPtr instruction.
  */
-static LirCst gfp_index(const GetFieldPtr* gfp) noexcept {
-    const auto access_type = gfp->access_type();
-    const auto field_type = access_type->field(gfp->index());
-    const auto idx =  static_cast<std::int64_t>(access_type->offset_of(gfp->index()) / field_type->size_of());
-    return LirCst::imm64(idx);
+static std::pair<Value, LirCst> gfp_index(const GetFieldPtr* gfp_inst) noexcept {
+    Value current = gfp_inst;
+    std::size_t offset{};
+    Value pointer = gfp_inst->pointer();
+
+    while (current.isa(gfp())) {
+        const auto gfp = dynamic_cast<const GetFieldPtr*>(current.get<ValueInstruction*>());
+        const auto access_type = gfp->access_type();
+        offset = offset + static_cast<std::int64_t>(access_type->offset_of(gfp->index()));
+        current = gfp->pointer();
+        pointer = gfp->pointer();
+    }
+    const auto access_type = gfp_inst->access_type();
+    const auto field_type = access_type->field(gfp_inst->index());
+    const auto index = offset / field_type->size_of();
+    return {pointer, LirCst::imm64(index)};
 }
 
 void FunctionLower::setup_arguments() {
@@ -324,8 +335,9 @@ void FunctionLower::accept(Store *store) {
 
     } else if (pointer.isa(gfp())) {
         const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
-        const auto src = get_lir_val(gfp->pointer());
-        m_bb->ins(LIRInstruction::mov_by_idx(src, gfp_index(gfp), value_vreg));
+        auto [ptr, index] = gfp_index(gfp);
+        const auto src = get_lir_val(ptr);
+        m_bb->ins(LIRInstruction::mov_by_idx(src, index, value_vreg));
 
     } else if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
@@ -457,8 +469,9 @@ void FunctionLower::lower_load(const Unary *inst) {
 
     } else if (pointer.isa(gfp())) {
         const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
-        const auto src = get_lir_val(gfp->pointer());
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, gfp_index(gfp)));
+        auto [ptr, index] = gfp_index(gfp);
+        const auto src = get_lir_val(ptr);
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, index));
         memorize(inst, load_inst->def(0));
 
     } else if (pointer.isa(argument())) {
