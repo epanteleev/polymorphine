@@ -4,20 +4,24 @@
 #include "mir/types/TypeMatcher.h"
 
 namespace impls {
-    inline bool constant(const Value& value) {
+    static bool any_value(const Value&) noexcept {
+        return true;
+    }
+
+    static bool constant(const Value& value) noexcept {
         return value.is<double>() || value.is<std::int64_t>();
     }
 
-    inline bool signed_v(const Value& value) {
+    static bool signed_v(const Value& value) noexcept {
         return signed_type(value.type());
     }
 
-    inline bool unsigned_v(const Value& value) {
+    static bool unsigned_v(const Value& value) noexcept {
         return unsigned_type(value.type());
     }
 
     template<typename LHS, typename RHL>
-    bool icmp(const Value& inst, LHS& l, RHL&& r) {
+    static bool icmp(const Value& inst, LHS& l, RHL&& r) noexcept {
         if (!inst.is<ValueInstruction*>()) {
             return false;
         }
@@ -30,7 +34,7 @@ namespace impls {
     }
 
     template<typename T>
-    bool value_inst(const Value& inst) noexcept {
+    static bool value_inst(const Value& inst) noexcept {
         if (!inst.is<ValueInstruction*>()) {
             return false;
         }
@@ -40,7 +44,7 @@ namespace impls {
     }
 
     template<typename... Args>
-    bool match_args(const std::span<const Value>& values, Args&& ...args) noexcept {
+    static bool match_args(const std::span<const Value>& values, Args&& ...args) noexcept {
         std::size_t index{};
         const auto matcher = [&]<typename T>(T&& arg) {
             if (!arg(values[index])) {
@@ -54,7 +58,7 @@ namespace impls {
     }
 
     template<typename T, typename ...Args>
-    bool value_inst_with_operands(const Value& inst, Args&& ...args) noexcept {
+    static bool value_inst_with_operands(const Value& inst, Args&& ...args) noexcept {
         if (!inst.is<ValueInstruction*>()) {
             return false;
         }
@@ -66,7 +70,7 @@ namespace impls {
         return false;
     }
 
-    inline bool integral(const Value& value, const std::uint64_t cst) noexcept {
+    static bool integral(const Value& value, const std::uint64_t cst) noexcept {
         if (value.is<std::int64_t>()) {
             return value.get<std::int64_t>() == static_cast<std::int64_t>(cst);
         }
@@ -75,48 +79,63 @@ namespace impls {
     }
 }
 
-consteval auto constant() {
+static consteval auto any_value() noexcept {
+    return impls::any_value;
+}
+
+template<typename Matcher>
+static consteval auto neg(Matcher&& matcher) noexcept {
+    return [=](const Value& value) {
+        return !matcher(value);
+    };
+}
+
+static consteval auto constant() {
     return impls::constant;
 }
 
-consteval auto signed_v() {
+static consteval auto signed_v() {
     return impls::signed_v;
 }
 
-consteval auto unsigned_v() {
+static consteval auto unsigned_v() {
     return impls::unsigned_v;
 }
 
 template<typename LHS, typename RHS>
-consteval auto icmp(LHS&& l, RHS&& r) noexcept {
+static consteval auto icmp(LHS&& l, RHS&& r) noexcept {
     return [=](const Value& inst) {
         return impls::icmp(inst, l, r);
     };
 }
 
-consteval auto alloc() noexcept {
+static consteval auto alloc() noexcept {
     return impls::value_inst<Alloc>;
 }
 
-consteval auto gep() noexcept {
+static consteval auto field_access() noexcept {
+    return impls::value_inst<FieldAccess>;
+}
+
+static consteval auto gep() noexcept {
     return impls::value_inst<GetElementPtr>;
 }
 
-consteval auto gfp() noexcept {
-    return impls::value_inst<GetFieldPtr>;
-}
-
-template<typename Matcher>
-consteval auto gfp(Matcher&& pointer) noexcept {
+template<typename Matcher1, typename Matcher2>
+static consteval auto gep(Matcher1&& pointer, Matcher2&& index) noexcept {
     return [=](const Value& inst) {
-        return impls::value_inst_with_operands<GetFieldPtr>(inst, pointer);
+        return impls::value_inst_with_operands<GetElementPtr>(inst, pointer, index);
     };
 }
 
-consteval auto argument() noexcept {
+static consteval auto gfp() noexcept {
+    return impls::value_inst<GetFieldPtr>;
+}
+
+static consteval auto argument() noexcept {
     return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
 }
 
-consteval auto integral(const std::uint64_t cst) noexcept {
+static consteval auto integral(const std::uint64_t cst) noexcept {
     return [=](const Value& value) { return impls::integral(value, cst); };
 }

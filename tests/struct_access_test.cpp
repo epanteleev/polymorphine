@@ -102,7 +102,7 @@ struct Vec {
     Point p1;
 };
 
-TEST(StructAccess, nested) {
+TEST(StructAccess, nested_stackalloc) {
     const auto buffer = jit_compile_and_assembly(vec_struct(), true);
     const auto init = buffer.code_start_as<void(Point*)>("init_vec").value();
     const auto sum_fields = buffer.code_start_as<int64_t(Point*)>("sum_fields").value();
@@ -119,8 +119,8 @@ TEST(StructAccess, nested) {
 
 static Module struct_stackalloc() {
     ModuleBuilder builder;
-    auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
     {
+        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
         FunctionPrototype prototype(SignedIntegerType::i64(), {}, "make_point");
         auto& data = *builder.make_function_builder(std::move(prototype)).value();
         const auto alloca = data.alloc(point_type);
@@ -139,8 +139,12 @@ static Module struct_stackalloc() {
     return builder.build();
 }
 
-TEST(StructAlloc, stack) {
-    const auto buffer = jit_compile_and_assembly(struct_stackalloc(), true);
+TEST(StructAlloc, stack_alloc) {
+    static std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_point", 12},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, struct_stackalloc(), asm_size, true);
     const auto make_point = buffer.code_start_as<int64_t()>("make_point").value();
     const auto sum = make_point();
     ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)-42+2);

@@ -36,3 +36,12 @@ inline std::ostream & operator<<(std::ostream &os, const LiveIntervals &interval
 
     return os;
 }
+
+struct IntervalEntry final {
+    IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
+        interval(interval),
+        lir_val(vreg) {}
+
+    const LiveInterval* interval;
+    LIRVal lir_val;
+};

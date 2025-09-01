@@ -4,6 +4,8 @@
 
 #include <ranges>
 
+#include "mir/types/ArrayType.h"
+
 std::expected<FunctionBuilder*, Error> ModuleBuilder::make_function_builder(FunctionPrototype &&prototype) {
     std::string str(prototype.name());
 
@@ -28,11 +30,16 @@ Module ModuleBuilder::build() noexcept {
         functions[n] = b.build();
     }
 
-    return Module(std::move(functions), std::move(m_known_structs));
+    return Module(std::move(functions), std::move(m_known_structs), std::move(m_array_types));
 }
 
-const StructType * ModuleBuilder::add_struct_type(std::string_view name, std::vector<const NonTrivialType *> &&field_types) {
+const StructType *ModuleBuilder::add_struct_type(std::string_view name, std::vector<const NonTrivialType *> &&field_types) {
     const auto& [it, inserted] = m_known_structs.emplace(std::string(name), StructType::make(name, std::move(field_types)));
     assertion(inserted, "Struct type {} already defined", name);
     return it->second.get();
+}
+
+const ArrayType *ModuleBuilder::add_array_type(const NonTrivialType *element_type, const std::size_t length) {
+    m_array_types.push_back(ArrayType::make(element_type, length));
+    return m_array_types.back().get();
 }

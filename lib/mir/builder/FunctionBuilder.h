@@ -81,7 +81,7 @@ public:
     }
 
     [[nodiscard]]
-    Value gep(const PrimitiveType* ty, const Value& pointer, const Value& index) const {
+    Value gep(const NonTrivialType* ty, const Value& pointer, const Value& index) const {
         return m_bb->ins(GetElementPtr::gep(ty, pointer, index));
     }
 

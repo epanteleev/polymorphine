@@ -27,15 +27,6 @@ private:
         m_preorder(preorder),
         m_reg_set(std::move(reg_set)) {}
 
-    struct IntervalEntry final {
-        IntervalEntry(const LiveInterval* interval, const LIRVal vreg) noexcept:
-            interval(interval),
-            lir_val(vreg) {}
-
-        const LiveInterval* interval;
-        LIRVal lir_val;
-    };
-
 public:
     void run() {
         m_used_callee_saved_regs.reserve(CC::GP_CALLEE_SAVE_REGISTERS.size());
@@ -86,7 +77,7 @@ private:
         }
 
         const auto pred = [](const IntervalEntry& lhs, const IntervalEntry& rhs) {
-            return lhs.interval->begin()->start() > rhs.interval->begin()->start();
+            return lhs.interval->start() > rhs.interval->start();
         };
 
         std::ranges::sort(m_unhandled_intervals, pred);

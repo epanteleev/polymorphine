@@ -39,7 +39,7 @@ public:
     }
 
     [[nodiscard]]
-    std::span<const Value> operands() const {
+    std::span<const Value> operands() const noexcept {
         return m_values;
     }
 

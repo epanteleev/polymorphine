@@ -16,7 +16,7 @@ public:
 
 private:
     explicit FixedRegistersEvalBase(const LIRFuncData &obj_func_data) noexcept:
-        m_obj_func_data(obj_func_data){}
+        m_obj_func_data(obj_func_data) {}
 
 public:
     void run() {

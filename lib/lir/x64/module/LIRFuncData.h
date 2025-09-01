@@ -2,16 +2,17 @@
 
 #include <ranges>
 
-#include "LIRBlock.h"
-#include "lir/x64/operand/LIRVal.h"
 #include "base/FunctionDataBase.h"
+#include "lir/x64/module/LIRBlock.h"
+#include "lir/x64/operand/LIRVal.h"
 #include "lir/x64/instruction/LIRReturn.h"
 
 
 class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {
 public:
-    LIRFuncData(std::string_view name, std::vector<LIRArg> &&args) noexcept:
-        FunctionDataBase(std::move(args)), m_name(name) {
+    LIRFuncData(const std::string_view name, std::vector<LIRArg> &&args) noexcept:
+        FunctionDataBase(std::move(args)),
+        m_name(name) {
         create_mach_block();
     }
 
@@ -27,7 +28,7 @@ public:
     }
 
     [[nodiscard]]
-    LIRVal arg(const std::size_t index) const {
+    LIRVal arg(const std::size_t index) const noexcept {
         return LIRVal::from(&m_args[index]);
     }
 

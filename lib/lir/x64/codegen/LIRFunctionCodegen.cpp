@@ -261,7 +261,7 @@ void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
 }
 
 void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-
+    unimplemented();
 }
 
 void LIRFunctionCodegen::jmp(const LIRBlock *bb) {

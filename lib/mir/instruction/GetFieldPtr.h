@@ -12,7 +12,7 @@ public:
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     [[nodiscard]]
-    std::size_t index() const {
+    std::size_t index() const noexcept {
         return m_index;
     }
 

@@ -24,6 +24,11 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_reg_map.size();
+    }
+
+    [[nodiscard]]
     bool contains(const LIRVal& val) const noexcept {
         return m_reg_map.contains(val);
     }

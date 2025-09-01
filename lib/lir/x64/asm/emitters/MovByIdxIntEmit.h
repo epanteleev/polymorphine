@@ -35,8 +35,10 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, std::int64_t in1, aasm::GPReg in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const std::int64_t in1, const aasm::GPReg in2) override {
+        const auto offset = static_cast<std::int64_t>(m_size) * in1;
+        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for mov by idx");
+        m_as.mov(m_size, in2, aasm::Address(out, offset));
     }
 
     void emit(const aasm::GPReg out, const std::int64_t in1, const std::int64_t in2) override {
