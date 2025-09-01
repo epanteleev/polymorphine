@@ -4,7 +4,7 @@
 
 class AddIntEmit final: public GPBinaryVisitor {
 public:
-    static void emit(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+    static void apply(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         AddIntEmit emitter(as, size);
         dispatch(emitter, out, in1, in2);
     }

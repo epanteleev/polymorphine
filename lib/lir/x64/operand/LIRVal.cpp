@@ -13,7 +13,7 @@ static char size_prefix(std::size_t size) {
         case 2: return 'w';
         case 4: return 'd';
         case 8: return 'q';
-        default: die("wrong size {}", size);
+        default: return 'L';
     }
 }
 

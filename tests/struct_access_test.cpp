@@ -117,6 +117,35 @@ TEST(StructAccess, nested) {
     ASSERT_EQ(sum, -42 + static_cast<std::int64_t>(INT_MAX)+2 + 100 + static_cast<std::int64_t>(INT_MAX)+3);
 }
 
+static Module struct_stackalloc() {
+    ModuleBuilder builder;
+    auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
+    {
+        FunctionPrototype prototype(SignedIntegerType::i64(), {}, "make_point");
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto alloca = data.alloc(point_type);
+        const auto field0 = data.gfp(point_type, alloca, 0);
+        const auto field1 = data.gfp(point_type, alloca, 1);
+        data.store(field0, Value::i32(-42));
+        data.store(field1, Value::u64(static_cast<std::int64_t>(INT_MAX)+2));
+        const auto val0 = data.load(SignedIntegerType::i32(), field0);
+        const auto val1 = data.load(UnsignedIntegerType::u64(), field1);
+        const auto val0_u64 = data.sext(SignedIntegerType::i64(), val0);
+        const auto val1_i64 = data.bitcast(SignedIntegerType::i64(), val1);
+        const auto sum = data.add(val0_u64, val1_i64);
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+TEST(StructAlloc, stack) {
+    const auto buffer = jit_compile_and_assembly(struct_stackalloc(), true);
+    const auto make_point = buffer.code_start_as<int64_t()>("make_point").value();
+    const auto sum = make_point();
+    ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)-42+2);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

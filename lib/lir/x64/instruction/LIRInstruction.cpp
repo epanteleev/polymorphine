@@ -4,15 +4,21 @@
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRInstKind::Mov: {
-            const auto in0 = LIRVal::try_from(in(0));
-            assertion(in0.has_value(), "invariant");
-            visitor.mov_i(in0.value(), in(1));
+            const auto inout = LIRVal::try_from(in(0));
+            assertion(inout.has_value(), "invariant");
+            visitor.mov_i(inout.value(), in(1));
             break;
         }
         case LIRInstKind::MovByIdx: {
-            const auto in0 = LIRVal::try_from(in(0));
-            assertion(in0.has_value(), "invariant");
-            visitor.mov_by_idx_i(in0.value(), in(1), in(2));
+            const auto inout = LIRVal::try_from(in(0));
+            assertion(inout.has_value(), "invariant");
+            visitor.mov_by_idx_i(inout.value(), in(1), in(2));
+            break;
+        }
+        case LIRInstKind::StoreOnStack: {
+            const auto inout = LIRVal::try_from(in(0));
+            assertion(inout.has_value(), "invariant");
+            visitor.store_on_stack_i(inout.value(), in(1), in(2));
             break;
         }
         case LIRInstKind::Store: {

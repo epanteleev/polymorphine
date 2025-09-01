@@ -87,7 +87,11 @@ private:
 
     void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override;
 
+    void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
+
     void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
+
+    void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
 
     void store_i(const LIRVal &pointer, const LIROperand &value) override;
 

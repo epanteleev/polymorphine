@@ -84,6 +84,8 @@ namespace details {
 
         void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override;
 
+        void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
+
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
 
         void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
@@ -99,6 +101,8 @@ namespace details {
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
 
         void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
+
+        void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
         void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 

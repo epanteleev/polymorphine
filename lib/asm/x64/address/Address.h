@@ -70,6 +70,15 @@ namespace aasm {
             return std::visit(hash_fn, m_address);
         }
 
+        [[nodiscard]]
+        std::int32_t offset() const noexcept {
+            const auto vis = []<typename T0>(const T0& addr) {
+                return addr.offset();
+            };
+
+            return std::visit(vis, m_address);
+        }
+
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 

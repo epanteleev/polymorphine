@@ -4,7 +4,7 @@
 
 class CmpGPEmit final: public GPUnaryVisitor {
 public:
-    static void emit(MasmEmitter& as, const std::uint8_t size, const GPOp& out, const GPOp& in) {
+    static void apply(MasmEmitter& as, const std::uint8_t size, const GPOp& out, const GPOp& in) {
         CmpGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }

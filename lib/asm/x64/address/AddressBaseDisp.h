@@ -58,6 +58,11 @@ namespace aasm {
             return std::hash<std::int32_t>()(m_displacement) ^ m_base.hash();
         }
 
+        [[nodiscard]]
+        std::int32_t offset() const noexcept {
+            return m_displacement;
+        }
+
     private:
         friend class Address;
         std::int32_t m_displacement;

@@ -4,7 +4,7 @@
 
 class MovGPEmit final: public GPUnaryAddrVisitor {
 public:
-    static void emit(MasmEmitter& as, const std::uint8_t size, const aasm::Address& out, const GPOp& in) {
+    static void apply(MasmEmitter& as, const std::uint8_t size, const aasm::Address& out, const GPOp& in) {
         MovGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }

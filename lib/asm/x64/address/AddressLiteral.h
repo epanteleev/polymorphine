@@ -39,6 +39,11 @@ namespace aasm {
             return std::hash<const Symbol*>()(m_symbol) ^ std::hash<std::int32_t>()(m_displacement);
         }
 
+        [[nodiscard]]
+        std::int32_t offset() const noexcept {
+            return m_displacement;
+        }
+
     private:
         const Symbol* m_symbol;
         std::int32_t m_displacement;

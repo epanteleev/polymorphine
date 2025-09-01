@@ -18,6 +18,7 @@ enum class LIRProdInstKind: std::uint8_t {
     Copy,
     Load,
     LoadByIdx,
+    LoadFromStack,
     Lea,
     Movz,
     Movs,
@@ -60,6 +61,10 @@ public:
 
     static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIRVal &pointer, const LIROperand &index) {
         return create(LIRProdInstKind::LoadByIdx, loaded_ty_size, LIROperand(pointer), index);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> load_from_stack(const std::uint8_t loaded_ty_size, const LIRVal &pointer, const LIROperand &index) {
+        return create(LIRProdInstKind::LoadFromStack, loaded_ty_size, LIROperand(pointer), index);
     }
 
     static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIRVal &pointer, const LIROperand &index) {

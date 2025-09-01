@@ -7,6 +7,7 @@
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "lir/x64/instruction/Matcher.h"
 #include "lir/x64/instruction/ParallelCopy.h"
+#include "lir/x64/operand/OperandMatcher.h"
 
 #include "mir/mir.h"
 
@@ -124,6 +125,27 @@ static std::pair<Value, LirCst> gfp_index(const GetFieldPtr* gfp_inst) noexcept 
     return {pointer, LirCst::imm64(index)};
 }
 
+static bool is_pinned(const Instruction& inst) noexcept {
+    const auto value_inst = dynamic_cast<const ValueInstruction*>(&inst);
+    if (value_inst == nullptr) {
+        return true;
+    }
+
+    if (inst.isa(load()) || inst.isa(any_terminate())) {
+        return true;
+    }
+
+    if (dynamic_cast<const FieldAccess*>(value_inst) != nullptr) {
+        return false;
+    }
+
+    if (value_inst->users().size() > 1) {
+        return true;
+    }
+
+    return false;
+}
+
 void FunctionLower::setup_arguments() {
     m_bb->ins(LIRAdjustStack::prologue());
     for (const auto& [arg, lir_arg]: std::ranges::zip_view(m_function.args(), m_obj_function->args())) {
@@ -136,18 +158,12 @@ void FunctionLower::traverse_instructions() {
     for (const auto &bb: m_dom_ordering) {
         m_bb = m_bb_mapping.at(bb);
         for (auto &inst: bb->instructions()) {
-            if (inst.isa(load()) || inst.isa(any_terminate())) {
+            if (is_pinned(inst)) {
                 inst.visit(*this);
                 continue;
             }
 
             const auto value_inst = dynamic_cast<ValueInstruction*>(&inst);
-            if (value_inst == nullptr || value_inst->users().size() > 1) {
-                // Just handle this instruction
-                inst.visit(*this);
-                continue;
-            }
-
             // Put the instruction into the set. It will be processed later on demand before its user.
             m_late_schedule_instructions.emplace(value_inst);
         }
@@ -333,6 +349,12 @@ void FunctionLower::accept(Store *store) {
         const auto src = get_lir_val(gep->pointer());
         m_bb->ins(LIRInstruction::mov_by_idx(src, idx, value_vreg));
 
+    } else if (pointer.isa(gfp(alloc()))) {
+        const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
+        auto [ptr, index] = gfp_index(gfp);
+        const auto src = get_lir_val(ptr);
+        m_bb->ins(LIRInstruction::store_on_stack(src, index, value_vreg));
+
     } else if (pointer.isa(gfp())) {
         const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
         auto [ptr, index] = gfp_index(gfp);
@@ -349,17 +371,9 @@ void FunctionLower::accept(Store *store) {
 }
 
 void FunctionLower::accept(Alloc *alloc) {
-    if (const auto type = alloc->allocated_type(); type->isa(primitive())) {
-        const auto primitive_type = dynamic_cast<const PrimitiveType*>(type);
-        assertion(primitive_type != nullptr, "Expected PrimitiveType for allocation");
-
-        const auto size = primitive_type->size_of();
-        const auto alloc_inst = m_bb->ins(LIRProducerInstruction::gen(size));
-        memorize(alloc, alloc_inst->def(0));
-
-    } else {
-        unimplemented();
-    }
+    const auto size = alloc->allocated_type()->size_of();
+    const auto alloc_inst = m_bb->ins(LIRProducerInstruction::gen(size));
+    memorize(alloc, alloc_inst->def(0));
 }
 
 void FunctionLower::accept(IcmpInstruction *icmp) {
@@ -465,6 +479,13 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx = get_lir_operand(gep->index());
         const auto src = get_lir_val(gep->pointer());
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src, idx));
+        memorize(inst, load_inst->def(0));
+
+    } else if (pointer.isa(gfp(alloc()))) {
+        const auto gfp = dynamic_cast<GetFieldPtr*>(pointer.get<ValueInstruction*>());
+        auto [ptr, index] = gfp_index(gfp);
+        const auto src = get_lir_val(ptr);
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(type->size_of(), src, index));
         memorize(inst, load_inst->def(0));
 
     } else if (pointer.isa(gfp())) {

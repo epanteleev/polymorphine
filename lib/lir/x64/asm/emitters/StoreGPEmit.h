@@ -4,7 +4,7 @@
 
 class StoreGPEmit final: public GPUnaryOutVisitor {
 public:
-    static void emit(MasmEmitter &as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
+    static void apply(MasmEmitter &as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
         StoreGPEmit emitter(as, size);
         dispatch(emitter, out, in);
     }

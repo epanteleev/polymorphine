@@ -12,7 +12,7 @@ public:
         m_as(as),
         m_temporal_regs(regs) {}
 
-    void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+    void apply(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         dispatch(*this, out, in1, in2);
     }
 

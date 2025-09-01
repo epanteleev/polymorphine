@@ -8,7 +8,7 @@ public:
         m_size(size),
         m_as(as) {}
 
-    void emit(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+    void apply(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         dispatch(*this, out, in1, in2);
     }
 

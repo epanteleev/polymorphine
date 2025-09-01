@@ -27,6 +27,12 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.load_by_idx_i(def(0), pointer.value(), in(1));
             break;
         }
+        case LIRProdInstKind::LoadFromStack: {
+            const auto pointer = LIRVal::try_from(in(0));
+            assertion(pointer.has_value(), "invariant");
+            visitor.load_from_stack_i(def(0), pointer.value(), in(1));
+            break;
+        }
         case LIRProdInstKind::Lea: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");

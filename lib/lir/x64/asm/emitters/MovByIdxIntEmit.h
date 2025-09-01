@@ -1,14 +1,14 @@
 #pragma once
 
-template<typename ClobberRegStorage, typename AsmEmit>
+template<typename TempRegStorage, typename AsmEmit>
 class MovByIdxIntEmit final: public GPBinaryVisitor {
 public:
-    explicit MovByIdxIntEmit(const ClobberRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+    explicit MovByIdxIntEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
         m_as(as),
         m_temporal_regs(m_temporal_regs) {}
 
-    void emit(const GPVReg& out, const GPOp& index, const GPOp& value) {
+    void apply(const GPVReg& out, const GPOp& index, const GPOp& value) {
         dispatch(*this, out, index, value);
     }
 
@@ -40,12 +40,15 @@ private:
     }
 
     void emit(const aasm::GPReg out, const std::int64_t in1, const std::int64_t in2) override {
+        const auto offset = static_cast<std::int64_t>(m_size) * in1;
+        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for mov by idx");
+
         if (std::in_range<std::int32_t>(in2)) {
-            m_as.mov(m_size, static_cast<std::int32_t>(in2), aasm::Address(out, m_size * in1));
+            m_as.mov(m_size, static_cast<std::int32_t>(in2), aasm::Address(out, offset));
 
         } else {
             m_as.copy(m_size, in2, m_temporal_regs.gp_temp1());
-            m_as.mov(m_size, m_temporal_regs.gp_temp1(), aasm::Address(out, m_size * in1));
+            m_as.mov(m_size, m_temporal_regs.gp_temp1(), aasm::Address(out, offset));
         }
     }
 
@@ -95,5 +98,5 @@ private:
 
     std::uint8_t m_size;
     AsmEmit& m_as;
-    const ClobberRegStorage& m_temporal_regs;
+    const TempRegStorage& m_temporal_regs;
 };

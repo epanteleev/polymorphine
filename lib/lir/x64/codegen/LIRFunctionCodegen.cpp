@@ -22,7 +22,9 @@
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/analysis/regalloc/RegisterAllocation.h"
 #include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 #include "lir/x64/operand/LIRVal.h"
 
 void LIRFunctionCodegen::setup_basic_block_labels() {
@@ -91,14 +93,14 @@ void LIRFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const L
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    AddIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
+    AddIntEmit::apply(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
     const auto out_reg = m_reg_allocation[out];
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    SubIntEmit::emit(m_as, out.size(), out_reg, in1_reg, in2_reg);
+    SubIntEmit::apply(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
@@ -106,7 +108,7 @@ void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const L
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     XorIntEmit emitter(m_as, out.size());
-    emitter.emit(out_reg, in1_reg, in2_reg);
+    emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::setcc_i(const LIRVal &out, const aasm::CondType cond_type) {
@@ -130,13 +132,13 @@ void LIRFunctionCodegen::cmov_i(aasm::CondType cond_type, const LIRVal& out, con
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     CMovGPEmit emitter(temporal_reg(m_current_inst), m_as, cond_type, out.size());
-    emitter.emit(out_reg, in1_reg, in2_reg);
+    emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    CmpGPEmit::emit(m_as, in1.size(), in1_reg, in2_reg);
+    CmpGPEmit::apply(m_as, in1.size(), in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
@@ -145,7 +147,7 @@ void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
 
     const auto in2_op = convert_to_gp_op(in2);
-    MovGPEmit::emit(m_as, in1.size(), add_opt.value(), in2_op);
+    MovGPEmit::apply(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
 void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in) {
@@ -154,7 +156,18 @@ void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index
     const auto in2_op = convert_to_gp_op(in);
 
     MovByIdxIntEmit emitter(temporal_reg(m_current_inst), m_as, in.size());
-    emitter.emit(out_reg, index_op, in2_op);
+    emitter.apply(out_reg, index_op, in2_op);
+}
+
+void LIRFunctionCodegen::store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) {
+    const auto out_vreg = m_reg_allocation[pointer];
+    const auto out_addr = out_vreg.as_address();
+    assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
+
+    const auto index_op = convert_to_gp_op(index);
+    const auto value_op = convert_to_gp_op(value);
+    StoreOnStackGPEmit emitter(temporal_reg(m_current_inst), m_as, value.size());
+    emitter.apply(out_addr.value(), index_op, value_op);
 }
 
 void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
@@ -163,13 +176,24 @@ void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer,
     const auto pointer_op = convert_to_gp_op(pointer);
 
     LoadByIdxIntEmit emitter(m_as, out.size());
-    emitter.emit(out_reg, pointer_op, index_op);
+    emitter.apply(out_reg, pointer_op, index_op);
+}
+
+void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto index_op = convert_to_gp_op(index);
+    const auto pointer_op = m_reg_allocation[pointer];
+    const auto pointer_addr = pointer_op.as_address();
+    assertion(pointer_addr.has_value(), "Invalid LIRVal for load_from_stack_i");
+
+    LoadFromStackGPEmit emitter(temporal_reg(m_current_inst), m_as, out.size());
+    emitter.apply(out_reg, index_op, pointer_addr.value());
 }
 
 void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
     const auto pointer_reg = m_reg_allocation[pointer];
     const auto value_op = convert_to_gp_op(value);
-    StoreGPEmit::emit(m_as, value.size(), pointer_reg, value_op);
+    StoreGPEmit::apply(m_as, value.size(), pointer_reg, value_op);
 }
 
 void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) {
@@ -227,13 +251,13 @@ void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, const std::size
 
 void LIRFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
-    CopyGPEmit::emit(m_as, out.size(), out_reg, convert_to_gp_op(in));
+    CopyGPEmit::apply(m_as, out.size(), out_reg, convert_to_gp_op(in));
 }
 
 void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = m_reg_allocation[pointer];
-    LoadGPEmit::emit(m_as, out.size(), out_reg, pointer_reg);
+    LoadGPEmit::apply(m_as, out.size(), out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
@@ -257,14 +281,14 @@ void LIRFunctionCodegen::movsx_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = convert_to_gp_op(in);
     MovsxGPEmit emitter(m_as, out.size(), in.size());
-    emitter.emit(out_reg, pointer_reg);
+    emitter.apply(out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::movzx_i(const LIRVal &out, const LIROperand &in) {
     const auto out_reg = m_reg_allocation[out];
     const auto pointer_reg = convert_to_gp_op(in);
     MovzxGPEmit emitter(m_as, out.size(), in.size());
-    emitter.emit(out_reg, pointer_reg);
+    emitter.apply(out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
