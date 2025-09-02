@@ -5,15 +5,6 @@
 #include "mir/value/ArgumentValue.h"
 #include "FunctionPrototype.h"
 
-#include <utility>
-
-std::ostream & operator<<(std::ostream &os, const FunctionLinkage &linkage) {
-    switch (linkage) {
-        case FunctionLinkage::EXTERN: return os << "extern";
-        case FunctionLinkage::INTERNAL: return os << "internal";
-        default: std::unreachable();
-    }
-}
 
 template<std::ranges::range Args>
 static void print_args(std::ostream &os, const FunctionPrototype& proto, Args&& args) {
@@ -38,7 +29,7 @@ void FunctionPrototype::print(std::ostream &os, std::span<const Value> args) con
 
 std::ostream & operator<<(std::ostream &os, const FunctionPrototype &proto) {
     os << proto.m_name << '(';
-    for (size_t i = 0; i < proto.m_arg_types.size(); ++i) {
+    for (std::size_t i{}; i < proto.m_arg_types.size(); ++i) {
         if (i > 0) {
             os << ", ";
         }

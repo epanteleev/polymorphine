@@ -91,19 +91,6 @@ static aasm::CondType cond_type(const Value& cond) noexcept {
     die("Unsupported condition type");
 }
 
-/**
- * Maps MIR function linkage to LIR function linkage.
- * @param linkage The FunctionLinkage from MIR.
- * @return The corresponding LIRLinkage.
- */
-static LIRLinkage linkage_from_mir(const FunctionLinkage linkage) noexcept {
-    switch (linkage) {
-        case FunctionLinkage::EXTERN: return LIRLinkage::EXTERNAL;
-        case FunctionLinkage::INTERNAL: return LIRLinkage::INTERNAL;
-        default: die("Unsupported function linkage type in LIR");
-    }
-}
-
 static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAccess* field_access) noexcept {
     Value current = field_access;
     std::size_t offset{};
@@ -188,6 +175,17 @@ static bool is_pinned(const Instruction& inst) noexcept {
     }
 
     return false;
+}
+
+std::unique_ptr<LIRFuncData> FunctionLower::create_lir_function(const FunctionData &function) {
+    std::vector<LIRArg> args;
+    args.reserve(function.args().size());
+
+    for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
+        args.emplace_back(idx, varg.type()->size_of(), varg.attributes());
+    }
+
+    return std::make_unique<LIRFuncData>(function.name(), std::move(args));
 }
 
 void FunctionLower::setup_arguments() {
@@ -355,7 +353,7 @@ void FunctionLower::accept(Call *inst) {
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto call = m_bb->ins(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), linkage_from_mir(proto.linkage())));
+    const auto call = m_bb->ins(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), proto.linkage()));
     cont->ins(LIRAdjustStack::up_stack());
     const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
@@ -399,7 +397,7 @@ void FunctionLower::accept(Store *store) {
     const auto value = store->value();
 
     const auto value_vreg = get_lir_operand(value);
-    if (pointer.isa(alloc())) {
+    if (pointer.isa(any_stack_alloc())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
 
@@ -408,7 +406,7 @@ void FunctionLower::accept(Store *store) {
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_val(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        if (src.isa(alloc())) {
+        if (src.isa(any_stack_alloc())) {
             m_bb->ins(LIRInstruction::store_on_stack(src_vreg, idx_lir_op, value_vreg));
         } else {
             m_bb->ins(LIRInstruction::mov_by_idx(src_vreg, idx_lir_op, value_vreg));
@@ -522,7 +520,7 @@ void FunctionLower::lower_load(const Unary *inst) {
     const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 
-    if (pointer.isa(alloc())) {
+    if (pointer.isa(any_stack_alloc())) {
         const auto pointer_vreg = get_lir_val(pointer);
         const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
@@ -533,7 +531,7 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto src_vreg = get_lir_val(src);
         const auto idx_lir_op = get_lir_operand(idx);
 
-        if (src.isa(alloc())) {
+        if (src.isa(any_stack_alloc())) {
             const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(type->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
         } else {

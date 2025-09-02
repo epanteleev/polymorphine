@@ -5,7 +5,7 @@
 
 static Module sext_cvt(const SignedIntegerType* from, const SignedIntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt");
+    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -84,7 +84,7 @@ TEST(SignConvertion, sext_i8_to_i16) {
 
 static Module zext_cvt(const UnsignedIntegerType* from, const UnsignedIntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt");
+    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -158,7 +158,7 @@ TEST(ZeroConvertion, zext_u8_to_u16) {
 
 static Module trunc_cvt(const IntegerType* from, const IntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(from, {from}, "cvt");
+    FunctionPrototype prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -213,7 +213,7 @@ TEST(TruncConvertion, trunc_i64_to_i8) {
 
 static Module bitcast_cvt(const IntegerType* from, const IntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(from, {from}, "cvt");
+    FunctionPrototype prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();

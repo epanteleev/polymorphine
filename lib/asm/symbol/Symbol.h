@@ -6,6 +6,7 @@
 
 namespace aasm {
     enum class Linkage: std::uint8_t {
+        DEFAULT,
         EXTERNAL,
         INTERNAL,
     };

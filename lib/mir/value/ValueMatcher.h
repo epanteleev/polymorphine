@@ -34,13 +34,23 @@ namespace impls {
     }
 
     template<typename T>
-    static bool value_inst(const Value& inst) noexcept {
-        if (!inst.is<ValueInstruction*>()) {
+    static bool value_inst(const Value& value) noexcept {
+        if (!value.is<ValueInstruction*>()) {
             return false;
         }
 
-        const auto val = inst.get<ValueInstruction*>();
-        return dynamic_cast<const T*>(val) != nullptr;
+        const auto value_instruction = value.get<ValueInstruction*>();
+        return dynamic_cast<const T*>(value_instruction) != nullptr;
+    }
+
+    static bool any_stack_alloc(const Value& value) noexcept {
+        if (value.is<ArgumentValue*>()) {
+            if (const auto arg = value.get<ArgumentValue*>(); arg->attributes().has(Attribute::ByValue)) {
+                return true;
+            }
+        }
+
+        return value_inst<Alloc>(value);
     }
 
     template<typename... Args>
@@ -111,6 +121,10 @@ static consteval auto icmp(LHS&& l, RHS&& r) noexcept {
 
 static consteval auto alloc() noexcept {
     return impls::value_inst<Alloc>;
+}
+
+static consteval auto any_stack_alloc() noexcept {
+    return impls::any_stack_alloc;
 }
 
 static consteval auto field_access() noexcept {

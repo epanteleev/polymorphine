@@ -38,16 +38,7 @@ public:
     }
 
 private:
-    static std::unique_ptr<LIRFuncData> create_lir_function(const FunctionData &function) {
-        std::vector<LIRArg> args;
-        args.reserve(function.args().size());
-
-        for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
-            args.emplace_back(idx, varg.type()->size_of());
-        }
-
-        return std::make_unique<LIRFuncData>(function.name(), std::move(args));
-    }
+    static std::unique_ptr<LIRFuncData> create_lir_function(const FunctionData &function);
 
     void setup_arguments();
 

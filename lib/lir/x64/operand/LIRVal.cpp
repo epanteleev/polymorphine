@@ -2,20 +2,11 @@
 
 #include "LIRVal.h"
 #include "LIROperand.h"
+#include "base/Prefix.h"
 
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRCall.h"
-
-static char size_prefix(std::size_t size) {
-    switch (size) {
-        case 1: return 'b';
-        case 2: return 'w';
-        case 4: return 'd';
-        case 8: return 'q';
-        default: return 'L';
-    }
-}
 
 void LIRVal::add_user(LIRInstructionBase *inst) const noexcept {
     const auto vis = [&]<typename T>(T& val) {
@@ -70,9 +61,7 @@ std::size_t LIRVal::id() const noexcept {
 std::ostream & operator<<(std::ostream &os, const LIRVal &op) noexcept {
     const auto idx = static_cast<std::size_t>(op.m_index);
     switch (op.m_type) {
-        case LIRVal::Op::Arg: {
-            return os << "arg " << '[' << idx << '\'' << size_prefix(op.size()) << ']';
-        }
+        case LIRVal::Op::Arg: return os << LIRArg::try_from(op).value();
         case LIRVal::Op::Inst: [[fallthrough]];
         case LIRVal::Op::Call: {
             return os << op.m_variant.m_inst->owner()->id() << 'x' << op.id() << '-' << idx << '\'' << size_prefix(op.size());

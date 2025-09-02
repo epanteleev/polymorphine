@@ -31,6 +31,8 @@ function(register_static_library NAME)
     target_link_libraries(${NAME} PRIVATE stdc++exp)
 endfunction()
 
+file(GLOB_RECURSE BASE_SOURCES lib/base/*.cpp lib/base/*.h)
+register_static_library(base ${BASE_SOURCES})
 
 file(GLOB_RECURSE MIR_SOURCES lib/mir/*.cpp lib/mir/*.h)
 register_static_library(mir ${MIR_SOURCES})
@@ -46,6 +48,7 @@ file(GLOB_RECURSE LIR_X64_SOURCES lib/lir/x64/*.cpp lib/lir/x64/*.h)
 register_static_library(lir_x64 ${LIR_X64_SOURCES})
 
 add_library(ckoof SHARED
+        $<TARGET_OBJECTS:base>
         $<TARGET_OBJECTS:mir>
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>

@@ -6,7 +6,7 @@
 static Module create_array() {
     ModuleBuilder builder;
     {
-        FunctionPrototype create_array_prototype(SignedIntegerType::i64(), {}, "create_array");
+        FunctionPrototype create_array_prototype(SignedIntegerType::i64(), {}, "create_array", FunctionLinkage::DEFAULT);
         auto& data = *builder.make_function_builder(std::move(create_array_prototype)).value();
         const auto arr_type = builder.add_array_type(SignedIntegerType::i64(), 5);
         const auto alloca = data.alloc(arr_type);
@@ -46,7 +46,7 @@ static Module create_array_of_structs() {
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
         const auto arr_type = builder.add_array_type(point_type, 3);
 
-        FunctionPrototype create_array_prototype(SignedIntegerType::i64(), {}, "create_array_of_points");
+        FunctionPrototype create_array_prototype(SignedIntegerType::i64(), {}, "create_array_of_points", FunctionLinkage::DEFAULT);
         auto& data = *builder.make_function_builder(std::move(create_array_prototype)).value();
 
         const auto alloca = data.alloc(arr_type);
@@ -95,7 +95,7 @@ static Module create_struct_of_arrays() {
     {
         auto array_type = builder.add_array_type(SignedIntegerType::i32(), 3);
         auto array_holder_type = builder.add_struct_type("ArrayHolder", {SignedIntegerType::i64(), array_type});
-        FunctionPrototype create_struct_prototype(SignedIntegerType::i64(), {}, "create_struct_of_arrays");
+        FunctionPrototype create_struct_prototype(SignedIntegerType::i64(), {}, "create_struct_of_arrays", FunctionLinkage::DEFAULT);
         auto& data = *builder.make_function_builder(std::move(create_struct_prototype)).value();
         const auto alloca = data.alloc(array_holder_type);
         for (std::int32_t i{}; i < 3; ++i) {

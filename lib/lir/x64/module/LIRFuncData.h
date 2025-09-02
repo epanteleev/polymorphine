@@ -48,8 +48,12 @@ public:
 
     void print(std::ostream &os) const {
         os << m_name << '(';
-        for (auto& arg : m_args) {
-            os << " " << arg;
+        for (auto [idx, arg] : std::ranges::enumerate_view(m_args)) {
+            if (idx > 0) {
+                os << " ,";
+            }
+
+            os << arg;
         }
         os << ") ";
         print_blocks(os);

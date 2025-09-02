@@ -17,7 +17,8 @@ namespace aasm::details {
                     Encoder enc(buffer, CALL, CALL);
                     return enc.encode_M(2, 8, Address(m_name));
                 }
-                case Linkage::INTERNAL: {
+                case Linkage::INTERNAL: [[fallthrough]];
+                case Linkage::DEFAULT: {
                     static constexpr std::uint8_t CALL = 0xE8;
                     buffer.emit8(CALL);
                     buffer.emit32(INT32_MAX);

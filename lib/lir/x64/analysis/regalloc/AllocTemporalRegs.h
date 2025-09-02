@@ -110,7 +110,7 @@ namespace details {
 
         void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, LIRLinkage linkage) override {}
+        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionLinkage linkage) override {}
 
         void vcall(std::span<LIRVal const> args) override {}
 

@@ -65,10 +65,11 @@ void LIRFunctionCodegen::traverse_instructions() {
     }
 }
 
-static aasm::Linkage cvt_linkage(const LIRLinkage linkage) noexcept {
+static aasm::Linkage cvt_linkage(const FunctionLinkage linkage) noexcept {
     switch (linkage) {
-        case LIRLinkage::INTERNAL: return aasm::Linkage::INTERNAL;
-        case LIRLinkage::EXTERNAL: return aasm::Linkage::EXTERNAL;
+        case FunctionLinkage::DEFAULT:  return aasm::Linkage::DEFAULT;
+        case FunctionLinkage::INTERNAL: return aasm::Linkage::INTERNAL;
+        case FunctionLinkage::EXTERN:   return aasm::Linkage::EXTERNAL;
         default: die("Unsupported LIRLinkage type");
     }
 }
@@ -298,7 +299,7 @@ void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
     emitter.emit(out_reg, pointer_reg);
 }
 
-void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const LIRLinkage linkage) {
+void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionLinkage linkage) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_linkage(linkage));
     m_as.call(symbol);
 }

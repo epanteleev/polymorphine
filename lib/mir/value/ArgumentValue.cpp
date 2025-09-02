@@ -8,5 +8,5 @@ void ArgumentValue::add_user(const Instruction *user) {
 }
 
 std::ostream & operator<<(std::ostream &os, const ArgumentValue &args) {
-    return os << "%arg" << args.m_index;
+    return os << "%arg" << args.m_index << ' ' << args.m_attributes;
 }

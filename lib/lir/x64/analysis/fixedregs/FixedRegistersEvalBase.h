@@ -38,15 +38,25 @@ private:
         return aasm::Address(aasm::rbp, 8+m_arg_area_size);
     }
 
+    aasm::Address caller_arg_stack_alloc(const std::size_t size) noexcept {
+        return aasm::Address(aasm::rsp, 8);
+    }
+
     void handle_argument_values() {
         for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
             if (idx >= m_obj_func_data.args().size()) {
                 break; // No more arguments to process
             }
 
-            const auto& arg = m_obj_func_data.arg(idx);
+            const auto& lir_val_arg = m_obj_func_data.arg(idx);
+            const auto arg = LIRArg::try_from(lir_val_arg).value();
+            if (arg.attributes().has(Attribute::ByValue)) {
+                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size()));
+                continue;
+            }
+
             const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
-            m_reg_map.emplace(arg, arg_reg);
+            m_reg_map.emplace(lir_val_arg, arg_reg);
             m_args.emplace_back(arg_reg);
         }
 
@@ -122,7 +132,7 @@ private:
             return addr;
         }
 
-        void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, LIRLinkage linkage) override {
+        void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionLinkage linkage) override {
             m_fixed_reg.emplace(out, aasm::rax);
             for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
                 if (idx >= args.size()) {
@@ -140,7 +150,7 @@ private:
 
             const auto overflow_args = args.size() - CC::GP_ARGUMENT_REGISTERS.size();
             for (std::size_t i{}; i < overflow_args; ++i) {
-                const auto arg = args[CC::GP_ARGUMENT_REGISTERS.size() + i];
+                const auto& arg = args[CC::GP_ARGUMENT_REGISTERS.size() + i];
                 m_fixed_reg.emplace(arg, arg_stack_alloc());
             }
         }

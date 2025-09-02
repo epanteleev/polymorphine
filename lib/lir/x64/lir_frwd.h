@@ -9,7 +9,7 @@ class LIRProducerInstruction;
 class LIRControlInstruction;
 class LIRProducerInstructionBase;
 class LIRCall;
-enum class LIRLinkage: std::uint8_t;
+enum class FunctionLinkage: std::uint8_t;
 
 class LIROperand;
 class LIRVal;

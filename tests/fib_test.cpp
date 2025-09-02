@@ -6,7 +6,7 @@
 template<typename Fn>
 static Module fib(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(ty, {ty}, "fib");
+    FunctionPrototype prototype(ty, {ty}, "fib", FunctionLinkage::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -185,7 +185,7 @@ TEST(Fib, u64) {
 
 static Module recursive_fib(const IntegerType* ty) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(ty, {ty}, "fib_recursive");
+    FunctionPrototype prototype(ty, {ty}, "fib_recursive", FunctionLinkage::DEFAULT);
     auto copy1 = prototype;
     auto copy2 = prototype;
 

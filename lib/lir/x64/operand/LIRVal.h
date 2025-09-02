@@ -58,7 +58,6 @@ public:
         return std::nullopt;
     }
 
-
     template<typename Matcher>
     [[nodiscard]]
     bool isa(Matcher&& matcher) const noexcept {

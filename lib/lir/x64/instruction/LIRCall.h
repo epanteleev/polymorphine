@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+
+#include "base/FunctionLinkage.h"
 #include "lir/x64/instruction/LIRControlInstruction.h"
 
 
@@ -11,15 +13,10 @@ enum class LIRCallKind: std::uint8_t {
     IVCall,
 };
 
-enum class LIRLinkage: std::uint8_t {
-    EXTERNAL,
-    INTERNAL,
-};
-
 class LIRCall final: public LIRControlInstruction {
 public:
     explicit LIRCall(std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
-                       LIRBlock *cont, const LIRLinkage linkage) noexcept:
+                       LIRBlock *cont, const FunctionLinkage linkage) noexcept:
         LIRControlInstruction(std::move(operands), {cont}),
         m_name(std::move(name)),
         m_kind(kind),
@@ -55,7 +52,7 @@ public:
         return m_used_in;
     }
 
-    static std::unique_ptr<LIRCall> call(std::string&& name, const std::uint8_t size, LIRBlock* cont, std::vector<LIROperand>&& args, LIRLinkage linkage) {
+    static std::unique_ptr<LIRCall> call(std::string&& name, const std::uint8_t size, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionLinkage linkage) {
         auto call = std::make_unique<LIRCall>(std::move(name), LIRCallKind::Call, std::move(args), cont, linkage);
         call->add_def(LIRVal::reg(size, 0, call.get()));
         return call;
@@ -70,6 +67,6 @@ private:
     std::string m_name;
     std::vector<LIRVal> m_defs;
     const LIRCallKind m_kind;
-    const LIRLinkage m_linkage;
+    const FunctionLinkage m_linkage;
     std::vector<LIRInstructionBase *> m_used_in;
 };
