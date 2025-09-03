@@ -15,7 +15,7 @@ class AttributeSet final {
     static constexpr std::size_t BITS = 8;
 
 public:
-    explicit AttributeSet(const std::initializer_list<Attribute> list) noexcept {
+    AttributeSet(const std::initializer_list<Attribute> list) noexcept {
         for (const auto &attr: list) {
             m_bits |= 1 << static_cast<std::size_t>(attr);
         }
@@ -26,6 +26,7 @@ public:
         m_bits |= 1 << static_cast<std::size_t>(ATTR);
     }
 
+    [[nodiscard]]
     bool has(Attribute attr) const noexcept {
         return test(static_cast<std::size_t>(attr));
     }
@@ -33,6 +34,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const AttributeSet& attr);
 
 private:
+    [[nodiscard]]
     bool test(const std::size_t idx) const noexcept {
         return m_bits & 1 << idx;
     }
