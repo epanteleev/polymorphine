@@ -38,8 +38,10 @@ private:
         return aasm::Address(aasm::rbp, 8+m_arg_area_size);
     }
 
-    aasm::Address caller_arg_stack_alloc(const std::size_t size) noexcept {
-        return aasm::Address(aasm::rsp, 8);
+    aasm::Address caller_arg_stack_alloc(const std::size_t size, const std::size_t align) noexcept {
+        const auto offset = m_caller_overflow_area_size;
+        m_caller_overflow_area_size = align_up(m_caller_overflow_area_size, align) + size;
+        return aasm::Address(aasm::rsp, 8 + offset);
     }
 
     void handle_argument_values() {
@@ -51,7 +53,7 @@ private:
             const auto& lir_val_arg = m_obj_func_data.arg(idx);
             const auto arg = LIRArg::try_from(lir_val_arg).value();
             if (arg.attributes().has(Attribute::ByValue)) {
-                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size()));
+                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size(), 8));
                 continue;
             }
 
@@ -176,5 +178,6 @@ private:
     std::vector<aasm::GPReg> m_args{};
     LIRValMap<GPVReg> m_reg_map{};
     std::uint32_t m_arg_area_size{};
+    std::uint32_t m_caller_overflow_area_size{};
 };
 

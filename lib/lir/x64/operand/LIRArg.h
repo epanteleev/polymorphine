@@ -19,7 +19,7 @@ public:
     explicit LIRArg(const std::uint32_t index, const std::uint8_t size, AttributeSet attributes) noexcept:
         m_index(index),
         m_size(size),
-        m_attributes(std::move(attributes)) {}
+        m_attributes(attributes) {}
 
     [[nodiscard]]
     std::uint8_t size() const noexcept { return m_size; }

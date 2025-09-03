@@ -14,16 +14,16 @@ public:
     explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, const FunctionLinkage linkage) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
+        m_arg_attributes(m_arg_types.size(), AttributeSet{}),
         m_name(std::move(name)),
-        m_linkage(linkage),
-        m_arg_attributes(m_arg_types.size(), AttributeSet{}) {}
+        m_linkage(linkage) {}
 
     explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, const FunctionLinkage linkage) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
+        m_arg_attributes(std::move(attributes)),
         m_name(std::move(name)),
-        m_linkage(linkage),
-        m_arg_attributes(std::move(attributes)) {}
+        m_linkage(linkage) {}
 
     [[nodiscard]]
     const Type* ret_type() const { return m_ret_type; }

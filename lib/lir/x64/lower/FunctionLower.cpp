@@ -196,6 +196,11 @@ void FunctionLower::setup_arguments() {
     static constexpr auto RDX_IDX = 2;
     static constexpr auto RCX_IDX = 3;
     for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0}, m_function.args(), m_obj_function->args())) {
+        if (arg.attributes().has(Attribute::ByValue)) {
+            memorize(&arg, lir_arg);
+            continue;
+        }
+
         if (idx != RDX_IDX && idx != RCX_IDX) {
             const auto is_no_live_out = [&](const auto& user) { // TODO better live-out checker.
                 return user->owner() == m_function.first() && !user->isa(any_terminate());
