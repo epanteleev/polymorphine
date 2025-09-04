@@ -157,6 +157,78 @@ TEST(StructArg, pass_three_by_value) {
     ASSERT_EQ(sum, (static_cast<std::int64_t>(-42) + static_cast<std::int64_t>(INT_MAX)+2 + 100) + (1 + 2 + 3) + (10 + 20));
 }
 
+static Module array_of_structs_with_cst() {
+    ModuleBuilder builder;
+    {
+        auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
+        FunctionPrototype prototype(SignedIntegerType::i64(), {vect_type, SignedIntegerType::i64()}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{}}, FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto arg0 = data.arg(0);
+        const auto field0 = data.gfp(vect_type, arg0, 0);
+        const auto field1 = data.gfp(vect_type, arg0, 1);
+        const auto field2 = data.gfp(vect_type, arg0, 2);
+        const auto val0 = data.load(SignedIntegerType::i64(), field0);
+        const auto val1 = data.load(SignedIntegerType::i64(), field1);
+        const auto val2 = data.load(SignedIntegerType::i64(), field2);
+        const auto arg1 = data.arg(1);
+        const auto sum = data.add(data.add(val0, val1), data.add(arg1, val2));
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+TEST(StructArg, array_of_structs_with_cst) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"sum_fields", 7},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, array_of_structs_with_cst(), asm_size, true);
+    const auto sum_fields = buffer.code_start_as<int64_t(Vec, std::int64_t)>("sum_fields").value();
+    Vec v{};
+    v.x = -42;
+    v.y = static_cast<std::int64_t>(INT_MAX)+2;
+    v.z = 100;
+    const auto sum = sum_fields(v, 5);
+    ASSERT_EQ(sum, static_cast<std::int64_t>(-42) + static_cast<std::int64_t>(INT_MAX)+2 + 100 + 5);
+}
+
+static Module array_of_structs_with_cst0() {
+    ModuleBuilder builder;
+    {
+        auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
+        FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), vect_type}, "sum_fields", std::vector{AttributeSet{}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto arg0 = data.arg(1);
+        const auto field0 = data.gfp(vect_type, arg0, 0);
+        const auto field1 = data.gfp(vect_type, arg0, 1);
+        const auto field2 = data.gfp(vect_type, arg0, 2);
+        const auto val0 = data.load(SignedIntegerType::i64(), field0);
+        const auto val1 = data.load(SignedIntegerType::i64(), field1);
+        const auto val2 = data.load(SignedIntegerType::i64(), field2);
+        const auto arg1 = data.arg(0);
+        const auto sum = data.add(data.add(val0, val1), data.add(arg1, val2));
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+TEST(StructArg, array_of_structs_with_cst0) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"sum_fields", 7},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, array_of_structs_with_cst0(), asm_size, true);
+    const auto sum_fields = buffer.code_start_as<int64_t(std::int64_t, Vec)>("sum_fields").value();
+    Vec v{};
+    v.x = -42;
+    v.y = static_cast<std::int64_t>(INT_MAX)+2;
+    v.z = 100;
+    const auto sum = sum_fields(5, v);
+    ASSERT_EQ(sum, static_cast<std::int64_t>(-42) + static_cast<std::int64_t>(INT_MAX)+2 + 100 + 5);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

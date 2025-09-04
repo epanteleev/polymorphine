@@ -45,31 +45,25 @@ private:
     }
 
     void handle_argument_values() {
-        for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
-            if (idx >= m_obj_func_data.args().size()) {
-                break; // No more arguments to process
+        std::size_t idx{};
+        for (const auto& lir_val_arg: m_obj_func_data.args()) {
+            if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
+                // Struct type argument in overflow area.
+                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size(), 8));
+                continue;
             }
 
-            const auto& lir_val_arg = m_obj_func_data.arg(idx);
-            const auto arg = LIRArg::try_from(lir_val_arg).value();
-            if (arg.attributes().has(Attribute::ByValue)) {
-                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size(), 8));
+            if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
+                // No more arguments to process.
+                // Put argument in overflow area.
+                m_reg_map.emplace(lir_val_arg, arg_stack_alloc(8));
                 continue;
             }
 
             const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
             m_reg_map.emplace(lir_val_arg, arg_reg);
             m_args.emplace_back(arg_reg);
-        }
-
-        if (m_obj_func_data.args().size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
-            return; // No need to allocate overflow area for arguments.
-        }
-
-        const auto overflow_args = m_obj_func_data.args().size() - CC::GP_ARGUMENT_REGISTERS.size();
-        for (std::size_t i{}; i < overflow_args; ++i) {
-            const auto arg = m_obj_func_data.arg(CC::GP_ARGUMENT_REGISTERS.size() + i);
-            m_reg_map.emplace(arg, arg_stack_alloc(8));
+            idx += 1;
         }
     }
 

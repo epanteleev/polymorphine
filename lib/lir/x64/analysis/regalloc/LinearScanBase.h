@@ -173,7 +173,7 @@ private:
             select_virtual_reg(lir_val, unhandled_interval->hint());
             m_active_intervals.emplace_back(unhandled_interval, lir_val);
 
-            std::span inst_range(m_instruction_ordering.begin() + range_begin, unhandled_interval->start() - range_begin);
+            const std::span inst_range(m_instruction_ordering.begin() + range_begin, unhandled_interval->start() - range_begin);
             allocate_temporal_registers(inst_range);
             range_begin = unhandled_interval->start();
         }

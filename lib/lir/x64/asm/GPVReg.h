@@ -10,7 +10,7 @@ public:
     GPVReg(const aasm::GPReg reg) noexcept
         : m_reg(reg) {}
 
-    GPVReg(const aasm::Address addr) noexcept:
+    GPVReg(const aasm::Address &addr) noexcept:
         m_reg(addr) {}
 
     friend std::ostream& operator<<(std::ostream& os, const GPVReg& reg) noexcept;

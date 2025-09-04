@@ -195,7 +195,7 @@ void FunctionLower::setup_arguments() {
     // so that we have to isolate corresponded arguments.
     static constexpr auto RDX_IDX = 2;
     static constexpr auto RCX_IDX = 3;
-    for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0}, m_function.args(), m_obj_function->args())) {
+    for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, m_function.args(), m_obj_function->args())) {
         if (arg.attributes().has(Attribute::ByValue)) {
             memorize(&arg, lir_arg);
             continue;
@@ -246,7 +246,7 @@ void FunctionLower::setup_bb_mapping() {
 }
 
 static void insert_copies(ParallelCopy& p_copy) noexcept {
-    for (auto [idx, input, target]: std::views::zip(std::views::iota(0), p_copy.inputs(), p_copy.targets())) {
+    for (auto [idx, input, target]: std::views::zip(std::views::iota(0UL), p_copy.inputs(), p_copy.targets())) {
         const auto lir_val = LIRVal::try_from(input);
         assertion(lir_val.has_value(), "Expected LIRVal for ParallelCopy input");
 
