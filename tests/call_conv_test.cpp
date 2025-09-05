@@ -302,14 +302,68 @@ TEST(StructArg, pass_external_struct_by_value) {
         {"sum_fields", 17},
     };
 
-    const std::unordered_map<std::string, std::size_t> externs{
+    const std::unordered_map<std::string, std::size_t> external_symbols{
         {"sum_ints2", reinterpret_cast<std::size_t>(&sum_ints2)}
     };
 
-    const auto buffer = jit_compile_and_assembly(externs, struct_arg_external2(), asm_size, true);
+    const auto buffer = jit_compile_and_assembly(external_symbols, struct_arg_external2(), asm_size, true);
     const auto sum_fields = buffer.code_start_as<int64_t()>("sum_fields").value();
     const auto sum = sum_fields();
     ASSERT_EQ(sum, 90);
+}
+
+static std::int64_t sum_ints3(Vec v1, Vec v2) {
+    return v1.x + v1.y + v1.z + v2.x + v2.y + v2.z;
+}
+
+static Module struct_arg_external3() {
+    ModuleBuilder builder;
+    {
+        auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
+        FunctionPrototype prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_fields", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        FunctionPrototype ext_proto(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_ints3", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::EXTERN);
+
+        const auto alloc0 = data.alloc(SignedIntegerType::i32());
+        data.store(alloc0, Value::i32(1));
+        const auto alloc1 = data.alloc(vect_type);
+        const auto field0 = data.gfp(vect_type, alloc1, 0);
+        const auto field1 = data.gfp(vect_type, alloc1, 1);
+        const auto field2 = data.gfp(vect_type, alloc1, 2);
+        data.store(field0, Value::i64(20));
+        data.store(field1, Value::i64(30));
+        data.store(field2, Value::i64(40));
+
+        const auto alloc2 = data.alloc(vect_type);
+        const auto field3 = data.gfp(vect_type, alloc2, 0);
+        const auto field4 = data.gfp(vect_type, alloc2, 1);
+        const auto field5 = data.gfp(vect_type, alloc2, 2);
+        data.store(field3, Value::i64(1));
+        data.store(field4, Value::i64(2));
+        data.store(field5, Value::i64(3));
+
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(std::move(ext_proto), cont, {alloc1, alloc2});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+
+    return builder.build();
+}
+
+TEST(StructArg, pass_external_two_struct_by_value) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"sum_fields", 27},
+    };
+
+    const std::unordered_map<std::string, std::size_t> external_symbols{
+        {"sum_ints3", reinterpret_cast<std::size_t>(&sum_ints3)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(external_symbols, struct_arg_external3(), asm_size, true);
+    const auto sum_fields = buffer.code_start_as<int64_t()>("sum_fields").value();
+    const auto sum = sum_fields();
+    ASSERT_EQ(sum, 20 + 30 + 40 + 1 + 2 + 3);
 }
 
 int main(int argc, char **argv) {

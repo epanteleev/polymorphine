@@ -132,10 +132,12 @@ private:
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionLinkage linkage) override {
             m_fixed_reg.emplace(out, aasm::rax);
 
+            std::int32_t caller_arg_area_size{};
             std::size_t idx{};
             for (const auto& lir_val_arg: args) {
                 if (lir_val_arg.isa(gen_v())) {
-                    m_fixed_reg.emplace(lir_val_arg, arg_stack_alloc());
+                    m_fixed_reg.emplace(lir_val_arg, aasm::Address(aasm::rsp, caller_arg_area_size));
+                    caller_arg_area_size = align_up(lir_val_arg.size(), 8) + caller_arg_area_size;
                     continue;
                 }
 
