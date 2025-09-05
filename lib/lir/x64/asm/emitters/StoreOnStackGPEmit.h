@@ -40,8 +40,10 @@ private:
         unimplemented();
     }
 
-    void emit(const aasm::Address &out, std::int64_t in1, aasm::GPReg in2) override {
-        unimplemented();
+    void emit(const aasm::Address &out, const std::int64_t in1, aasm::GPReg in2) override {
+        const auto offset = static_cast<std::int64_t>(out.offset()) + m_size * in1;
+        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for store on stack");
+        m_as.mov(m_size, in2, aasm::Address(out.base().value(), offset));
     }
 
     void emit(const aasm::Address &out, const std::int64_t in1, const std::int64_t in2) override {

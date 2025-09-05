@@ -2,6 +2,7 @@
 
 #include "lir/x64/operand/LIRVal.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
+#include "lir/x64/instruction/ParallelCopy.h"
 
 namespace impl {
     template<LIRProdInstKind K>
@@ -29,7 +30,7 @@ namespace impl {
     }
 }
 
-consteval auto gen() {
+consteval auto gen_v() {
     return impl::is_producer<LIRProdInstKind::Gen>;
 }
 

@@ -89,7 +89,7 @@ private:
             auto [unhandled_interval, lir_val] = m_unhandled_intervals.back();
             m_unhandled_intervals.pop_back();
 
-            if (lir_val.isa(gen())) {
+            if (lir_val.isa(gen_v())) {
                 do_stack_alloc(lir_val);
                 continue;
             }
@@ -257,6 +257,10 @@ private:
     }
 
     void do_stack_alloc(const LIRVal& lir_val) {
+        if (m_reg_allocation.contains(lir_val)) {
+            return;
+        }
+
         auto [_, has] = m_reg_allocation.try_emplace(lir_val, m_reg_set.stack_alloc(lir_val.size()));
         assertion(has, "Register already allocated for LIRVal");
     }

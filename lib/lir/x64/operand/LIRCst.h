@@ -29,20 +29,24 @@ public:
         return m_value;
     }
 
-    static constexpr LirCst imm8(std::int64_t value) noexcept {
+    static constexpr LirCst imm8(const std::int64_t value) noexcept {
         return {value, Kind::Int8};
     }
 
-    static constexpr LirCst imm16(std::int64_t value) noexcept {
+    static constexpr LirCst imm16(const std::int64_t value) noexcept {
         return {value, Kind::Int16};
     }
 
-    static constexpr LirCst imm32(std::int64_t value) noexcept {
+    static constexpr LirCst imm32(const std::int64_t value) noexcept {
         return {value, Kind::Int32};
     }
 
-    static constexpr LirCst imm64(std::int64_t value) noexcept {
+    static constexpr LirCst imm64(const std::int64_t value) noexcept {
         return {value, Kind::Int64};
+    }
+
+    static constexpr LirCst imm64(const std::uint64_t value) noexcept {
+        return {static_cast<std::int64_t>(value), Kind::Int64};
     }
 
     friend std::ostream& operator<<(std::ostream& os, const LirCst& op) noexcept;

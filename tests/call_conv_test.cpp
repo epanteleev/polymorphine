@@ -298,9 +298,8 @@ static Module struct_arg_external2() {
 }
 
 TEST(StructArg, pass_external_struct_by_value) {
-    GTEST_SKIP();
     const std::unordered_map<std::string, std::size_t> asm_size{
-        {"sum_fields", 7},
+        {"sum_fields", 17},
     };
 
     const std::unordered_map<std::string, std::size_t> externs{

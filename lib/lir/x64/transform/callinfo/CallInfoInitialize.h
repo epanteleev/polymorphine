@@ -7,6 +7,7 @@
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRFuncData.h"
 
+
 template<call_conv::CallConv CC>
 class CallInfoInitialize final {
     CallInfoInitialize(const RegisterAllocation& reg_allocation,
@@ -51,7 +52,7 @@ private:
             }
             case LIRAdjustKind::Prologue: break; // Skip it for now
             case LIRAdjustKind::Epilogue: initialize_prologue_and_epilogue(adjust_stack); break;
-            default: die("Unsupported LIRAdjustKind: {}", static_cast<int>(adjust_stack->adjust_kind()));
+            default: std::unreachable();
         }
     }
 
@@ -89,11 +90,15 @@ private:
     }
 
     std::size_t evaluate_overflow_area_size(const LIRCall* call) noexcept {
-        if (call->inputs().size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
-            return 0;
-        }
+        std::size_t overflow_args{};
+        for (const auto &[idx, arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, call->inputs())) {
+            if (const auto vreg = arg.vreg().value(); vreg.isa(gen_v())) {
+                overflow_args+=vreg.size();
 
-        const auto overflow_args = (call->inputs().size() - CC::GP_ARGUMENT_REGISTERS.size()) * 8;
+            } else if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
+                overflow_args+=8;
+            }
+        }
         return m_max_caller_overflow_area_size = std::max(m_max_caller_overflow_area_size, overflow_args);
     }
 

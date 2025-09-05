@@ -6,6 +6,7 @@
 #include "lir/x64/analysis/fixedregs/FixedRegisters.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/module/LIRFuncData.h"
+#include "lir/x64/operand/OperandMatcher.h"
 
 template<call_conv::CallConv CC>
 class FixedRegistersEvalBase final {
@@ -130,24 +131,21 @@ private:
 
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionLinkage linkage) override {
             m_fixed_reg.emplace(out, aasm::rax);
-            for (const auto idx: std::ranges::iota_view{0U, CC::GP_ARGUMENT_REGISTERS.size()}) {
-                if (idx >= args.size()) {
-                    break; // No more arguments to process
+
+            std::size_t idx{};
+            for (const auto& lir_val_arg: args) {
+                if (lir_val_arg.isa(gen_v())) {
+                    m_fixed_reg.emplace(lir_val_arg, arg_stack_alloc());
+                    continue;
                 }
 
-                const auto& arg = args[idx];
-                const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
-                m_fixed_reg.emplace(arg, arg_reg);
-            }
+                if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
+                    m_fixed_reg.emplace(lir_val_arg, arg_stack_alloc());
+                    continue;
+                }
 
-            if (args.size() <= CC::GP_ARGUMENT_REGISTERS.size()) {
-                return; // No need to allocate overflow area for arguments.
-            }
-
-            const auto overflow_args = args.size() - CC::GP_ARGUMENT_REGISTERS.size();
-            for (std::size_t i{}; i < overflow_args; ++i) {
-                const auto& arg = args[CC::GP_ARGUMENT_REGISTERS.size() + i];
-                m_fixed_reg.emplace(arg, arg_stack_alloc());
+                m_fixed_reg.emplace(lir_val_arg, CC::GP_ARGUMENT_REGISTERS[idx]);
+                idx += 1;
             }
         }
 

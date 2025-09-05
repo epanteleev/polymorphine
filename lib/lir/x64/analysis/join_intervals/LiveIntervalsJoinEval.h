@@ -72,7 +72,7 @@ private:
     void do_joining() {
         std::vector<LIRVal> worklist;
         for (const auto &lir_val: m_intervals.intervals() | std::views::keys) {
-            if (lir_val.isa(gen())) {
+            if (lir_val.isa(gen_v())) {
                 // Skip stack alloc values
                 continue;
             }
@@ -120,7 +120,7 @@ private:
                 continue;
             }
 
-            if (lir_v->isa(gen())) {
+            if (lir_v->isa(gen_v())) {
                 // We do not join stack alloc values. Skip it.
                 continue;
             }

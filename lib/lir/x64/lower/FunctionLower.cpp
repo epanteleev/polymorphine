@@ -345,16 +345,31 @@ void FunctionLower::accept(Call *inst) {
 
     std::vector<LIROperand> args;
     args.reserve(inst->operands().size());
-    for (const auto &arg: inst->operands()) {
-        const auto arg_vreg = get_lir_operand(arg);
+    const auto& proto = inst->prototype();
+    for (const auto &[idx, arg]: std::ranges::enumerate_view(inst->operands())) {
         const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
         assertion(type != nullptr, "Expected NonTrivialType for call argument");
+        const auto arg_vreg = get_lir_operand(arg);
 
-        const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
-        args.emplace_back(copy->def(0));
+        if (!proto.attribute(idx).has(Attribute::ByValue)) {
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
+            args.emplace_back(copy->def(0));
+            continue;
+        }
+
+        const auto alloc = dynamic_cast<Alloc*>(arg.get<ValueInstruction*>());
+        const auto allocated_type = alloc->allocated_type();
+
+        const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of()));
+        for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) {
+            const auto load = m_bb->ins(LIRProducerInstruction::load_from_stack(8, arg_vreg.vreg().value(), LirCst::imm64(offset/8)));
+            m_bb->ins(LIRInstruction::store_on_stack(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
+        }
+
+        args.emplace_back(gen->def(0));
     }
+
     const auto cont = m_bb_mapping.at(inst->cont());
-    const auto& proto = inst->prototype();
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
