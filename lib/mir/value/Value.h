@@ -56,7 +56,6 @@ public:
         std::unreachable();
     }
 
-
     template <typename T, typename Visitor>
     constexpr T visit(Visitor&& visitor) const {
         return std::visit(std::forward<Visitor>(visitor), m_value);

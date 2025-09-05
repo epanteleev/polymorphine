@@ -1,6 +1,6 @@
 #include "Instruction.h"
 
-#include <iostream>
+#include <ostream>
 #include <ranges>
 
 #include "mir/module/BasicBlock.h"

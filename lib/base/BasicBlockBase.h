@@ -21,8 +21,6 @@ class BasicBlockBase {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
-    explicit BasicBlockBase(): m_id(NO_ID) {}
-
     virtual ~BasicBlockBase() = default;
 
     /**
@@ -113,7 +111,7 @@ protected:
         }
     }
 
-    std::size_t m_id;
+    std::size_t m_id{NO_ID};
     std::vector<Derived *> m_predecessors;
     OrderedSet<Inst> m_instructions;
 };

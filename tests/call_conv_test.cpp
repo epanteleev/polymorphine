@@ -229,6 +229,90 @@ TEST(StructArg, array_of_structs_with_cst0) {
     ASSERT_EQ(sum, static_cast<std::int64_t>(-42) + static_cast<std::int64_t>(INT_MAX)+2 + 100 + 5);
 }
 
+struct Point2 {
+    std::int64_t x;
+    std::int64_t y;
+};
+
+static std::int64_t sum_ints(Point2 p) {
+    return p.x + p.y;
+}
+
+static Module struct_arg_external() {
+    ModuleBuilder builder;
+    {
+        auto point_type = builder.add_struct_type("Point2", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        FunctionPrototype prototype(SignedIntegerType::i64(), {point_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        FunctionPrototype ext_proto(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "sum_ints", FunctionLinkage::EXTERN);
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(std::move(ext_proto), cont, {Value::i64(20), Value::i64(30)});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+
+    return builder.build();
+}
+
+TEST(StructArg, pass_external_by_value) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"sum_fields", 4},
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs{
+        {"sum_ints", reinterpret_cast<std::size_t>(&sum_ints)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, struct_arg_external(), asm_size, true);
+    const auto sum_fields = buffer.code_start_as<int64_t()>("sum_fields").value();
+    const auto sum = sum_fields();
+    ASSERT_EQ(sum, 50);
+}
+
+static std::int64_t sum_ints2(Vec v) {
+    return v.x + v.y + v.z;
+}
+
+static Module struct_arg_external2() {
+    ModuleBuilder builder;
+    {
+        auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
+        FunctionPrototype prototype(SignedIntegerType::i64(), {vect_type}, "sum_fields", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        FunctionPrototype ext_proto(SignedIntegerType::i64(), {vect_type}, "sum_ints2", std::vector{AttributeSet{Attribute::ByValue}}, FunctionLinkage::EXTERN);
+        const auto alloc = data.alloc(vect_type);
+        const auto field0 = data.gfp(vect_type, alloc, 0);
+        const auto field1 = data.gfp(vect_type, alloc, 1);
+        const auto field2 = data.gfp(vect_type, alloc, 2);
+        data.store(field0, Value::i64(20));
+        data.store(field1, Value::i64(30));
+        data.store(field2, Value::i64(40));
+
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(std::move(ext_proto), cont, {alloc});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+
+    return builder.build();
+}
+
+TEST(StructArg, pass_external_struct_by_value) {
+    GTEST_SKIP();
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"sum_fields", 7},
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs{
+        {"sum_ints2", reinterpret_cast<std::size_t>(&sum_ints2)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, struct_arg_external2(), asm_size, true);
+    const auto sum_fields = buffer.code_start_as<int64_t()>("sum_fields").value();
+    const auto sum = sum_fields();
+    ASSERT_EQ(sum, 90);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

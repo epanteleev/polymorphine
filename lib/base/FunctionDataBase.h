@@ -18,7 +18,7 @@ public:
     using code_block_type = BB;
     using arg_type = Arg;
 
-    explicit FunctionDataBase(std::vector<arg_type>&& args) :
+    explicit FunctionDataBase(std::vector<arg_type>&& args) noexcept:
         m_args(std::move(args)) {}
 
     virtual ~FunctionDataBase() = default;
