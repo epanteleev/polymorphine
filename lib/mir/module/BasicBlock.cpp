@@ -1,4 +1,3 @@
-
 #include "mir/module/BasicBlock.h"
 #include "mir/instruction/Terminator.h"
 #include "utility/Error.h"

@@ -3,8 +3,9 @@
 #include <string>
 #include <vector>
 #include <span>
+#include <iosfwd>
 
-#include "Type.h"
+#include "NonTrivialType.h"
 #include "utility/Align.h"
 
 
@@ -51,6 +52,8 @@ public:
     const NonTrivialType* field(const std::size_t index) const {
         return m_field_types.at(index);
     }
+
+    void print_declaration(std::ostream &os) const;
 
     static StructType make(const std::string_view name, std::vector<const NonTrivialType*>&& field_types) {
         auto [alignments, size, alignment] = compute_offsets(field_types);

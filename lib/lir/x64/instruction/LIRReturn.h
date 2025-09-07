@@ -5,7 +5,7 @@
 
 class LIRReturn final: public LIRControlInstruction {
 public:
-    explicit LIRReturn(std::vector<LIROperand>&& values) :
+    explicit LIRReturn(std::vector<LIROperand>&& values) noexcept:
         LIRControlInstruction(std::move(values), {}) {}
 
     void visit(LIRVisitor &visitor) override {
@@ -15,6 +15,10 @@ public:
 
     static std::unique_ptr<LIRReturn> ret(const LIROperand& value) {
         return std::make_unique<LIRReturn>(std::vector{value});
+    }
+
+    static std::unique_ptr<LIRReturn> ret(const LIROperand& first, const LIROperand& second) {
+        return std::make_unique<LIRReturn>(std::vector{first, second});
     }
 
     static std::unique_ptr<LIRReturn> ret() {

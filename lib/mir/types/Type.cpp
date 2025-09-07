@@ -1,10 +1,11 @@
-#include "Type.h"
 #include "IntegerType.h"
 #include "FloatingPointType.h"
 #include "StructType.h"
 #include "ArrayType.h"
+#include "TupleType.h"
 
 #include <ostream>
+
 
 namespace {
     class Printer final: public type::Visitor {
@@ -48,6 +49,14 @@ namespace {
             os << '[' << type->length() << " x ";
             do_print(type->element_type());
             os << ']';
+        }
+
+        void accept(TupleType *type) override {
+            os << '{';
+            do_print(type->first());
+            os << ", ";
+            do_print(type->second());
+            os << '}';
         }
 
         std::ostream &os;

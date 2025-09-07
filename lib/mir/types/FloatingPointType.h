@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Type.h"
+#include "PrimitiveType.h"
+
 
 class FloatingPointType final : public PrimitiveType {
     explicit FloatingPointType(const std::size_t size) noexcept:

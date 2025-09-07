@@ -26,12 +26,7 @@ std::ostream & operator<<(std::ostream &os, const Module &module) {
     }
 
     for (const auto &s: std::ranges::views::values(module.m_known_structs)) {
-        os << '$' << s.name() << " = type { ";
-        for (const auto &ft: s.field_types()) {
-            os << *ft << ' ';
-        }
-
-        os << "}" << std::endl;
+        s.print_declaration(os);
     }
 
     if (!module.m_known_structs.empty()) {
@@ -39,7 +34,7 @@ std::ostream & operator<<(std::ostream &os, const Module &module) {
     }
 
     for (const auto &f: std::ranges::views::values(module.m_functions)) {
-        f->print(os);
+        os << *f;
     }
 
     return os;

@@ -15,5 +15,6 @@ namespace type {
         virtual void accept(VoidType *type) = 0;
         virtual void accept(StructType *type) = 0;
         virtual void accept(ArrayType *type) = 0;
+        virtual void accept(TupleType *type) = 0;
     };
 }

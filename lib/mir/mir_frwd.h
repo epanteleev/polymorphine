@@ -36,6 +36,7 @@ class FlagType;
 class VoidType;
 class StructType;
 class ArrayType;
+class TupleType;
 
 class Value;
 class ArgumentValue;

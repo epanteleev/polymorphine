@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Type.h"
+#include "PrimitiveType.h"
 
 class PointerType final : public PrimitiveType {
 public:
@@ -12,7 +12,7 @@ public:
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
     static consteval const PointerType *ptr() noexcept {
-        static constexpr PointerType p;
-        return &p;
+        static constexpr PointerType pointer;
+        return &pointer;
     }
 };

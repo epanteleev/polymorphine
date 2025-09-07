@@ -111,7 +111,12 @@ namespace {
         }
 
         void accept(ReturnValue *inst) override {
-            os << "ret " << *inst->ret_value().type() << ' ' << inst->ret_value();
+            const auto ty = inst->ret_type();
+            os << "ret " << *ty << " [" << inst->first();
+            if (const auto second = inst->second()) {
+                os << ", " << *second;
+            }
+            os << ']';
         }
 
         void accept(Call *inst) override {

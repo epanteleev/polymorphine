@@ -158,8 +158,18 @@ private:
         void ivcall(const LIRVal &pointer, std::span<LIRVal const> args) override {}
 
         void ret(const std::span<const LIRVal> ret_values) override {
-            if (ret_values.size() == 1) {
-                m_fixed_reg.emplace(ret_values[0], aasm::rax);
+            switch (ret_values.size()) {
+                case 0: return;
+                case 1: {
+                    m_fixed_reg.emplace(ret_values[0], aasm::rax);
+                    return;
+                }
+                case 2: {
+                    m_fixed_reg.emplace(ret_values[0], aasm::rax);
+                    m_fixed_reg.emplace(ret_values[1], aasm::rdx);
+                    return;
+                }
+                default: die("Unsupported number of return values: {}", ret_values.size());
             }
         }
 

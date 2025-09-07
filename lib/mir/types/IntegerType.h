@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PrimitiveType.h"
 
 class IntegerType : public PrimitiveType {};
 
@@ -14,7 +15,7 @@ public:
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
-    static consteval const UnsignedIntegerType * u8() noexcept {
+    static consteval const UnsignedIntegerType *u8() noexcept {
         static constexpr UnsignedIntegerType u8_instance(1);
         return &u8_instance;
     }
@@ -49,7 +50,7 @@ public:
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }
 
-    static consteval const SignedIntegerType * i8() noexcept {
+    static consteval const SignedIntegerType *i8() noexcept {
         static constexpr SignedIntegerType i8_instance(1);
         return &i8_instance;
     }
@@ -65,8 +66,8 @@ public:
     }
 
     static consteval const SignedIntegerType *i64() noexcept {
-        static constexpr SignedIntegerType i8_instance(8);
-        return &i8_instance;
+        static constexpr SignedIntegerType i64_instance(8);
+        return &i64_instance;
     }
 
 private:

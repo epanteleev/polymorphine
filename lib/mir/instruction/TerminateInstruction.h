@@ -2,13 +2,14 @@
 
 #include "mir/module/FunctionPrototype.h"
 #include "Instruction.h"
+#include "mir/types/TupleType.h"
 
 
 class TerminateInstruction: public Instruction {
 public:
-    TerminateInstruction(std::vector<Value>&& values,
-                         std::vector<BasicBlock *> &&successors)
-        : Instruction(std::move(values)), m_successors(std::move(successors)) {}
+    TerminateInstruction(std::vector<Value>&& values, std::vector<BasicBlock *> &&successors) noexcept:
+        Instruction(std::move(values)),
+        m_successors(std::move(successors)) {}
 
     [[nodiscard]]
     std::span<BasicBlock * const> successors() const noexcept {
@@ -21,7 +22,7 @@ protected:
 
 class Return final: public TerminateInstruction {
 public:
-    Return() : TerminateInstruction({}, {}) {}
+    Return() noexcept: TerminateInstruction({}, {}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -34,10 +35,8 @@ private:
 
 class CondBranch final: public TerminateInstruction {
 public:
-    CondBranch(Value condition,
-                      BasicBlock *true_target, BasicBlock *false_target)
-        : TerminateInstruction({condition}, {true_target, false_target}) {
-    }
+    CondBranch(const Value& condition, BasicBlock *true_target, BasicBlock *false_target) noexcept:
+        TerminateInstruction({condition}, {true_target, false_target}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -63,8 +62,8 @@ public:
 
 class Branch final: public TerminateInstruction {
 public:
-    explicit Branch(BasicBlock* target)
-        : TerminateInstruction({}, {target}) {}
+    explicit Branch(BasicBlock* target) noexcept:
+        TerminateInstruction({}, {target}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -80,9 +79,9 @@ public:
 
 class Switch final: public TerminateInstruction {
 public:
-    Switch(Value condition, std::vector<Value> &&cases, std::vector<BasicBlock*>&& targets)
-        : TerminateInstruction({condition}, std::move(targets)),
-          m_cases(cases) {}
+    Switch(Value condition, std::vector<Value> &&cases, std::vector<BasicBlock*>&& targets) noexcept:
+        TerminateInstruction({condition}, std::move(targets)),
+        m_cases(cases) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -97,28 +96,53 @@ private:
 
 class ReturnValue final: public TerminateInstruction {
 public:
-    explicit ReturnValue(const Value& ret_value) :
-        TerminateInstruction({ret_value}, {}) {}
+    explicit ReturnValue(std::vector<Value>&& values) noexcept:
+        TerminateInstruction(std::move(values), {}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     [[nodiscard]]
-    const Value& ret_value() const {
+    const Value& first() const {
         return m_values.at(0);
     }
 
-    static std::unique_ptr<ReturnValue> ret(const Value& ret_value) {
-        return std::make_unique<ReturnValue>(ret_value);
+    [[nodiscard]]
+    std::optional<Value> second() const {
+        if (m_values.size() < 2) {
+            return std::nullopt;
+        }
+
+        return m_values[1];
     }
+
+    const Type* ret_type() const {
+        switch (m_values.size()) {
+            case 1: return m_values[0].type();
+            case 2: {
+                const auto first_type = dynamic_cast<const PrimitiveType*>(m_values[0].type());
+                const auto second_type = dynamic_cast<const PrimitiveType*>(m_values[1].type());
+                return TupleType::tuple(first_type, second_type);
+            }
+            default: die("Unsupported number of return values: {}", m_values.size());
+        }
+    }
+
+    static std::unique_ptr<ReturnValue> ret(const Value& ret_value) {
+        return std::make_unique<ReturnValue>(std::vector{ret_value});
+    }
+
+    static std::unique_ptr<ReturnValue> ret(const Value& first, const Value& second) {
+        return std::make_unique<ReturnValue>(std::vector{first, second});
+    }
+
 private:
     std::vector<BasicBlock* > m_successors;
 };
 
 class VCall final: public TerminateInstruction {
 public:
-    VCall(const FunctionPrototype* prototype,
-          std::vector<Value> &&args, BasicBlock * successor)
-        : TerminateInstruction(std::move(args), {successor}), m_prototype(prototype) {}
+    VCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
+        TerminateInstruction(std::move(args), {successor}), m_prototype(prototype) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -131,9 +155,9 @@ private:
 
 class IVCall final: public TerminateInstruction {
 public:
-    IVCall(const FunctionPrototype* prototype,
-          std::vector<Value> &&args, BasicBlock * successor)
-        : TerminateInstruction(std::move(args), {successor}), m_prototype(prototype) {}
+    IVCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
+        TerminateInstruction(std::move(args), {successor}),
+        m_prototype(prototype) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 

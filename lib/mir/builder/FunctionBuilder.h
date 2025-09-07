@@ -131,6 +131,10 @@ public:
         m_bb->ins(ReturnValue::ret(ret_value));
     }
 
+    void ret(const Value& first, const Value& second) const {
+        m_bb->ins(ReturnValue::ret(first, second));
+    }
+
     void ret() const {
         m_bb->ins(Return::ret());
     }

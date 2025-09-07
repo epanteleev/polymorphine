@@ -40,12 +40,7 @@ public:
         return last_bb.value();
     }
 
-    void print(std::ostream &os) const {
-        os << "define ";
-        m_prototype->print(os, m_args);
-        os << ' ';
-        print_blocks(os);
-    }
+    friend std::ostream &operator<<(std::ostream &os, const FunctionData &fd);
 
     [[nodiscard]]
     std::string_view name() const noexcept {

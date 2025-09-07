@@ -2,6 +2,7 @@
 
 #include "helpers/Jit.h"
 #include "mir/mir.h"
+#include "mir/types/TupleType.h"
 
 static Module struct_arg_size1() {
     ModuleBuilder builder;
@@ -364,6 +365,30 @@ TEST(StructArg, pass_external_two_struct_by_value) {
     const auto sum_fields = buffer.code_start_as<int64_t()>("sum_fields").value();
     const auto sum = sum_fields();
     ASSERT_EQ(sum, 20 + 30 + 40 + 1 + 2 + 3);
+}
+
+static Module make_point2() {
+    ModuleBuilder builder;
+    {
+        const auto tuple = TupleType::tuple(SignedIntegerType::i64(), SignedIntegerType::i64());
+        const auto prototype = builder.add_function_prototype(tuple, {}, "make_point2", FunctionLinkage::DEFAULT);
+        const auto& data = *builder.make_function_builder(prototype).value();
+        data.ret(Value::i64(1234), Value::i64(5678));
+    }
+
+    return builder.build();
+}
+
+TEST(ReturnStruct, return_struct_by_value) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"make_point2", 3},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, make_point2(), asm_size, true);
+    const auto make_point2 = buffer.code_start_as<Point2()>("make_point2").value();
+    const auto p = make_point2();
+    ASSERT_EQ(p.x, 1234);
+    ASSERT_EQ(p.y, 5678);
 }
 
 int main(int argc, char **argv) {

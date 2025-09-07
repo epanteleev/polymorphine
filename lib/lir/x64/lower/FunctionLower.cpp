@@ -385,14 +385,23 @@ void FunctionLower::accept(Return *inst) {
 }
 
 void FunctionLower::accept(ReturnValue *inst) {
-    const auto& ret_value = inst->ret_value();
+    const auto& ret_value = inst->first();
     const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
-    const auto ret_val = get_lir_operand(inst->ret_value());
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), ret_val));
-    m_bb->ins(LIRAdjustStack::epilogue());
-    m_bb->ins(LIRReturn::ret(copy->def(0)));
+    const auto copy_first = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(inst->first())));
+    if (const auto second = inst->second(); !second) {
+        m_bb->ins(LIRAdjustStack::epilogue());
+        m_bb->ins(LIRReturn::ret(copy_first->def(0)));
+
+    } else {
+        const auto second_type = dynamic_cast<const PrimitiveType*>(second->type());
+        assertion(second_type != nullptr, "Expected PrimitiveType for return value");
+
+        const auto copy_second = m_bb->ins(LIRProducerInstruction::copy(second_type->size_of(), get_lir_operand(*second)));
+        m_bb->ins(LIRAdjustStack::epilogue());
+        m_bb->ins(LIRReturn::ret(copy_first->def(0), copy_second->def(0)));
+    }
 }
 
 void FunctionLower::accept(Phi *inst) {

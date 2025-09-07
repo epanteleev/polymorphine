@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-#include "Type.h"
+#include "NonTrivialType.h"
 
 
 class ArrayType final: public NonTrivialType {

@@ -29,20 +29,3 @@ public:
 };
 
 std::ostream& operator<<(std::ostream &os, const Type &obj);
-
-class NonTrivialType : public Type {
-public:
-    [[nodiscard]]
-    virtual std::size_t size_of() const = 0;
-
-    [[nodiscard]]
-    virtual std::size_t align_of() const = 0;
-};
-
-class PrimitiveType : public NonTrivialType {
-public:
-    [[nodiscard]]
-    std::size_t align_of() const final {
-        return size_of();
-    }
-};

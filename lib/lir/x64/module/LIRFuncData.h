@@ -50,7 +50,7 @@ public:
         os << m_name << '(';
         for (auto [idx, arg] : std::ranges::enumerate_view(m_args)) {
             if (idx > 0) {
-                os << " ,";
+                os << ", ";
             }
 
             os << arg;
