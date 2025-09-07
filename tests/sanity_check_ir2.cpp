@@ -8,8 +8,8 @@
 static Module min_max_phi(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        FunctionPrototype prototype(ty, {ty, ty}, "min", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 
@@ -30,8 +30,8 @@ static Module min_max_phi(const IntegerType* ty) {
         data.ret(phi);
     }
     {
-        FunctionPrototype prototype(ty, {ty, ty}, "max", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 
@@ -75,8 +75,8 @@ TEST(SanityCheck2, min_max_phi_u8) {
 static Module xor_values(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        FunctionPrototype prototype(ty, {ty, ty}, "xor", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "xor", FunctionLinkage::DEFAULT);
+        const auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 
@@ -106,6 +106,6 @@ TEST(SanityCheck2, xor_values_i32) {
 }
 
 int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

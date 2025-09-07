@@ -7,8 +7,8 @@ static Module point_struct() {
     ModuleBuilder builder;
     auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
     {
-        FunctionPrototype prototype(VoidType::type(), {PointerType::ptr()}, "init_point", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_point", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(point_type, arg0, 0);
         const auto field1 = data.gfp(point_type, arg0, 1);
@@ -17,8 +17,8 @@ static Module point_struct() {
         data.ret();
     }
     {
-        FunctionPrototype sum_fields_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(sum_fields_prototype)).value();
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(point_type, arg0, 0);
         const auto field1 = data.gfp(point_type, arg0, 1);
@@ -55,8 +55,8 @@ static Module vec_struct() {
     auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
     auto vec_type = builder.add_struct_type("Vec", {point_type, point_type});
     {
-        FunctionPrototype prototype(VoidType::type(), {PointerType::ptr()}, "init_vec", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_vec", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vec_type, arg0, 0);
         const auto field1 = data.gfp(vec_type, arg0, 1);
@@ -71,8 +71,8 @@ static Module vec_struct() {
         data.ret();
     }
     {
-        FunctionPrototype sum_fields_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(sum_fields_prototype)).value();
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(std::move(prototype)).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vec_type, arg0, 0);
         const auto field1 = data.gfp(vec_type, arg0, 1);
@@ -121,8 +121,8 @@ static Module struct_stackalloc() {
     ModuleBuilder builder;
     {
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
-        FunctionPrototype prototype(SignedIntegerType::i64(), {}, "make_point", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(std::move(prototype)).value();
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "make_point", FunctionLinkage::DEFAULT);
+        auto& data = *builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(point_type);
         const auto field0 = data.gfp(point_type, alloca, 0);
         const auto field1 = data.gfp(point_type, alloca, 1);

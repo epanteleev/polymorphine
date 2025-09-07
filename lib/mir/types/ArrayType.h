@@ -34,8 +34,8 @@ public:
         return m_length;
     }
 
-    static std::unique_ptr<ArrayType> make(const NonTrivialType* element_type, const std::size_t length) {
-        return std::make_unique<ArrayType>(element_type, length);
+    static ArrayType make(const NonTrivialType* element_type, const std::size_t length) {
+        return ArrayType(element_type, length);
     }
 
 private:

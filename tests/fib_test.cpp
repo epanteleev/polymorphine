@@ -6,9 +6,9 @@
 template<typename Fn>
 static Module fib(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(ty, {ty}, "fib", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionLinkage::DEFAULT);
 
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
 
     auto n = data.arg(0);
@@ -185,11 +185,11 @@ TEST(Fib, u64) {
 
 static Module recursive_fib(const IntegerType* ty) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(ty, {ty}, "fib_recursive", FunctionLinkage::DEFAULT);
-    auto copy1 = prototype;
-    auto copy2 = prototype;
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionLinkage::DEFAULT);
+    const auto copy = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionLinkage::DEFAULT);
+    assert(prototype == copy);
 
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto fn_builder = builder.make_function_builder(copy);
     auto& data = *fn_builder.value();
 
     auto n = data.arg(0);
@@ -208,12 +208,12 @@ static Module recursive_fib(const IntegerType* ty) {
     data.switch_block(if_else);
     auto sub = data.sub(n, Value::i64(1));
     auto cont = data.create_basic_block();
-    auto call1 = data.call(std::move(copy1), cont, {sub});
+    auto call1 = data.call(copy, cont, {sub});
 
     data.switch_block(cont);
     auto sub2 = data.sub(n, Value::i64(2));
     auto cont1 = data.create_basic_block();
-    auto call2 = data.call(std::move(copy2), cont1, {sub2});
+    auto call2 = data.call(prototype, cont1, {sub2});
     data.switch_block(cont1);
 
     auto add = data.add(call1, call2);

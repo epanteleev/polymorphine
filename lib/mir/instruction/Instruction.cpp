@@ -116,8 +116,8 @@ namespace {
 
         void accept(Call *inst) override {
             print_val(inst);
-            os << "call " << *inst->prototype().ret_type() << ' ';
-            inst->prototype().print(os, inst->operands());
+            os << "call " << *inst->prototype()->ret_type() << ' ';
+            inst->prototype()->print(os, inst->operands());
             os << ' ';
             inst->cont()->print_short_name(os);
         }

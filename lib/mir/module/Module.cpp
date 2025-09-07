@@ -2,30 +2,43 @@
 
 #include <ranges>
 
-const FunctionData* Module::add_function_data(FunctionPrototype &&proto, std::vector<ArgumentValue> &&args) {
-    assertion(proto.arg_types().size() == args.size(),
-          "Number of arguments does not match prototype m_args={}, arg_types={}", args.size(), proto.arg_types().size());
+const FunctionData* Module::add_function_data(const FunctionPrototype* proto, std::vector<ArgumentValue> &&args) {
+    assertion(proto->arg_types().size() == args.size(),
+          "Number of arguments does not match prototype m_args={}, arg_types={}", args.size(), proto->arg_types().size());
 
 #ifndef NDEBUG
-    for (auto [a, b]: std::ranges::views::zip(args, proto.arg_types())) {
+    for (auto [a, b]: std::ranges::views::zip(args, proto->arg_types())) {
         assertion(a.type() == b, "Argument type mismatch");
     }
 #endif
 
-    const auto& [fst, snd] = m_functions.emplace(proto.name(), std::make_unique<FunctionData>(std::move(proto), std::move(args)));
+    const auto& [fst, snd] = m_functions.emplace(proto->name(), std::make_unique<FunctionData>(proto, std::move(args)));
     return fst->second.get();
 }
 
 std::ostream & operator<<(std::ostream &os, const Module &module) {
-    for (const auto &s: module.m_known_structs | std::views::values) {
-        os << '$' << s->name() << " = type { ";
-        for (const auto &ft: s->field_types()) {
+    for (const auto& proto: std::ranges::views::values(module.m_prototypes)) {
+        os << "declare " << proto << std::endl;
+    }
+
+    if (!module.m_prototypes.empty()) {
+        os << std::endl;
+    }
+
+    for (const auto &s: std::ranges::views::values(module.m_known_structs)) {
+        os << '$' << s.name() << " = type { ";
+        for (const auto &ft: s.field_types()) {
             os << *ft << ' ';
         }
+
         os << "}" << std::endl;
     }
 
-    for (const auto &f: module.m_functions | std::views::values) {
+    if (!module.m_known_structs.empty()) {
+        os << std::endl;
+    }
+
+    for (const auto &f: std::ranges::views::values(module.m_functions)) {
         f->print(os);
     }
 

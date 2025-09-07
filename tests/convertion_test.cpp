@@ -5,10 +5,10 @@
 
 static Module sext_cvt(const SignedIntegerType* from, const SignedIntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
-    const auto fn_builder = builder.make_function_builder(std::move(prototype));
-    auto& data = *fn_builder.value();
+    const auto fn_builder = builder.make_function_builder(prototype);
+    const auto& data = *fn_builder.value();
 
     const auto arg = data.arg(0);
     const auto cvt = data.sext(to, arg);
@@ -84,9 +84,9 @@ TEST(SignConvertion, sext_i8_to_i16) {
 
 static Module zext_cvt(const UnsignedIntegerType* from, const UnsignedIntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
-    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
 
     const auto arg = data.arg(0);
@@ -158,7 +158,7 @@ TEST(ZeroConvertion, zext_u8_to_u16) {
 
 static Module trunc_cvt(const IntegerType* from, const IntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
     auto& data = *fn_builder.value();
@@ -213,9 +213,9 @@ TEST(TruncConvertion, trunc_i64_to_i8) {
 
 static Module bitcast_cvt(const IntegerType* from, const IntegerType* to) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
-    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
 
     const auto arg = data.arg(0);

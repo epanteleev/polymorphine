@@ -14,7 +14,7 @@
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
     friend class FunctionBuilder;
 public:
-    explicit FunctionData(FunctionPrototype&& proto, std::vector<ArgumentValue>&& args) noexcept;
+    explicit FunctionData(const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
 
     [[nodiscard]]
     const ArgumentValue& arg(const std::size_t index) const {
@@ -42,14 +42,14 @@ public:
 
     void print(std::ostream &os) const {
         os << "define ";
-        m_prototype.print(os, m_args);
+        m_prototype->print(os, m_args);
         os << ' ';
         print_blocks(os);
     }
 
     [[nodiscard]]
     std::string_view name() const noexcept {
-        return m_prototype.name();
+        return m_prototype->name();
     }
 
 private:
@@ -57,7 +57,7 @@ private:
         return m_basic_blocks.push_back(std::move(bb));
     }
 
-    FunctionPrototype m_prototype;
+    const FunctionPrototype* m_prototype;
 };
 
 static_assert(Function<FunctionData>, "assumed to be");

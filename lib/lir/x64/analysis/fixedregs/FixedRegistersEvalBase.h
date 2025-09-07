@@ -137,7 +137,7 @@ private:
             for (const auto& lir_val_arg: args) {
                 if (lir_val_arg.isa(gen_v())) {
                     m_fixed_reg.emplace(lir_val_arg, aasm::Address(aasm::rsp, caller_arg_area_size));
-                    caller_arg_area_size = align_up(lir_val_arg.size(), 8) + caller_arg_area_size;
+                    caller_arg_area_size += align_up(lir_val_arg.size(), 8);
                     continue;
                 }
 

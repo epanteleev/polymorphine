@@ -6,6 +6,8 @@
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
 
+static_assert(std::is_trivially_copyable_v<Value>, "assumed to be");
+
 Value::Value(const ArgumentValue *value) noexcept:
     m_value(const_cast<ArgumentValue *>(value)),
     m_type(value->type()) {}

@@ -6,9 +6,9 @@
 template<typename Fn>
 static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type, Fn&& inc_creator) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(VoidType::type(), {PointerType::ptr(), inc_type}, "bubble_sort", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), inc_type}, "bubble_sort", FunctionLinkage::DEFAULT);
 
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
 
     auto for_cond = data.create_basic_block();

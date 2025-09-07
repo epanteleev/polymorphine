@@ -22,7 +22,7 @@ public:
     constexpr Value(std::int64_t value, const IntegerType * type) noexcept: m_value(value), m_type(type) {}
 
     Value(const ArgumentValue* value) noexcept;
-    Value(const ValueInstruction * value) noexcept;
+    Value(const ValueInstruction* value) noexcept;
 
     template <IsValueType T>
     [[nodiscard]]
@@ -104,5 +104,3 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& os, const Value& obj);
-
-static_assert(std::is_trivially_copyable_v<Value>, "assumed to be");

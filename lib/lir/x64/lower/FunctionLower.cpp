@@ -345,13 +345,13 @@ void FunctionLower::accept(Call *inst) {
 
     std::vector<LIROperand> args;
     args.reserve(inst->operands().size());
-    const auto& proto = inst->prototype();
+    const auto proto = inst->prototype();
     for (const auto &[idx, arg]: std::ranges::enumerate_view(inst->operands())) {
         const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
         assertion(type != nullptr, "Expected NonTrivialType for call argument");
         const auto arg_vreg = get_lir_operand(arg);
 
-        if (!proto.attribute(idx).has(Attribute::ByValue)) {
+        if (!proto->attribute(idx).has(Attribute::ByValue)) {
             const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
             args.emplace_back(copy->def(0));
             continue;
@@ -370,10 +370,10 @@ void FunctionLower::accept(Call *inst) {
     }
 
     const auto cont = m_bb_mapping.at(inst->cont());
-    const auto ret_type = dynamic_cast<const NonTrivialType*>(proto.ret_type());
+    const auto ret_type = dynamic_cast<const NonTrivialType*>(proto->ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto call = m_bb->ins(LIRCall::call(std::string{proto.name()}, ret_type->size_of(), cont, std::move(args), proto.linkage()));
+    const auto call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->linkage()));
     cont->ins(LIRAdjustStack::up_stack());
     const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));

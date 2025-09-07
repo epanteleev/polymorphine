@@ -19,7 +19,7 @@ class FunctionBuilder final {
     explicit FunctionBuilder(std::unique_ptr<FunctionData>&& functionData);
 
 public:
-    static FunctionBuilder make(FunctionPrototype&& prototype, std::vector<ArgumentValue>&& args) noexcept;
+    static FunctionBuilder make(const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
 
     [[nodiscard]]
     const ArgumentValue* arg(const std::size_t index) const {
@@ -76,8 +76,8 @@ public:
     }
 
     [[nodiscard]]
-    Value call(FunctionPrototype&& prototype, BasicBlock* cont, std::vector<Value>&& args) const {
-        return m_bb->ins(Call::call(std::move(prototype), cont, std::move(args)));
+    Value call(const FunctionPrototype* prototype, BasicBlock* cont, std::vector<Value>&& args) const {
+        return m_bb->ins(Call::call(prototype, cont, std::move(args)));
     }
 
     [[nodiscard]]

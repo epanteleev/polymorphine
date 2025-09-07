@@ -6,8 +6,8 @@ FunctionBuilder::FunctionBuilder(std::unique_ptr<FunctionData>&& functionData): 
     m_bb = m_fd->first();
 }
 
-FunctionBuilder FunctionBuilder::make(FunctionPrototype &&prototype, std::vector<ArgumentValue> &&args) noexcept {
-    return FunctionBuilder(std::make_unique<FunctionData>(std::move(prototype), std::move(args)));
+FunctionBuilder FunctionBuilder::make(const FunctionPrototype* prototype, std::vector<ArgumentValue> &&args) noexcept {
+    return FunctionBuilder(std::make_unique<FunctionData>(prototype, std::move(args)));
 }
 
 std::unique_ptr<FunctionData> FunctionBuilder::build() noexcept {

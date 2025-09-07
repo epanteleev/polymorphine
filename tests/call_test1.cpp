@@ -7,12 +7,12 @@
 
 static Module call_external() {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {}, "call_external", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "call_external", FunctionLinkage::DEFAULT);
+    auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto cont = data.create_basic_block();
-    FunctionPrototype proto(SignedIntegerType::i32(), {}, "return_constant", FunctionLinkage::EXTERN);
-    const auto res = data.call(std::move(proto), cont, {});
+    const auto proto = builder.add_function_prototype(SignedIntegerType::i32(), {}, "return_constant", FunctionLinkage::EXTERN);
+    const auto res = data.call(proto, cont, {});
     data.switch_block(cont);
     data.ret(res);
 
@@ -24,7 +24,7 @@ int return_constant() {
 }
 
 TEST(CallTest, call_external) {
-    std::unordered_map<std::string, std::size_t> external_symbols = {
+    const std::unordered_map<std::string, std::size_t> external_symbols = {
         {"return_constant", reinterpret_cast<std::size_t>(&return_constant)}
     };
 
@@ -40,12 +40,12 @@ int add(const int a, const int b) {
 
 static Module call_external_with_args() {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i32(), {}, "call_external_with_args", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "call_external_with_args", FunctionLinkage::DEFAULT);
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto cont = data.create_basic_block();
-    FunctionPrototype proto(SignedIntegerType::i32(), {SignedIntegerType::i32(), SignedIntegerType::i32()}, "add", FunctionLinkage::EXTERN);
-    const auto res = data.call(std::move(proto), cont, {Value::i32(10), Value::i32(20)});
+    const auto proto = builder.add_function_prototype(SignedIntegerType::i32(), {SignedIntegerType::i32(), SignedIntegerType::i32()}, "add", FunctionLinkage::EXTERN);
+    const auto res = data.call(proto, cont, {Value::i32(10), Value::i32(20)});
     data.switch_block(cont);
     data.ret(res);
     return builder.build();
@@ -72,21 +72,21 @@ long max(const long a, const long b) {
 
 static Module clamp() {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "clamp", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "clamp", FunctionLinkage::DEFAULT);
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto a = data.arg(0);
     const auto min_val = data.arg(1);
     const auto max_val = data.arg(2);
 
     const auto cont = data.create_basic_block();
-    FunctionPrototype proto_min(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
-    const auto clamped = data.call(std::move(proto_min), cont, {a, max_val});
+    const auto proto_min = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
+    const auto clamped = data.call(proto_min, cont, {a, max_val});
     data.switch_block(cont);
 
-    auto cont1 = data.create_basic_block();
-    FunctionPrototype proto_max(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
-    const auto clamped_final = data.call(std::move(proto_max), cont1, {clamped, min_val});
+    const auto cont1 = data.create_basic_block();
+    const auto proto_max = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
+    const auto clamped_final = data.call(proto_max, cont1, {clamped, min_val});
     data.switch_block(cont1);
 
     data.ret(clamped_final);
@@ -109,21 +109,21 @@ TEST(CallTest, clamp) {
 
 static Module clamp2() {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "clamp", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()}, "clamp", FunctionLinkage::DEFAULT);
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto a = data.arg(0);
     const auto min_val = data.arg(1);
     const auto max_val = data.arg(2);
 
     auto cont1 = data.create_basic_block();
-    FunctionPrototype proto_max(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
-    const auto clamped = data.call(std::move(proto_max), cont1, {a, min_val});
+    const auto proto_max = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionLinkage::EXTERN);
+    const auto clamped = data.call(proto_max, cont1, {a, min_val});
     data.switch_block(cont1);
 
     const auto cont = data.create_basic_block();
-    FunctionPrototype proto_min(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
-    const auto clamped_final = data.call(std::move(proto_min), cont, {clamped, max_val});
+    const auto proto_min = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionLinkage::EXTERN);
+    const auto clamped_final = data.call(proto_min, cont, {clamped, max_val});
     data.switch_block(cont);
 
     data.ret(clamped_final);
@@ -161,9 +161,9 @@ static long arg_shuffle(int a0, int a1, int a2, int a3, int a4, int a5) {
 
 static Module argument_shuffle() {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(), SignedIntegerType::i32(),
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(), SignedIntegerType::i32(),
                                                           SignedIntegerType::i32(), SignedIntegerType::i32(), SignedIntegerType::i32()}, "arg_shuffle", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto a0 = data.arg(5);
     const auto a1 = data.arg(4);
@@ -172,13 +172,13 @@ static Module argument_shuffle() {
     const auto a4 = data.arg(1);
     const auto a5 = data.arg(0);
 
-    FunctionPrototype arg_locator(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(),
+    const auto arg_locator = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i32(), SignedIntegerType::i32(),
                                                                                SignedIntegerType::i32(), SignedIntegerType::i32(),
                                                                                SignedIntegerType::i32(), SignedIntegerType::i32()},
                                                      "arg_locator", FunctionLinkage::EXTERN);
 
     const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(std::move(arg_locator), cont, {a0, a1, a2, a3, a4, a5});
+    const auto ret_val = data.call(arg_locator, cont, {a0, a1, a2, a3, a4, a5});
     data.switch_block(cont);
 
     data.ret(ret_val);
@@ -198,8 +198,8 @@ TEST(CallTest, argument_shuffle) {
 
 static Module argument_shuffle7(const IntegerType* ty) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle", FunctionLinkage::DEFAULT);
-    const auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle", FunctionLinkage::DEFAULT);
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto aa = data.arg(6);
     const auto a0 = data.arg(5);
@@ -209,9 +209,9 @@ static Module argument_shuffle7(const IntegerType* ty) {
     const auto a4 = data.arg(1);
     const auto a5 = data.arg(0);
 
-    FunctionPrototype arg_locator(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_locator7", FunctionLinkage::EXTERN);
+    const auto arg_locator = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_locator7", FunctionLinkage::EXTERN);
     const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(std::move(arg_locator), cont, {aa, a0, a1, a2, a3, a4, a5});
+    const auto ret_val = data.call(arg_locator, cont, {aa, a0, a1, a2, a3, a4, a5});
     data.switch_block(cont);
 
     data.ret(ret_val);
@@ -288,8 +288,8 @@ TEST(CallTest, argument_shuffle7_i8) {
 
 static Module argument_shuffle8(const IntegerType* ty) {
     ModuleBuilder builder;
-    FunctionPrototype prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle", FunctionLinkage::DEFAULT);
-    auto fn_builder = builder.make_function_builder(std::move(prototype));
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty}, "arg_shuffle", FunctionLinkage::DEFAULT);
+    auto fn_builder = builder.make_function_builder(prototype);
     auto& data = *fn_builder.value();
     const auto ab = data.arg(7);
     const auto aa = data.arg(6);
@@ -300,9 +300,9 @@ static Module argument_shuffle8(const IntegerType* ty) {
     const auto a4 = data.arg(1);
     const auto a5 = data.arg(0);
 
-    FunctionPrototype arg_locator(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty, ty}, "arg_locator8", FunctionLinkage::EXTERN);
+    const auto arg_locator = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty, ty}, "arg_locator8", FunctionLinkage::EXTERN);
     const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(std::move(arg_locator), cont, {ab, aa, a0, a1, a2, a3, a4, a5});
+    const auto ret_val = data.call(arg_locator, cont, {ab, aa, a0, a1, a2, a3, a4, a5});
     data.switch_block(cont);
 
     data.ret(ret_val);

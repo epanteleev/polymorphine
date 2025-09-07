@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <vector>
 #include <span>
@@ -53,9 +52,9 @@ public:
         return m_field_types.at(index);
     }
 
-    static std::unique_ptr<StructType> make(std::string_view name, std::vector<const NonTrivialType*>&& field_types) {
+    static StructType make(const std::string_view name, std::vector<const NonTrivialType*>&& field_types) {
         auto [alignments, size, alignment] = compute_offsets(field_types);
-        return std::make_unique<StructType>(name, std::move(field_types), std::move(alignments), size, alignment);
+        return StructType(name, std::move(field_types), std::move(alignments), size, alignment);
     }
 
 private:
