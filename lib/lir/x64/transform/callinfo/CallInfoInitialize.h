@@ -92,7 +92,7 @@ private:
     std::size_t evaluate_overflow_area_size(const LIRCall* call) noexcept {
         std::size_t overflow_args{};
         for (const auto &[idx, arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, call->inputs())) {
-            if (const auto vreg = arg.vreg().value(); vreg.isa(gen_v())) {
+            if (const auto vreg = arg.as_vreg().value(); vreg.isa(gen_v())) {
                 overflow_args+=vreg.size();
 
             } else if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {

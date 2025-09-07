@@ -1121,6 +1121,53 @@ TEST(Asm, neg_addr) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, idiv_reg) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0xf6,0xf8},
+        {0x66,0xf7,0xf8},
+        {0xf7,0xf8},
+        {0x48,0xf7,0xf8}
+    };
+    const std::vector<std::string> names = {
+        "idivb %al",
+        "idivw %ax",
+        "idivl %eax",
+        "idivq %rax"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.idiv(size, aasm::rax);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, idiv_addr) {
+    const std::vector<std::vector<std::uint8_t>> codes = {
+        {0xf6,0x38},
+        {0x66,0xf7,0x38},
+        {0xf7,0x38},
+        {0x48,0xf7,0x38}
+    };
+    const std::vector<std::string> names = {
+        "idivb (%rax)",
+        "idivw (%rax)",
+        "idivl (%rax)",
+        "idivq (%rax)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        aasm::Address addr(aasm::rax);
+        a.idiv(size, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

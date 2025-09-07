@@ -3,6 +3,8 @@
 #include <ostream>
 #include <ranges>
 
+#include "IntDiv.h"
+#include "Projection.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/types/Type.h"
 #include "mir/types/StructType.h"
@@ -192,6 +194,20 @@ namespace {
             os << *select->type();
             os << ' ' << select->condition() << ", ";
             os << select->on_true() << ", " << select->on_false();
+        }
+
+        void accept(IntDiv *div) override {
+            print_val(div);
+            os << "idiv ";
+            os << *div->type();
+            os << ' ' << div->lhs() << ", " << div->rhs();
+        }
+
+        void accept(Projection *proj) override {
+            print_val(proj);
+            os << "proj";
+            os << ' ' << *proj->type();
+            os << ' ' << proj->operand();
         }
 
         std::ostream& os;

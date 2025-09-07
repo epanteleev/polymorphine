@@ -92,6 +92,10 @@ private:
 
     void accept(Select *select) override;
 
+    void accept(IntDiv *div) override;
+
+    void accept(Projection *proj) override {}
+
     void lower_load(const Unary *inst);
     void make_setcc(const ValueInstruction *inst, aasm::CondType cond_type);
 

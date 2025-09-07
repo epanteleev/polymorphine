@@ -15,7 +15,7 @@ public:
         m_operand(operand) {}
 
     [[nodiscard]]
-    constexpr std::optional<LirCst> cst() const noexcept {
+    constexpr std::optional<LirCst> as_cst() const noexcept {
         if (std::holds_alternative<LirCst>(m_operand)) {
             return std::get<LirCst>(m_operand);
         }
@@ -24,7 +24,7 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<LIRVal> vreg() const noexcept {
+    std::optional<LIRVal> as_vreg() const noexcept {
         if (std::holds_alternative<LIRVal>(m_operand)) {
             return std::get<LIRVal>(m_operand);
         }

@@ -75,6 +75,11 @@ public:
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
     constexpr void neg(const std::uint8_t, const Op &) {}
 
+    // IDIV — Signed Divide
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void idiv(const Op&) {}
+
     void leave() { }
 
     void jmp(const aasm::Label&) {}

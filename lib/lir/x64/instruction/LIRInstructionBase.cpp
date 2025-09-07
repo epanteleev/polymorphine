@@ -27,7 +27,18 @@ namespace {
 
         void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void div_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void div_i(const std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "div out(";
+            for (const auto &[idx, o] : std::ranges::enumerate_view(out)) {
+                if (idx > 0) {
+                    m_os << ", ";
+                }
+
+                m_os << o;
+            }
+
+            m_os << ") in(" << in1 << ", " << in2 << ')';
+        }
 
         void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 

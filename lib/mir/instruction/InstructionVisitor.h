@@ -22,4 +22,6 @@ public:
     virtual void accept(GetElementPtr* gep) = 0;
     virtual void accept(GetFieldPtr* gfp) = 0;
     virtual void accept(Select* select) = 0;
+    virtual void accept(IntDiv* div) = 0;
+    virtual void accept(Projection* proj) = 0;
 };

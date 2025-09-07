@@ -21,6 +21,8 @@ class GetElementPtr;
 class GetFieldPtr;
 class Call;
 class Select;
+class IntDiv;
+class Projection;
 
 class BasicBlock;
 

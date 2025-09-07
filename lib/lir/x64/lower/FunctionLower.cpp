@@ -297,7 +297,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
 
 LIRVal FunctionLower::get_lir_val(const Value &val) {
     const auto lir_operand = get_lir_operand(val);
-    if (const auto vreg = lir_operand.vreg()) {
+    if (const auto vreg = lir_operand.as_vreg()) {
         return *vreg;
     }
 
@@ -362,7 +362,7 @@ void FunctionLower::accept(Call *inst) {
 
         const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of()));
         for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) {
-            const auto load = m_bb->ins(LIRProducerInstruction::load_from_stack(8, arg_vreg.vreg().value(), LirCst::imm64(offset/8)));
+            const auto load = m_bb->ins(LIRProducerInstruction::load_from_stack(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
             m_bb->ins(LIRInstruction::store_on_stack(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
         }
 
@@ -493,6 +493,15 @@ void FunctionLower::accept(Select *select) {
         const auto cmov = m_bb->ins(LIRCMove::cmov(cond_ty, on_true_lir, on_false_lir));
         memorize(select, cmov->def(0));
     }
+}
+
+void FunctionLower::accept(IntDiv *div) {
+    const auto lhs = get_lir_operand(div->lhs());
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs));
+    const auto rhs = get_lir_operand(div->rhs());
+    const auto idiv = m_bb->ins(LIRProducerInstruction::idiv(copy->def(0), rhs));
+    memorize(div->quotient(), idiv->def(0));
+    memorize(div->remain(), idiv->def(1));
 }
 
 void FunctionLower::accept(Unary *inst) {

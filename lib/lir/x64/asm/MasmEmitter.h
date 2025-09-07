@@ -151,6 +151,13 @@ public:
         m_asm.neg(size, r);
     }
 
+    // IDIV — Signed Divide
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void idiv(const Op& r) {
+        m_asm.idiv(r);
+    }
+
     void leave() { m_asm.leave(); }
 
     void jmp(const aasm::Label& label) {

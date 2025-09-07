@@ -30,7 +30,7 @@ std::span<LIRInstructionBase * const> LIRVal::users() const noexcept {
 }
 
 std::expected<LIRVal, Error> LIRVal::try_from(const LIROperand &op) {
-    const auto vreg = op.vreg();
+    const auto vreg = op.as_vreg();
     if (!vreg.has_value()) {
         return std::unexpected(Error::CastError);
     }

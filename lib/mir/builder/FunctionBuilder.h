@@ -12,6 +12,8 @@
 #include "mir/instruction/Store.h"
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/TerminateValueInstruction.h"
+#include "mir/instruction/IntDiv.h"
+#include "mir/instruction/Projection.h"
 #include "mir/instruction/Unary.h"
 
 
@@ -53,6 +55,14 @@ public:
     [[nodiscard]]
     Value xxor(const Value& lhs, const Value& rhs) const {
         return m_bb->ins(Binary::xxor(lhs, rhs));
+    }
+
+    [[nodiscard]]
+    std::pair<Value, Value> idiv(const Value& lhs, const Value& rhs) const {
+        const auto idiv = m_bb->ins(IntDiv::div(lhs, rhs));
+        const auto quotient = m_bb->ins(Projection::proj(idiv, 0));
+        const auto remain = m_bb->ins(Projection::proj(idiv, 1));
+        return {quotient, remain};
     }
 
     [[nodiscard]]

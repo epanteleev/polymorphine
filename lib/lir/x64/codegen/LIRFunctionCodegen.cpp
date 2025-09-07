@@ -80,10 +80,10 @@ static bool is_no_prologue(const RegisterAllocation& reg_allocation) noexcept {
 }
 
 GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
-    if (const auto vreg = val.vreg(); vreg.has_value()) {
+    if (const auto vreg = val.as_vreg(); vreg.has_value()) {
         return m_reg_allocation[vreg.value()];
     }
-    if (const auto cst = val.cst(); cst.has_value()) {
+    if (const auto cst = val.as_cst(); cst.has_value()) {
         return cst.value().value();
     }
 

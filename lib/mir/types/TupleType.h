@@ -24,6 +24,15 @@ public:
         return m_second;
     }
 
+    [[nodiscard]]
+    const PrimitiveType* inner_type(const std::size_t idx) const noexcept {
+        switch (idx) {
+            case 0: return m_first;
+            case 1: return m_second;
+            default: std::unreachable();
+        }
+    }
+
     template< std::derived_from<PrimitiveType> F, std::derived_from<PrimitiveType> S>
     static const TupleType* tuple(const F* first, const S* second) noexcept {
         if (const auto f = dynamic_cast<const SignedIntegerType*>(first)) {

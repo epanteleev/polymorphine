@@ -191,6 +191,15 @@ namespace aasm {
             m_instructions.emplace_back(details::NegM(size, addr));
         }
 
+        // IDIV — Signed Divide
+        constexpr void idiv(const std::uint8_t size, const GPReg divisor) {
+            m_instructions.emplace_back(details::IdivR(size, divisor));
+        }
+
+        constexpr void idiv(const std::uint8_t size, const Address& addr) {
+            m_instructions.emplace_back(details::IdivM(size, addr));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());
