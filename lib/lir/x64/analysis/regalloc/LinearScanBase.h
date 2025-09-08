@@ -10,6 +10,7 @@
 #include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
 #include "lir/x64/operand/OperandMatcher.h"
 #include "lir/x64/asm/cc/CallConv.h"
+#include "utility/RemoveFast.h"
 
 
 template<call_conv::CallConv CC>
@@ -115,7 +116,7 @@ private:
                 return true;
             };
 
-            remove_interval_if(m_active_intervals, active_eraser);
+            remove_if_fast(m_active_intervals, active_eraser);
 
             const auto unactive_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
@@ -136,7 +137,7 @@ private:
                 return true;
             };
 
-            remove_interval_if(m_inactive_intervals, unactive_eraser);
+            remove_if_fast(m_inactive_intervals, unactive_eraser);
 
             for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
                 const auto group = m_groups.try_get_group(unhandled.lir_val);
@@ -273,18 +274,6 @@ private:
         for (const auto bb: m_preorder) {
             for (const auto& inst: bb->instructions()) {
                 m_instruction_ordering.push_back(&inst);
-            }
-        }
-    }
-
-    template<typename Fn>
-    static void remove_interval_if(std::vector<IntervalEntry>& intervals, Fn&& fn) {
-        for (auto it = intervals.begin(); it != intervals.end();) {
-            if (fn(*it)) {
-                std::swap(*it, intervals.back());
-                intervals.pop_back();
-            } else {
-                ++it;
             }
         }
     }

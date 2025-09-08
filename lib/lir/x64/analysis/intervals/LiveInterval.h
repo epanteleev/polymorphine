@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IntervalHint.h"
+#include "utility/RemoveFast.h"
 
 /**
  * Represents a live interval of a virtual register in LIR function.
@@ -83,6 +84,7 @@ public:
     void merge_with(const LiveInterval& other) noexcept {
         if (this == &other) { return; }
 
+        m_intervals.reserve(m_intervals.size() + other.m_intervals.size());
         for (const auto& interval : other.m_intervals) {
             m_intervals.emplace_back(interval);
         }
@@ -111,8 +113,10 @@ private:
         m_hint(hint) {}
 
     /**
+     * Transforms the intervals into a canonical form. This involves:
      * 1. Sorts the intervals by their start point.
-     * 2. Finds the maximum end point of the intervals.
+     * 2. Merges overlapping intervals.
+     * 3. Finds the maximum end point of the intervals.
      */
     [[nodiscard]]
     static std::uint32_t canonicalize(std::vector<LiveRange>& intervals) noexcept {
@@ -120,6 +124,17 @@ private:
             return lhs.start() < rhs.start();
         };
 
+        std::ranges::sort(intervals, sorted_intervals);
+
+        // Merge overlapping intervals
+        for (std::size_t i = 1; i < intervals.size();) {
+            if (intervals[i].intersects_non_strictly(intervals[i - 1])) {
+                intervals[i - 1].propagate(intervals[i].end());
+                remove_fast(intervals, intervals.begin() + static_cast<std::int64_t>(i));
+            } else {
+                i += 1;
+            }
+        }
         std::ranges::sort(intervals, sorted_intervals);
 
         const auto max_elem = [](const LiveRange& lhs, const LiveRange& rhs) {

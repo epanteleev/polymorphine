@@ -52,13 +52,23 @@ static Module idiv_2(const SignedIntegerType* ty, Fn&& fn) {
 }
 
 TEST(Idiv, idiv_to_2_i64) {
-    GTEST_SKIP();
     const std::unordered_map<std::string, std::size_t> asm_size{
         {"idiv_2", 5},
     };
 
     const auto buffer = jit_compile_and_assembly({}, idiv_2(SignedIntegerType::i64(), Value::i64), asm_size, true);
     const auto idiv = buffer.code_start_as<std::int64_t(std::int64_t)>("idiv_2").value();
+    const auto p = idiv(5);
+    ASSERT_EQ(p, 2);
+}
+
+TEST(Idiv, idiv_to_2_i32) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"idiv_2", 5},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, idiv_2(SignedIntegerType::i32(), Value::i32), asm_size, true);
+    const auto idiv = buffer.code_start_as<std::int32_t(std::int32_t)>("idiv_2").value();
     const auto p = idiv(5);
     ASSERT_EQ(p, 2);
 }
