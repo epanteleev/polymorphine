@@ -500,8 +500,18 @@ void FunctionLower::accept(IntDiv *div) {
     const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs));
     const auto rhs = get_lir_operand(div->rhs());
     const auto idiv = m_bb->ins(LIRProducerInstruction::idiv(copy->def(0), rhs));
-    memorize(div->quotient(), idiv->def(0));
-    memorize(div->remain(), idiv->def(1));
+
+    if (const auto quotient = div->quotient(); !quotient->users().empty()) {
+        const auto quotient_type = dynamic_cast<const PrimitiveType*>(quotient->type());
+        const auto copy_quotient = m_bb->ins(LIRProducerInstruction::copy(quotient_type->size_of(), idiv->def(0)));
+        memorize(quotient, copy_quotient->def(0));
+    }
+
+    if (const auto remain = div->remain(); !remain->users().empty()) {
+        const auto remain_type = dynamic_cast<const PrimitiveType*>(remain->type());
+        const auto copy_remain = m_bb->ins(LIRProducerInstruction::copy(remain_type->size_of(), idiv->def(1)));
+        memorize(remain, copy_remain->def(0));
+    }
 }
 
 void FunctionLower::accept(Unary *inst) {

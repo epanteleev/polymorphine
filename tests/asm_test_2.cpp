@@ -69,7 +69,7 @@ TEST(Asm, cmov_reg_reg) {
 }
 
 TEST(Asm, cmov_reg_mem) {
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "cmovo 8(%r12,%r13,4), %r12",
         "cmovno 8(%r12,%r13,4), %r12",
         "cmovnae 8(%r12,%r13,4), %r12",
@@ -88,7 +88,7 @@ TEST(Asm, cmov_reg_mem) {
         "cmovg 8(%r12,%r13,4), %r12"
     };
 
-    std::vector<std::vector<std::uint8_t>> codes = {
+    const std::vector<std::vector<std::uint8_t>> codes = {
         {0x4f,0x0f,0x40,0x64,0xac,0x08}, // cmovo 8(%r12,%r13,4), %r12
         {0x4f,0x0f,0x41,0x64,0xac,0x08}, // cmovno 8(%r12,%r13,4), %r12
         {0x4f,0x0f,0x42,0x64,0xac,0x08}, // cmovnae 8(%r12,%r13,4), %r12

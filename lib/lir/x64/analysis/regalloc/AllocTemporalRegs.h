@@ -50,7 +50,7 @@ namespace details {
 
         void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void div_i(const std::span<LIRVal const>, const LIROperand &in1, const LIROperand &in2) override {}
+        void div_i(const std::span<LIRVal const>, const LIROperand &in1, const LIROperand &in2) override;
 
         void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 

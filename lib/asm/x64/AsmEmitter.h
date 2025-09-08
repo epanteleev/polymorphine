@@ -200,6 +200,11 @@ namespace aasm {
             m_instructions.emplace_back(details::IdivM(size, addr));
         }
 
+        // CWD/CDQ/CQO — Convert Word to Doubleword/Convert Doubleword to Quadword
+        constexpr void cdq(const std::uint8_t size) {
+            m_instructions.emplace_back(details::Cdq(size));
+        }
+
         // Leave
         constexpr void leave() {
             m_instructions.emplace_back(details::Leave());

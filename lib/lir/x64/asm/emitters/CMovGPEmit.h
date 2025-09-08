@@ -2,10 +2,10 @@
 
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 
-template<typename ClobberRegStorage, typename AsmEmit>
+template<typename TemporalRegStorage, typename AsmEmit>
 class CMovGPEmit final: public GPBinaryVisitor {
 public:
-    explicit CMovGPEmit(const ClobberRegStorage& regs, AsmEmit& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
+    explicit CMovGPEmit(const TemporalRegStorage& regs, AsmEmit& as, const aasm::CondType cond_type, const std::uint8_t size) noexcept:
         m_size(convert_byte_size(size)),
         m_operands_size(size),
         m_cond_type(cond_type),
@@ -133,5 +133,5 @@ private:
     std::uint8_t m_operands_size{};
     aasm::CondType m_cond_type;
     AsmEmit& m_as;
-    const ClobberRegStorage& m_temporal_regs;
+    const TemporalRegStorage& m_temporal_regs;
 };

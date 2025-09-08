@@ -27,6 +27,7 @@
 #include "Movsxd.h"
 #include "Neg.h"
 #include "Idiv.h"
+#include "Cdq.h"
 
 namespace aasm {
     class X64Instruction final {
@@ -43,6 +44,7 @@ namespace aasm {
 
     private:
         std::variant<
+            details::Cdq,
             details::Lea,
             details::PopR, details::PopM,
             details::NegR, details::NegM,

@@ -21,6 +21,7 @@
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/analysis/regalloc/RegisterAllocation.h"
+#include "lir/x64/asm/emitters/IntDivEmit.h"
 #include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
@@ -102,6 +103,15 @@ void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const L
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     SubIntEmit::apply(m_as, out.size(), out_reg, in1_reg, in2_reg);
+}
+
+void LIRFunctionCodegen::div_i(const std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) {
+    const auto out_reg = m_reg_allocation[out[0]];
+    const auto in1_reg = convert_to_gp_op(in1);
+    const auto in2_reg = convert_to_gp_op(in2);
+
+    IntDivEmit emitter(temporal_reg(m_current_inst), m_as, in1.size());
+    emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {

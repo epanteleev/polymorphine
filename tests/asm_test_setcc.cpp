@@ -137,7 +137,7 @@ TEST(Asm, setcc3) {
         "setg %dil"
     };
 
-    std::vector<std::vector<std::uint8_t>> codes = {
+    const std::vector<std::vector<std::uint8_t>> codes = {
       {0x40,0x0f,0x90,0xc7}, // seto %dil
       {0x40,0x0f,0x91,0xc7}, // setno %dil
       {0x40,0x0f,0x92,0xc7}, // setnae %dil
@@ -153,10 +153,10 @@ TEST(Asm, setcc3) {
       {0x40,0x0f,0x9c,0xc7}, // setnge %dil
       {0x40,0x0f,0x9d,0xc7}, // setge %dil
       {0x40,0x0f,0x9e,0xc7}, // setng %dil
-      {0x40,0x0f,0x9f,0xc7}   // setg %dil
+      {0x40,0x0f,0x9f,0xc7}  // setg %dil
     };
 
-    const auto generator = [](aasm::CondType type) {
+    const auto generator = [](const aasm::CondType type) {
         aasm::AsmEmitter a;
         a.setcc(type, aasm::rdi);
         return a;

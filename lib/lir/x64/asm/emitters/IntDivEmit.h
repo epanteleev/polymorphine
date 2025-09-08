@@ -1,22 +1,27 @@
 #pragma once
-
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 
-class LoadByIdxIntEmit final: public GPBinaryVisitor {
-public:
-    explicit LoadByIdxIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
-        m_size(size),
-        m_as(as) {}
 
-    void apply(const GPVReg& out, const GPOp& pointer, const GPOp& index) {
-        dispatch(*this, out, pointer, index);
+template<typename TempRegStorage, typename AsmEmit>
+class IntDivEmit final: public GPBinaryVisitor {
+public:
+    explicit IntDivEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as),
+        m_temporal_regs(m_temporal_regs) {}
+
+    void apply(const GPVReg& out, const GPOp& dividend, const GPOp& divider) {
+        dispatch(*this, out, dividend, divider);
     }
 
 private:
     friend class GPBinaryVisitor;
 
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const aasm::GPReg in2) override {
-        m_as.mov(m_size, aasm::Address(in1, in2, m_size, 0), out);
+        m_as.copy(m_size, in1, aasm::rax);
+        m_as.cdq(m_size);
+        m_as.idiv(m_size, in2);
+        m_as.copy(m_size, aasm::rax, out);
     }
 
     void emit(aasm::GPReg out, aasm::GPReg in1, const aasm::Address &in2) override {
@@ -31,10 +36,12 @@ private:
         unimplemented();
     }
 
-    void emit(const aasm::GPReg out, const aasm::GPReg in1, const std::int64_t in2) override {
-        const auto offset = m_size * in2;
-        assertion(std::in_range<std::int32_t>(offset), "Offset out of range");
-        m_as.mov(m_size, aasm::Address(in1, static_cast<std::int32_t>(offset)), out);
+    void emit(aasm::GPReg out, aasm::GPReg in1, std::int64_t in2) override {
+        m_as.copy(m_size, in1, aasm::rax);
+        m_as.copy(m_size, in2, m_temporal_regs.gp_temp1());
+        m_as.cdq(m_size);
+        m_as.idiv(m_size, m_temporal_regs.gp_temp1());
+        m_as.copy(m_size, aasm::rax, out);
     }
 
     void emit(aasm::GPReg out, std::int64_t in1, aasm::GPReg in2) override {
@@ -90,5 +97,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TempRegStorage& m_temporal_regs;
 };

@@ -154,8 +154,12 @@ public:
     // IDIV — Signed Divide
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
-    constexpr void idiv(const Op& r) {
-        m_asm.idiv(r);
+    constexpr void idiv(std::uint8_t size, const Op& r) {
+        m_asm.idiv(size, r);
+    }
+
+    constexpr void cdq(const std::uint8_t size) {
+        m_asm.cdq(size);
     }
 
     void leave() { m_asm.leave(); }
