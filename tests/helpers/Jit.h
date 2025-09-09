@@ -18,8 +18,8 @@ JitModule jit_compile_and_assembly(const Module& module, bool verbose = false);
  * @param verbose If true, prints the intermediate representations after each step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, bool verbose);
-JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose);
+JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, bool verbose = false);
+JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose = false);
 
 /**
  * Performs JIT compilation, assembly of the given module and verify number of instructions in the functions.
