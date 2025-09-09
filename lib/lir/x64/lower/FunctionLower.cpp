@@ -3,6 +3,7 @@
 #include "lir/x64/instruction/LIRBranch.h"
 #include "lir/x64/instruction/LIRCMove.h"
 #include "lir/x64/instruction/LIRCondBranch.h"
+#include "lir/x64/instruction/LIRInstruction.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "lir/x64/instruction/Matcher.h"

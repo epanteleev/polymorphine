@@ -107,11 +107,9 @@ public:
         return {def->size(), static_cast<std::uint8_t>(def->index()), const_cast<LIRArg *>(def)};
     }
 
-    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRProducerInstructionBase* def) noexcept {
-        return {size, index, def};
-    }
-
-    static LIRVal reg(std::uint8_t size, std::uint8_t index, LIRCall* def) noexcept {
+    template<typename T>
+    requires std::derived_from<T, LIRProducerInstructionBase> || std::derived_from<T, LIRCall>
+    static LIRVal reg(std::uint8_t size, std::uint8_t index, T* def) noexcept {
         return {size, index, def};
     }
 

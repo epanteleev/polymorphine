@@ -1,5 +1,5 @@
 #pragma once
-#include "LIRInstruction.h"
+#include "LIRInstructionBase.h"
 
 
 class LIRProducerInstructionBase : public LIRInstructionBase {
