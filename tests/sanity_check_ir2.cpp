@@ -9,7 +9,7 @@ static Module min_max_phi(const IntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 
@@ -31,7 +31,7 @@ static Module min_max_phi(const IntegerType* ty) {
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 
@@ -76,7 +76,7 @@ static Module xor_values(const IntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "xor", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
 

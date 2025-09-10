@@ -8,7 +8,7 @@ static Module sext_cvt(const SignedIntegerType* from, const SignedIntegerType* t
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    const auto data = fn_builder.value();
 
     const auto arg = data.arg(0);
     const auto cvt = data.sext(to, arg);
@@ -87,7 +87,7 @@ static Module zext_cvt(const UnsignedIntegerType* from, const UnsignedIntegerTyp
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     const auto arg = data.arg(0);
     const auto cvt = data.zext(to, arg);
@@ -161,7 +161,7 @@ static Module trunc_cvt(const IntegerType* from, const IntegerType* to) {
     const auto prototype = builder.add_function_prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(std::move(prototype));
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     const auto arg = data.arg(0);
     const auto cvt = data.trunc(to, arg);
@@ -216,7 +216,7 @@ static Module bitcast_cvt(const IntegerType* from, const IntegerType* to) {
     const auto prototype = builder.add_function_prototype(from, {from}, "cvt", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     const auto arg = data.arg(0);
     const auto cvt = data.bitcast(to, arg);

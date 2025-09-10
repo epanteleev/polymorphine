@@ -9,7 +9,7 @@ static Module fib(const IntegerType* ty, Fn&& fn) {
     const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionLinkage::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     auto n = data.arg(0);
     auto ret_addr = data.alloc(ty);
@@ -190,7 +190,7 @@ static Module recursive_fib(const IntegerType* ty) {
     assert(prototype == copy);
 
     auto fn_builder = builder.make_function_builder(copy);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     auto n = data.arg(0);
     auto ret_addr = data.alloc(ty);

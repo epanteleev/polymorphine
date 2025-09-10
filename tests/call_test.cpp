@@ -6,7 +6,7 @@
 static void call_test(ModuleBuilder& builder, const IntegerType* ty) {
     const auto prototype = builder.add_function_prototype(ty, {}, "call_test", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
     const auto cont = data.create_basic_block();
     const auto proto = builder.add_function_prototype(ty, {}, "ret_42", FunctionLinkage::DEFAULT);
     const auto res = data.call(proto, cont, {});
@@ -18,7 +18,7 @@ template<typename Fn>
 static void ret_42(ModuleBuilder& builder, const IntegerType* ty, Fn&& fn) {
     const auto ret_42 = builder.add_function_prototype(ty, {}, "ret_42", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(ret_42);
-    const auto& data = *fn_builder.value();
+    const auto data = fn_builder.value();
     data.ret(fn(42));
 }
 
@@ -78,7 +78,7 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "return_arg", FunctionLinkage::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
-        auto& data = *fn_builder.value();
+        auto data = fn_builder.value();
         const auto cont = data.create_basic_block();
         const auto arg = data.arg(0);
         const auto proto = builder.add_function_prototype(ty, {ty, ty}, "sum", FunctionLinkage::DEFAULT);
@@ -89,7 +89,7 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "sum", FunctionLinkage::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
-        const auto& data = *fn_builder.value();
+        const auto data = fn_builder.value();
         const auto arg1 = data.arg(0);
         const auto arg2 = data.arg(1);
         const auto sum = data.add(arg1, arg2);
@@ -112,7 +112,7 @@ static Module clamp(const IntegerType* ty) {
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionLinkage::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
-        auto& data = *fn_builder.value();
+        auto data = fn_builder.value();
         const auto arg1 = data.arg(0);
         const auto arg2 = data.arg(1);
         const auto alloc = data.alloc(ty);
@@ -135,7 +135,7 @@ static Module clamp(const IntegerType* ty) {
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionLinkage::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
-        auto& data = *fn_builder.value();
+        auto data = fn_builder.value();
         const auto arg1 = data.arg(0);
         const auto arg2 = data.arg(1);
         const auto alloc = data.alloc(ty);
@@ -158,7 +158,7 @@ static Module clamp(const IntegerType* ty) {
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty, ty}, "clamp", FunctionLinkage::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
-        auto& data = *fn_builder.value();
+        auto data = fn_builder.value();
         const auto arg = data.arg(0);
         const auto min = data.arg(1);
         const auto max = data.arg(2);

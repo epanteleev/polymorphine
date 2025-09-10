@@ -9,7 +9,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
     const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), inc_type}, "bubble_sort", FunctionLinkage::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     auto for_cond = data.create_basic_block();
     auto for_body = data.create_basic_block();

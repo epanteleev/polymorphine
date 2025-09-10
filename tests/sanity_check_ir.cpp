@@ -10,7 +10,7 @@ static Module ret_i32(const std::int32_t value) {
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "ret_one", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    const auto data = fn_builder.value();
 
     data.ret(Value::i32(value));
     return builder.build();
@@ -30,7 +30,7 @@ static Module ret_i64(const std::int64_t value) {
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "ret_one", FunctionLinkage::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    const auto data = fn_builder.value();
 
     data.ret(Value::i64(value));
     return builder.build();
@@ -50,13 +50,13 @@ static Module ret_i8_u8(const std::int8_t value) {
     {
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i8(), {}, "ret_i8", FunctionLinkage::DEFAULT);
         const auto fn_builder = builder.make_function_builder(prototype);
-        const auto& data = *fn_builder.value();
+        const auto data = fn_builder.value();
         data.ret(Value::i8(value));
     }
     {
         const auto prototype = builder.add_function_prototype(UnsignedIntegerType::u8(), {}, "ret_u8", FunctionLinkage::DEFAULT);
         const auto fn_builder = builder.make_function_builder(prototype);
-        const auto& data = *fn_builder.value();
+        const auto data = fn_builder.value();
         data.ret(Value::u8(value));
     }
 
@@ -79,7 +79,7 @@ static Module ret_i32_arg() {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "ret_i32", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
     const auto arg0 = data.arg(0);
     data.ret(arg0);
 
@@ -99,7 +99,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "add", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    const auto data = fn_builder.value();
     const auto arg0 = data.arg(0);
     const auto arg1 = data.arg(1);
     const auto add = data.add(arg0, arg1);
@@ -138,7 +138,7 @@ static Module branch() {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "ret", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     auto* cont = data.create_basic_block();
     data.br(cont);
@@ -168,33 +168,33 @@ static Module is_predicate_base(Fn&& fn, const IntegerType* ty, const Value& thr
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_neg", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Lt,  threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Lt,  threshold);
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_le", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Le, threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Le, threshold);
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_gt", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Gt, threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Gt, threshold);
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_eq", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Eq, threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Eq, threshold);
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_ne", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Ne, threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Ne, threshold);
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_ge", FunctionLinkage::DEFAULT);
-        const auto fn_builder = builder.make_function_builder(prototype);
-        fn(*fn_builder.value(), IcmpPredicate::Ge, threshold);
+        auto fn_builder = builder.make_function_builder(prototype);
+        fn(fn_builder.value(), IcmpPredicate::Ge, threshold);
     }
 
     return builder.build();
@@ -276,7 +276,7 @@ static Module stack_alloc(const Value& val) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(val.type(), {}, "stackalloc", FunctionLinkage::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
     const auto alloc = data.alloc(dynamic_cast<const PrimitiveType*>(val.type()));
     data.store(alloc, val);
     data.ret(data.load(dynamic_cast<const PrimitiveType*>(val.type()), alloc));
@@ -365,8 +365,8 @@ TEST(SanityCheck, branch_u32_predicate) {
 static Module swap(const PrimitiveType* ty) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), PointerType::ptr()}, "swap", FunctionLinkage::DEFAULT);
-    const auto fn_builder = builder.make_function_builder(prototype);
-    const auto& data = *fn_builder.value();
+    auto fn_builder = builder.make_function_builder(prototype);
+    const auto data = fn_builder.value();
     const auto arg0 = data.arg(0);
     const auto arg1 = data.arg(1);
     const auto tmp0 = data.load(ty, arg0);

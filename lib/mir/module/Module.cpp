@@ -12,8 +12,8 @@ const FunctionData* Module::add_function_data(const FunctionPrototype* proto, st
     }
 #endif
 
-    const auto& [fst, snd] = m_functions.emplace(proto->name(), std::make_unique<FunctionData>(proto, std::move(args)));
-    return fst->second.get();
+    const auto& [fst, snd] = m_functions.emplace(proto->name(), FunctionData(proto, std::move(args)));
+    return &fst->second;
 }
 
 std::ostream & operator<<(std::ostream &os, const Module &module) {
@@ -34,7 +34,7 @@ std::ostream & operator<<(std::ostream &os, const Module &module) {
     }
 
     for (const auto &f: std::ranges::views::values(module.m_functions)) {
-        os << *f;
+        os << f;
     }
 
     return os;

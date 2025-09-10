@@ -12,7 +12,7 @@
 class Module final {
 public:
     explicit Module(FunctionPrototypeTable&& prototypes,
-        std::unordered_map<std::string, std::unique_ptr<FunctionData>>&& functions,
+        std::unordered_map<std::string, FunctionData>&& functions,
         std::unordered_map<std::string, StructType>&& known_structs,
         std::deque<ArrayType>&& array_types) noexcept:
         m_prototypes(std::move(prototypes)),
@@ -28,10 +28,10 @@ public:
             return std::unexpected(Error::NotFoundError);
         }
 
-        return it->second.get();
+        return &it->second;
     }
 
-    const std::unordered_map<std::string, std::unique_ptr<FunctionData>>& functions() const {
+    const std::unordered_map<std::string, FunctionData>& functions() const {
         return m_functions;
     }
 
@@ -41,7 +41,7 @@ private:
     FunctionPrototypeTable m_prototypes;
     std::unordered_map<std::string, StructType> m_known_structs;
     std::deque<ArrayType> m_array_types;
-    std::unordered_map<std::string, std::unique_ptr<FunctionData>> m_functions;
+    std::unordered_map<std::string, FunctionData> m_functions;
 };
 
 std::ostream & operator<<(std::ostream &os, const Module &module);

@@ -7,7 +7,7 @@ static Module min_max_select(const IntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
         const auto cond = data.icmp(IcmpPredicate::Lt, arg0, arg1);
@@ -16,7 +16,7 @@ static Module min_max_select(const IntegerType* ty) {
     }
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
         const auto cond = data.icmp(IcmpPredicate::Gt, arg0, arg1);
@@ -115,7 +115,7 @@ static Module is_less_1(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_less_1", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto is_neg = data.icmp(IcmpPredicate::Lt, arg0, fn(1));
         const auto res = data.select(is_neg, Value::i8(1), Value::i8(0));
@@ -169,7 +169,7 @@ static Module is_neg2(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_less_1", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto is_neg = data.icmp(IcmpPredicate::Ge, arg0, fn(1));
         const auto res = data.select(is_neg, Value::i8(0), Value::i8(1));
@@ -223,7 +223,7 @@ static Module is_less_1_2(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_less_1", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto is_neg = data.icmp(IcmpPredicate::Ge, arg0, fn(1));
         const auto res = data.select(is_neg, Value::i8(1), Value::i8(2));
@@ -277,7 +277,7 @@ static Module is_less_1_2_store(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), ty}, "is_less_1", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto ptr = data.arg(0);
         const auto arg0 = data.arg(1);
         const auto is_neg = data.icmp(IcmpPredicate::Ge, arg0, fn(1));

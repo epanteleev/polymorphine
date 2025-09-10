@@ -9,7 +9,7 @@ static Module memcpy_test_module() {
     const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), PointerType::ptr(), UnsignedIntegerType::u64()}, "memcpy_test", FunctionLinkage::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(prototype);
-    auto& data = *fn_builder.value();
+    auto data = fn_builder.value();
 
     auto for_cond = data.create_basic_block();
     auto for_body = data.create_basic_block();

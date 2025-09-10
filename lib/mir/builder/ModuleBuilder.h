@@ -15,7 +15,7 @@ public:
     const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, FunctionLinkage linkage);
     const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, FunctionLinkage linkage);
 
-    std::expected<FunctionBuilder*, Error> make_function_builder(const FunctionPrototype *prototype);
+    std::expected<FunctionBuilder, Error> make_function_builder(const FunctionPrototype *prototype);
 
     const StructType* add_struct_type(std::string_view name, std::vector<const NonTrivialType*>&& field_types);
 
@@ -27,5 +27,5 @@ private:
     FunctionPrototypeTable m_prototypes;
     std::unordered_map<std::string, StructType> m_known_structs;
     std::deque<ArrayType> m_array_types;
-    std::unordered_map<std::string, FunctionBuilder> m_functions;
+    std::unordered_map<std::string, FunctionData> m_functions;
 };

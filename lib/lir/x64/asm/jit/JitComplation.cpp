@@ -46,7 +46,7 @@ static void verify_cfg(const std::string_view name, const BasicBlock* bb) {
 
 static void verify_data_and_control_flow_edges(const Module& module) {
     for (const auto& [name, func]: module.functions()) {
-        for (const auto& bb: func->basic_blocks()) {
+        for (const auto& bb: func.basic_blocks()) {
             verify_def_use_chain(name, &bb);
             verify_cfg(name, &bb);
         }

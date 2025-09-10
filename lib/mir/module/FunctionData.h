@@ -12,9 +12,10 @@
 
 
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
-    friend class FunctionBuilder;
 public:
     explicit FunctionData(const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
+
+    FunctionData(FunctionData&& other) noexcept = default;
 
     [[nodiscard]]
     const ArgumentValue& arg(const std::size_t index) const {
@@ -47,11 +48,11 @@ public:
         return m_prototype->name();
     }
 
-private:
     std::size_t add_basic_block(std::unique_ptr<BasicBlock>&& bb) {
         return m_basic_blocks.push_back(std::move(bb));
     }
 
+private:
     const FunctionPrototype* m_prototype;
 };
 

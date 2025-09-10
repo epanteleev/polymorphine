@@ -21,6 +21,10 @@ public:
     explicit FunctionDataBase(std::vector<arg_type>&& args) noexcept:
         m_args(std::move(args)) {}
 
+    FunctionDataBase(FunctionDataBase&& other) noexcept:
+        m_args(std::move(other.m_args)),
+        m_basic_blocks(std::move(other.m_basic_blocks)) {}
+
     virtual ~FunctionDataBase() = default;
 
     /**
@@ -46,11 +50,11 @@ public:
         return m_basic_blocks;
     }
 
-protected:
     std::unique_ptr<code_block_type> remove(const code_block_type* bb) {
         return m_basic_blocks.remove(bb->id());
     }
 
+protected:
     std::ostream& print_blocks(std::ostream &os) const {
         os << '{' << std::endl;
         for (const auto &bb : m_basic_blocks) {

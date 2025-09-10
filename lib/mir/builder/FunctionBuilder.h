@@ -18,10 +18,8 @@
 
 
 class FunctionBuilder final {
-    explicit FunctionBuilder(std::unique_ptr<FunctionData>&& functionData);
-
 public:
-    static FunctionBuilder make(const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
+    explicit FunctionBuilder(FunctionData* functionData);
 
     [[nodiscard]]
     const ArgumentValue* arg(const std::size_t index) const {
@@ -149,11 +147,8 @@ public:
         m_bb->ins(Return::ret());
     }
 
-    [[nodiscard]]
-    std::unique_ptr<FunctionData> build() noexcept;
-
 private:
     BasicBlock* m_bb;
-    std::unique_ptr<FunctionData> m_fd;
+    FunctionData* m_fd;
 };
 

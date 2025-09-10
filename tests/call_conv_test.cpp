@@ -9,7 +9,7 @@ static Module struct_arg_size1() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vect_type, arg0, 0);
         const auto field1 = data.gfp(vect_type, arg0, 1);
@@ -49,7 +49,7 @@ static Module struct_arg_size2() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vect_type, arg0, 0);
         const auto field1 = data.gfp(vect_type, arg0, 1);
@@ -98,7 +98,7 @@ static Module struct_arg_size3() {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type, point_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vect_type, arg0, 0);
         const auto field1 = data.gfp(vect_type, arg0, 1);
@@ -163,7 +163,7 @@ static Module array_of_structs_with_cst() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, SignedIntegerType::i64()}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vect_type, arg0, 0);
         const auto field1 = data.gfp(vect_type, arg0, 1);
@@ -199,7 +199,7 @@ static Module array_of_structs_with_cst0() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), vect_type}, "sum_fields", std::vector{AttributeSet{}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(1);
         const auto field0 = data.gfp(vect_type, arg0, 0);
         const auto field1 = data.gfp(vect_type, arg0, 1);
@@ -244,7 +244,7 @@ static Module struct_arg_external() {
     {
         auto point_type = builder.add_struct_type("Point2", {SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {point_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}}, FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "sum_ints", FunctionLinkage::EXTERN);
         const auto cont = data.create_basic_block();
         const auto call = data.call(ext_proto, cont, {Value::i64(20), Value::i64(30)});
@@ -279,7 +279,7 @@ static Module struct_arg_external2() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_fields", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_ints2", std::vector{AttributeSet{Attribute::ByValue}}, FunctionLinkage::EXTERN);
         const auto alloc = data.alloc(vect_type);
         const auto field0 = data.gfp(vect_type, alloc, 0);
@@ -322,7 +322,7 @@ static Module struct_arg_external3() {
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_fields", FunctionLinkage::DEFAULT);
-        auto& data = *builder.make_function_builder(prototype).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_ints3", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionLinkage::EXTERN);
 
         const auto alloc0 = data.alloc(SignedIntegerType::i32());
@@ -372,7 +372,7 @@ static Module make_point2() {
     {
         const auto tuple = TupleType::tuple(SignedIntegerType::i64(), SignedIntegerType::i64());
         const auto prototype = builder.add_function_prototype(tuple, {}, "make_point2", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         data.ret(Value::i64(1234), Value::i64(5678));
     }
 

@@ -7,7 +7,7 @@ static Module idiv(const SignedIntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "idiv", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
         const auto c = data.idiv(a, b);
@@ -43,7 +43,7 @@ static Module idiv_2(const SignedIntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "idiv_2", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto c = data.idiv(a, fn(2));
         data.ret(c.first);
@@ -77,7 +77,7 @@ static Module reminder(const SignedIntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "reminder", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
         const auto c = data.idiv(a, b);
@@ -118,7 +118,7 @@ static Module idiv_quotient_reminder_i64(const SignedIntegerType* ty) {
     {
         const auto tuple_ty = TupleType::tuple(ty, ty);
         const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_quotient_reminder_i64", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
         const auto c = data.idiv(a, b);
@@ -156,7 +156,7 @@ static Module idiv_reminder_quotient_i64(const SignedIntegerType* ty) {
     {
         const auto tuple_ty = TupleType::tuple(ty, ty);
         const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_reminder_quotient_i64", FunctionLinkage::DEFAULT);
-        const auto& data = *builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
         const auto c = data.idiv(a, b);
