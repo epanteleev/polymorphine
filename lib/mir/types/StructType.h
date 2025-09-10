@@ -6,7 +6,7 @@
 #include <iosfwd>
 
 #include "NonTrivialType.h"
-#include "utility/Align.h"
+#include "utility/ArithmeticUtils.h"
 
 
 class StructType final: public NonTrivialType {

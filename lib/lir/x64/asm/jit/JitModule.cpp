@@ -2,7 +2,7 @@
 
 #include "OpCodeBuffer.h"
 #include "asm/x64/SizeEvaluator.h"
-#include "utility/Align.h"
+#include "utility/ArithmeticUtils.h"
 
 static constexpr auto PAGE_SIZE = 4096;
 

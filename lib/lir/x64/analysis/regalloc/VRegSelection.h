@@ -2,7 +2,7 @@
 
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/asm/cc/LinuxX64.h"
-#include "utility/Align.h"
+#include "utility/ArithmeticUtils.h"
 
 namespace details {
     template<call_conv::CallConv CC>

@@ -200,6 +200,15 @@ namespace aasm {
             m_instructions.emplace_back(details::IdivM(size, addr));
         }
 
+        // DIV — Unsigned Divide
+        constexpr void div(const std::uint8_t size, const GPReg divisor) {
+            m_instructions.emplace_back(details::UDivR(size, divisor));
+        }
+
+        constexpr void div(const std::uint8_t size, const Address& addr) {
+            m_instructions.emplace_back(details::UDivM(size, addr));
+        }
+
         // CWD/CDQ/CQO — Convert Word to Doubleword/Convert Doubleword to Quadword
         constexpr void cdq(const std::uint8_t size) {
             m_instructions.emplace_back(details::Cdq(size));

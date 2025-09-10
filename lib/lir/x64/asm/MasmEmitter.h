@@ -162,6 +162,13 @@ public:
         m_asm.idiv(size, r);
     }
 
+    // DIV — Unsigned Divide
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void div(std::uint8_t size, const Op& r) {
+        m_asm.div(size, r);
+    }
+
     constexpr void cdq(const std::uint8_t size) {
         m_asm.cdq(size);
     }

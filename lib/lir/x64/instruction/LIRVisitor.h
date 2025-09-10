@@ -11,7 +11,8 @@ public:
     virtual void add_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void sub_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void mul_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
-    virtual void div_i(std::span<LIRVal const> out, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void div_i(std::span<LIRVal const> outs, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void div_u(std::span<LIRVal const> outs, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void and_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void or_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void xor_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;

@@ -3,7 +3,8 @@
 #include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
-#include "lir/x64/asm/emitters/IntDivEmit.h"
+#include "lir/x64/asm/emitters/DivIntEmit.h"
+#include "lir/x64/asm/emitters/DivUIntEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
@@ -19,13 +20,23 @@ namespace details {
         die("Invalid LIROperand");
     }
 
-    void AllocTemporalRegs::div_i(const std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) {
-        const auto out_reg = m_reg_allocation.at(out[0]);
+    void AllocTemporalRegs::div_i(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) {
+        const auto out_reg = m_reg_allocation.at(outs[0]);
         const auto in1_reg = convert_to_gp_op(in1);
         const auto in2_reg = convert_to_gp_op(in2);
 
         EmptyEmitter empty_emitter;
-        IntDivEmit emitter(m_temp_counter, empty_emitter, in1.size());
+        DivIntEmit emitter(m_temp_counter, empty_emitter, in1.size());
+        emitter.apply(out_reg, in1_reg, in2_reg);
+    }
+
+    void AllocTemporalRegs::div_u(std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) {
+        const auto out_reg = m_reg_allocation.at(outs[0]);
+        const auto in1_reg = convert_to_gp_op(in1);
+        const auto in2_reg = convert_to_gp_op(in2);
+
+        EmptyEmitter empty_emitter;
+        DivUIntEmit emitter(m_temp_counter, empty_emitter, in1.size());
         emitter.apply(out_reg, in1_reg, in2_reg);
     }
 

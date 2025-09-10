@@ -498,10 +498,23 @@ void FunctionLower::accept(Select *select) {
 }
 
 void FunctionLower::accept(IntDiv *div) {
-    const auto lhs = get_lir_operand(div->lhs());
+    const auto lhs_val = div->lhs();
+    const auto lhs = get_lir_operand(lhs_val);
     const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs));
+    const auto copy_def = copy->def(0);
+
     const auto rhs = get_lir_operand(div->rhs());
-    const auto idiv = m_bb->ins(LIRProducerInstruction::idiv(copy->def(0), rhs));
+    const auto type = lhs_val.type();
+    const LIRProducerInstruction* idiv;
+    if (type->isa(signed_type())) {
+        idiv = m_bb->ins(LIRProducerInstruction::idiv(copy_def, rhs));
+
+    } else if (type->isa(unsigned_type())) {
+        idiv = m_bb->ins(LIRProducerInstruction::udiv(copy_def, rhs));
+
+    } else {
+        die("Unsupported type for IntDiv");
+    }
 
     if (const auto quotient = div->quotient(); !quotient->users().empty()) {
         const auto quotient_type = dynamic_cast<const PrimitiveType*>(quotient->type());

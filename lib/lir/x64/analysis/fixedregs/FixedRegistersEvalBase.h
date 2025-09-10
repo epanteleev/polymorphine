@@ -97,6 +97,12 @@ private:
             m_fixed_reg.emplace(outs[1], aasm::rdx);
         }
 
+        void div_u(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) override {
+            m_fixed_reg.emplace(in1.as_vreg().value(), aasm::rax);
+            m_fixed_reg.emplace(outs[0], aasm::rax);
+            m_fixed_reg.emplace(outs[1], aasm::rdx);
+        }
+
         void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}

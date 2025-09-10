@@ -27,6 +27,7 @@
 #include "Movsxd.h"
 #include "Neg.h"
 #include "Idiv.h"
+#include "Div.h"
 #include "Cdq.h"
 
 namespace aasm {
@@ -49,6 +50,7 @@ namespace aasm {
             details::PopR, details::PopM,
             details::NegR, details::NegM,
             details::IdivR, details::IdivM,
+            details::UDivR, details::UDivM,
             details::PushR, details::PushM, details::PushI,
             details::Ret,
             details::CMovRR, details::CMovRM,
@@ -85,6 +87,7 @@ namespace aasm {
         std::same_as<T, details::MovsxdRM> ||
         std::same_as<T, details::NegM> ||
         std::same_as<T, details::IdivM> ||
+        std::same_as<T, details::UDivM> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
