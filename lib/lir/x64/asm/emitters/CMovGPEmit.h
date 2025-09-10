@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-
 template<typename TemporalRegStorage, typename AsmEmit>
 class CMovGPEmit final: public GPBinaryVisitor {
 public:

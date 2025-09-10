@@ -1,5 +1,4 @@
 #pragma once
-#include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
 
 template<typename TempRegStorage, typename AsmEmit>
 class StoreOnStackGPEmit final: public GPBinaryAddrVisitor {

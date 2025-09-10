@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-
 class LoadByIdxIntEmit final: public GPBinaryVisitor {
 public:
     explicit LoadByIdxIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept:

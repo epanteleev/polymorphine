@@ -1,5 +1,10 @@
 #include "AllocTemporalRegs.h"
 
+#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
+#include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
+
 #include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"

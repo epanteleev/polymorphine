@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
-
 class MovGPEmit final: public GPUnaryAddrVisitor {
 public:
     static void apply(MasmEmitter& as, const std::uint8_t size, const aasm::Address& out, const GPOp& in) {

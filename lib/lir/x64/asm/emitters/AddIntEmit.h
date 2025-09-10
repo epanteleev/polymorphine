@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-
 class AddIntEmit final: public GPBinaryVisitor {
 public:
     static void apply(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {

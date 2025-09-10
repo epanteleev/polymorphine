@@ -3,6 +3,11 @@
 #include "asm/x64/reg/RegSet.h"
 #include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/visitors/GPBinarySrcAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/CmpGPEmit.h"

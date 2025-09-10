@@ -1,6 +1,5 @@
 #pragma once
 
-
 class MovzxGPEmit final: public GPUnaryOutVisitor {
 public:
     explicit MovzxGPEmit(MasmEmitter &as, const std::uint8_t to_size, const std::uint8_t from_size) noexcept:

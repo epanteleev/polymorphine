@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/visitors/GPUnaryVisitor.h"
-
 class CmpGPEmit final: public GPUnaryVisitor {
 public:
     static void apply(MasmEmitter& as, const std::uint8_t size, const GPOp& out, const GPOp& in) {
