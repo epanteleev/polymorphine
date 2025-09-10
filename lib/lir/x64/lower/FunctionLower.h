@@ -97,6 +97,7 @@ private:
     void accept(Projection *proj) override {}
 
     void lower_load(const Unary *inst);
+    LIRVal lower_primitive_type_argument(const Value& arg);
     void make_setcc(const ValueInstruction *inst, aasm::CondType cond_type);
 
     void try_schedule_late(const Value& cond);

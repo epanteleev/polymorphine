@@ -1,9 +1,9 @@
 #pragma once
 
 template<typename TempRegStorage, typename AsmEmit>
-class LoadFromStackGPEmit final: public GPBinarySrcAddrVisitor {
+class LoadStackAddrGPEmit  final: public GPBinarySrcAddrVisitor {
 public:
-    explicit LoadFromStackGPEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+    explicit LoadStackAddrGPEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
         m_as(as),
         m_temporal_regs(m_temporal_regs) {}
@@ -25,9 +25,9 @@ private:
 
     void emit(aasm::GPReg out, const std::int64_t in, const aasm::Address &src) override {
         const auto offset = static_cast<std::int64_t>(src.offset()) + m_size * in;
-        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for load from stack");
+        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for load stack address");
 
-        m_as.mov(m_size, aasm::Address(src.base().value(), offset), out);
+        m_as.lea(aasm::Address(src.base().value(), offset), out);
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in, const aasm::Address &src) override {

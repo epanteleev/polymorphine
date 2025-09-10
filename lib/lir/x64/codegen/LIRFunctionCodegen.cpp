@@ -2,6 +2,7 @@
 
 #include "asm/x64/reg/RegSet.h"
 #include "lir/x64/asm/MasmEmitter.h"
+#include "lir/x64/asm/visitors/GPBinarySrcAddrVisitor.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/CmpGPEmit.h"
@@ -24,6 +25,7 @@
 #include "lir/x64/asm/emitters/IntDivEmit.h"
 #include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
+#include "lir/x64/asm/emitters/LoadStackAddrGPEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 #include "lir/x64/operand/LIRVal.h"
@@ -198,6 +200,17 @@ void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIRVal &poin
     assertion(pointer_addr.has_value(), "Invalid LIRVal for load_from_stack_i");
 
     LoadFromStackGPEmit emitter(temporal_reg(m_current_inst), m_as, out.size());
+    emitter.apply(out_reg, index_op, pointer_addr.value());
+}
+
+void LIRFunctionCodegen::load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+    const auto out_reg = m_reg_allocation[out];
+    const auto index_op = convert_to_gp_op(index);
+    const auto pointer_op = m_reg_allocation[pointer];
+    const auto pointer_addr = pointer_op.as_address();
+    assertion(pointer_addr.has_value(), "Invalid LIRVal for load_stack_addr_i");
+
+    LoadStackAddrGPEmit emitter(temporal_reg(m_current_inst), m_as, out.size());
     emitter.apply(out_reg, index_op, pointer_addr.value());
 }
 

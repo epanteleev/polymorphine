@@ -347,22 +347,19 @@ void FunctionLower::accept(Call *inst) {
     std::vector<LIROperand> args;
     args.reserve(inst->operands().size());
     const auto proto = inst->prototype();
-    for (const auto &[idx, arg]: std::ranges::enumerate_view(inst->operands())) {
-        const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
-        assertion(type != nullptr, "Expected NonTrivialType for call argument");
-        const auto arg_vreg = get_lir_operand(arg);
-
-        if (!proto->attribute(idx).has(Attribute::ByValue)) {
-            const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
-            args.emplace_back(copy->def(0));
+    for (const auto &[arg_idx, arg]: std::ranges::enumerate_view(inst->operands())) {
+        if (!proto->attribute(arg_idx).has(Attribute::ByValue)) {
+            // Primitive type arguments are passed directly via registers or stack.
+            args.emplace_back(lower_primitive_type_argument(arg));
             continue;
         }
 
+        const auto arg_vreg = get_lir_operand(arg);
         const auto alloc = dynamic_cast<Alloc*>(arg.get<ValueInstruction*>());
         const auto allocated_type = alloc->allocated_type();
 
         const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of()));
-        for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) {
+        for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) { //FIXME handle <8 bytes
             const auto load = m_bb->ins(LIRProducerInstruction::load_from_stack(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
             m_bb->ins(LIRInstruction::store_on_stack(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
         }
@@ -430,25 +427,29 @@ void FunctionLower::accept(Store *store) {
     if (pointer.isa(any_stack_alloc())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
+        return;
+    }
 
-    } else if (pointer.isa(field_access())) {
+    if (pointer.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(pointer.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_val(src);
         const auto idx_lir_op = get_lir_operand(idx);
         if (src.isa(any_stack_alloc())) {
             m_bb->ins(LIRInstruction::store_on_stack(src_vreg, idx_lir_op, value_vreg));
-        } else {
-            m_bb->ins(LIRInstruction::mov_by_idx(src_vreg, idx_lir_op, value_vreg));
+            return;
         }
+        m_bb->ins(LIRInstruction::mov_by_idx(src_vreg, idx_lir_op, value_vreg));
+        return;
+    }
 
-    } else if (pointer.isa(argument())) {
+    if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
-
-    } else {
-        unimplemented();
+        return;
     }
+
+    unimplemented();
 }
 
 void FunctionLower::accept(Alloc *alloc) {
@@ -573,8 +574,10 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto pointer_vreg = get_lir_val(pointer);
         const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
+        return;
+    }
 
-    } else if (pointer.isa(field_access())) {
+    if (pointer.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(pointer.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_val(src);
@@ -583,19 +586,52 @@ void FunctionLower::lower_load(const Unary *inst) {
         if (src.isa(any_stack_alloc())) {
             const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(type->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
-        } else {
-            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src_vreg, idx_lir_op));
-            memorize(inst, load_inst->def(0));
+            return;
         }
 
-    } else if (pointer.isa(argument())) {
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src_vreg, idx_lir_op));
+        memorize(inst, load_inst->def(0));
+        return;
+    }
+
+    if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
-
-    } else {
-        unimplemented();
+        return;
     }
+
+    unimplemented();
+}
+
+LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
+    const auto type = dynamic_cast<const PrimitiveType*>(arg.type());
+    assertion(type != nullptr, "Expected NonTrivialType for call argument");
+
+    if (arg.isa(any_stack_alloc())) {
+        // Escaped stack allocation. We need to load stack address.
+        const auto arg_vreg = get_lir_operand(arg);
+        const auto lea = m_bb->ins(LIRProducerInstruction::load_stack_addr(type->size_of(), arg_vreg.as_vreg().value(), LirCst::imm64(0UL)));
+        return lea->def(0);
+    }
+
+    if (arg.isa(field_access())) {
+        const auto gep = dynamic_cast<FieldAccess*>(arg.get<ValueInstruction*>());
+        const auto [src, idx] = try_fold_field_access(gep);
+        const auto src_vreg = get_lir_val(src);
+        const auto idx_lir_op = get_lir_operand(idx);
+        if (src.isa(any_stack_alloc())) {
+            const auto lea_stack_val = m_bb->ins(LIRProducerInstruction::load_stack_addr(type->size_of(), src_vreg, idx_lir_op));
+            return lea_stack_val->def(0);
+        }
+
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
+        return lea->def(0);
+    }
+
+    const auto arg_vreg = get_lir_operand(arg);
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
+    return copy->def(0);
 }
 
 void FunctionLower::make_setcc(const ValueInstruction *inst, const aasm::CondType cond_type) {

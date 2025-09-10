@@ -50,6 +50,8 @@ public:
 
     void setcc(const aasm::CondType, const aasm::GPReg) {}
 
+    void lea(const aasm::GPReg, const aasm::Address&) {}
+
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
     void cmp(const std::uint8_t, const Op&, const aasm::GPReg) {}

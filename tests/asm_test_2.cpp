@@ -126,7 +126,7 @@ TEST(Asm, lea) {
 
     const auto generator = [](const std::uint8_t) {
         aasm::AsmEmitter a;
-        a.lea(aasm::r12, aasm::Address(aasm::r12, aasm::r13, 4, 8));
+        a.lea(aasm::Address(aasm::r12, aasm::r13, 4, 8), aasm::r12);
         return a;
     };
 

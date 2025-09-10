@@ -42,6 +42,7 @@ public:
     virtual void load_i(const LIRVal& out, const LIRVal& pointer) = 0;
     virtual void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) = 0;
     virtual void load_from_stack_i(const LIRVal& out, const LIRVal& pointer, const LIROperand& index) = 0;
+    virtual void load_stack_addr_i(const LIRVal& out, const LIRVal& pointer, const LIROperand &index) = 0;
     virtual void lea_i(const LIRVal& out, const LIRVal& pointer, const LIROperand& index) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;

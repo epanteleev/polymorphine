@@ -103,6 +103,7 @@ namespace details {
         void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
         void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
+        void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
         void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 

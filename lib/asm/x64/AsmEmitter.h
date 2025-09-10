@@ -215,7 +215,7 @@ namespace aasm {
         }
 
         // Load Effective Address
-        constexpr void lea(const GPReg dst, const Address& src) {
+        constexpr void lea(const Address& src, const GPReg dst) {
             m_instructions.emplace_back(details::Lea(dst, src));
         }
 

@@ -95,6 +95,10 @@ public:
         m_asm.setcc(type, dst);
     }
 
+    constexpr void lea(const aasm::Address& src, const aasm::GPReg dst) {
+        m_asm.lea(src, dst);
+    }
+
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
     void cmp(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {

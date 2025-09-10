@@ -150,6 +150,180 @@ TEST(StructAlloc, stack_alloc) {
     ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)-42+2);
 }
 
+static Module escaped_struct_stackalloc() {
+    ModuleBuilder builder;
+    {
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_point", FunctionLinkage::EXTERN);
+        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionLinkage::DEFAULT);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto alloca = data.alloc(point_type);
+        const auto field0 = data.gfp(point_type, alloca, 0);
+        const auto field1 = data.gfp(point_type, alloca, 1);
+        data.store(field0, Value::i64(-42));
+        data.store(field1, Value::u64(static_cast<std::int64_t>(INT_MAX)+2));
+        const auto cont = data.create_basic_block();
+        const auto sum = data.call(sum_prototype, cont, {alloca});
+        data.switch_block(cont);
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+struct Point2 {
+    std::int64_t x;
+    std::int64_t y;
+};
+
+static std::int64_t sum_point(Point2* p) {
+    return p->x + p->y;
+}
+
+TEST(StructAlloc, escaped_stack_alloc) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_point", 10},
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs {
+        {"sum_point", reinterpret_cast<std::size_t>(&sum_point)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, escaped_struct_stackalloc(), asm_size);
+    const auto make_point = buffer.code_start_as<int64_t()>("make_point").value();
+    const auto sum = make_point();
+    ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)-42+2);
+}
+
+static Module escaped_array_stackalloc() {
+    ModuleBuilder builder;
+    {
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_array", FunctionLinkage::EXTERN);
+        const auto array_type = builder.add_array_type(SignedIntegerType::i64(), 3);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionLinkage::DEFAULT);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto alloca = data.alloc(array_type);
+        const auto field0 = data.gep(array_type, alloca, Value::i64(0));
+        const auto field1 = data.gep(array_type, alloca, Value::i64(1));
+        const auto field2 = data.gep(array_type, alloca, Value::i64(2));
+        data.store(field0, Value::i64(-42));
+        data.store(field1, Value::i64(static_cast<std::int64_t>(INT_MAX)+2));
+        data.store(field2, Value::i64(100));
+        const auto cont = data.create_basic_block();
+        const auto sum = data.call(sum_prototype, cont, {alloca});
+        data.switch_block(cont);
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+static std::int64_t sum_array(std::int64_t* arr) {
+    return arr[0] + arr[1] + arr[2];
+}
+
+TEST(StructAlloc, escaped_array_stack_alloc) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_array", 13}, //TODO better codegen. should be 11 instructions.
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs {
+        {"sum_array", reinterpret_cast<std::size_t>(&sum_array)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, escaped_array_stackalloc(), asm_size);
+    const auto make_array = buffer.code_start_as<int64_t()>("make_array").value();
+    const auto sum = make_array();
+    ASSERT_EQ(sum, static_cast<std::int64_t>(-42) + static_cast<std::int64_t>(INT_MAX)+2 + 100);
+}
+
+static Module escaped_array_slice() {
+    ModuleBuilder builder;
+    {
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr(), SignedIntegerType::i64()}, "sum_array_slice", FunctionLinkage::EXTERN);
+        const auto array_type = builder.add_array_type(SignedIntegerType::i64(), 3);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionLinkage::DEFAULT);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto alloca = data.alloc(array_type);
+        const auto field0 = data.gep(array_type, alloca, Value::i64(0));
+        const auto field1 = data.gep(array_type, alloca, Value::i64(1));
+        const auto field2 = data.gep(array_type, alloca, Value::i64(2));
+        data.store(field0, Value::i64(-42));
+        data.store(field1, Value::i64(static_cast<std::int64_t>(INT_MAX)+2));
+        data.store(field2, Value::i64(100));
+        const auto cont = data.create_basic_block();
+        const auto sum = data.call(sum_prototype, cont, {field1});
+        data.switch_block(cont);
+        data.ret(sum);
+    }
+
+    return builder.build();
+}
+
+static std::int64_t sum_array_slice(const std::int64_t* arr) {
+    return arr[0] + arr[1];
+}
+
+TEST(StructAlloc, escaped_array_slice_stack_alloc) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_array", 13}, //TODO better codegen. should be 10 instructions.
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs {
+        {"sum_array_slice", reinterpret_cast<std::size_t>(&sum_array_slice)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, escaped_array_slice(), asm_size, true);
+    const auto make_array = buffer.code_start_as<int64_t()>("make_array").value();
+    const auto sum = make_array();
+    ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)+2 + 100);
+}
+
+static Module escaped_struct_field() {
+    ModuleBuilder builder;
+    {
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "deref_ptr", FunctionLinkage::EXTERN);
+        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionLinkage::DEFAULT);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto alloca = data.alloc(point_type);
+        const auto field0 = data.gfp(point_type, alloca, 0);
+        const auto field1 = data.gfp(point_type, alloca, 1);
+        data.store(field0, Value::i64(-42));
+        data.store(field1, Value::u64(static_cast<std::int64_t>(INT_MAX)+2));
+        const auto cont = data.create_basic_block();
+        const auto deref = data.call(sum_prototype, cont, {field1});
+        data.switch_block(cont);
+
+        const auto cont1 = data.create_basic_block();
+        const auto deref2 = data.call(sum_prototype, cont1, {field0});
+        data.switch_block(cont1);
+        const auto total = data.add(deref, deref2);
+        data.ret(total);
+    }
+
+    return builder.build();
+}
+
+static std::int64_t deref_ptr(const std::int64_t* p) {
+    return *p;
+}
+
+TEST(StructAlloc, escaped_struct_field_stack_alloc) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_point", 18},
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs {
+        {"deref_ptr", reinterpret_cast<std::size_t>(&deref_ptr)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, escaped_struct_field(), asm_size);
+    const auto make_point = buffer.code_start_as<int64_t()>("make_point").value();
+    const auto val = make_point();
+    ASSERT_EQ(val, -42 + static_cast<std::int64_t>(INT_MAX)+2);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
