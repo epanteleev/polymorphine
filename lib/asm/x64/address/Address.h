@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <variant>
 
 #include "asm/symbol/Symbol.h"
 #include "asm/x64/Common.h"

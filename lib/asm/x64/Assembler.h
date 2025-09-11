@@ -33,7 +33,7 @@ namespace aasm::details {
 
             for (const auto &instruction: m_instructions) {
                 offsets_from_start.push_back(buffer.size());
-                instruction.visit([&](const auto &var) { emit_instruction(buffer, var); });
+                std::visit([&](const auto &var) { emit_instruction(buffer, var); }, instruction);
             }
 
             resolve_and_patch(buffer);

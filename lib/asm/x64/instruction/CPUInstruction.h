@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ostream>
+#include <variant>
 
 #include "asm/x64/Common.h"
 #include "asm/symbol/Symbol.h"
@@ -31,50 +32,36 @@
 #include "Cdq.h"
 
 namespace aasm {
-    class X64Instruction final {
-    public:
-        template<typename I>
-        explicit constexpr X64Instruction(I&& i) noexcept: m_inst(std::forward<I>(i)) {}
-
-        friend std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
-
-        template<typename Fn>
-        constexpr void visit(Fn&& fn) const {
-            std::visit(fn, m_inst);
-        }
-
-    private:
-        std::variant<
-            details::Cdq,
-            details::Lea,
-            details::PopR, details::PopM,
-            details::NegR, details::NegM,
-            details::IdivR, details::IdivM,
-            details::UDivR, details::UDivM,
-            details::PushR, details::PushM, details::PushI,
-            details::Ret,
-            details::CMovRR, details::CMovRM,
-            details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
-            details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
-            details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
-            details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
-            details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
-            details::MovzxRR, details::MovzxRM,
-            details::MovsxRR, details::MovsxRM,
-            details::MovsxdRR, details::MovsxdRM,
-            details::Jmp, details::Jcc,
-            details::SetCCR,
-            details::Call, details::CallM,
-            details::Leave
-        > m_inst;
-    };
+    using X64Instruction = std::variant<
+        details::Cdq,
+        details::Lea,
+        details::PopR, details::PopM,
+        details::NegR, details::NegM,
+        details::IdivR, details::IdivM,
+        details::UDivR, details::UDivM,
+        details::PushR, details::PushM, details::PushI,
+        details::Ret,
+        details::CMovRR, details::CMovRM,
+        details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
+        details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
+        details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
+        details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
+        details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
+        details::MovzxRR, details::MovzxRM,
+        details::MovsxRR, details::MovsxRM,
+        details::MovsxdRR, details::MovsxdRM,
+        details::Jmp, details::Jcc,
+        details::SetCCR,
+        details::Call, details::CallM,
+        details::Leave
+    >;
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {
         const auto visitor = [&](const auto &var) {
             os << var;
         };
 
-        std::visit(visitor, inst.m_inst);
+        std::visit(visitor, inst);
         return os;
     }
 
