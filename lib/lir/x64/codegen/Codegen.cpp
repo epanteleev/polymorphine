@@ -12,6 +12,9 @@ void Codegen::run() {
         auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, func.get());
         fixed_reg_eval.run();
 
+        auto linear_scan = LinearScanLinuxX64::create(&cache, func.get());
+        linear_scan.run();
+
         auto call_info = CallInfoInitializeLinuxX64::create(&cache, func.get());
         call_info.run();
 

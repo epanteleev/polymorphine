@@ -135,19 +135,19 @@ namespace {
             m_os << "] stack_size(" << caller_overflow_area_size << ')';
         }
 
-        void up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) override {
+        void up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             print_adjust_stack("up_stack", reg_set, caller_overflow_area_size);
         }
 
-        void down_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) override {
+        void down_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             print_adjust_stack("down_stack", reg_set, caller_overflow_area_size);
         }
 
-        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {
+        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             print_adjust_stack("prologue", reg_set, caller_overflow_area_size);
         }
 
-        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {
+        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             print_adjust_stack("epilogue", reg_set, caller_overflow_area_size);
         }
 

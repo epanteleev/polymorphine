@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <memory>
 
+#include "lir/x64/asm/TemporalRegs.h"
 #include "lir/x64/operand/LIROperand.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 
@@ -11,9 +12,10 @@ class LIRInstructionBase {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
-    explicit LIRInstructionBase(std::vector<LIROperand> &&uses) noexcept: m_id(NO_ID),
-                                                  m_owner(nullptr),
-                                                  m_inputs(std::move(uses)) {}
+    explicit LIRInstructionBase(std::vector<LIROperand> &&uses) noexcept:
+        m_id(NO_ID),
+        m_owner(nullptr),
+        m_inputs(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;
 
@@ -64,6 +66,16 @@ public:
         return matcher(this);
     }
 
+    [[nodiscard]]
+    const TemporalRegs& temporal_regs() const noexcept {
+        return m_temporal_regs;
+    }
+
+    void init_temporal_regs(const TemporalRegs& temporal_regs) noexcept {
+        assertion(m_temporal_regs.empty(), "temporal registers already initialized");
+        m_temporal_regs = temporal_regs;
+    }
+
 protected:
     friend class LIRBlock;
 
@@ -73,8 +85,7 @@ protected:
     }
 
     [[nodiscard]]
-
-    static std::vector<LIRVal> to_lir_vals_only(std::span<LIROperand const> inputs) {
+    static std::vector<LIRVal> to_lir_vals_only(const std::span<LIROperand const> inputs) {
         std::vector<LIRVal> lir_vals;
         lir_vals.reserve(inputs.size());
         for (const auto& in: inputs) {
@@ -88,7 +99,5 @@ protected:
     std::size_t m_id;
     LIRBlock* m_owner;
     std::vector<LIROperand> m_inputs;
+    TemporalRegs m_temporal_regs;
 };
-
-template<typename T>
-using LIRInstBuilder = std::function<std::unique_ptr<T>(std::size_t, LIRBlock*)>;

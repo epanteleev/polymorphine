@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "base/FunctionDataBase.h"
+#include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
 #include "lir/x64/instruction/LIRReturn.h"
@@ -44,6 +45,22 @@ public:
         const auto ret = dynamic_cast<const LIRReturn*>(last_bb.value()->last());
         assertion(ret != nullptr, "last instruction is not a return");
         return last_bb.value();
+    }
+
+    [[nodiscard]]
+    LIRAdjustStack* prologue() const {
+        auto& first_instruction = first()->at(0);
+        const auto prologue = dynamic_cast<LIRAdjustStack *>(&first_instruction);
+        assertion(prologue != nullptr, "must be");
+        return prologue;
+    }
+
+    [[nodiscard]]
+    LIRAdjustStack* epilogue() const {
+        auto& last_instruction = last()->at(last()->size() - 2);
+        const auto epilogue = dynamic_cast<LIRAdjustStack *>(&last_instruction);
+        assertion(epilogue != nullptr, "must be");
+        return epilogue;
     }
 
     void print(std::ostream &os) const {

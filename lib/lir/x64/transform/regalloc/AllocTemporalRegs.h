@@ -1,14 +1,12 @@
 #pragma once
 
-#include "TemporalRegs.h"
-#include "lir/x64/operand/LIRValMap.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 
 namespace details {
     class AllocTemporalRegs final: public LIRVisitor {
     public:
-        static std::uint8_t allocate(const LIRInstructionBase* inst, const LIRValMap<GPVReg>& reg_allocation) {
-            AllocTemporalRegs emitter(reg_allocation);
+        static std::uint8_t allocate(const LIRInstructionBase* inst) {
+            AllocTemporalRegs emitter;
             const_cast<LIRInstructionBase*>(inst)->visit(emitter);
             return emitter.m_temp_counter.used_gp_regs();
         }
@@ -36,11 +34,10 @@ namespace details {
             mutable std::uint8_t m_used_gp_regs{};
         };
 
-        explicit AllocTemporalRegs(const LIRValMap<GPVReg>& reg_allocation) noexcept:
-            m_reg_allocation(reg_allocation) {}
+        explicit AllocTemporalRegs() noexcept = default;
 
         [[nodiscard]]
-        GPOp convert_to_gp_op(const LIROperand &val) const;
+        static GPOp convert_to_gp_op(const LIROperand &val);
 
         void gen(const LIRVal &out) override {}
 
@@ -90,13 +87,13 @@ namespace details {
 
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
 
-        void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+        void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
-        void down_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+        void down_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
-        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
-        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
 
@@ -123,7 +120,6 @@ namespace details {
 
         void ret(std::span<LIRVal const> ret_values) override {}
 
-        const LIRValMap<GPVReg>& m_reg_allocation;
         TemporalRegsCounter m_temp_counter{};
     };
 }

@@ -6,8 +6,6 @@ enum class AnalysisType {
     BFSTraverse,
     LinearScanOrderTraverse,
     DominatorTree,
-    LoopNestedForest,
-    LinearScan,
     LivenessAnalysis,
     LiveIntervalsEval,
     LiveIntervalsGroups,

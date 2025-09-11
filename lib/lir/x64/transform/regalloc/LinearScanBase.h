@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AllocTemporalRegs.h"
-#include "RegisterAllocation.h"
 #include "VRegSelection.h"
 #include "asm/x64/reg/RegSet.h"
 
@@ -15,12 +14,6 @@
 
 template<call_conv::CallConv CC>
 class LinearScanBase final {
-public:
-    using result_type = RegisterAllocation;
-    using basic_block = LIRBlock;
-    static constexpr auto analysis_kind = AnalysisType::LinearScan;
-
-private:
     explicit LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder) noexcept:
         m_obj_func_data(obj_func_data),
         m_intervals(intervals),
@@ -34,10 +27,7 @@ public:
         instruction_ordering();
         setup_unhandled_intervals();
         do_register_allocation();
-    }
-
-    std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<RegisterAllocation>(std::move(m_clobber_regs), std::move(m_reg_allocation), std::move(m_used_callee_saved_regs), m_reg_set.local_area_size());
+        finalize_prologue_epilogue();
     }
 
     static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
@@ -94,7 +84,7 @@ private:
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
-                const auto reg = m_reg_allocation.at(entry.lir_val);
+                const auto reg = entry.lir_val.assigned_reg().to_gp_op().value();
                 if (real_interval->start() > unhandled_interval->finish()) {
                     if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                         m_reg_set.push(reg_opt.value());
@@ -126,7 +116,7 @@ private:
                 }
                 // This interval is still active, we need to keep it.
                 m_active_intervals.emplace_back(entry);
-                const auto reg = m_reg_allocation.at(entry.lir_val);
+                const auto reg = entry.lir_val.assigned_reg().to_gp_op().value();
                 if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
                     m_reg_set.remove(reg_opt.value());
                 }
@@ -181,6 +171,18 @@ private:
         allocate_temporal_registers(inst_range);
     }
 
+    void finalize_prologue_epilogue() {
+        const auto prologue = m_obj_func_data.prologue();
+        const auto epilogue = m_obj_func_data.epilogue();
+        for (const auto reg: m_used_callee_saved_regs) {
+            epilogue->add_reg(reg);
+            prologue->add_reg(reg);
+        }
+        epilogue->increase_local_area_size(m_reg_set.local_area_size());
+        prologue->increase_local_area_size(m_reg_set.local_area_size());
+    }
+
+    [[nodiscard]]
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const {
         if (const auto it = m_groups.try_get_group(entry.lir_val); it.has_value()) {
             return &it.value()->interval();
@@ -190,9 +192,10 @@ private:
     }
 
     void select_virtual_reg(const LIRVal& lir_val, const IntervalHint hint) {
-        if (m_reg_allocation.contains(lir_val)) {
+        if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
             return;
         }
+
         if (const auto group = m_groups.try_get_group(lir_val); group.has_value()) {
             assertion(!group.value()->fixed_register().has_value(), "Group with fixed register should not be allocated here");
             const auto reg = m_reg_set.top(group.value()->hint());
@@ -212,13 +215,19 @@ private:
             return;
         }
 
-        auto [_, has] = m_reg_allocation.try_emplace(lir_val, reg);
-        assertion(has, "Register already allocated for LIRVal");
+        if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+            return;
+        }
+
+        lir_val.assign_reg(reg);
     }
 
     void allocate_register(const LIRVal& lir_val, const aasm::GPReg reg) {
-        auto [_, has] = m_reg_allocation.try_emplace(lir_val, reg);
-        assertion(has, "Register already allocated for LIRVal");
+        if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+            return;
+        }
+        lir_val.assign_reg(reg);
+
         if (!std::ranges::contains(CC::GP_CALLEE_SAVE_REGISTERS, reg)) {
             // This is a caller-save register, we can skip it.
             return;
@@ -231,14 +240,14 @@ private:
         m_used_callee_saved_regs.emplace(reg);
     }
 
-    void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
+    void allocate_temporal_registers(const std::span<LIRInstructionBase*> instructions) noexcept {
         for (const auto inst: instructions) {
-            switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst, m_reg_allocation)) {
+            switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst)) {
                 case 0: break;
                 case 1: {
                     const auto reg = m_reg_set.top(IntervalHint::NOTHING);
                     m_reg_set.push(reg);
-                    m_clobber_regs.emplace(inst, TemporalRegs(reg));
+                    inst->init_temporal_regs(TemporalRegs(reg));
                     break;
                 }
                 case 2: {
@@ -246,7 +255,7 @@ private:
                     const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
                     m_reg_set.push(reg2);
                     m_reg_set.push(reg1);
-                    m_clobber_regs.emplace(inst, TemporalRegs(reg1, reg2));
+                    inst->init_temporal_regs(TemporalRegs(reg1, reg2));
                     break;
                 }
                 default: die("Unexpected number of temporal registers allocated: {}", temp_num);
@@ -255,12 +264,11 @@ private:
     }
 
     void do_stack_alloc(const LIRVal& lir_val) {
-        if (m_reg_allocation.contains(lir_val)) {
+        if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
             return;
         }
 
-        auto [_, has] = m_reg_allocation.try_emplace(lir_val, m_reg_set.stack_alloc(lir_val.size()));
-        assertion(has, "Register already allocated for LIRVal");
+        lir_val.assign_reg(m_reg_set.stack_alloc(lir_val.size()));
     }
 
     void instruction_ordering() {
@@ -269,7 +277,7 @@ private:
 
         m_instruction_ordering.reserve(size);
         for (const auto bb: m_preorder) {
-            for (const auto& inst: bb->instructions()) {
+            for (auto& inst: bb->instructions()) {
                 m_instruction_ordering.push_back(&inst);
             }
         }
@@ -301,12 +309,10 @@ private:
 
     details::VRegSelection<CC> m_reg_set;
     aasm::GPRegSet m_used_callee_saved_regs{};
-    LIRValMap<GPVReg> m_reg_allocation{};
-    std::unordered_map<const LIRInstructionBase*, TemporalRegs> m_clobber_regs{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_inactive_intervals{};
     std::vector<IntervalEntry> m_active_intervals{};
 
-    std::vector<const LIRInstructionBase*> m_instruction_ordering{};
+    std::vector<LIRInstructionBase*> m_instruction_ordering{};
 };

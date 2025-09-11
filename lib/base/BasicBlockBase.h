@@ -57,6 +57,11 @@ public:
         return m_instructions;
     }
 
+    [[nodiscard]]
+    const OrderedSet<Inst>& instructions() noexcept {
+        return m_instructions;
+    }
+
     /**
      * Get instruction by index.
      */

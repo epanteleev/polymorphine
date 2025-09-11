@@ -1,4 +1,6 @@
 #pragma once
+#include "lir/x64/analysis/intervals/LiveInterval.h"
+#include "lir/x64/operand/LIRValMap.h"
 
 class Group final {
 public:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IntervalHint.h"
+#include "LiveRange.h"
 #include "utility/RemoveFast.h"
 
 /**

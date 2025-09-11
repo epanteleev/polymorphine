@@ -2,26 +2,20 @@
 
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "lir/x64/analysis/liveness/LiveInfo.h"
-#include "lir/x64/analysis/regalloc/LinearScanBase.h"
-#include "lir/x64/analysis/regalloc/RegisterAllocation.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRFuncData.h"
 
 
 template<call_conv::CallConv CC>
 class CallInfoInitialize final {
-    CallInfoInitialize(const RegisterAllocation& reg_allocation,
-                               const LivenessAnalysisInfo& liveness_info,
-                               LIRFuncData& func_data) noexcept:
-        m_reg_allocation(reg_allocation),
+    CallInfoInitialize(const LivenessAnalysisInfo& liveness_info, LIRFuncData& func_data) noexcept:
         m_liveness_info(liveness_info),
         m_func_data(func_data) {}
 
 public:
     static CallInfoInitialize create(AnalysisPassManagerBase<LIRFuncData>* manager, LIRFuncData* data) {
-        const auto reg_allocation = manager->analyze<LinearScanBase<CC>>(data);
         const auto liveness_info = manager->analyze<LivenessAnalysis>(data);
-        return {*reg_allocation, *liveness_info, *data};
+        return {*liveness_info, *data};
     }
 
     void run() {
@@ -60,7 +54,7 @@ private:
         const auto call = find_call_instruction(call_holder_bb);
         const auto no_return_val = call->defs().empty();
         for (const auto& lir_val: live_set) {
-            const auto reg = m_reg_allocation[lir_val];
+            const auto reg = lir_val.assigned_reg().to_gp_op().value();
             const auto gp_reg = reg.as_gp_reg();
             if (!gp_reg.has_value()) {
                 continue;
@@ -71,12 +65,12 @@ private:
 
             try_add_register(adjust_inst, gp_reg.value());
         }
-        adjust_inst->increase_stack_size(evaluate_overflow_area_size(call));
+        adjust_inst->increase_overflow_area_size(evaluate_overflow_area_size(call));
     }
 
     void initialize_prologue_and_epilogue(LIRAdjustStack* epilogue) const {
-        epilogue->increase_stack_size(m_max_caller_overflow_area_size);
-        prologue()->increase_stack_size(m_max_caller_overflow_area_size);
+        epilogue->increase_overflow_area_size(m_max_caller_overflow_area_size);
+        m_func_data.prologue()->increase_overflow_area_size(m_max_caller_overflow_area_size);
     }
 
     void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) noexcept {
@@ -102,15 +96,6 @@ private:
         return m_max_caller_overflow_area_size = std::max(m_max_caller_overflow_area_size, overflow_args);
     }
 
-    [[nodiscard]]
-    LIRAdjustStack* prologue() const {
-        const auto begin_block = m_func_data.first();
-        auto& first_instruction = begin_block->at(0);
-        const auto prologue = dynamic_cast<LIRAdjustStack *>(&first_instruction);
-        assertion(prologue != nullptr, "must be");
-        return prologue;
-    }
-
     static const LIRCall* find_call_instruction(const LIRBlock* bb) {
         const auto last = bb->last();
         const auto call = dynamic_cast<const LIRCall*>(last);
@@ -118,7 +103,6 @@ private:
         return call;
     }
 
-    const RegisterAllocation& m_reg_allocation;
     const LivenessAnalysisInfo& m_liveness_info;
     std::size_t m_max_caller_overflow_area_size{};
     LIRFuncData& m_func_data;

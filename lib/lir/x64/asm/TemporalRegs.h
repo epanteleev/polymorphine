@@ -22,6 +22,11 @@ public:
         return m_gp_temp2.value();
     }
 
+    [[nodiscard]]
+    bool empty() const noexcept {
+        return !m_gp_temp1.has_value() && !m_gp_temp2.has_value();
+    }
+
 private:
     std::optional<aasm::GPReg> m_gp_temp1{};
     std::optional<aasm::GPReg> m_gp_temp2{};

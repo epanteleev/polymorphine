@@ -26,7 +26,6 @@
 
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
-#include "lir/x64/analysis/regalloc/RegisterAllocation.h"
 #include "lir/x64/asm/emitters/DivIntEmit.h"
 #include "lir/x64/asm/emitters/DivUIntEmit.h"
 #include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
@@ -46,15 +45,6 @@ void LIRFunctionCodegen::setup_basic_block_labels() {
         const auto label = m_as.create_label();
         m_bb_labels.emplace(bb, label);
     }
-}
-
-const TemporalRegs& LIRFunctionCodegen::temporal_reg(const LIRInstructionBase *inst) const  {
-    if (const auto it = m_reg_allocation.try_get_temporal_regs(inst); it.has_value()) {
-        return *it.value();
-    }
-
-    static TemporalRegs empty_clobber_regs;
-    return empty_clobber_regs;
 }
 
 void LIRFunctionCodegen::traverse_instructions() {
@@ -83,14 +73,9 @@ static aasm::Linkage cvt_linkage(const FunctionLinkage linkage) noexcept {
     }
 }
 
-static bool is_no_prologue(const RegisterAllocation& reg_allocation) noexcept {
-    return reg_allocation.local_area_size() == 0 &&
-           reg_allocation.used_callee_saved_regs().empty();
-}
-
-GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
+GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) {
     if (const auto vreg = val.as_vreg(); vreg.has_value()) {
-        return m_reg_allocation[vreg.value()];
+        return vreg.value().assigned_reg().to_gp_op().value();
     }
     if (const auto cst = val.as_cst(); cst.has_value()) {
         return cst.value().value();
@@ -100,39 +85,39 @@ GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
 }
 
 void LIRFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     AddIntEmit::apply(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     SubIntEmit::apply(m_as, out.size(), out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::div_i(const std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) {
-    const auto out_reg = m_reg_allocation[out[0]];
+    const auto out_reg = out[0].assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
 
-    DivIntEmit emitter(temporal_reg(m_current_inst), m_as, in1.size());
+    DivIntEmit emitter(m_current_inst->temporal_regs(), m_as, in1.size());
     emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::div_u(std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) {
-    const auto out_reg = m_reg_allocation[out[0]];
+    const auto out_reg = out[0].assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
 
-    DivUIntEmit emitter(temporal_reg(m_current_inst), m_as, in1.size());
+    DivUIntEmit emitter(m_current_inst->temporal_regs(), m_as, in1.size());
     emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
     XorIntEmit emitter(m_as, out.size());
@@ -140,7 +125,7 @@ void LIRFunctionCodegen::xor_i(const LIRVal &out, const LIROperand &in1, const L
 }
 
 void LIRFunctionCodegen::setcc_i(const LIRVal &out, const aasm::CondType cond_type) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, aasm::GPReg>) {
             m_as.setcc(cond_type, val);
@@ -156,10 +141,10 @@ void LIRFunctionCodegen::setcc_i(const LIRVal &out, const aasm::CondType cond_ty
 }
 
 void LIRFunctionCodegen::cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    CMovGPEmit emitter(temporal_reg(m_current_inst), m_as, cond_type, out.size());
+    CMovGPEmit emitter(m_current_inst->temporal_regs(), m_as, cond_type, out.size());
     emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
@@ -170,7 +155,7 @@ void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
 }
 
 void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
-    const auto in1_reg = m_reg_allocation[in1];
+    const auto in1_reg = in1.assigned_reg().to_gp_op().value();
     const auto add_opt = in1_reg.as_address();
     assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
 
@@ -179,27 +164,27 @@ void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
 }
 
 void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
     const auto in2_op = convert_to_gp_op(in);
 
-    MovByIdxIntEmit emitter(temporal_reg(m_current_inst), m_as, in.size());
+    MovByIdxIntEmit emitter(m_current_inst->temporal_regs(), m_as, in.size());
     emitter.apply(out_reg, index_op, in2_op);
 }
 
 void LIRFunctionCodegen::store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) {
-    const auto out_vreg = m_reg_allocation[pointer];
+    const auto out_vreg = pointer.assigned_reg().to_gp_op().value();
     const auto out_addr = out_vreg.as_address();
     assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
 
     const auto index_op = convert_to_gp_op(index);
     const auto value_op = convert_to_gp_op(value);
-    StoreOnStackGPEmit emitter(temporal_reg(m_current_inst), m_as, value.size());
+    StoreOnStackGPEmit emitter(m_current_inst->temporal_regs(), m_as, value.size());
     emitter.apply(out_addr.value(), index_op, value_op);
 }
 
 void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
     const auto pointer_op = convert_to_gp_op(pointer);
 
@@ -208,40 +193,40 @@ void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer,
 }
 
 void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
-    const auto pointer_op = m_reg_allocation[pointer];
+    const auto pointer_op = pointer.assigned_reg().to_gp_op().value();
     const auto pointer_addr = pointer_op.as_address();
     assertion(pointer_addr.has_value(), "Invalid LIRVal for load_from_stack_i");
 
-    LoadFromStackGPEmit emitter(temporal_reg(m_current_inst), m_as, out.size());
+    LoadFromStackGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
     emitter.apply(out_reg, index_op, pointer_addr.value());
 }
 
 void LIRFunctionCodegen::load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
-    const auto pointer_op = m_reg_allocation[pointer];
+    const auto pointer_op = pointer.assigned_reg().to_gp_op().value();
     const auto pointer_addr = pointer_op.as_address();
     assertion(pointer_addr.has_value(), "Invalid LIRVal for load_stack_addr_i");
 
-    LoadStackAddrGPEmit emitter(temporal_reg(m_current_inst), m_as, out.size());
+    LoadStackAddrGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
     emitter.apply(out_reg, index_op, pointer_addr.value());
 }
 
 void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
-    const auto pointer_reg = m_reg_allocation[pointer];
+    const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
     const auto value_op = convert_to_gp_op(value);
     StoreGPEmit::apply(m_as, value.size(), pointer_reg, value_op);
 }
 
-void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) {
+void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) {
     for (const auto &reg: reg_set) {
         m_as.pop(8, reg);
     }
 
     auto size_to_adjust = caller_overflow_area_size;
-    if (const auto remains = (m_reg_allocation.frame_size()+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
+    if (const auto remains = (local_area_size+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
         size_to_adjust += remains;
     }
     if (size_to_adjust != 0) {
@@ -249,9 +234,9 @@ void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size
     }
 }
 
-void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size) {
+void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) {
     auto size_to_adjust = caller_overflow_area_size;
-    if (const auto remains = (m_reg_allocation.frame_size()+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
+    if (const auto remains = (local_area_size+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
         size_to_adjust += remains;
     }
     if (size_to_adjust != 0) {
@@ -263,25 +248,25 @@ void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::si
     }
 }
 
-void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size) {
-    if (is_no_prologue(m_reg_allocation) && reg_set.empty() && caller_overflow_area_size == 0) {
+void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) {
+    if (reg_set.empty() && caller_overflow_area_size == 0 && local_area_size == 0) {
         return;
     }
 
     m_as.push(8, aasm::rbp);
     m_as.copy(8, aasm::rsp, aasm::rbp);
-    m_as.sub(8, m_reg_allocation.local_area_size(), aasm::rsp);
-    for (const auto& reg: m_reg_allocation.used_callee_saved_regs()) {
+    m_as.sub(8, local_area_size, aasm::rsp);
+    for (const auto& reg: reg_set) {
         m_as.push(8, reg);
     }
 }
 
-void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size) {
-    if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
+void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) {
+    if (reg_set.empty() && caller_overflow_area_size == 0 && local_area_size == 0) {
         return;
     }
 
-    for (const auto& reg: std::ranges::reverse_view(m_reg_allocation.used_callee_saved_regs())) {
+    for (const auto& reg: std::ranges::reverse_view(reg_set)) {
         m_as.pop(8, reg);
     }
 
@@ -289,13 +274,13 @@ void LIRFunctionCodegen::epilogue(const aasm::GPRegSet &reg_set, const std::size
 }
 
 void LIRFunctionCodegen::copy_i(const LIRVal &out, const LIROperand &in) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     CopyGPEmit::apply(m_as, out.size(), out_reg, convert_to_gp_op(in));
 }
 
 void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
-    const auto out_reg = m_reg_allocation[out];
-    const auto pointer_reg = m_reg_allocation[pointer];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
+    const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
     LoadGPEmit::apply(m_as, out.size(), out_reg, pointer_reg);
 }
 
@@ -317,21 +302,21 @@ void LIRFunctionCodegen::jcc(const aasm::CondType cond_type, const LIRBlock *on_
 }
 
 void LIRFunctionCodegen::movsx_i(const LIRVal &out, const LIROperand &in) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto pointer_reg = convert_to_gp_op(in);
     MovsxGPEmit emitter(m_as, out.size(), in.size());
     emitter.apply(out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::movzx_i(const LIRVal &out, const LIROperand &in) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto pointer_reg = convert_to_gp_op(in);
     MovzxGPEmit emitter(m_as, out.size(), in.size());
     emitter.apply(out_reg, pointer_reg);
 }
 
 void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
-    const auto out_reg = m_reg_allocation[out];
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto pointer_reg = convert_to_gp_op(in);
     TruncGPEmit emitter(m_as, out.size(), in.size());
     emitter.emit(out_reg, pointer_reg);

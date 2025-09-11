@@ -90,7 +90,7 @@ public:
     OptionalGPVReg(const T& reg) noexcept:
         m_reg(reg) {}
 
-    explicit OptionalGPVReg(const GPVReg& reg) noexcept {
+    OptionalGPVReg(const GPVReg& reg) noexcept {
         const auto visitor = [&]<typename T>(const T &val) { m_reg = val; };
         reg.visit(visitor);
     }

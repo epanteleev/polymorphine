@@ -218,13 +218,13 @@ static Module escaped_array_stackalloc() {
     return builder.build();
 }
 
-static std::int64_t sum_array(std::int64_t* arr) {
+static std::int64_t sum_array(const std::int64_t* arr) {
     return arr[0] + arr[1] + arr[2];
 }
 
 TEST(StructAlloc, escaped_array_stack_alloc) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"make_array", 13}, //TODO better codegen. should be 11 instructions.
+        {"make_array", 11}, //TODO better codegen. should be 11 instructions.
     };
 
     const std::unordered_map<std::string, std::size_t> externs {
@@ -266,7 +266,7 @@ static std::int64_t sum_array_slice(const std::int64_t* arr) {
 
 TEST(StructAlloc, escaped_array_slice_stack_alloc) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"make_array", 13}, //TODO better codegen. should be 10 instructions.
+        {"make_array", 11}, //TODO better codegen. should be 10 instructions.
     };
 
     const std::unordered_map<std::string, std::size_t> externs {

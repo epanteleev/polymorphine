@@ -12,7 +12,7 @@ enum class LIRAdjustKind: std::uint8_t {
 
 class LIRAdjustStack final: public LIRInstructionBase {
 public:
-    explicit LIRAdjustStack(LIRAdjustKind adjust_kind) noexcept:
+    explicit LIRAdjustStack(const LIRAdjustKind adjust_kind) noexcept:
         LIRInstructionBase(std::vector<LIROperand>{}),
         m_adjust_kind(adjust_kind) {}
 
@@ -24,8 +24,12 @@ public:
         m_caller_saved_regs.emplace(reg);
     }
 
-    void increase_stack_size(const std::size_t size) {
+    void increase_overflow_area_size(const std::size_t size) {
         m_overflow_argument_area_size += size;
+    }
+
+    void increase_local_area_size(const std::size_t size) {
+        m_local_area_size += size;
     }
 
     [[nodiscard]]
@@ -51,6 +55,7 @@ public:
 
 private:
     std::size_t m_overflow_argument_area_size{};
+    std::size_t m_local_area_size{};
     aasm::GPRegSet m_caller_saved_regs{};
     LIRAdjustKind m_adjust_kind;
 };

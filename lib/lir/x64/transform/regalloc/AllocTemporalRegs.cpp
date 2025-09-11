@@ -14,9 +14,9 @@
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
 namespace details {
-    GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) const {
+    GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) {
         if (const auto vreg = val.as_vreg(); vreg.has_value()) {
-            return m_reg_allocation.at(vreg.value());
+            return vreg.value().assigned_reg().to_gp_op().value();
         }
         if (const auto cst = val.as_cst(); cst.has_value()) {
             return cst.value().value();
@@ -26,7 +26,7 @@ namespace details {
     }
 
     void AllocTemporalRegs::div_i(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) {
-        const auto out_reg = m_reg_allocation.at(outs[0]);
+        const auto out_reg = outs[0].assigned_reg().to_gp_op().value();
         const auto in1_reg = convert_to_gp_op(in1);
         const auto in2_reg = convert_to_gp_op(in2);
 
@@ -36,7 +36,7 @@ namespace details {
     }
 
     void AllocTemporalRegs::div_u(std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) {
-        const auto out_reg = m_reg_allocation.at(outs[0]);
+        const auto out_reg = outs[0].assigned_reg().to_gp_op().value();
         const auto in1_reg = convert_to_gp_op(in1);
         const auto in2_reg = convert_to_gp_op(in2);
 
@@ -46,7 +46,7 @@ namespace details {
     }
 
     void AllocTemporalRegs::cmov_i(aasm::CondType cond_type, const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
-        const auto out_reg = m_reg_allocation.at(out);
+        const auto out_reg = out.assigned_reg().to_gp_op().value();
         const auto in1_reg = convert_to_gp_op(in1);
         const auto in2_reg = convert_to_gp_op(in2);
         EmptyEmitter empty_emitter;
@@ -55,7 +55,7 @@ namespace details {
     }
 
     void AllocTemporalRegs::mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) {
-        const auto out_reg = m_reg_allocation.at(pointer);
+        const auto out_reg = pointer.assigned_reg().to_gp_op().value();
         const auto index_op = convert_to_gp_op(index);
         const auto in2_op = convert_to_gp_op(in);
 
@@ -65,7 +65,7 @@ namespace details {
     }
 
     void AllocTemporalRegs::store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) {
-        const auto out_vreg = m_reg_allocation.at(pointer);
+        const auto out_vreg = pointer.assigned_reg().to_gp_op().value();
         const auto out_addr = out_vreg.as_address();
         assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
 

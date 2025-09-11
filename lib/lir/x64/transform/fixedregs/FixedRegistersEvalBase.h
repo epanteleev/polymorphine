@@ -6,6 +6,7 @@
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/module/LIRFuncData.h"
 #include "lir/x64/operand/OperandMatcher.h"
+#include "utility/ArithmeticUtils.h"
 
 template<call_conv::CallConv CC>
 class FixedRegistersEvalBase final {
@@ -111,10 +112,10 @@ private:
         void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override {}
         void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override {}
         void store_i(const LIRVal &pointer, const LIROperand &value) override {}
-        void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
-        void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override {}
-        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
-        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override {}
+        void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
+        void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
+        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
+        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
         void copy_i(const LIRVal &out, const LIROperand &in) override {}
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
         void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}

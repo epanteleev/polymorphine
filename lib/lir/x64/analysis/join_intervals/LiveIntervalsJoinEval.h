@@ -4,6 +4,7 @@
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
+#include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 #include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/instruction/Matcher.h"
 #include "lir/x64/module/LIRBlock.h"

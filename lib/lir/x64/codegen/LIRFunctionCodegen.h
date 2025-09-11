@@ -7,9 +7,8 @@
 
 
 class LIRFunctionCodegen final: public LIRVisitor {
-    explicit LIRFunctionCodegen(const LIRFuncData &data, const RegisterAllocation &reg_allocation, const Ordering<LIRBlock>& preorder, aasm::SymbolTable& symbol_table) noexcept:
+    explicit LIRFunctionCodegen(const LIRFuncData &data, const Ordering<LIRBlock>& preorder, aasm::SymbolTable& symbol_table) noexcept:
         m_data(data),
-        m_reg_allocation(reg_allocation),
         m_preorder(preorder),
         m_symbol_tab(symbol_table) {}
 
@@ -24,18 +23,16 @@ public:
     }
 
     static LIRFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data, aasm::SymbolTable& symbol_tab) {
-        const auto register_allocation = cache->analyze<LinearScanLinuxX64>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return LIRFunctionCodegen(*data, *register_allocation, *preorder, symbol_tab);
+        return LIRFunctionCodegen(*data, *preorder, symbol_tab);
     }
 
 private:
     void setup_basic_block_labels();
-    const TemporalRegs& temporal_reg(const LIRInstructionBase* inst) const;
     void traverse_instructions();
 
     [[nodiscard]]
-    GPOp convert_to_gp_op(const LIROperand &val) const;
+    static GPOp convert_to_gp_op(const LIROperand &val);
 
     void gen(const LIRVal &out) override {}
 
@@ -90,10 +87,10 @@ private:
     void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
     void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
     void store_i(const LIRVal &pointer, const LIROperand &value) override;
-    void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override;
-    void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size) override;
-    void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override;
-    void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size) override;
+    void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
+    void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
+    void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
+    void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
     void copy_i(const LIRVal &out, const LIROperand &in) override;
     void load_i(const LIRVal &out, const LIRVal &pointer) override;
     void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
@@ -120,7 +117,6 @@ private:
     void ret(std::span<LIRVal const> ret_values) override;
     
     const LIRFuncData& m_data;
-    const RegisterAllocation& m_reg_allocation;
     const Ordering<LIRBlock>& m_preorder;
     aasm::SymbolTable& m_symbol_tab;
 
