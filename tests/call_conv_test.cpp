@@ -2,7 +2,6 @@
 
 #include "helpers/Jit.h"
 #include "mir/mir.h"
-#include "mir/types/TupleType.h"
 
 static Module struct_arg_size1() {
     ModuleBuilder builder;

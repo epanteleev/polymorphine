@@ -1,0 +1,20 @@
+{
+    "name": "C++ Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "C_Cpp.intelliSenseEngine": "disabled",
+                "clangd.arguments": ["--compile-commands-dir=./build"]
+            },
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "llvm-vs-code-extensions.vscode-clangd"
+            ]
+        }
+    }
+}
