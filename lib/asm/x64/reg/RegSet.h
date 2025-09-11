@@ -116,13 +116,13 @@ namespace aasm {
         return GPReg(m_idx);
     }
 
-    inline RegSetIterator & RegSetIterator::operator++() noexcept {
+    inline RegSetIterator &RegSetIterator::operator++() noexcept {
         m_idx++;
         m_idx = bitutils::find_next_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;
     }
 
-    inline RegSetIterator & RegSetIterator::operator--() noexcept {
+    inline RegSetIterator &RegSetIterator::operator--() noexcept {
         m_idx--;
         m_idx = bitutils::find_prev_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;

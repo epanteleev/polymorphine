@@ -3,17 +3,16 @@
 #include "GPVReg.h"
 #include "asm/x64/asm.h"
 
+template<typename T>
+concept GPOpVariant = std::is_same_v<T, aasm::GPReg> ||
+    std::is_same_v<T, aasm::Address> ||
+    std::is_integral_v<T>;
 
 class GPOp final {
 public:
-    GPOp(const aasm::GPReg reg) noexcept
-        : m_reg(reg) {}
-
-    GPOp(const aasm::Address& addr) noexcept:
-        m_reg(addr) {}
-
-    GPOp(const std::int64_t imm) noexcept:
-        m_reg(imm) {}
+    template<GPOpVariant T>
+    GPOp(const T& reg) noexcept:
+        m_reg(reg) {}
 
     GPOp(const GPVReg& vreg) noexcept: m_reg(aasm::rax) {
         vreg.visit([&](const auto& reg) { m_reg = reg; });

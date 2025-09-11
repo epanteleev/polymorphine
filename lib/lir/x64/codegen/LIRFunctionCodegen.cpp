@@ -264,7 +264,7 @@ void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::si
 }
 
 void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size_t caller_overflow_area_size) {
-    if (is_no_prologue(m_reg_allocation) && caller_overflow_area_size == 0) {
+    if (is_no_prologue(m_reg_allocation) && reg_set.empty() && caller_overflow_area_size == 0) {
         return;
     }
 

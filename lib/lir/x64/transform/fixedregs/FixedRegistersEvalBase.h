@@ -3,20 +3,13 @@
 #include "base/analysis/AnalysisPassManagerBase.h"
 
 #include "lir/x64/asm/cc/CallConv.h"
-#include "lir/x64/analysis/fixedregs/FixedRegisters.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/module/LIRFuncData.h"
 #include "lir/x64/operand/OperandMatcher.h"
 
 template<call_conv::CallConv CC>
 class FixedRegistersEvalBase final {
-public:
-    using result_type = FixedRegisters;
-    using basic_block = LIRBlock;
-    static constexpr auto analysis_kind = AnalysisType::FixedRegisters;
-
-private:
-    explicit FixedRegistersEvalBase(const LIRFuncData &obj_func_data) noexcept:
+    explicit FixedRegistersEvalBase(LIRFuncData &obj_func_data) noexcept:
         m_obj_func_data(obj_func_data) {}
 
 public:
@@ -25,12 +18,8 @@ public:
         handle_basic_blocks();
     }
 
-    std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<FixedRegisters>(std::move(m_reg_map), std::move(m_args));
-    }
-
     static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData>*, const LIRFuncData *data) {
-        return FixedRegistersEvalBase(*data);
+        return FixedRegistersEvalBase(*const_cast<LIRFuncData *>(data));
     }
 
 private:
@@ -50,20 +39,20 @@ private:
         for (const auto& lir_val_arg: m_obj_func_data.args()) {
             if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
                 // Struct type argument in overflow area.
-                m_reg_map.emplace(lir_val_arg, caller_arg_stack_alloc(arg.size(), 8));
+                lir_val_arg.assign_reg(caller_arg_stack_alloc(arg.size(), 8));
                 continue;
             }
 
             if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
                 // No more arguments to process.
                 // Put argument in overflow area.
-                m_reg_map.emplace(lir_val_arg, arg_stack_alloc(8));
+                lir_val_arg.assign_reg(arg_stack_alloc(8));
                 continue;
             }
 
             const auto arg_reg = CC::GP_ARGUMENT_REGISTERS[idx];
-            m_reg_map.emplace(lir_val_arg, arg_reg);
-            m_args.emplace_back(arg_reg);
+            lir_val_arg.assign_reg(arg_reg);
+            m_args.emplace(arg_reg);
             idx += 1;
         }
     }
@@ -71,7 +60,7 @@ private:
     void handle_basic_blocks() {
         for (const auto& bb: m_obj_func_data.basic_blocks()) {
             for (const auto& inst: bb.instructions()) {
-                LIRInstTraverse traverser(m_reg_map);
+                LIRInstTraverse traverser;
                 traverser.run(inst);
             }
         }
@@ -79,8 +68,7 @@ private:
 
     class LIRInstTraverse final: public LIRVisitor {
     public:
-        explicit LIRInstTraverse(LIRValMap<GPVReg>& fixed_reg) noexcept:
-            m_fixed_reg(fixed_reg) {}
+        explicit LIRInstTraverse() noexcept = default;
 
         void run(const LIRInstructionBase& inst) {
             const_cast<LIRInstructionBase&>(inst).visit(*this);
@@ -92,15 +80,17 @@ private:
         void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
         void div_i(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) override {
-            m_fixed_reg.emplace(in1.as_vreg().value(), aasm::rax);
-            m_fixed_reg.emplace(outs[0], aasm::rax);
-            m_fixed_reg.emplace(outs[1], aasm::rdx);
+            outs[0].assign_reg(aasm::rax);
+            outs[1].assign_reg(aasm::rdx);
+            const auto in_vreg = in1.as_vreg().value();
+            in_vreg.assign_reg(aasm::rax);
         }
 
         void div_u(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) override {
-            m_fixed_reg.emplace(in1.as_vreg().value(), aasm::rax);
-            m_fixed_reg.emplace(outs[0], aasm::rax);
-            m_fixed_reg.emplace(outs[1], aasm::rdx);
+            outs[0].assign_reg(aasm::rax);
+            outs[1].assign_reg(aasm::rdx);
+            const auto in_vreg = in1.as_vreg().value();
+            in_vreg.assign_reg(aasm::rax);
         }
 
         void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
@@ -142,23 +132,22 @@ private:
         }
 
         void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionLinkage linkage) override {
-            m_fixed_reg.emplace(out, aasm::rax);
-
+            out.assign_reg(aasm::rax);
             std::int32_t caller_arg_area_size{};
             std::size_t idx{};
             for (const auto& lir_val_arg: args) {
                 if (lir_val_arg.isa(gen_v())) {
-                    m_fixed_reg.emplace(lir_val_arg, aasm::Address(aasm::rsp, caller_arg_area_size));
+                    lir_val_arg.assign_reg(aasm::Address(aasm::rsp, caller_arg_area_size));
                     caller_arg_area_size += align_up(lir_val_arg.size(), 8);
                     continue;
                 }
 
                 if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
-                    m_fixed_reg.emplace(lir_val_arg, arg_stack_alloc());
+                    lir_val_arg.assign_reg(arg_stack_alloc());
                     continue;
                 }
 
-                m_fixed_reg.emplace(lir_val_arg, CC::GP_ARGUMENT_REGISTERS[idx]);
+                lir_val_arg.assign_reg(CC::GP_ARGUMENT_REGISTERS[idx]);
                 idx += 1;
             }
         }
@@ -172,28 +161,24 @@ private:
         void ret(const std::span<const LIRVal> ret_values) override {
             switch (ret_values.size()) {
                 case 0: return;
-                case 1: {
-                    m_fixed_reg.emplace(ret_values[0], aasm::rax);
-                    return;
-                }
                 case 2: {
-                    m_fixed_reg.emplace(ret_values[0], aasm::rax);
-                    m_fixed_reg.emplace(ret_values[1], aasm::rdx);
+                    ret_values[1].assign_reg(aasm::rdx);
+                    [[fallthrough]];
+                }
+                case 1: {
+                    ret_values[0].assign_reg(aasm::rax);
                     return;
                 }
                 default: die("Unsupported number of return values: {}", ret_values.size());
             }
         }
 
-        LIRValMap<GPVReg>& m_fixed_reg;
         std::uint32_t m_arg_area_size{};
     };
 
-    const LIRFuncData& m_obj_func_data;
+    LIRFuncData& m_obj_func_data;
 
-    std::vector<aasm::GPReg> m_args{};
-    LIRValMap<GPVReg> m_reg_map{};
+    aasm::GPRegSet m_args{};
     std::uint32_t m_arg_area_size{};
     std::uint32_t m_caller_overflow_area_size{};
 };
-

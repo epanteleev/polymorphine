@@ -9,7 +9,6 @@
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/OperandMatcher.h"
 
-template<call_conv::CallConv CC>
 class LiveIntervalsJoinEval final {
 public:
     using result_type = LiveIntervalsGroups;
@@ -17,9 +16,8 @@ public:
     static constexpr auto analysis_kind = AnalysisType::LiveIntervalsGroups;
 
 private:
-    LiveIntervalsJoinEval(const LiveIntervals& intervals, const FixedRegisters& fixed_regs, const LIRFuncData& data) noexcept:
+    LiveIntervalsJoinEval(const LiveIntervals& intervals, const LIRFuncData& data) noexcept:
         m_intervals(intervals),
-        m_fixed_regs(fixed_regs),
         m_data(data) {}
 
 public:
@@ -35,21 +33,38 @@ public:
 
     static LiveIntervalsJoinEval create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
-        const auto fixed_regs = cache->analyze<FixedRegistersEvalBase<CC>>(data);
-        return {*intervals, *fixed_regs, *data};
+        return {*intervals, *data};
     }
 
 private:
-    void setup_fixed_reg_groups() {
-        GPVRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
-        m_reg_to_lir_val.reserve(m_fixed_regs.size());
-        // Collect all LIR values that are mapped to fixed registers.
-        for (auto& [lir_val, fixed_reg]: m_fixed_regs) {
-            auto [vec, _] = m_reg_to_lir_val.try_emplace(fixed_reg, std::vector<LIRVal>{});
-            vec->second.push_back(lir_val);
+    GPVRegMap<std::vector<LIRVal>> collect_fixed_regs() const {
+        GPVRegMap<std::vector<LIRVal>> reg_to_lir_val;
+        for (const auto& arg: m_data.args()) {
+            const auto fixed_reg = arg.assigned_reg().to_gp_op();
+            auto [vec, _] = reg_to_lir_val.try_emplace(fixed_reg.value(), std::vector<LIRVal>{});
+            vec->second.push_back(arg);
         }
 
-        for (auto& [fixed_reg, lir_values]: m_reg_to_lir_val) {
+        for (auto& bb: m_data.basic_blocks()) {
+            for (auto& inst: bb.instructions()) {
+                for (const auto& def: LIRVal::defs(&inst)) {
+                    const auto fixed_reg = def.assigned_reg().to_gp_op();
+                    if (!fixed_reg.has_value()) {
+                        continue;
+                    }
+
+                    auto [vec, _] = reg_to_lir_val.try_emplace(fixed_reg.value(), std::vector<LIRVal>{});
+                    vec->second.push_back(def);
+                }
+            }
+        }
+
+        return reg_to_lir_val;
+    }
+
+    void setup_fixed_reg_groups() {
+        auto reg_to_lir_val = collect_fixed_regs();
+        for (auto& [fixed_reg, lir_values]: reg_to_lir_val) {
             add_group(create_live_intervals(lir_values), std::move(lir_values), fixed_reg);
         }
     }
@@ -197,7 +212,6 @@ private:
     }
 
     const LiveIntervals& m_intervals;
-    const FixedRegisters& m_fixed_regs;
     const LIRFuncData& m_data;
 
     std::deque<Group> m_groups;

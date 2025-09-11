@@ -8,6 +8,7 @@
 
 #include "base/Attribute.h"
 #include "lir/x64/lir_frwd.h"
+#include "lir/x64/asm/GPVReg.h"
 #include "utility/Error.h"
 
 /**
@@ -38,6 +39,14 @@ public:
         std::erase(m_used_in, inst);
     }
 
+    void assign_reg(const OptionalGPVReg& reg) noexcept {
+        m_assigned_reg = reg;
+    }
+
+    const OptionalGPVReg& assigned_reg() const noexcept {
+        return m_assigned_reg;
+    }
+
     [[nodiscard]]
     std::span<LIRInstructionBase * const> users() const noexcept {
         return m_used_in;
@@ -50,6 +59,7 @@ public:
 private:
     const std::uint32_t m_index;
     const std::uint8_t m_size;
+    OptionalGPVReg m_assigned_reg;
     std::vector<LIRInstructionBase *> m_used_in;
     AttributeSet m_attributes;
 };

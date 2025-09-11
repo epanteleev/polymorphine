@@ -22,6 +22,35 @@ void LIRVal::kill_user(LIRInstructionBase *inst) const noexcept {
     visit(vis);
 }
 
+void LIRVal::assign_reg(const OptionalGPVReg &reg) const noexcept {
+    const auto vis = [&]<typename T>(T& val) {
+        if constexpr (std::is_same_v<T, LIRArg>) {
+            val.assign_reg(reg);
+        } else if constexpr (std::is_base_of_v<LIRInstructionBase, T> || std::is_same_v<T, LIRCall>) {
+            val.assign_reg(m_index, reg);
+        } else {
+            static_assert(false, "Unsupported type in LIRVal::assign_reg");
+        }
+    };
+
+    visit(vis);
+}
+
+const OptionalGPVReg& LIRVal::assigned_reg() const noexcept {
+    const auto vis = [&]<typename T>(const T& val) -> const OptionalGPVReg& {
+        if constexpr (std::is_same_v<T, LIRArg>) {
+            return val.assigned_reg();
+        } else if constexpr (std::is_base_of_v<LIRProducerInstructionBase, T> || std::is_same_v<T, LIRCall>) {
+            return val.assigned_reg(m_index);
+        } else {
+            static_assert(false, "Unsupported type in LIRVal::assigned_reg");
+        }
+        std::unreachable();
+    };
+
+    return visit(vis);
+}
+
 std::span<LIRInstructionBase * const> LIRVal::users() const noexcept {
     const auto vis = [&]<typename T>(const T& val) {
         return val.users();

@@ -4,16 +4,15 @@
 
 #include "asm/x64/asm.h"
 
+template<typename T>
+concept GPVRegVariant = std::is_same_v<T, aasm::GPReg> ||
+    std::is_same_v<T, aasm::Address>;
 
 class GPVReg final {
 public:
-    GPVReg(const aasm::GPReg reg) noexcept
-        : m_reg(reg) {}
-
-    GPVReg(const aasm::Address &addr) noexcept:
-        m_reg(addr) {}
-
-    friend std::ostream& operator<<(std::ostream& os, const GPVReg& reg) noexcept;
+    template<GPVRegVariant T>
+    GPVReg(const T& reg) noexcept:
+        m_reg(reg) {}
 
     template<typename T>
     void visit(const T& visitor) const {
@@ -51,6 +50,8 @@ public:
         return std::visit([](const auto& val) { return val.hash(); }, m_reg);
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const GPVReg& reg) noexcept;
+
 private:
     std::variant<aasm::GPReg, aasm::Address> m_reg;
 };
@@ -82,3 +83,33 @@ namespace details {
         bool operator()(const GPVReg& x, const GPVReg& y) const { return x == y; }
     };
 }
+
+class OptionalGPVReg final {
+public:
+    template<GPVRegVariant T>
+    OptionalGPVReg(const T& reg) noexcept:
+        m_reg(reg) {}
+
+    explicit OptionalGPVReg(const GPVReg& reg) noexcept {
+        const auto visitor = [&]<typename T>(const T &val) { m_reg = val; };
+        reg.visit(visitor);
+    }
+
+    explicit OptionalGPVReg() noexcept: m_reg(std::monostate{}) {}
+
+    [[nodiscard]]
+    std::optional<GPVReg> to_gp_op() const noexcept {
+        const auto visitor = [&]<typename T>(const T &val) -> std::optional<GPVReg> {
+            if constexpr (GPVRegVariant<T>) {
+                return GPVReg(val);
+            }
+
+            return std::nullopt;
+        };
+
+        return std::visit(visitor, m_reg);
+    }
+
+private:
+    std::variant<std::monostate, aasm::GPReg, aasm::Address> m_reg;
+};

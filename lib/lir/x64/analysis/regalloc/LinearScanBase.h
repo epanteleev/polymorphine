@@ -3,8 +3,8 @@
 #include "AllocTemporalRegs.h"
 #include "RegisterAllocation.h"
 #include "VRegSelection.h"
+#include "asm/x64/reg/RegSet.h"
 
-#include "lir/x64/analysis/fixedregs/FixedRegistersEvalBase.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
 #include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
@@ -30,8 +30,6 @@ private:
 
 public:
     void run() {
-        m_used_callee_saved_regs.reserve(CC::GP_CALLEE_SAVE_REGISTERS.size());
-
         allocate_fixed_registers();
         instruction_ordering();
         setup_unhandled_intervals();
@@ -43,11 +41,10 @@ public:
     }
 
     static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        const auto fixed_registers = cache->analyze<FixedRegistersEvalBase<CC>>(data);
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
-        const auto joins = cache->analyze<LiveIntervalsJoinEval<CC>>(data);
+        const auto joins = cache->analyze<LiveIntervalsJoinEval>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        auto vreg_selection = details::VRegSelection<CC>::create(fixed_registers->used_argument_registers());
+        auto vreg_selection = details::VRegSelection<CC>::create(collect_used_callee_saved_regs(data->args()));
         return LinearScanBase(*data, std::move(vreg_selection), *intervals, *joins, *preorder);
     }
 
@@ -231,7 +228,7 @@ private:
             return; // Already added
         }
 
-        m_used_callee_saved_regs.push_back(reg);
+        m_used_callee_saved_regs.emplace(reg);
     }
 
     void allocate_temporal_registers(const std::span<const LIRInstructionBase*> instructions) noexcept {
@@ -278,13 +275,32 @@ private:
         }
     }
 
+    template<std::ranges::range Range>
+    static aasm::GPRegSet collect_used_callee_saved_regs(Range&& args) {
+        aasm::GPRegSet used_callee_saved_regs;
+        for (const auto& reg: args) {
+            const auto gp_vreg = reg.assigned_reg().to_gp_op();
+            if (!gp_vreg.has_value()) {
+                continue;
+            }
+            const auto gp_reg = gp_vreg->as_gp_reg();
+            if (!gp_reg.has_value()) {
+                continue;
+            }
+
+            used_callee_saved_regs.emplace(gp_reg.value());
+        }
+
+        return used_callee_saved_regs;
+    }
+
     const LIRFuncData& m_obj_func_data;
     const LiveIntervals& m_intervals;
     const LiveIntervalsGroups& m_groups;
     const Ordering<LIRBlock>& m_preorder;
 
     details::VRegSelection<CC> m_reg_set;
-    std::vector<aasm::GPReg> m_used_callee_saved_regs{};
+    aasm::GPRegSet m_used_callee_saved_regs{};
     LIRValMap<GPVReg> m_reg_allocation{};
     std::unordered_map<const LIRInstructionBase*, TemporalRegs> m_clobber_regs{};
 

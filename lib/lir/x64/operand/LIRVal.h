@@ -65,7 +65,7 @@ public:
     }
 
     template<typename T>
-    auto visit(const T& visitor) const {
+    decltype(auto) visit(const T& visitor) const {
         switch (m_type) {
             case Op::Arg:  return visitor(*m_variant.m_arg);
             case Op::Inst: return visitor(*m_variant.m_inst);
@@ -97,6 +97,10 @@ public:
 
     void add_user(LIRInstructionBase *inst) const noexcept;
     void kill_user(LIRInstructionBase *inst) const noexcept;
+
+    void assign_reg(const OptionalGPVReg& reg) const noexcept;
+
+    const OptionalGPVReg& assigned_reg() const noexcept;
 
     [[nodiscard]]
     std::span<LIRInstructionBase* const> users() const noexcept;

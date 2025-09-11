@@ -8,6 +8,10 @@
 void Codegen::run() {
     for (const auto& func: m_module.functions()) {
         LIRAnalysisPassManager cache;
+
+        auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, func.get());
+        fixed_reg_eval.run();
+
         auto call_info = CallInfoInitializeLinuxX64::create(&cache, func.get());
         call_info.run();
 
