@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "mir/mir_frwd.h"
+#include "mir/global/ConstantPool.h"
 #include "mir/module/FunctionPrototypeTable.h"
 #include "mir/module/Module.h"
 
@@ -21,6 +22,12 @@ public:
 
     const ArrayType* add_array_type(const NonTrivialType* element_type, std::size_t length);
 
+    template <GlobalConstantVarians T>
+    [[nodiscard]]
+    std::expected<const GlobalConstant*, Error> add_constant(std::string&& name, const NonTrivialType* type, T value) {
+        return m_constant_pool.add_constant(std::move(name), type, value);
+    }
+
     Module build() noexcept;
 
 private:
@@ -28,4 +35,5 @@ private:
     std::unordered_map<std::string, StructType> m_known_structs;
     std::deque<ArrayType> m_array_types;
     std::unordered_map<std::string, FunctionData> m_functions;
+    ConstantPool m_constant_pool;
 };

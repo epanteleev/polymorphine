@@ -255,7 +255,7 @@ void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size
 
     m_as.push(8, aasm::rbp);
     m_as.copy(8, aasm::rsp, aasm::rbp);
-    m_as.sub(8, local_area_size, aasm::rsp);
+    m_as.sub(8, aasm::checked_cast<std::int32_t>(local_area_size), aasm::rsp);
     for (const auto& reg: reg_set) {
         m_as.push(8, reg);
     }

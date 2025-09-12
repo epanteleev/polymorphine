@@ -4,7 +4,6 @@ enum class AnalysisType {
     PreOrderTraverse,
     PostOrderTraverse,
     BFSTraverse,
-    LinearScanOrderTraverse,
     DominatorTree,
     LivenessAnalysis,
     LiveIntervalsEval,

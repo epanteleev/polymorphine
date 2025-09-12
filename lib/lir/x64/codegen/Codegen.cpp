@@ -6,22 +6,22 @@
 #include "lir/x64/transform/callinfo/CallInfoInitialize.h"
 
 void Codegen::run() {
-    for (const auto& func: m_module.functions()) {
+    for (auto& func: m_module | std::views::values) {
         LIRAnalysisPassManager cache;
 
-        auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, func.get());
+        auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, &func);
         fixed_reg_eval.run();
 
-        auto linear_scan = LinearScanLinuxX64::create(&cache, func.get());
+        auto linear_scan = LinearScanLinuxX64::create(&cache, &func);
         linear_scan.run();
 
-        auto call_info = CallInfoInitializeLinuxX64::create(&cache, func.get());
+        auto call_info = CallInfoInitializeLinuxX64::create(&cache, &func);
         call_info.run();
 
-        auto fn_codegen = LIRFunctionCodegen::create(&cache, func.get(), *m_symbol_table);
+        auto fn_codegen = LIRFunctionCodegen::create(&cache, &func, *m_symbol_table);
         fn_codegen.run();
 
-        const auto [symbol, _] = m_symbol_table->add(func->name(), aasm::Linkage::INTERNAL);
+        const auto [symbol, _] = m_symbol_table->add(func.name(), aasm::Linkage::INTERNAL);
         m_assemblers.emplace(symbol, fn_codegen.result().to_buffer());
     }
 }

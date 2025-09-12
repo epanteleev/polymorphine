@@ -31,9 +31,6 @@ private:
     void setup_basic_block_labels();
     void traverse_instructions();
 
-    [[nodiscard]]
-    static GPOp convert_to_gp_op(const LIROperand &val);
-
     void gen(const LIRVal &out) override {}
 
     void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
@@ -115,7 +112,10 @@ private:
     }
 
     void ret(std::span<LIRVal const> ret_values) override;
-    
+
+    [[nodiscard]]
+    static GPOp convert_to_gp_op(const LIROperand &val);
+
     const LIRFuncData& m_data;
     const Ordering<LIRBlock>& m_preorder;
     aasm::SymbolTable& m_symbol_tab;

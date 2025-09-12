@@ -63,7 +63,7 @@ AsmModule jit_compile(const Module &module, const bool verbose) {
     }
     Lowering lower(module);
     lower.run();
-    const auto result = lower.result();
+    auto result = lower.result();
     if (verbose) {
         std::cout << result << std::endl;
     }

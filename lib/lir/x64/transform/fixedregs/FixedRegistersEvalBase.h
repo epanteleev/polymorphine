@@ -19,8 +19,8 @@ public:
         handle_basic_blocks();
     }
 
-    static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData>*, const LIRFuncData *data) {
-        return FixedRegistersEvalBase(*const_cast<LIRFuncData *>(data));
+    static FixedRegistersEvalBase create(AnalysisPassManagerBase<LIRFuncData>*, LIRFuncData *data) {
+        return FixedRegistersEvalBase(*data);
     }
 
 private:

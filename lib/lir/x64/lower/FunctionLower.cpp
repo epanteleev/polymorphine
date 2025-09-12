@@ -178,7 +178,7 @@ static bool is_pinned(const Instruction& inst) noexcept {
     return false;
 }
 
-std::unique_ptr<LIRFuncData> FunctionLower::create_lir_function(const FunctionData &function) {
+LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
     std::vector<LIRArg> args;
     args.reserve(function.args().size());
 
@@ -186,7 +186,7 @@ std::unique_ptr<LIRFuncData> FunctionLower::create_lir_function(const FunctionDa
         args.emplace_back(idx, varg.type()->size_of(), varg.attributes());
     }
 
-    return std::make_unique<LIRFuncData>(function.name(), std::move(args));
+    return {function.name(), std::move(args)};
 }
 
 void FunctionLower::setup_arguments() {
@@ -196,7 +196,7 @@ void FunctionLower::setup_arguments() {
     // so that we have to isolate corresponded arguments.
     static constexpr auto RDX_IDX = 2;
     static constexpr auto RCX_IDX = 3;
-    for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, m_function.args(), m_obj_function->args())) {
+    for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, m_function.args(), m_obj_function.args())) {
         if (arg.attributes().has(Attribute::ByValue)) {
             memorize(&arg, lir_arg);
             continue;
@@ -237,11 +237,11 @@ void FunctionLower::traverse_instructions() {
 void FunctionLower::setup_bb_mapping() {
     for (const auto& bb: m_function.basic_blocks()) {
         if (&bb == m_function.first()) {
-            m_bb_mapping.emplace(&bb, m_obj_function->first());
+            m_bb_mapping.emplace(&bb, m_obj_function.first());
             continue;
         }
 
-        auto lir_bb = m_obj_function->create_mach_block();
+        auto lir_bb = m_obj_function.create_mach_block();
         m_bb_mapping.emplace(&bb, lir_bb);
     }
 }

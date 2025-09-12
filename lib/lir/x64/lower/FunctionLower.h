@@ -13,11 +13,11 @@
  * It traverses the function's basic blocks in a domination order.
  */
 class FunctionLower final: public Visitor {
-    FunctionLower(std::unique_ptr<LIRFuncData>&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering) noexcept:
+    FunctionLower(LIRFuncData&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering) noexcept:
         m_obj_function(std::move(obj_function)),
         m_function(function),
         m_dom_ordering(dom_ordering),
-        m_bb(m_obj_function->first()) {}
+        m_bb(m_obj_function.first()) {}
 
 public:
     void run() {
@@ -33,12 +33,12 @@ public:
         return {create_lir_function(*data), *data, *bfs};
     }
 
-    std::unique_ptr<LIRFuncData> result() {
+    LIRFuncData result() {
         return std::move(m_obj_function);
     }
 
 private:
-    static std::unique_ptr<LIRFuncData> create_lir_function(const FunctionData &function);
+    static LIRFuncData create_lir_function(const FunctionData &function);
 
     void setup_arguments();
 
@@ -109,7 +109,7 @@ private:
         m_value_mapping.emplace(LocalValue::from(val), lir_val);
     }
 
-    std::unique_ptr<LIRFuncData> m_obj_function;
+    LIRFuncData m_obj_function;
     const FunctionData& m_function;
     const Ordering<BasicBlock>& m_dom_ordering;
 

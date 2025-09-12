@@ -17,6 +17,7 @@ namespace error {
 enum class Error {
     CastError,
     NotFoundError,
+    AlreadyExists,
     FunctionExistsError,
 };
 

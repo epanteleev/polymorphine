@@ -24,7 +24,8 @@ public:
         std::vector visited(m_data->size(), false);
         std::stack<basic_block*> stack;
         stack.push(m_data->first());
-
+        m_order.reserve(m_data->size());
+        
         const auto exit = m_data->last();
         while (!stack.empty()) {
             auto bb = stack.top();

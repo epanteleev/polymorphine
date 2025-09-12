@@ -43,6 +43,7 @@ public:
         m_assigned_reg = reg;
     }
 
+    [[nodiscard]]
     const OptionalGPVReg& assigned_reg() const noexcept {
         return m_assigned_reg;
     }

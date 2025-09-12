@@ -8,8 +8,8 @@
 
 class Lowering final {
 public:
-    explicit Lowering(const Module &module) noexcept
-        : m_module(module) {}
+    explicit Lowering(const Module &module) noexcept:
+        m_module(module) {}
 
     void run();
 
@@ -23,5 +23,5 @@ public:
 
 private:
     const Module& m_module;
-    std::unordered_map<std::string, std::unique_ptr<LIRFuncData>> m_obj_functions;
+    std::unordered_map<std::string, LIRFuncData> m_obj_functions;
 };
