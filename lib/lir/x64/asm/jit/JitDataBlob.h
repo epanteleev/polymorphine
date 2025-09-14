@@ -10,23 +10,23 @@
 #include "utility/Error.h"
 
 /**
- * Represents a block of JIT-compiled code for one function.
+ * Represents a block of JIT-compiled code for one function or global data.
  */
-class JitCodeChunk final {
+class JitDataChunk final {
 public:
-    explicit JitCodeChunk(const std::size_t _offset, const std::size_t _size) noexcept:
+    explicit JitDataChunk(const std::size_t _offset, const std::size_t _size) noexcept:
         offset(_offset), size(_size) {}
 
-    const std::size_t offset; // Offset from code blob start
-    const std::size_t size; // Size of the code in bytes
+    const std::size_t offset; // Offset from blob start
+    const std::size_t size; // Size of the chunk in bytes
 };
 
 /**
  * JitCodeBlob is a class that represents ready-to-execute JIT-compiled code.
  */
-class JitCodeBlob final {
+class JitDataBlob final {
 public:
-    JitCodeBlob(std::unordered_map<const aasm::Symbol*, JitCodeChunk> &&offset_table,
+    JitDataBlob(std::unordered_map<const aasm::Symbol*, JitDataChunk> &&offset_table,
         const std::span<std::uint8_t> code_buffer) noexcept:
         m_offset_table(std::move(offset_table)),
         m_code_buffer(code_buffer) {}
@@ -44,11 +44,11 @@ public:
         return std::unexpected(Error::NotFoundError);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const JitCodeBlob& blob);
+    friend std::ostream& operator<<(std::ostream& os, const JitDataBlob& blob);
 
 private:
-    std::unordered_map<const aasm::Symbol*, JitCodeChunk> m_offset_table;
+    std::unordered_map<const aasm::Symbol*, JitDataChunk> m_offset_table;
     std::span<std::uint8_t> m_code_buffer;
 };
 
-std::ostream & operator<<(std::ostream &os, const JitCodeBlob &blob);
+std::ostream & operator<<(std::ostream &os, const JitDataBlob &blob);

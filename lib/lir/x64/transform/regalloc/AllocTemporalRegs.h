@@ -104,13 +104,13 @@ namespace details {
         void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
         void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
-        void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
+        void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
 
         void jmp(const LIRBlock *bb) override {}
 
         void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionLinkage linkage) override {}
+        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionVisibility linkage) override {}
 
         void vcall(std::span<LIRVal const> args) override {}
 

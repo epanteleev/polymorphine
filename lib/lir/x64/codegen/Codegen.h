@@ -12,11 +12,12 @@ public:
     void run();
 
     AsmModule result() {
-        return AsmModule(m_symbol_table, std::move(m_assemblers));
+        return AsmModule(m_symbol_table, std::move(m_assemblers), std::move(m_slots));
     }
 
 private:
     LIRModule& m_module;
     std::shared_ptr<aasm::SymbolTable> m_symbol_table; // Symbol table for the module
     std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer> m_assemblers;
+    std::unordered_map<const aasm::Symbol*, Slot> m_slots;
 };

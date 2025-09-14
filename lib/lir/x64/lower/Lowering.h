@@ -14,7 +14,7 @@ public:
     void run();
 
     LIRModule result() {
-        return LIRModule(std::move(m_obj_functions));
+        return LIRModule(std::move(m_obj_functions), std::move(m_global_data));
     }
 
     static Lowering create(AnalysisPassManager&, const Module &module) {
@@ -24,4 +24,5 @@ public:
 private:
     const Module& m_module;
     std::unordered_map<std::string, LIRFuncData> m_obj_functions;
+    GlobalData m_global_data{};
 };

@@ -83,8 +83,8 @@ public:
         return create(LIRProdInstKind::LoadFromStack, loaded_ty_size, LIROperand(pointer), index);
     }
 
-    static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIRVal &pointer, const LIROperand &index) {
-        auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector<LIROperand>{pointer, index});
+    static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIROperand &pointer, const LIROperand &index) {
+        auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector{pointer, index});
         lea->add_def(LIRVal::reg(size, 0, lea.get()));
         return lea;
     }

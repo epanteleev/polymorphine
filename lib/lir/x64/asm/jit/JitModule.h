@@ -6,14 +6,14 @@
 #include <expected>
 #include <memory>
 
-#include "JitCodeBlob.h"
+#include "JitDataBlob.h"
 #include "asm/symbol/SymbolTable.h"
 #include "lir/x64/asm/AsmModule.h"
 #include "utility/Error.h"
 
 class JitModule final {
 public:
-    JitModule(std::shared_ptr<aasm::SymbolTable> symbol_table, std::span<std::uint8_t> total_mem, JitCodeBlob&& code_blob) noexcept:
+    JitModule(std::shared_ptr<aasm::SymbolTable> symbol_table, std::span<std::uint8_t> total_mem, JitDataBlob&& code_blob) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_total_mem(total_mem),
         m_code_blob(std::move(code_blob)) {}
@@ -60,7 +60,7 @@ public:
 private:
     std::shared_ptr<aasm::SymbolTable> m_symbol_table;
     std::span<std::uint8_t> m_total_mem;
-    JitCodeBlob m_code_blob;
+    JitDataBlob m_code_blob;
 };
 
 std::ostream & operator<<(std::ostream &os, const JitModule &blob);

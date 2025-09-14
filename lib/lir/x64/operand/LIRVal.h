@@ -100,6 +100,7 @@ public:
 
     void assign_reg(const OptionalGPVReg& reg) const noexcept;
 
+    [[nodiscard]]
     const OptionalGPVReg& assigned_reg() const noexcept;
 
     [[nodiscard]]

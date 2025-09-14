@@ -44,6 +44,12 @@ namespace aasm {
             return m_displacement;
         }
 
+        [[nodiscard]]
+        AddressLiteral add_offset(const std::int32_t offset) const noexcept {
+            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            return AddressLiteral(m_symbol, aasm::checked_cast<std::int32_t>(new_offset));
+        }
+
     private:
         const Symbol* m_symbol;
         std::int32_t m_displacement;

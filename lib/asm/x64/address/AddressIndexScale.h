@@ -71,6 +71,12 @@ namespace aasm {
             return m_displacement;
         }
 
+        [[nodiscard]]
+        AddressIndexScale add_offset(const std::int32_t offset) const noexcept {
+            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            return AddressIndexScale(m_base, m_index, scale, static_cast<std::int32_t>(new_offset));
+        }
+
     private:
         friend class Address;
         std::int32_t m_displacement;

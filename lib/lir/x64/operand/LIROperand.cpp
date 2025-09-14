@@ -3,7 +3,11 @@
 
 std::ostream & operator<<(std::ostream &os, const LIROperand &op) noexcept {
     const auto visitor = [&]<typename T>(const T &val) {
-        os << val;
+        if constexpr (std::is_same_v<T, Slot*>) {
+            os << *val;
+        } else {
+            os << val;
+        }
     };
 
     std::visit(visitor, op.m_operand);

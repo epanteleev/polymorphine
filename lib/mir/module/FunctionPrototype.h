@@ -6,19 +6,19 @@
 #include <span>
 
 #include "base/Attribute.h"
-#include "base/FunctionLinkage.h"
+#include "base/FunctionVisibility.h"
 #include "mir/mir_frwd.h"
 
 class FunctionPrototype final {
 public:
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, const FunctionLinkage linkage) noexcept:
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, const FunctionVisibility linkage) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
         m_arg_attributes(m_arg_types.size(), AttributeSet{}),
         m_name(std::move(name)),
         m_linkage(linkage) {}
 
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, const FunctionLinkage linkage) noexcept:
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, const FunctionVisibility linkage) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
         m_arg_attributes(std::move(attributes)),
@@ -42,7 +42,7 @@ public:
     std::string_view name() const noexcept { return m_name; }
 
     [[nodiscard]]
-    FunctionLinkage linkage() const noexcept { return m_linkage; }
+    FunctionVisibility linkage() const noexcept { return m_linkage; }
 
     [[nodiscard]]
     AttributeSet attribute(const std::size_t index) const noexcept {
@@ -59,7 +59,7 @@ private:
     std::vector<const NonTrivialType*> m_arg_types;
     std::vector<AttributeSet> m_arg_attributes;
     std::string m_name;
-    FunctionLinkage m_linkage;
+    FunctionVisibility m_linkage;
 };
 
 std::ostream & operator<<(std::ostream &os, const FunctionPrototype &proto);

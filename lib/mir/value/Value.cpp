@@ -5,6 +5,7 @@
 #include "mir/instruction/ValueInstruction.h"
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
+#include "mir/types/PointerType.h"
 
 static_assert(std::is_trivially_copyable_v<Value>, "assumed to be");
 
@@ -16,12 +17,16 @@ Value::Value(const ValueInstruction *value) noexcept:
     m_value(const_cast<ValueInstruction *>(value)),
     m_type(value->type()) {}
 
+Value::Value(const GlobalConstant *value) noexcept:
+    m_value(const_cast<GlobalConstant *>(value)),
+    m_type(PointerType::ptr()) {}
+
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t>) {
             os << val;
 
-        } else if constexpr (std::is_same_v<T, ArgumentValue *>) {
+        } else if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, GlobalConstant*>) {
             os << *val;
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {

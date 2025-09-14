@@ -1,10 +1,10 @@
-#include "JitCodeBlob.h"
+#include "JitDataBlob.h"
 
 #include <iomanip>
 #include <ostream>
 
 
-std::ostream & operator<<(std::ostream &os, const JitCodeBlob &blob) {
+std::ostream & operator<<(std::ostream &os, const JitDataBlob &blob) {
     for (const auto& [name, code_chunk] : blob.m_offset_table) {
         os << name->name() << ": " << std::endl;
         // iterate by 16 bytes

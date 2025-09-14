@@ -40,12 +40,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             visitor.load_stack_addr_i(def(0), pointer.value(), in(1));
             break;
         }
-        case LIRProdInstKind::Lea: {
-            const auto in0 = LIRVal::try_from(in(0));
-            assertion(in0.has_value(), "invariant");
-            visitor.lea_i(def(0), in0.value(), in(1));
-            break;
-        }
+        case LIRProdInstKind::Lea: visitor.lea_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Movz: visitor.movzx_i(def(0), in(0)); break;
         case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;
         case LIRProdInstKind::Trunc: visitor.trunc_i(def(0), in(0)); break;

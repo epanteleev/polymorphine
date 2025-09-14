@@ -7,6 +7,11 @@
 
 void Codegen::run() {
     for (auto& func: m_module | std::views::values) {
+        for (auto& [name, slot]: func.global_data()) {
+            const auto [symbol, _] = m_symbol_table->add(name, aasm::Linkage::INTERNAL);
+            m_slots.emplace(symbol, slot); //Fixme copying slot
+        }
+
         LIRAnalysisPassManager cache;
 
         auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, &func);

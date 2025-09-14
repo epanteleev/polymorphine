@@ -44,12 +44,12 @@ public:
     virtual void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) = 0;
     virtual void load_from_stack_i(const LIRVal& out, const LIRVal& pointer, const LIROperand& index) = 0;
     virtual void load_stack_addr_i(const LIRVal& out, const LIRVal& pointer, const LIROperand &index) = 0;
-    virtual void lea_i(const LIRVal& out, const LIRVal& pointer, const LIROperand& index) = 0;
+    virtual void lea_i(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
-    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, FunctionLinkage linkage) = 0;
+    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, FunctionVisibility linkage) = 0;
     virtual void vcall(std::span<LIRVal const> args) = 0;
     virtual void icall(const LIRVal& out, const LIRVal& pointer, std::span<LIRVal const> args) = 0;
     virtual void ivcall(const LIRVal& pointer, std::span<LIRVal const> args) = 0;

@@ -15,6 +15,10 @@
 
 namespace aasm {
     class Address final {
+        Address(const AddressBaseDisp& addr) noexcept: m_address(addr) {}
+        Address(const AddressIndexScale& addr) noexcept: m_address(addr) {}
+        Address(const AddressLiteral& addr) noexcept: m_address(addr) {}
+
     public:
         explicit constexpr Address(const GPReg base, const GPReg index, const std::uint8_t scale = 1, const std::int32_t displacement = 0) noexcept:
             m_address(AddressIndexScale(base, index, scale, displacement)) {}
@@ -51,6 +55,7 @@ namespace aasm {
             return std::get_if<Addr>(&m_address);
         }
 
+        // todo make it private
         [[nodiscard]]
         std::optional<GPReg> base() const noexcept {
             if (const auto as_base_disp = as<AddressBaseDisp>()) {
@@ -60,6 +65,15 @@ namespace aasm {
                 return as_index_scale->m_base;
             }
             return std::nullopt;
+        }
+
+        [[nodiscard]]
+        Address add_offset(const std::int32_t offset) const noexcept {
+            const auto visit = [&](const auto& addr)-> Address {
+                return addr.add_offset(offset);
+            };
+
+            return std::visit(visit, m_address);
         }
 
         [[nodiscard]]
@@ -80,6 +94,7 @@ namespace aasm {
             return std::visit(vis, m_address);
         }
 
+    private:
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 

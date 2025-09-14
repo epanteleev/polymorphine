@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include "JitCodeBlob.h"
+#include "JitDataBlob.h"
 
 class OpCodeBuffer final {
 public:

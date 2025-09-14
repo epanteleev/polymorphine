@@ -266,6 +266,28 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
     }
 }
 
+LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
+    const auto vis = [&]<typename U>(const U& glob) -> Slot* {
+        if constexpr (std::is_same_v<U, double>) {
+            unimplemented();
+
+        } else if constexpr (std::is_same_v<U, std::int64_t>) {
+            const auto slot_type = to_slot_type(global.content_type()->size_of());
+            return m_obj_function.add_slot(global.name(), slot_type.value(), glob).value();
+
+        } else if constexpr (std::is_same_v<U, std::string>) {
+            // TODO handle different sizes
+            return m_obj_function.add_slot(global.name(), SlotType::String, glob).value();
+
+        } else {
+            static_assert(false);
+            std::unreachable();
+        }
+    };
+
+    return global.visit(vis);
+}
+
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
@@ -286,6 +308,9 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
             assertion(m_late_schedule_instructions.contains(v), "invariant");
             schedule_late(v);
             return m_value_mapping.at(LocalValue::from(v));
+
+        } else if constexpr (std::is_same_v<T, GlobalConstant *>) {
+            return lower_global_cst(*v);
 
         } else {
             static_assert(false, "Unsupported type in Value variant");
@@ -382,23 +407,34 @@ void FunctionLower::accept(Return *inst) {
     m_bb->ins(LIRReturn::ret());
 }
 
+LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Value& val) {
+    if (val.isa(g_constant())) {
+        const auto slot = lower_global_cst(*val.get<GlobalConstant*>());
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L)));
+        return lea->def(0);
+    }
+
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val)));
+    return copy->def(0);
+}
+
 void FunctionLower::accept(ReturnValue *inst) {
     const auto& ret_value = inst->first();
     const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
-    const auto copy_first = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(inst->first())));
+    const auto copy_first = lower_return_value(ret_type, ret_value);
     if (const auto second = inst->second(); !second) {
         m_bb->ins(LIRAdjustStack::epilogue());
-        m_bb->ins(LIRReturn::ret(copy_first->def(0)));
+        m_bb->ins(LIRReturn::ret(copy_first));
 
     } else {
         const auto second_type = dynamic_cast<const PrimitiveType*>(second->type());
         assertion(second_type != nullptr, "Expected PrimitiveType for return value");
 
-        const auto copy_second = m_bb->ins(LIRProducerInstruction::copy(second_type->size_of(), get_lir_operand(*second)));
+        const auto copy_second = lower_return_value(second_type, *second);
         m_bb->ins(LIRAdjustStack::epilogue());
-        m_bb->ins(LIRReturn::ret(copy_first->def(0), copy_second->def(0)));
+        m_bb->ins(LIRReturn::ret(copy_first, copy_second));
     }
 }
 
@@ -611,6 +647,12 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto pointer_vreg = get_lir_val(pointer);
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
+        return;
+    }
+
+    if (pointer.isa(g_constant())) {
+        const auto slot = lower_global_cst(*pointer.get<GlobalConstant*>());
+        memorize(inst, slot);
         return;
     }
 

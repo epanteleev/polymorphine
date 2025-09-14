@@ -61,6 +61,12 @@ namespace aasm {
             return m_displacement;
         }
 
+        [[nodiscard]]
+        AddressBaseDisp add_offset(const std::int32_t offset) const noexcept {
+            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            return AddressBaseDisp(m_base, aasm::checked_cast<std::int32_t>(new_offset));
+        }
+
     private:
         friend class Address;
         std::int32_t m_displacement;

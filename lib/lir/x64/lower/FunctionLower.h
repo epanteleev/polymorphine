@@ -48,6 +48,10 @@ private:
 
     void finalize_parallel_copies() const noexcept;
 
+    LIROperand lower_global_cst(const GlobalConstant &global);
+
+    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val);
+
     LIROperand get_lir_operand(const Value& val);
 
     LIRVal get_lir_val(const Value& val);
@@ -105,7 +109,7 @@ private:
     void schedule_late(ValueInstruction *inst);
 
     template <IsLocalValueType T>
-    void memorize(const T* val, const LIRVal& lir_val) {
+    void memorize(const T* val, const LIROperand& lir_val) {
         m_value_mapping.emplace(LocalValue::from(val), lir_val);
     }
 
@@ -115,7 +119,7 @@ private:
 
     LIRBlock* m_bb;
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
-    LocalValueMap<LIRVal> m_value_mapping;
+    LocalValueMap<LIROperand> m_value_mapping;
     // Inserted parallel copies in the current function for late handling.
     std::unordered_set<LIRBlock*> m_parallel_copy_owners;
     // Temporal storage for late scheduled instructions.

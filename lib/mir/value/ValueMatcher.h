@@ -150,6 +150,10 @@ consteval auto argument() noexcept {
     return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
 }
 
+consteval auto g_constant() noexcept {
+    return [](const Value& inst) { return inst.is<GlobalConstant*>(); };
+}
+
 consteval auto integral(const std::uint64_t cst) noexcept {
     return [=](const Value& value) { return impls::integral(value, cst); };
 }

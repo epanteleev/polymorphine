@@ -38,6 +38,11 @@ public:
         return m_functions;
     }
 
+    [[nodiscard]]
+    const ConstantPool& constant_pool() const noexcept {
+        return m_constant_pool;
+    }
+
     friend std::ostream &operator<<(std::ostream &os, const Module &module);
 
 private:

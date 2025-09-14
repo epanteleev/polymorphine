@@ -90,14 +90,14 @@ private:
     void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
     void copy_i(const LIRVal &out, const LIROperand &in) override;
     void load_i(const LIRVal &out, const LIRVal &pointer) override;
-    void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
+    void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override;
     void jmp(const LIRBlock *bb) override;
     void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override;
     void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override {}
     void movsx_i(const LIRVal &out, const LIROperand &in) override;
     void movzx_i(const LIRVal &out, const LIROperand &in) override;
     void trunc_i(const LIRVal &out, const LIROperand &in) override;
-    void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionLinkage) override;
+    void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionVisibility) override;
 
     void vcall(std::span<LIRVal const> args) override {
 
@@ -114,7 +114,7 @@ private:
     void ret(std::span<LIRVal const> ret_values) override;
 
     [[nodiscard]]
-    static GPOp convert_to_gp_op(const LIROperand &val);
+    GPOp convert_to_gp_op(const LIROperand &val) const;
 
     const LIRFuncData& m_data;
     const Ordering<LIRBlock>& m_preorder;

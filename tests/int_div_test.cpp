@@ -6,7 +6,7 @@
 static Module idiv(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "idiv", FunctionLinkage::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "idiv", FunctionVisibility::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
@@ -64,7 +64,7 @@ template<typename Fn>
 static Module idiv_2(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty}, "idiv_2", FunctionLinkage::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "idiv_2", FunctionVisibility::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto c = data.idiv(a, fn(2));
@@ -120,7 +120,7 @@ TEST(Idiv, idiv_to_2_u32) {
 static Module reminder(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "reminder", FunctionLinkage::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "reminder", FunctionVisibility::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
@@ -183,7 +183,7 @@ static Module idiv_quotient_reminder_i64(const IntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto tuple_ty = TupleType::tuple(ty, ty);
-        const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_quotient_reminder_i64", FunctionLinkage::DEFAULT);
+        const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_quotient_reminder_i64", FunctionVisibility::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);
@@ -245,7 +245,7 @@ static Module idiv_reminder_quotient_i64(const IntegerType* ty) {
     ModuleBuilder builder;
     {
         const auto tuple_ty = TupleType::tuple(ty, ty);
-        const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_reminder_quotient_i64", FunctionLinkage::DEFAULT);
+        const auto prototype = builder.add_function_prototype(tuple_ty, {ty, ty}, "idiv_reminder_quotient_i64", FunctionVisibility::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto a = data.arg(0);
         const auto b = data.arg(1);

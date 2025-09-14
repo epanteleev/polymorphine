@@ -171,7 +171,7 @@ namespace {
             m_os << "load_from_stack_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
-        void lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
+        void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
             m_os << "lea_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
@@ -187,7 +187,7 @@ namespace {
             on_false->print_short_name(m_os);
         }
 
-        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionLinkage linkage) override {
+        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionVisibility linkage) override {
             m_os << "call " << name << " out(" << out << ") args(";
             for (auto [idx, arg]: std::ranges::views::enumerate(args)) {
                 if (idx != 0) {

@@ -13,8 +13,8 @@
 
 class ModuleBuilder final {
 public:
-    const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, FunctionLinkage linkage);
-    const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, FunctionLinkage linkage);
+    const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, FunctionVisibility visibility);
+    const FunctionPrototype* add_function_prototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, FunctionVisibility visibility);
 
     std::expected<FunctionBuilder, Error> make_function_builder(const FunctionPrototype *prototype);
 
@@ -22,10 +22,10 @@ public:
 
     const ArrayType* add_array_type(const NonTrivialType* element_type, std::size_t length);
 
-    template <GlobalConstantVarians T>
+    template <typename T>
     [[nodiscard]]
-    std::expected<const GlobalConstant*, Error> add_constant(std::string&& name, const NonTrivialType* type, T value) {
-        return m_constant_pool.add_constant(std::move(name), type, value);
+    std::expected<const GlobalConstant*, Error> add_constant(std::string&& name, const NonTrivialType* type, T&& value) {
+        return m_constant_pool.add_constant(std::move(name), type, std::forward<T>(value));
     }
 
     Module build() noexcept;

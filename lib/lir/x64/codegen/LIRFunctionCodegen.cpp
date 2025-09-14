@@ -21,6 +21,7 @@
 #include "lir/x64/asm/emitters/MovsxIntEmit.h"
 #include "lir/x64/asm/emitters/MovzxIntEmit.h"
 #include "lir/x64/asm/emitters/TruncIntEmit.h"
+#include "lir/x64/asm/emitters/LeaGPEmit.h"
 
 #include "lir/x64/asm/cc/CallConv.h"
 
@@ -64,21 +65,25 @@ void LIRFunctionCodegen::traverse_instructions() {
     }
 }
 
-static aasm::Linkage cvt_linkage(const FunctionLinkage linkage) noexcept {
+static aasm::Linkage cvt_linkage(const FunctionVisibility linkage) noexcept {
     switch (linkage) {
-        case FunctionLinkage::DEFAULT:  return aasm::Linkage::DEFAULT;
-        case FunctionLinkage::INTERNAL: return aasm::Linkage::INTERNAL;
-        case FunctionLinkage::EXTERN:   return aasm::Linkage::EXTERNAL;
+        case FunctionVisibility::DEFAULT:  return aasm::Linkage::DEFAULT;
+        case FunctionVisibility::INTERNAL: return aasm::Linkage::INTERNAL;
+        case FunctionVisibility::EXTERN:   return aasm::Linkage::EXTERNAL;
         default: die("Unsupported LIRLinkage type");
     }
 }
 
-GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) {
+GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.as_vreg(); vreg.has_value()) {
         return vreg.value().assigned_reg().to_gp_op().value();
     }
     if (const auto cst = val.as_cst(); cst.has_value()) {
         return cst.value().value();
+    }
+    if (const auto slot = val.as_slot(); slot.has_value()) {
+        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::Linkage::INTERNAL);
+        return aasm::Address(symbol);
     }
 
     die("Invalid LIROperand");
@@ -284,8 +289,13 @@ void LIRFunctionCodegen::load_i(const LIRVal &out, const LIRVal &pointer) {
     LoadGPEmit::apply(m_as, out.size(), out_reg, pointer_reg);
 }
 
-void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-    unimplemented();
+void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
+    const auto out_reg = out.assigned_reg().to_gp_op().value();
+    const auto index_op = convert_to_gp_op(index);
+    const auto pointer_op = convert_to_gp_op(pointer);
+
+    LeaStackAddrGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
+    emitter.apply(out_reg, index_op, pointer_op.as_address().value());
 }
 
 void LIRFunctionCodegen::jmp(const LIRBlock *bb) {
@@ -322,7 +332,7 @@ void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
     emitter.emit(out_reg, pointer_reg);
 }
 
-void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionLinkage linkage) {
+void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionVisibility linkage) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_linkage(linkage));
     m_as.call(symbol);
 }

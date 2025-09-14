@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "base/FunctionDataBase.h"
+#include "lir/x64/global/GlobalData.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
@@ -63,19 +64,20 @@ public:
         return epilogue;
     }
 
-    void print(std::ostream &os) const {
-        os << m_name << '(';
-        for (auto [idx, arg] : std::ranges::enumerate_view(m_args)) {
-            if (idx > 0) {
-                os << ", ";
-            }
-
-            os << arg;
-        }
-        os << ") ";
-        print_blocks(os);
+    template<typename T>
+    [[nodiscard]]
+    std::expected<Slot*, Error> add_slot(const std::string_view name, const SlotType type, T&& value) {
+        return m_global_data.add_slot<T>(name, type, std::forward<T>(value));
     }
+
+    [[nodiscard]]
+    const GlobalData& global_data() const noexcept {
+        return m_global_data;
+    }
+
+    void print(std::ostream &os) const;
 
 private:
     std::string m_name;
+    GlobalData m_global_data;
 };

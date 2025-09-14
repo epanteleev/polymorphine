@@ -4,7 +4,7 @@
 
 static Module ret_constant() {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "ret_one", FunctionLinkage::DEFAULT);
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "ret_one", FunctionVisibility::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
     const auto data = fn_builder.value();

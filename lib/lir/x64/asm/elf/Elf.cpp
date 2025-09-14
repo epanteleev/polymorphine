@@ -2,7 +2,7 @@
 
 #include "asm/x64/SizeEvaluator.h"
 #include "lir/x64/asm/jit/OpCodeBuffer.h"
-#include "lir/x64/asm/jit/JitCodeBlob.h"
+#include "lir/x64/asm/jit/JitDataBlob.h"
 
 Elf Elf::collect(const AsmModule &module) {
     elf::elfio writer;

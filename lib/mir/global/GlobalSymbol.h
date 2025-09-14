@@ -16,24 +16,32 @@ public:
     [[nodiscard]]
     std::string_view name() const noexcept { return m_name; }
 
+    [[nodiscard]]
+    const NonTrivialType* content_type() const noexcept { return m_type; }
+
 protected:
     std::string m_name;
     const NonTrivialType* m_type;
 };
 
 template<typename T>
-concept GlobalConstantVarians = std::is_same_v<T, std::int64_t> ||
+concept GlobalConstantVarians = std::integral<T> ||
     std::is_same_v<T, double> ||
     std::is_same_v<T, std::string>;
 
 class GlobalConstant final: public GlobalSymbol {
 public:
-    template<GlobalConstantVarians T>
+    template<typename T>
     explicit GlobalConstant(std::string&& name, const NonTrivialType* type, T value) noexcept:
         GlobalSymbol(std::move(name), type),
         m_value(value) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const GlobalSymbol& sym);
+    template<typename Fn>
+    decltype(auto) visit(Fn&& vis) const {
+        return std::visit(std::forward<Fn>(vis), m_value);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym);
 
     void print_description(std::ostream& os) const;
 

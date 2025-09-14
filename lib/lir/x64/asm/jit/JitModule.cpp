@@ -33,23 +33,60 @@ public:
         m_code_buffer_offset(code_buffer_offset) {}
 
     void run() {
-        resolve_and_patch_labels();
+        assemble_global_slots();
+        assemble_functions();
         try_resolve_relocations();
     }
 
-    std::unordered_map<const aasm::Symbol*, JitCodeChunk> result() {
+    std::unordered_map<const aasm::Symbol*, JitDataChunk> result() {
         return std::move(offset_table);
     }
 
 private:
-    void resolve_and_patch_labels() {
+    void assemble_functions() {
         for (const auto& [name, emitter] : m_module.assembler()) {
             const auto start = jit_assembler.size();
             auto reloc = emitter.emit(jit_assembler);
             relocation_table.emplace(name, std::move(reloc));
-
-            offset_table.emplace(name, JitCodeChunk(start, jit_assembler.size() - start));
+            offset_table.emplace(name, JitDataChunk(start, jit_assembler.size() - start));
         }
+    }
+
+    void assemble_global_slots() {
+        for (const auto& [symbol, slot]: m_module.globals()) {
+            const auto start = jit_assembler.size();
+            const auto vis = [&]<typename T>(const T& val) {
+                if constexpr (std::same_as<T, std::int64_t>) {
+                    assemble_slot_imm(slot.type(), val);
+                } else if constexpr (std::same_as<T, std::string>) {
+                    assemble_slot_string(val);
+                } else {
+                    static_assert(false);
+                    std::unreachable();
+                }
+            };
+
+            slot.visit(vis);
+            offset_table.emplace(symbol, JitDataChunk(start, jit_assembler.size() - start));
+        }
+    }
+
+    void assemble_slot_imm(const SlotType type, const std::int64_t imm) {
+        switch (type) {
+            case SlotType::Byte: jit_assembler.emit8(aasm::checked_cast<std::uint8_t>(imm)); break;
+            case SlotType::Word: jit_assembler.emit16(aasm::checked_cast<std::uint16_t>(imm)); break;
+            case SlotType::DWord: jit_assembler.emit32(aasm::checked_cast<std::uint32_t>(imm)); break;
+            case SlotType::QWord: jit_assembler.emit64(aasm::checked_cast<std::uint64_t>(imm)); break;
+            default: std::unreachable();
+        }
+    }
+
+    void assemble_slot_string(const std::string& str) {
+        for (const auto ch: str) {
+            jit_assembler.emit8(ch);
+        }
+
+        jit_assembler.emit8(0);
     }
 
     void try_resolve_relocations() {
@@ -98,7 +135,7 @@ private:
     std::size_t m_code_buffer_offset;
 
     std::unordered_map<const aasm::Symbol*, std::vector<aasm::Relocation>> relocation_table;
-    std::unordered_map<const aasm::Symbol*, JitCodeChunk> offset_table;
+    std::unordered_map<const aasm::Symbol*, JitDataChunk> offset_table;
 };
 
 JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, const AsmModule &module) {
@@ -119,7 +156,7 @@ JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std
     RelocResolver resolver(plt_table, module, memory.code_buffer, memory.plt_table.size());
     resolver.run();
 
-    JitCodeBlob code_blob(resolver.result(), memory.code_buffer);
+    JitDataBlob code_blob(resolver.result(), memory.code_buffer);
     return {module.symbol_table(), memory.memory, std::move(code_blob)};
 }
 

@@ -5,12 +5,12 @@
 
 #include <ranges>
 
-const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, std::vector<AttributeSet> &&attributes, const FunctionLinkage linkage) {
-    return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::move(attributes), linkage).first;
+const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, std::vector<AttributeSet> &&attributes, const FunctionVisibility visibility) {
+    return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::move(attributes), visibility).first;
 }
 
-const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, const FunctionLinkage linkage) {
-    return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::vector(arg_types.size(), AttributeSet{}), linkage).first;
+const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, const FunctionVisibility visibility) {
+    return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::vector(arg_types.size(), AttributeSet{}), visibility).first;
 }
 
 std::expected<FunctionBuilder, Error> ModuleBuilder::make_function_builder(const FunctionPrototype *prototype) {

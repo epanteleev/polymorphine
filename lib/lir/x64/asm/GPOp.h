@@ -18,6 +18,15 @@ public:
         vreg.visit([&](const auto& reg) { m_reg = reg; });
     }
 
+    [[nodiscard]]
+    std::expected<aasm::Address, Error> as_address() const noexcept {
+        if (const auto addr = std::get_if<aasm::Address>(&m_reg)) {
+            return *addr;
+        }
+
+        return std::unexpected(Error::CastError);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const GPOp& reg) noexcept;
 
     template<typename T>

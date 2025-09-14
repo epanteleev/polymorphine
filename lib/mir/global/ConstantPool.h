@@ -23,7 +23,7 @@ public:
         return std::unexpected(Error::NotFoundError);
     }
 
-    template <GlobalConstantVarians T>
+    template <typename T>
     [[nodiscard]]
     std::expected<const GlobalConstant*, Error> add_constant(std::string&& name, const NonTrivialType* type, T value) {
         std::string key(name);
@@ -33,6 +33,11 @@ public:
         }
 
         return &it->second;
+    }
+
+    [[nodiscard]]
+    bool empty() const noexcept {
+        return m_constants.empty();
     }
 
     iterator begin() noexcept {
