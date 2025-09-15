@@ -142,7 +142,7 @@ namespace details {
     struct LIRValHash final {
         [[nodiscard]]
         std::size_t operator()(const LIRVal& val) const noexcept {
-            return val.size() ^ val.index(); // TODO: better hash func
+            return static_cast<std::uint64_t>(val.size()) << 8 | static_cast<std::uint64_t>(val.index());
         }
     };
 

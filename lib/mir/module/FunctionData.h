@@ -36,9 +36,9 @@ public:
     [[nodiscard]]
     BasicBlock* last() const {
         const auto last_bb = m_basic_blocks.back();
-        assertion(last_bb.has_value(), "last basic block is null");
-        assertion(last_bb.value()->last().isa(any_return()), "last basic block is not a return block");
-        return last_bb.value();
+        assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
+        assertion(last_bb->last().isa(any_return()), "last basic block is not a return block");
+        return last_bb.get();
     }
 
     friend std::ostream &operator<<(std::ostream &os, const FunctionData &fd);

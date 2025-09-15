@@ -2,7 +2,7 @@
 
 #include "IntervalHint.h"
 #include "LiveRange.h"
-#include "utility/RemoveFast.h"
+#include "utility/StdExtensions.h"
 
 /**
  * Represents a live interval of a virtual register in LIR function.

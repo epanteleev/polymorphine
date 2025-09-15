@@ -42,10 +42,10 @@ public:
     [[nodiscard]]
     LIRBlock* last() const {
         const auto last_bb = m_basic_blocks.back();
-        assertion(last_bb.has_value(), "last basic block is null");
-        const auto ret = dynamic_cast<const LIRReturn*>(last_bb.value()->last());
+        assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
+        const auto ret = dynamic_cast<const LIRReturn*>(last_bb->last());
         assertion(ret != nullptr, "last instruction is not a return");
-        return last_bb.value();
+        return last_bb.get();
     }
 
     [[nodiscard]]

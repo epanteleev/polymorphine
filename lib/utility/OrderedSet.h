@@ -1,56 +1,74 @@
 #pragma once
 
-#include <optional>
 #include <memory>
 #include <vector>
-#include <functional>
 #include <list>
 
+template<typename iterator, typename T>
+class Iterator final {
+public:
+    using value_type = T;
+    using reference = T&;
+    using pointer = T*;
+    using const_pointer = pointer;
+    using difference_type = std::iterator_traits<iterator>::difference_type;
+    using const_reference = reference;
+
+    Iterator() noexcept = default;
+
+    explicit Iterator(iterator first) noexcept:
+        current(first) {}
+
+    Iterator &operator++() {
+        ++current;
+        return *this;
+    }
+
+    Iterator operator++(int) noexcept {
+        const Iterator old = *this;
+        ++*this;
+        return old;
+    }
+
+    Iterator &operator--() noexcept {
+        --current;
+        return *this;
+    }
+
+    Iterator operator--(int) noexcept {
+        const Iterator old = *this;
+        --*this;
+        return old;
+    }
+
+    bool operator==(const Iterator &other) const noexcept { return current == other.current; }
+    bool operator!=(const Iterator &other) const noexcept { return current != other.current; }
+
+    reference operator*() { return *current->get(); }
+    const_reference operator*() const { return *current->get(); }
+
+    pointer operator->() { return current->get(); }
+    const_pointer operator->() const { return current->get(); }
+
+    pointer get() { return current->get(); }
+    const_pointer get() const { return current->get(); }
+
+private:
+    iterator current;
+};
 
 template<typename T>
 class OrderedSet final {
 public:
-    using iterator = std::list<std::unique_ptr<T>>::iterator;
-    using const_iterator = std::list<std::unique_ptr<T>>::const_iterator;
+    using list_iterator = std::list<std::unique_ptr<T>>::iterator;
+    using const_list_iterator = std::list<std::unique_ptr<T>>::const_iterator;
 
-private:
-    template<typename iterator>
-    class Iterator final {
-    public:
-        explicit Iterator() = default;
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+    using iterator = Iterator<list_iterator, T>;
+    using const_iterator = Iterator<const_list_iterator, T>;
 
-        explicit Iterator(iterator first) noexcept:
-            current(first) {}
-
-        Iterator &operator++() {
-            ++current;
-            return *this;
-        }
-
-        Iterator operator++(int) { return ++*this; }
-
-        Iterator &operator--() {
-            --current;
-            return *this;
-        }
-
-        Iterator operator--(int) {
-            return --*this;
-        }
-
-        bool operator==(const Iterator &other) const { return current == other.current; }
-        bool operator!=(const Iterator &other) const { return current != other.current; }
-        T &operator*() { return *current->get(); }
-        const T &operator*() const { return *current->get(); }
-        T *operator->() { return current->get(); }
-        T *operator->() const { return current->get(); }
-
-        T* get() { return current->get(); }
-    private:
-        iterator current;
-    };
-
-public:
     OrderedSet() = default;
 
     std::size_t push_back(std::unique_ptr<T>&& ptr) {
@@ -101,36 +119,36 @@ public:
         return removed;
     }
 
-    T &operator[](std::size_t index) {
+    reference operator[](std::size_t index) {
         return *m_list[index]->get();
     }
 
-    const T &operator[](std::size_t index) const {
+    const_reference operator[](std::size_t index) const {
         return *m_list[index]->data;
     }
 
-    const T &at(std::size_t index) const {
+    const_reference at(std::size_t index) const {
         return *m_list.at(index)->get();
     }
 
-    T &at(std::size_t index) {
+    reference at(std::size_t index) {
         return *m_list.at(index)->get();
     }
 
-    Iterator<iterator> begin() {
-        return Iterator(m_holder.begin());
+    iterator begin() noexcept {
+        return iterator(m_holder.begin());
     }
 
-    Iterator<iterator> end() {
-        return Iterator(m_holder.end());
+    iterator end() noexcept {
+        return iterator(m_holder.end());
     }
 
-    Iterator<const_iterator> begin() const {
-        return Iterator(m_holder.begin());
+    const_iterator begin() const noexcept {
+        return const_iterator(m_holder.begin());
     }
 
-    Iterator<const_iterator> end() const {
-        return Iterator(m_holder.end());
+    const_iterator end() const noexcept {
+        return const_iterator(m_holder.end());
     }
 
     [[nodiscard]]
@@ -138,12 +156,8 @@ public:
         return m_holder.size();
     }
 
-    std::optional<T*> back() const {
-        if (size() == 0) {
-            return std::nullopt;
-        }
-
-        return std::make_optional(m_list.back()->get());
+    const_iterator back() const noexcept {
+        return const_iterator(m_list.back());
     }
 
 private:
@@ -158,6 +172,9 @@ private:
     }
 
     std::vector<std::size_t> m_free_indices;
-    std::vector<iterator> m_list;
+    std::vector<list_iterator> m_list;
     std::list<std::unique_ptr<T>> m_holder;
 };
+
+static_assert(std::ranges::range<OrderedSet<int>>, "should be");
+static_assert(std::ranges::bidirectional_range<OrderedSet<int>>, "should be");

@@ -39,7 +39,7 @@ static void finalize_function(FunctionData* fd) noexcept {
         if (!bb.last().isa(any_return())) {
             continue;
         }
-        if (bbs.back() == &bb) {
+        if (bbs.back().get() == &bb) {
             continue;
         }
 

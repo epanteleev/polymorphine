@@ -9,7 +9,7 @@
 #include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
 #include "lir/x64/operand/OperandMatcher.h"
 #include "lir/x64/asm/cc/CallConv.h"
-#include "utility/RemoveFast.h"
+#include "utility/StdExtensions.h"
 
 
 template<call_conv::CallConv CC>

@@ -5,11 +5,11 @@
 
 Terminator BasicBlock::last() const noexcept {
     const auto back = m_instructions.back();
-    if (!back) {
+    if (back == m_instructions.end()) {
         die("BasicBlock has no instructions");
     }
 
-    const auto term = Terminator::from(back.value());
+    const auto term = Terminator::from(back.get());
     if (!term.has_value()) {
         die("Last instruction is not a terminator");
     }

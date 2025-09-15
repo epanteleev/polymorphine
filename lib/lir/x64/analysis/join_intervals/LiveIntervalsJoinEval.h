@@ -232,7 +232,7 @@ private:
     const LiveIntervals& m_intervals;
     const LIRFuncData& m_data;
 
-    aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
+    aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val{};
     std::deque<Group> m_groups;
     LIRValMap<LiveIntervalsGroups::group_iterator> m_group_mapping{};
 };

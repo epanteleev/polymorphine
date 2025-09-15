@@ -1,9 +1,8 @@
 #pragma once
 
-#include <array>
 #include <bitset>
 
-#include "../asm_frwd.h"
+#include "asm/x64/asm_frwd.h"
 #include "Register.h"
 #include "utility/BitUtils.h"
 
@@ -73,8 +72,11 @@ namespace aasm {
         using iterator   = RegMapIterator<V>;
         using const_iterator = RegMapIterator<V>;
 
+        using pair_pointer = std::pair<GPReg, V>*;
         using reference = std::pair<GPReg, V>&;
         using const_reference = const std::pair<GPReg, V>&;
+
+        ~GPRegMap() { clear(); }
 
         [[nodiscard]]
         std::size_t size() const noexcept {
@@ -84,6 +86,14 @@ namespace aasm {
         [[nodiscard]]
         bool empty() const noexcept {
             return m_has_values.none();
+        }
+
+        void clear() noexcept {
+            for (std::size_t i{}; i < GPReg::NUMBER_OF_GP_REGS; ++i) {
+                if (m_has_values.test(i)) get(i)->~pair();
+            }
+
+            m_has_values.reset();
         }
 
         /**
@@ -96,7 +106,7 @@ namespace aasm {
             }
 
             m_has_values.set(reg.code());
-            m_regs[reg.code()] = std::make_pair(reg, value);
+            new (get(reg.code())) std::pair<GPReg, V>(reg, value);
             return {RegMapIterator(this, reg.code()), true};
         }
 
@@ -135,28 +145,37 @@ namespace aasm {
 
     private:
         friend class RegMapIterator<V>;
+
+        pair_pointer get(const std::size_t idx) noexcept {
+            return reinterpret_cast<std::pair<GPReg, V>*>(&m_regs[0]) + idx;
+        }
+
+        reference at(const std::size_t idx) noexcept {
+            return *get(idx);
+        }
+
         std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
-        std::array<std::pair<GPReg, V>, GPReg::NUMBER_OF_GP_REGS> m_regs; //TODO not to call default constructor
+        char m_regs[sizeof(std::pair<GPReg, V>) * GPReg::NUMBER_OF_GP_REGS];
     };
 
     template<typename V>
     RegMapIterator<V>::pointer RegMapIterator<V>::operator->() noexcept {
-        return &m_reg_map->m_regs[m_idx];
+        return &m_reg_map->at(m_idx);
     }
 
     template<typename V>
     RegMapIterator<V>::const_pointer RegMapIterator<V>::operator->() const noexcept {
-        return &m_reg_map->m_regs[m_idx];
+        return &m_reg_map->at(m_idx);
     }
 
     template<typename V>
     RegMapIterator<V>::reference RegMapIterator<V>::operator*() noexcept {
-        return m_reg_map->m_regs[m_idx];
+        return m_reg_map->at(m_idx);
     }
 
     template<typename V>
     RegMapIterator<V>::const_reference RegMapIterator<V>::operator*() const noexcept {
-        return m_reg_map->m_regs[m_idx];
+        return m_reg_map->at(m_idx);
     }
 
     template<typename V>

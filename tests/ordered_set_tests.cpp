@@ -43,7 +43,7 @@ TEST(OrderedSet, iterator2) {
     set.push_back(create(3));
     set.push_back(create(4));
 
-    auto it = set.end()--;
+    auto it = --set.end();
     ASSERT_EQ(it->value, 4);
     --it;
     ASSERT_EQ(it->value, 3);
