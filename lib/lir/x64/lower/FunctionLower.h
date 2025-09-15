@@ -4,6 +4,7 @@
 
 #include "mir/mir.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
+#include "lir/x64/asm/cc/CallConv.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRFuncData.h"
 
@@ -12,11 +13,12 @@
  * It traverses the function's basic blocks in a domination order.
  */
 class FunctionLower final: public Visitor {
-    FunctionLower(LIRFuncData&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering) noexcept:
+    FunctionLower(LIRFuncData&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering, const call_conv::CallConvProvider* call_conv) noexcept:
         m_obj_function(std::move(obj_function)),
         m_function(function),
         m_dom_ordering(dom_ordering),
-        m_bb(m_obj_function.first()) {}
+        m_bb(m_obj_function.first()),
+        m_call_conv(call_conv) {}
 
 public:
     void run() {
@@ -26,10 +28,10 @@ public:
         finalize_parallel_copies();
     }
 
-    static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
+    static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data, const call_conv::CallConvProvider* call_conv) {
         // It is assumed that bfs order guarantees domination order.
         const auto* bfs = cache->analyze<BFSOrderTraverseBase<FunctionData>>(data);
-        return {create_lir_function(*data), *data, *bfs};
+        return {create_lir_function(*data), *data, *bfs, call_conv};
     }
 
     LIRFuncData result() {
@@ -38,6 +40,10 @@ public:
 
 private:
     static LIRFuncData create_lir_function(const FunctionData &function);
+
+    void allocate_fixed_regs_for_arguments() const;
+
+    void allocate_arguments_for_call(const LIRVal &out, std::span<LIROperand const> args) const;
 
     void setup_arguments();
 
@@ -115,8 +121,9 @@ private:
     LIRFuncData m_obj_function;
     const FunctionData& m_function;
     const Ordering<BasicBlock>& m_dom_ordering;
-
     LIRBlock* m_bb;
+    const call_conv::CallConvProvider* m_call_conv;
+
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
     LocalValueMap<LIROperand> m_value_mapping;
     // Inserted parallel copies in the current function for late handling.

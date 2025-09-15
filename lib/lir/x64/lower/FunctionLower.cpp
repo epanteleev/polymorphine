@@ -203,6 +203,41 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
     return {function.name(), std::move(args), std::move(lir_args)};
 }
 
+void FunctionLower::allocate_fixed_regs_for_arguments() const {
+    std::size_t m_arg_area_size{};
+    const auto arg_stack_alloc = [&](const std::size_t size) noexcept {
+        m_arg_area_size = align_up(m_arg_area_size, size) + size;
+        return aasm::Address(aasm::rbp, 8+m_arg_area_size);
+    };
+
+    std::size_t m_callee_overflow_area_size{};
+    const auto overflow_arg_stack_alloc = [&](const std::size_t size) noexcept {
+        const auto offset = m_callee_overflow_area_size;
+        m_callee_overflow_area_size = align_up(m_callee_overflow_area_size, 8) + size;
+        return aasm::Address(aasm::rsp, 8 + offset);
+    };
+
+    std::size_t idx{};
+    for (const auto& lir_val_arg: m_obj_function.args()) {
+        if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
+            // Struct type argument in overflow area.
+            lir_val_arg.assign_reg(overflow_arg_stack_alloc(arg.size()));
+            continue;
+        }
+
+        if (idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
+            // No more arguments to process.
+            // Put argument in overflow area.
+            lir_val_arg.assign_reg(arg_stack_alloc(8));
+            continue;
+        }
+
+        const auto arg_reg = m_call_conv->GP_ARGUMENT_REGISTERS(idx);
+        lir_val_arg.assign_reg(arg_reg);
+        idx += 1;
+    }
+}
+
 void FunctionLower::setup_arguments() {
     m_bb->ins(LIRAdjustStack::prologue());
 
@@ -230,6 +265,7 @@ void FunctionLower::setup_arguments() {
         const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
         memorize(&arg, copy->def(0));
     }
+    allocate_fixed_regs_for_arguments();
 }
 
 void FunctionLower::traverse_instructions() {
@@ -380,6 +416,23 @@ void FunctionLower::accept(CondBranch *cond_branch) {
     m_bb->ins(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
 }
 
+void FunctionLower::allocate_arguments_for_call(const LIRVal &out, const std::span<LIROperand const> args) const {
+    out.assign_reg(aasm::rax);
+    std::int32_t caller_arg_area_size{};
+    std::size_t idx{};
+    for (const auto& lir_val: args) {
+        const auto lir_val_arg = LIRVal::try_from(lir_val).value();
+        if (lir_val_arg.isa(gen_v()) || idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
+            lir_val_arg.assign_reg(aasm::Address(aasm::rsp, caller_arg_area_size));
+            caller_arg_area_size += align_up(lir_val_arg.size(), 8);
+            continue;
+        }
+
+        lir_val_arg.assign_reg(m_call_conv->GP_ARGUMENT_REGISTERS(idx));
+        idx += 1;
+    }
+}
+
 void FunctionLower::accept(Call *inst) {
     m_bb->ins(LIRAdjustStack::down_stack());
 
@@ -414,6 +467,8 @@ void FunctionLower::accept(Call *inst) {
     cont->ins(LIRAdjustStack::up_stack());
     const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
+
+    allocate_arguments_for_call(call->def(0), call->inputs());
 }
 
 void FunctionLower::accept(Return *inst) {

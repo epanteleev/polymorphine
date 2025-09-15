@@ -5,13 +5,13 @@
 #include "utility/ArithmeticUtils.h"
 
 namespace details {
-    template<call_conv::CallConv CC>
     class VRegSelection final {
     public:
         using stack = std::vector<aasm::GPReg>;
 
-        explicit VRegSelection(stack&& free_regs) noexcept:
-            m_free_regs(std::move(free_regs)) {}
+        explicit VRegSelection(stack&& free_regs, const call_conv::CallConvProvider* call_conv) noexcept:
+            m_free_regs(std::move(free_regs)),
+            m_call_conv(call_conv) {}
 
         aasm::Address stack_alloc(const std::size_t size) noexcept {
             m_local_area_size = align_up(m_local_area_size, size) + size;
@@ -23,7 +23,7 @@ namespace details {
             switch (hint) {
                 case IntervalHint::NOTHING: {
                     for (const auto reg: std::ranges::reverse_view(m_free_regs)) {
-                        if (!std::ranges::contains(CC::GP_CALLER_SAVE_REGISTERS, reg)) {
+                        if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
                             continue;
                         }
 
@@ -66,11 +66,11 @@ namespace details {
         }
 
         template<std::ranges::range Range>
-        static VRegSelection create(Range&& arg_regs) {
+        static VRegSelection create(const call_conv::CallConvProvider* call_conv, Range&& arg_regs) {
             stack regs{};
-            regs.reserve(CC::ALL_GP_REGISTERS.size());
+            regs.reserve(call_conv->ALL_GP_REGISTERS().size());
 
-            for (const auto reg: CC::ALL_GP_REGISTERS) {
+            for (const auto reg: call_conv->ALL_GP_REGISTERS()) {
                 if (std::ranges::contains(arg_regs, reg)) {
                     continue;
                 }
@@ -78,11 +78,12 @@ namespace details {
                 regs.push_back(reg);
             }
 
-            return VRegSelection(std::move(regs));
+            return VRegSelection(std::move(regs), call_conv);
         }
 
     private:
         stack m_free_regs{};
         std::int32_t m_local_area_size{};
+        const call_conv::CallConvProvider* m_call_conv;
     };
 }

@@ -6,16 +6,16 @@
 #include "lir/x64/module/LIRFuncData.h"
 
 
-template<call_conv::CallConv CC>
 class CallInfoInitialize final {
-    CallInfoInitialize(const LivenessAnalysisInfo& liveness_info, LIRFuncData& func_data) noexcept:
+    CallInfoInitialize(const LivenessAnalysisInfo& liveness_info, LIRFuncData& func_data, const call_conv::CallConvProvider* call_conv) noexcept:
         m_liveness_info(liveness_info),
+        m_call_conv(call_conv),
         m_func_data(func_data) {}
 
 public:
-    static CallInfoInitialize create(AnalysisPassManagerBase<LIRFuncData>* manager, LIRFuncData* data) {
+    static CallInfoInitialize create(AnalysisPassManagerBase<LIRFuncData>* manager, LIRFuncData* data, const call_conv::CallConvProvider* call_conv) {
         const auto liveness_info = manager->analyze<LivenessAnalysis>(data);
-        return {*liveness_info, *data};
+        return {*liveness_info, *data, call_conv};
     }
 
     void run() {
@@ -73,8 +73,8 @@ private:
         m_func_data.prologue()->increase_overflow_area_size(m_max_caller_overflow_area_size);
     }
 
-    void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) noexcept {
-        if (!std::ranges::contains(CC::GP_CALLER_SAVE_REGISTERS, gp_reg)) {
+    void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) const noexcept {
+        if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), gp_reg)) {
             // If the register is a caller-saved register, we need to add it to the adjust stack.
             return;
         }
@@ -89,7 +89,7 @@ private:
             if (const auto vreg = arg.as_vreg().value(); vreg.isa(gen_v())) {
                 overflow_args+=vreg.size();
 
-            } else if (idx >= CC::GP_ARGUMENT_REGISTERS.size()) {
+            } else if (idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
                 overflow_args+=8;
             }
         }
@@ -105,5 +105,6 @@ private:
 
     const LivenessAnalysisInfo& m_liveness_info;
     std::size_t m_max_caller_overflow_area_size{};
+    const call_conv::CallConvProvider* m_call_conv;
     LIRFuncData& m_func_data;
 };

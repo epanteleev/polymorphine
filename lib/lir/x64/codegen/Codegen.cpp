@@ -2,8 +2,8 @@
 
 #include "lir/x64/codegen/LIRFunctionCodegen.h"
 #include "lir/x64/analysis/Analysis.h"
-#include "lir/x64/transform/Transform.h"
 #include "lir/x64/transform/callinfo/CallInfoInitialize.h"
+#include "lir/x64/transform/regalloc/LinearScanBase.h"
 
 void Codegen::run() {
     for (auto& func: m_module | std::views::values) {
@@ -13,14 +13,10 @@ void Codegen::run() {
         }
 
         LIRAnalysisPassManager cache;
-
-        auto fixed_reg_eval = FixedRegistersEvalLinuxX64::create(&cache, &func);
-        fixed_reg_eval.run();
-
-        auto linear_scan = LinearScanLinuxX64::create(&cache, &func);
+        auto linear_scan = LinearScanBase::create(&cache, &func, call_conv::CC_LinuxX64());
         linear_scan.run();
 
-        auto call_info = CallInfoInitializeLinuxX64::create(&cache, &func);
+        auto call_info = CallInfoInitialize::create(&cache, &func, call_conv::CC_LinuxX64());
         call_info.run();
 
         auto fn_codegen = LIRFunctionCodegen::create(&cache, &func, *m_symbol_table);

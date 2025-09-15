@@ -57,5 +57,8 @@ namespace call_conv {
         };
     };
 
-    static_assert(CallConv<LinuxX64>, "LinuxX64 must satisfy CallConv concept");
+    consteval const CallConvProvider* CC_LinuxX64() {
+        static constexpr CallConvProvider CC_LinuxX64_instance{LinuxX64::GP_ARGUMENT_REGISTERS, LinuxX64::GP_CALLER_SAVE_REGISTERS, LinuxX64::GP_CALLEE_SAVE_REGISTERS, LinuxX64::ALL_GP_REGISTERS};
+        return &CC_LinuxX64_instance;
+    }
 };

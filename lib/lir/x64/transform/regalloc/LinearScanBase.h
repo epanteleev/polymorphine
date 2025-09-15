@@ -12,14 +12,14 @@
 #include "utility/StdExtensions.h"
 
 
-template<call_conv::CallConv CC>
 class LinearScanBase final {
-    explicit LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection<CC>&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder) noexcept:
+    explicit LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder, const call_conv::CallConvProvider* call_conv) noexcept:
         m_obj_func_data(obj_func_data),
         m_intervals(intervals),
         m_groups(groups),
         m_preorder(preorder),
-        m_reg_set(std::move(reg_set)) {}
+        m_reg_set(std::move(reg_set)),
+        m_call_conv(call_conv) {}
 
 public:
     void run() {
@@ -30,12 +30,12 @@ public:
         finalize_prologue_epilogue();
     }
 
-    static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
+    static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data, const call_conv::CallConvProvider* call_conv) {
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        auto vreg_selection = details::VRegSelection<CC>::create(collect_used_callee_saved_regs(data->args()));
-        return LinearScanBase(*data, std::move(vreg_selection), *intervals, *joins, *preorder);
+        auto vreg_selection = details::VRegSelection::create(call_conv, collect_used_callee_saved_regs(data->args()));
+        return LinearScanBase(*data, std::move(vreg_selection), *intervals, *joins, *preorder, call_conv);
     }
 
 private:
@@ -228,7 +228,7 @@ private:
         }
         lir_val.assign_reg(reg);
 
-        if (!std::ranges::contains(CC::GP_CALLEE_SAVE_REGISTERS, reg)) {
+        if (!std::ranges::contains(m_call_conv->GP_CALLEE_SAVE_REGISTERS(), reg)) {
             // This is a caller-save register, we can skip it.
             return;
         }
@@ -307,7 +307,9 @@ private:
     const LiveIntervalsGroups& m_groups;
     const Ordering<LIRBlock>& m_preorder;
 
-    details::VRegSelection<CC> m_reg_set;
+    details::VRegSelection m_reg_set;
+    const call_conv::CallConvProvider* m_call_conv;
+
     aasm::GPRegSet m_used_callee_saved_regs{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
