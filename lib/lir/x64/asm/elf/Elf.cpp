@@ -29,7 +29,7 @@ Elf Elf::collect(const AsmModule &module) {
     sym_sec->set_link(str_sec->get_index());
 
     std::vector<uint8_t> code_buffer;
-    code_buffer.resize(aasm::SizeEvaluator::module_size_eval(module));
+    code_buffer.resize(aasm::ModuleSizeEvaluator::module_size_eval(module));
     OpCodeBuffer assembler{code_buffer};
     for (const auto &asm_buffer: module.assembler() | std::views::values) {
         asm_buffer.emit(assembler);

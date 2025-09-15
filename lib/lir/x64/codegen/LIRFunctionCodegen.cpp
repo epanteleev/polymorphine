@@ -249,7 +249,13 @@ void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size
 
     m_as.push(8, aasm::rbp);
     m_as.copy(8, aasm::rsp, aasm::rbp);
-    m_as.sub(8, aasm::checked_cast<std::int32_t>(local_area_size), aasm::rsp);
+
+    auto size_to_adjust = local_area_size;
+    if (const auto remains = local_area_size % call_conv::STACK_ALIGNMENT; remains != 0L) {
+        size_to_adjust += remains; // Stack must be aligned on 16.
+    }
+
+    m_as.sub(8, aasm::checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
     for (const auto& reg: reg_set) {
         m_as.push(8, reg);
     }

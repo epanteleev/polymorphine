@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstring>
-
-#include "JitDataBlob.h"
+#include <cstdint>
+#include <span>
 
 class OpCodeBuffer final {
 public:

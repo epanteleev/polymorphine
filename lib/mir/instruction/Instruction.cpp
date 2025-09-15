@@ -207,7 +207,7 @@ namespace {
             print_val(proj);
             os << "proj";
             os << ' ' << *proj->type();
-            os << ' ' << proj->operand();
+            os << ' ' << proj->operand() << ": " << proj->idx();
         }
 
         std::ostream& os;

@@ -39,6 +39,7 @@ private:
     }
 
     std::uint8_t m_to_size;
+    [[maybe_unused]]
     std::uint8_t m_from_size;
     MasmEmitter& m_as;
 };

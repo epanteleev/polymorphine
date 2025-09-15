@@ -7,7 +7,7 @@ namespace call_conv {
 
     class CallConvProvider final {
     public:
-        explicit constexpr CallConvProvider(const std::span<aasm::GPReg const> gp_argument_registers,
+        explicit consteval CallConvProvider(const std::span<aasm::GPReg const> gp_argument_registers,
                                   const std::span<aasm::GPReg const> gp_caller_save_registers,
                                   const std::span<aasm::GPReg const> gp_callee_save_registers,
                                   const std::span<aasm::GPReg const> all_gp_registers) noexcept:

@@ -30,6 +30,9 @@ namespace aasm {
         std::int32_t offset() const noexcept { return m_offset; }
 
         [[nodiscard]]
+        std::int32_t displacement() const noexcept { return m_displacement; }
+
+        [[nodiscard]]
         RelType type() const noexcept { return m_type; }
 
     private:

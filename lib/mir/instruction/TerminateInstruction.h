@@ -149,7 +149,9 @@ public:
     static std::unique_ptr<VCall> call(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock *successor) {
         return std::make_unique<VCall>(prototype, std::move(args), successor);
     }
+
 private:
+    [[maybe_unused]]
     const FunctionPrototype *m_prototype;
 };
 
@@ -166,5 +168,6 @@ public:
         return std::make_unique<IVCall>(prototype, std::move(args), successor);
     }
 private:
+    [[maybe_unused]]
     const FunctionPrototype *m_prototype;
 };

@@ -3,6 +3,7 @@
 #include "OpCodeBuffer.h"
 #include "asm/x64/SizeEvaluator.h"
 #include "utility/ArithmeticUtils.h"
+#include "asm/x64/AssembleGlobals.h"
 
 static constexpr auto PAGE_SIZE = 4096;
 
@@ -54,39 +55,11 @@ private:
 
     void assemble_global_slots() {
         for (const auto& [symbol, slot]: m_module.globals()) {
+            aasm::details::AssembleGlobals globals(jit_assembler);
             const auto start = jit_assembler.size();
-            const auto vis = [&]<typename T>(const T& val) {
-                if constexpr (std::same_as<T, std::int64_t>) {
-                    assemble_slot_imm(slot.type(), val);
-                } else if constexpr (std::same_as<T, std::string>) {
-                    assemble_slot_string(val);
-                } else {
-                    static_assert(false);
-                    std::unreachable();
-                }
-            };
-
-            slot.visit(vis);
+            globals.emit(slot);
             offset_table.emplace(symbol, JitDataChunk(start, jit_assembler.size() - start));
         }
-    }
-
-    void assemble_slot_imm(const SlotType type, const std::int64_t imm) {
-        switch (type) {
-            case SlotType::Byte: jit_assembler.emit8(aasm::checked_cast<std::uint8_t>(imm)); break;
-            case SlotType::Word: jit_assembler.emit16(aasm::checked_cast<std::uint16_t>(imm)); break;
-            case SlotType::DWord: jit_assembler.emit32(aasm::checked_cast<std::uint32_t>(imm)); break;
-            case SlotType::QWord: jit_assembler.emit64(aasm::checked_cast<std::uint64_t>(imm)); break;
-            default: std::unreachable();
-        }
-    }
-
-    void assemble_slot_string(const std::string& str) {
-        for (const auto ch: str) {
-            jit_assembler.emit8(ch);
-        }
-
-        jit_assembler.emit8(0);
     }
 
     void try_resolve_relocations() {
@@ -139,7 +112,7 @@ private:
 };
 
 JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, const AsmModule &module) {
-    const auto code_buffer_size = aasm::SizeEvaluator::module_size_eval(module);
+    const auto code_buffer_size = aasm::ModuleSizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
     const auto memory = map_memory(plt_size, code_buffer_size);
 

@@ -2,11 +2,13 @@
 
 #include <cstdint>
 
+#include "AssembleGlobals.h"
+
 namespace aasm {
     class SizeEvaluator final {
+    public:
         SizeEvaluator() = default;
 
-    public:
         constexpr void emit8(const std::uint8_t) noexcept { m_size++; }
         constexpr void emit16(const std::uint16_t) noexcept { m_size += 2; }
         constexpr void emit32(const std::uint32_t) noexcept { m_size += 4; }
@@ -20,25 +22,36 @@ namespace aasm {
             return m_size;
         }
 
-        template<typename E>
-        static constexpr std::size_t emit(const E& emitter) {
-            SizeEvaluator evaluator;
-            emitter.emit(evaluator);
-            return evaluator.size();
-        }
+    private:
+        std::size_t m_size{};
+    };
 
+    static_assert(CodeBuffer<SizeEvaluator>);
+
+    class ModuleSizeEvaluator final {
+    public:
         static std::size_t module_size_eval(const AsmModule& masm) {
             std::size_t acc{};
             for (const auto& emitter : masm.assembler() | std::views::values) {
                 acc += emit(emitter);
             }
 
+            for (const auto& slot: masm.globals() | std::views::values) {
+                SizeEvaluator evaluator;
+                details::AssembleGlobals globals(evaluator);
+                globals.emit(slot);
+                acc += evaluator.size();
+            }
+
             return acc;
         }
 
     private:
-        std::size_t m_size{};
+        template<typename E>
+        static constexpr std::size_t emit(const E& emitter) {
+            SizeEvaluator evaluator;
+            emitter.emit(evaluator);
+            return evaluator.size();
+        }
     };
-
-    static_assert(CodeBuffer<SizeEvaluator>);
 }

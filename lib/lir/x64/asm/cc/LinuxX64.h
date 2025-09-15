@@ -55,10 +55,11 @@ namespace call_conv {
             aasm::r14,
             aasm::r15
         };
+
+        static constexpr CallConvProvider CC_LinuxX64_instance{GP_ARGUMENT_REGISTERS, GP_CALLER_SAVE_REGISTERS, GP_CALLEE_SAVE_REGISTERS, ALL_GP_REGISTERS};
     };
 
-    consteval const CallConvProvider* CC_LinuxX64() {
-        static constexpr CallConvProvider CC_LinuxX64_instance{LinuxX64::GP_ARGUMENT_REGISTERS, LinuxX64::GP_CALLER_SAVE_REGISTERS, LinuxX64::GP_CALLEE_SAVE_REGISTERS, LinuxX64::ALL_GP_REGISTERS};
-        return &CC_LinuxX64_instance;
+    static consteval const CallConvProvider* CC_LinuxX64() {
+        return &LinuxX64::CC_LinuxX64_instance;
     }
 };

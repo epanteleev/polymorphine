@@ -13,6 +13,11 @@ public:
         return m_values.at(0);
     }
 
+    [[nodiscard]]
+    std::uint8_t idx() const noexcept {
+        return m_idx;
+    }
+
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static std::unique_ptr<Projection> proj(const Value& operand, const std::uint8_t idx) {
