@@ -5,6 +5,7 @@
 #include "lir/x64/instruction/LIRCondBranch.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
+#include "lir/x64/instruction/LIRReturn.h"
 #include "lir/x64/instruction/LIRSetCC.h"
 #include "lir/x64/instruction/Matcher.h"
 #include "lir/x64/instruction/ParallelCopy.h"
@@ -20,20 +21,29 @@
  */
 template<std::integral T>
 static LirCst make_constant(const Type& type, const T integer) noexcept {
-    if (type.isa(i8()) || type.isa(u8())) {
-        return LirCst::imm8(static_cast<std::int8_t>(integer));
+    if (type.isa(i8())) {
+        return LirCst::imm8(aasm::checked_cast<std::int8_t>(integer));
     }
-
-    if (type.isa(i16()) || type.isa(u16())) {
-        return LirCst::imm16(static_cast<std::int16_t>(integer));
+    if (type.isa(u8())) {
+        return LirCst::imm8(aasm::checked_cast<std::uint8_t>(integer));
     }
-
-    if (type.isa(i32()) || type.isa(u32())) {
-        return LirCst::imm32(static_cast<std::int32_t>(integer));
+    if (type.isa(i16())) {
+        return LirCst::imm16(aasm::checked_cast<std::int16_t>(integer));
     }
-
-    if (type.isa(i64()) || type.isa(u64())) {
-        return LirCst::imm64(static_cast<std::int64_t>(integer));
+    if (type.isa(u16())) {
+        return LirCst::imm16(aasm::checked_cast<std::uint16_t>(integer));
+    }
+    if (type.isa(i32())) {
+        return LirCst::imm32(aasm::checked_cast<std::int32_t>(integer));
+    }
+    if (type.isa(u32())) {
+        return LirCst::imm32(aasm::checked_cast<std::uint32_t>(integer));
+    }
+    if (type.isa(i64())) {
+        return LirCst::imm64(aasm::checked_cast<std::int64_t>(integer));
+    }
+    if (type.isa(u64())) {
+        return LirCst::imm64(aasm::checked_cast<std::uint64_t>(integer));
     }
 
     die("Unsupported type for constant");
@@ -182,11 +192,15 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
     std::vector<LIRArg> args;
     args.reserve(function.args().size());
 
+    std::vector<LIRVal> lir_args;
+    lir_args.reserve(function.args().size());
+
     for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
-        args.emplace_back(idx, varg.type()->size_of(), varg.attributes());
+        const auto& inserted = args.emplace_back(idx, varg.type()->size_of(), varg.attributes());
+        lir_args.push_back(LIRVal::from(&inserted));
     }
 
-    return {function.name(), std::move(args)};
+    return {function.name(), std::move(args), std::move(lir_args)};
 }
 
 void FunctionLower::setup_arguments() {
@@ -407,14 +421,14 @@ void FunctionLower::accept(Return *inst) {
     m_bb->ins(LIRReturn::ret());
 }
 
-LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Value& val) {
+LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Value& val, const aasm::GPReg fixed_reg) {
     if (val.isa(g_constant())) {
         const auto slot = lower_global_cst(*val.get<GlobalConstant*>());
-        const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L)));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L), fixed_reg));
         return lea->def(0);
     }
 
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val)));
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val), fixed_reg));
     return copy->def(0);
 }
 
@@ -423,7 +437,7 @@ void FunctionLower::accept(ReturnValue *inst) {
     const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
-    const auto copy_first = lower_return_value(ret_type, ret_value);
+    const auto copy_first = lower_return_value(ret_type, ret_value, aasm::rax);
     if (const auto second = inst->second(); !second) {
         m_bb->ins(LIRAdjustStack::epilogue());
         m_bb->ins(LIRReturn::ret(copy_first));
@@ -432,7 +446,7 @@ void FunctionLower::accept(ReturnValue *inst) {
         const auto second_type = dynamic_cast<const PrimitiveType*>(second->type());
         assertion(second_type != nullptr, "Expected PrimitiveType for return value");
 
-        const auto copy_second = lower_return_value(second_type, *second);
+        const auto copy_second = lower_return_value(second_type, *second, aasm::rdx);
         m_bb->ins(LIRAdjustStack::epilogue());
         m_bb->ins(LIRReturn::ret(copy_first, copy_second));
     }
@@ -536,12 +550,12 @@ void FunctionLower::accept(Select *select) {
 void FunctionLower::accept(IntDiv *div) {
     const auto lhs_val = div->lhs();
     const auto lhs = get_lir_operand(lhs_val);
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs));
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs, aasm::rax));
     const auto copy_def = copy->def(0);
 
     const auto rhs = get_lir_operand(div->rhs());
     const auto type = lhs_val.type();
-    const LIRProducerInstruction* idiv;
+    LIRProducerInstruction* idiv;
     if (type->isa(signed_type())) {
         idiv = m_bb->ins(LIRProducerInstruction::idiv(copy_def, rhs));
 
@@ -551,6 +565,9 @@ void FunctionLower::accept(IntDiv *div) {
     } else {
         die("Unsupported type for IntDiv");
     }
+
+    idiv->assign_reg(0, aasm::rax);
+    idiv->assign_reg(1, aasm::rdx);
 
     if (const auto quotient = div->quotient(); !quotient->users().empty()) {
         const auto quotient_type = dynamic_cast<const PrimitiveType*>(quotient->type());

@@ -1,20 +1,18 @@
 #pragma once
 
-#include <ranges>
-
+#include "lir/x64/lir_frwd.h"
 #include "base/FunctionDataBase.h"
 #include "lir/x64/global/GlobalData.h"
-#include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
-#include "lir/x64/instruction/LIRReturn.h"
 
 
 class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {
 public:
-    LIRFuncData(const std::string_view name, std::vector<LIRArg> &&args) noexcept:
+    LIRFuncData(const std::string_view name, std::vector<LIRArg> &&args, std::vector<LIRVal>&& lir_args) noexcept:
         FunctionDataBase(std::move(args)),
-        m_name(name) {
+        m_name(name),
+        m_lir_args(std::move(lir_args)) {
         create_mach_block();
     }
 
@@ -31,38 +29,22 @@ public:
 
     [[nodiscard]]
     LIRVal arg(const std::size_t index) const noexcept {
-        return LIRVal::from(&m_args[index]);
+        return m_lir_args[index];
     }
 
     [[nodiscard]]
-    auto args() const {
-        return m_args | std::views::transform([](const auto &arg) { return LIRVal::from(&arg); } );
+    std::span<LIRVal const> args() const noexcept {
+        return m_lir_args;
     }
 
     [[nodiscard]]
-    LIRBlock* last() const {
-        const auto last_bb = m_basic_blocks.back();
-        assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
-        const auto ret = dynamic_cast<const LIRReturn*>(last_bb->last());
-        assertion(ret != nullptr, "last instruction is not a return");
-        return last_bb.get();
-    }
+    LIRBlock* last() const;
 
     [[nodiscard]]
-    LIRAdjustStack* prologue() const {
-        auto& first_instruction = first()->at(0);
-        const auto prologue = dynamic_cast<LIRAdjustStack *>(&first_instruction);
-        assertion(prologue != nullptr, "must be");
-        return prologue;
-    }
+    LIRAdjustStack* prologue() const;
 
     [[nodiscard]]
-    LIRAdjustStack* epilogue() const {
-        auto& last_instruction = last()->at(last()->size() - 2);
-        const auto epilogue = dynamic_cast<LIRAdjustStack *>(&last_instruction);
-        assertion(epilogue != nullptr, "must be");
-        return epilogue;
-    }
+    LIRAdjustStack* epilogue() const;
 
     template<typename T>
     [[nodiscard]]
@@ -79,5 +61,6 @@ public:
 
 private:
     std::string m_name;
+    std::vector<LIRVal> m_lir_args;
     GlobalData m_global_data;
 };

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <future>
 #include <memory>
 
 #include "AnalysisPass.h"
@@ -13,12 +12,9 @@ class AnalysisPassManagerBase final {
 
 public:
     template <Analysis A>
-    typename A::result_type* analyze(const FD* data) {
-        using result_type = typename A::result_type;
+    A::result_type* analyze(const FD* data) {
+        using result_type = A::result_type;
         constexpr auto idx = static_cast<std::size_t>(A::analysis_kind);
-
-        auto& mutex = m_mutexes[idx];
-        std::lock_guard _l(mutex);
 
         auto& pass_res = m_passes[idx];
         if (pass_res != nullptr) {
@@ -31,12 +27,6 @@ public:
         return static_cast<result_type*>(pass_res.get());
     }
 
-    template <Analysis A>
-    std::future<typename A::result_type*> concurrent_analyze(const FD* data) {
-        return std::async(std::launch::async, &AnalysisPassManagerBase::analyze<A>, this, data);
-    }
-
 private:
-    std::array<std::mutex, MAX_ANALYSIS_PASSES> m_mutexes{};
     std::array<std::unique_ptr<AnalysisPassResult>, MAX_ANALYSIS_PASSES> m_passes{};
 };

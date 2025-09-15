@@ -38,6 +38,13 @@ public:
         return create(LIRProdInstKind::Copy, size, op);
     }
 
+    static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op, const aasm::GPReg fixed_reg)  {
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, std::vector{op});
+        prod->add_def(LIRVal::reg(size, 0, prod.get()));
+        prod->assign_reg(0, fixed_reg);
+        return prod;
+    }
+
     static std::unique_ptr<LIRProducerInstruction> add(const LIROperand &lhs, const LIROperand &rhs) {
         return create(LIRProdInstKind::Add, lhs.size(), lhs, rhs);
     }
@@ -85,6 +92,13 @@ public:
     static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIROperand &pointer, const LIROperand &index) {
         auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector{pointer, index});
         lea->add_def(LIRVal::reg(size, 0, lea.get()));
+        return lea;
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIROperand &pointer, const LIROperand &index, const aasm::GPReg fixed_reg) {
+        auto lea = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Lea, std::vector{pointer, index});
+        lea->add_def(LIRVal::reg(size, 0, lea.get()));
+        lea->assign_reg(0, fixed_reg);
         return lea;
     }
 

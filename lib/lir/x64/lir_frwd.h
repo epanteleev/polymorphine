@@ -9,6 +9,8 @@ class LIRProducerInstruction;
 class LIRControlInstruction;
 class LIRProducerInstructionBase;
 class LIRCall;
+class LIRAdjustStack;
+
 enum class FunctionBind: std::uint8_t;
 
 class LIROperand;

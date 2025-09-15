@@ -2,9 +2,8 @@
 
 #include <ranges>
 
-#include "base/analysis/AnalysisPassManagerBase.h"
 #include "mir/mir.h"
-
+#include "base/analysis/AnalysisPassManagerBase.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRFuncData.h"
 
@@ -50,7 +49,7 @@ private:
 
     LIROperand lower_global_cst(const GlobalConstant &global);
 
-    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val);
+    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);
 
     LIROperand get_lir_operand(const Value& val);
 
