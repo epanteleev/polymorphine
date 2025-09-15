@@ -12,12 +12,12 @@ namespace aasm {
      */
     class SymbolTable final {
     public:
-        std::pair<const Symbol*, bool> add(const std::string_view name, const Linkage linkage) {
+        std::pair<const Symbol*, bool> add(const std::string_view name, const BindAttribute bind) {
             if (const auto it = m_symbol_map.find(std::string(name)); it != m_symbol_map.end()) { //TODO string creation
                 return {it->second, false};
             }
 
-            const auto& new_symbol = m_symbols.emplace_back(name.data(), linkage);
+            const auto& new_symbol = m_symbols.emplace_back(name.data(), bind);
             m_symbol_map.emplace(name, &new_symbol);
             return {&new_symbol, true};
         }

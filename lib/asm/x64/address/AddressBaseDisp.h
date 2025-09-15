@@ -50,12 +50,6 @@ namespace aasm {
             return std::nullopt;
         }
 
-
-        [[nodiscard]]
-        std::size_t hash() const noexcept {
-            return std::hash<std::int32_t>()(m_displacement) ^ m_base.hash();
-        }
-
         [[nodiscard]]
         std::int32_t offset() const noexcept {
             return m_displacement;
@@ -63,7 +57,7 @@ namespace aasm {
 
         [[nodiscard]]
         AddressBaseDisp add_offset(const std::int32_t offset) const noexcept {
-            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            const auto new_offset = static_cast<std::int64_t>(offset) + m_displacement;
             return AddressBaseDisp(m_base, aasm::checked_cast<std::int32_t>(new_offset));
         }
 

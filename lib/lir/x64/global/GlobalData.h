@@ -4,19 +4,19 @@
 #include <string>
 #include <unordered_map>
 
-#include "Slot.h"
+#include "NamedSlot.h"
 #include "utility/Error.h"
 
 
 class GlobalData final {
 public:
-    using iterator = std::unordered_map<std::string, Slot>::iterator;
-    using const_iterator = std::unordered_map<std::string, Slot>::const_iterator;
+    using iterator = std::unordered_map<std::string, NamedSlot>::iterator;
+    using const_iterator = std::unordered_map<std::string, NamedSlot>::const_iterator;
 
     explicit GlobalData() = default;
 
     [[nodiscard]]
-    std::expected<const Slot*, Error> lookup(const std::string &name) const noexcept {
+    std::expected<const NamedSlot*, Error> lookup(const std::string &name) const noexcept {
         const auto it = m_slots.find(name);
         if (it == m_slots.end()) {
             return std::unexpected(Error::NotFoundError);
@@ -27,8 +27,8 @@ public:
 
     template<typename T>
     [[nodiscard]]
-    std::expected<Slot*, Error> add_slot(std::string_view name, SlotType type, T&& value) {
-        const auto [it, inserted] = m_slots.emplace(name, Slot(std::forward<T>(value), std::string(name), type));
+    std::expected<NamedSlot*, Error> add_slot(std::string_view name, SlotType type, T&& value) {
+        const auto [it, inserted] = m_slots.emplace(name, NamedSlot(std::forward<T>(value), std::string(name), type));
         if (!inserted) {
             return std::unexpected(Error::AlreadyExists);
         }
@@ -57,5 +57,5 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, Slot> m_slots;
+    std::unordered_map<std::string, NamedSlot> m_slots;
 };

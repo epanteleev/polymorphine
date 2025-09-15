@@ -163,10 +163,6 @@ namespace {
             m_os << "load_by_idx_i out(" << out << ") index(" << index << ") pointer(" << pointer << ')';
         }
 
-        void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
-            m_os << "load_stack_addr_i out(" << out << ") pointer(" << pointer << ')';
-        }
-
         void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
             m_os << "load_from_stack_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
@@ -187,7 +183,7 @@ namespace {
             on_false->print_short_name(m_os);
         }
 
-        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionVisibility linkage) override {
+        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {
             m_os << "call " << name << " out(" << out << ") args(";
             for (auto [idx, arg]: std::ranges::views::enumerate(args)) {
                 if (idx != 0) {

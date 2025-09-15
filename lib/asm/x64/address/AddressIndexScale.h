@@ -62,18 +62,13 @@ namespace aasm {
         }
 
         [[nodiscard]]
-        std::size_t hash() const noexcept {
-            return std::hash<std::int32_t>()(m_displacement) ^ m_base.hash() ^ m_index.hash() ^ std::hash<std::uint8_t>()(scale);
-        }
-
-        [[nodiscard]]
         std::int32_t offset() const noexcept {
             return m_displacement;
         }
 
         [[nodiscard]]
         AddressIndexScale add_offset(const std::int32_t offset) const noexcept {
-            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            const auto new_offset = static_cast<std::int64_t>(offset) + m_displacement;
             return AddressIndexScale(m_base, m_index, scale, static_cast<std::int32_t>(new_offset));
         }
 

@@ -2,9 +2,9 @@
 
 
 template<typename TempRegStorage, typename AsmEmit>
-class LeaStackAddrGPEmit final: public GPBinarySrcAddrVisitor {
+class LeaAddrGPEmit final: public GPBinarySrcAddrVisitor {
 public:
-    explicit LeaStackAddrGPEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+    explicit LeaAddrGPEmit(const TempRegStorage& m_temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
         m_as(as),
         m_temporal_regs(m_temporal_regs) {}

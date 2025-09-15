@@ -45,11 +45,6 @@ public:
         return m_reg == other.m_reg;
     }
 
-    [[nodiscard]]
-    std::size_t hash() const noexcept {
-        return std::visit([](const auto& val) { return val.hash(); }, m_reg);
-    }
-
     friend std::ostream& operator<<(std::ostream& os, const GPVReg& reg) noexcept;
 
 private:
@@ -69,19 +64,6 @@ inline std::ostream & operator<<(std::ostream &os, const GPVReg &reg) noexcept {
 
     std::visit(visitor, reg.m_reg);
     return os;
-}
-
-namespace details {
-    struct GPVRegHash final {
-        [[nodiscard]]
-        std::size_t operator()(const GPVReg& val) const noexcept {
-            return val.hash();
-        }
-    };
-
-    struct GPVRegEqualTo final {
-        bool operator()(const GPVReg& x, const GPVReg& y) const { return x == y; }
-    };
 }
 
 class OptionalGPVReg final {

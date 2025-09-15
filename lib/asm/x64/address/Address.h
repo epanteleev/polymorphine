@@ -14,7 +14,13 @@
 #include "AddressLiteral.h"
 
 namespace aasm {
+    namespace details {
+        class EncodeUtils;
+    }
+
     class Address final {
+        friend class details::EncodeUtils;
+
         Address(const AddressBaseDisp& addr) noexcept: m_address(addr) {}
         Address(const AddressIndexScale& addr) noexcept: m_address(addr) {}
         Address(const AddressLiteral& addr) noexcept: m_address(addr) {}
@@ -55,18 +61,6 @@ namespace aasm {
             return std::get_if<Addr>(&m_address);
         }
 
-        // todo make it private
-        [[nodiscard]]
-        std::optional<GPReg> base() const noexcept {
-            if (const auto as_base_disp = as<AddressBaseDisp>()) {
-                return as_base_disp->m_base;
-            }
-            if (const auto as_index_scale = as<AddressIndexScale>()) {
-                return as_index_scale->m_base;
-            }
-            return std::nullopt;
-        }
-
         [[nodiscard]]
         Address add_offset(const std::int32_t offset) const noexcept {
             const auto visit = [&](const auto& addr)-> Address {
@@ -74,15 +68,6 @@ namespace aasm {
             };
 
             return std::visit(visit, m_address);
-        }
-
-        [[nodiscard]]
-        std::size_t hash() const noexcept {
-            const auto hash_fn = []<typename T0>(const T0& val) {
-                return val.hash();
-            };
-
-            return std::visit(hash_fn, m_address);
         }
 
         [[nodiscard]]
@@ -95,6 +80,17 @@ namespace aasm {
         }
 
     private:
+        [[nodiscard]]
+        std::optional<GPReg> base() const noexcept {
+            if (const auto as_base_disp = as<AddressBaseDisp>()) {
+                return as_base_disp->m_base;
+            }
+            if (const auto as_index_scale = as<AddressIndexScale>()) {
+                return as_index_scale->m_base;
+            }
+            return std::nullopt;
+        }
+
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 

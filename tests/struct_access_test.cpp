@@ -7,7 +7,7 @@ static Module point_struct() {
     ModuleBuilder builder;
     auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
     {
-        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_point", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_point", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(point_type, arg0, 0);
@@ -17,7 +17,7 @@ static Module point_struct() {
         data.ret();
     }
     {
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(point_type, arg0, 0);
@@ -55,7 +55,7 @@ static Module vec_struct() {
     auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
     auto vec_type = builder.add_struct_type("Vec", {point_type, point_type});
     {
-        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_vec", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr()}, "init_vec", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vec_type, arg0, 0);
@@ -71,7 +71,7 @@ static Module vec_struct() {
         data.ret();
     }
     {
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_fields", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(std::move(prototype)).value();
         const auto arg0 = data.arg(0);
         const auto field0 = data.gfp(vec_type, arg0, 0);
@@ -121,7 +121,7 @@ static Module struct_stackalloc() {
     ModuleBuilder builder;
     {
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "make_point", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "make_point", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(point_type);
         const auto field0 = data.gfp(point_type, alloca, 0);
@@ -153,9 +153,9 @@ TEST(StructAlloc, stack_alloc) {
 static Module escaped_struct_stackalloc() {
     ModuleBuilder builder;
     {
-        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_point", FunctionVisibility::EXTERN);
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_point", FunctionBind::EXTERN);
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
-        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(point_type);
         const auto field0 = data.gfp(point_type, alloca, 0);
@@ -198,9 +198,9 @@ TEST(StructAlloc, escaped_stack_alloc) {
 static Module escaped_array_stackalloc() {
     ModuleBuilder builder;
     {
-        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_array", FunctionVisibility::EXTERN);
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum_array", FunctionBind::EXTERN);
         const auto array_type = builder.add_array_type(SignedIntegerType::i64(), 3);
-        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(array_type);
         const auto field0 = data.gep(array_type, alloca, Value::i64(0));
@@ -240,9 +240,9 @@ TEST(StructAlloc, escaped_array_stack_alloc) {
 static Module escaped_array_slice() {
     ModuleBuilder builder;
     {
-        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr(), SignedIntegerType::i64()}, "sum_array_slice", FunctionVisibility::EXTERN);
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr(), SignedIntegerType::i64()}, "sum_array_slice", FunctionBind::EXTERN);
         const auto array_type = builder.add_array_type(SignedIntegerType::i64(), 3);
-        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(array_type);
         const auto field0 = data.gep(array_type, alloca, Value::i64(0));
@@ -282,9 +282,9 @@ TEST(StructAlloc, escaped_array_slice_stack_alloc) {
 static Module escaped_struct_field() {
     ModuleBuilder builder;
     {
-        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "deref_ptr", FunctionVisibility::EXTERN);
+        const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "deref_ptr", FunctionBind::EXTERN);
         auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
-        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(point_type);
         const auto field0 = data.gfp(point_type, alloca, 0);

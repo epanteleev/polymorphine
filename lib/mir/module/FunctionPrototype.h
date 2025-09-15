@@ -6,24 +6,24 @@
 #include <span>
 
 #include "base/Attribute.h"
-#include "base/FunctionVisibility.h"
+#include "base/FunctionBind.h"
 #include "mir/mir_frwd.h"
 
 class FunctionPrototype final {
 public:
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, const FunctionVisibility linkage) noexcept:
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, const FunctionBind bind) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
         m_arg_attributes(m_arg_types.size(), AttributeSet{}),
         m_name(std::move(name)),
-        m_linkage(linkage) {}
+        m_bind(bind) {}
 
-    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, const FunctionVisibility linkage) noexcept:
+    explicit FunctionPrototype(const Type* ret_type, std::vector<const NonTrivialType*>&& arg_types, std::string&& name, std::vector<AttributeSet>&& attributes, const FunctionBind bind) noexcept:
         m_ret_type(ret_type),
         m_arg_types(std::move(arg_types)),
         m_arg_attributes(std::move(attributes)),
         m_name(std::move(name)),
-        m_linkage(linkage) {}
+        m_bind(bind) {}
 
     [[nodiscard]]
     const Type* ret_type() const { return m_ret_type; }
@@ -42,7 +42,7 @@ public:
     std::string_view name() const noexcept { return m_name; }
 
     [[nodiscard]]
-    FunctionVisibility linkage() const noexcept { return m_linkage; }
+    FunctionBind bind() const noexcept { return m_bind; }
 
     [[nodiscard]]
     AttributeSet attribute(const std::size_t index) const noexcept {
@@ -59,7 +59,7 @@ private:
     std::vector<const NonTrivialType*> m_arg_types;
     std::vector<AttributeSet> m_arg_attributes;
     std::string m_name;
-    FunctionVisibility m_linkage;
+    FunctionBind m_bind;
 };
 
 std::ostream & operator<<(std::ostream &os, const FunctionPrototype &proto);

@@ -11,20 +11,20 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            switch (m_name->linkage()) {
-                case Linkage::EXTERNAL: {
+            switch (m_name->bind()) {
+                case BindAttribute::EXTERNAL: {
                     static constexpr std::array<std::uint8_t, 1> CALL = {0xFF};
                     Encoder enc(buffer, CALL, CALL);
                     return enc.encode_M(2, 8, Address(m_name));
                 }
-                case Linkage::INTERNAL: [[fallthrough]];
-                case Linkage::DEFAULT: {
+                case BindAttribute::INTERNAL: [[fallthrough]];
+                case BindAttribute::DEFAULT: {
                     static constexpr std::uint8_t CALL = 0xE8;
                     buffer.emit8(CALL);
                     buffer.emit32(INT32_MAX);
                     return Relocation(RelType::X86_64_PC32, buffer.size(), 0, m_name);
                 }
-                default: die("Unsupported linkage type for call: {}", static_cast<std::uint8_t>(m_name->linkage()));
+                default: die("Unsupported bind type for call: {}", static_cast<std::uint8_t>(m_name->bind()));
             }
         }
 

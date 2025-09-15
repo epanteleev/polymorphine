@@ -5,7 +5,7 @@
 
 #include "LIRCst.h"
 #include "LIRVal.h"
-#include "lir/x64/global/Slot.h"
+#include "lir/x64/global/NamedSlot.h"
 
 class LIROperand final {
 public:
@@ -15,7 +15,7 @@ public:
     constexpr LIROperand(const LIRVal& operand) noexcept:
         m_operand(operand) {}
 
-    constexpr LIROperand(Slot* operand) noexcept:
+    constexpr LIROperand(NamedSlot* operand) noexcept:
         m_operand(operand) {}
 
     [[nodiscard]]
@@ -37,9 +37,9 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<Slot*> as_slot() const noexcept {
-        if (std::holds_alternative<Slot*>(m_operand)) {
-            return std::get<Slot*>(m_operand);
+    std::optional<NamedSlot*> as_slot() const noexcept {
+        if (std::holds_alternative<NamedSlot*>(m_operand)) {
+            return std::get<NamedSlot*>(m_operand);
         }
 
         return std::nullopt;
@@ -48,7 +48,7 @@ public:
     [[nodiscard]]
     std::uint8_t size() const noexcept {
         const auto visitor = [&]<typename T>(const T &val) {
-            if constexpr (std::is_same_v<T, Slot*>) {
+            if constexpr (std::is_same_v<T, NamedSlot*>) {
                 return val->size();
             } else {
                 return val.size();
@@ -60,7 +60,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 private:
-    std::variant<LirCst, LIRVal, Slot*> m_operand;
+    std::variant<LirCst, LIRVal, NamedSlot*> m_operand;
 };
 
 

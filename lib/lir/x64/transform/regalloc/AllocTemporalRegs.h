@@ -85,7 +85,7 @@ namespace details {
 
         void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
 
-        void store_i(const LIRVal &pointer, const LIROperand &value) override {}
+        void store_i(const LIRVal &pointer, const LIROperand &value) override;
 
         void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
@@ -102,7 +102,6 @@ namespace details {
         void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
         void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
-        void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
 
         void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
 
@@ -110,7 +109,7 @@ namespace details {
 
         void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}
 
-        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionVisibility linkage) override {}
+        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {}
 
         void vcall(std::span<LIRVal const> args) override {}
 

@@ -9,7 +9,7 @@ class LIRProducerInstruction;
 class LIRControlInstruction;
 class LIRProducerInstructionBase;
 class LIRCall;
-enum class FunctionVisibility: std::uint8_t;
+enum class FunctionBind: std::uint8_t;
 
 class LIROperand;
 class LIRVal;

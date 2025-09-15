@@ -24,10 +24,10 @@ private:
     }
 
     void emit(aasm::GPReg out, const std::int64_t in, const aasm::Address &src) override {
-        const auto offset = static_cast<std::int64_t>(src.offset()) + m_size * in;
-        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for load from stack");
+        const auto offset = static_cast<std::int64_t>(m_size) * in;
+        assertion(std::in_range<std::int32_t>(offset), "Offset out of range for load stack address");
 
-        m_as.mov(m_size, aasm::Address(src.base().value(), offset), out);
+        m_as.mov(m_size, src.add_offset(offset), out);
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in, const aasm::Address &src) override {

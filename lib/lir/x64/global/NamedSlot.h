@@ -28,10 +28,10 @@ std::ostream& operator<<(std::ostream& os, const SlotType& type);
 template<typename T>
 concept SlotVariant = std::integral<T> || std::is_same_v<T, std::string>;
 
-class Slot final {
+class NamedSlot final {
 public:
     template<typename T>
-    explicit Slot(T&& data, std::string&& name, const SlotType type) noexcept:
+    explicit NamedSlot(T&& data, std::string&& name, const SlotType type) noexcept:
         m_type(type),
         m_name(std::move(name)),
         m_value(std::forward<T>(data)) {}
@@ -52,7 +52,7 @@ public:
     [[nodiscard]]
     std::string_view name() const noexcept { return m_name; }
 
-    friend std::ostream &operator<<(std::ostream &os, const Slot &slot);
+    friend std::ostream &operator<<(std::ostream &os, const NamedSlot &slot);
 
     void print_description(std::ostream &os) const;
 

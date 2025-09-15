@@ -6,7 +6,7 @@
 template<typename Fn>
 static Module fib(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionVisibility::DEFAULT);
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionBind::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();
@@ -185,8 +185,8 @@ TEST(Fib, u64) {
 
 static Module recursive_fib(const IntegerType* ty) {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionVisibility::DEFAULT);
-    const auto copy = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionVisibility::DEFAULT);
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionBind::DEFAULT);
+    const auto copy = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionBind::DEFAULT);
     assert(prototype == copy);
 
     auto fn_builder = builder.make_function_builder(copy);

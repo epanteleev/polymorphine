@@ -3,7 +3,7 @@
 void LIRCall::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRCallKind::Call: {
-            visitor.call(def(0), m_name, to_lir_vals_only(inputs()), m_linkage);
+            visitor.call(def(0), m_name, to_lir_vals_only(inputs()), m_bind);
             break;
         }
         case LIRCallKind::ICall: {

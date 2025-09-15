@@ -10,8 +10,9 @@ public:
 private:
     friend class GPUnaryOutVisitor;
 
-    explicit LoadGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept
-        : m_size(size), m_as(as) {}
+    explicit LoadGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as) {}
 
     void emit(const aasm::GPReg out, const aasm::GPReg in) override {
         m_as.mov(m_size, aasm::Address(in), out);

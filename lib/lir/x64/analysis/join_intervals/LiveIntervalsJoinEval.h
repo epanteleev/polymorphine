@@ -1,11 +1,11 @@
 #pragma once
 
 #include "LiveIntervalsGroups.h"
+#include "asm/x64/reg/RegMap.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
-#include "lir/x64/asm/GPVRegMap.h"
 #include "lir/x64/instruction/Matcher.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/OperandMatcher.h"
@@ -23,6 +23,7 @@ private:
 
 public:
     void run() {
+        collect_fixed_regs();
         setup_fixed_reg_groups();
         setup_parallel_copy_groups();
         do_joining();
@@ -38,34 +39,50 @@ public:
     }
 
 private:
-    GPVRegMap<std::vector<LIRVal>> collect_fixed_regs() const {
-        GPVRegMap<std::vector<LIRVal>> reg_to_lir_val;
+    void collect_fixed_regs() {
+        collect_argument_regs();
+        collect_fixed_regs_for_instructions();
+    }
+
+    void collect_argument_regs() {
         for (const auto& arg: m_data.args()) {
             const auto fixed_reg = arg.assigned_reg().to_gp_op();
-            auto [vec, _] = reg_to_lir_val.try_emplace(fixed_reg.value(), std::vector<LIRVal>{});
+            const auto as_gp_reg = fixed_reg.value().as_gp_reg();
+            if (!as_gp_reg.has_value()) {
+                continue;
+            }
+
+            auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
             vec->second.push_back(arg);
         }
+    }
 
+    void collect_fixed_regs_for_instructions() {
         for (auto& bb: m_data.basic_blocks()) {
             for (auto& inst: bb.instructions()) {
-                for (const auto& def: LIRVal::defs(&inst)) {
-                    const auto fixed_reg = def.assigned_reg().to_gp_op();
-                    if (!fixed_reg.has_value()) {
-                        continue;
-                    }
-
-                    auto [vec, _] = reg_to_lir_val.try_emplace(fixed_reg.value(), std::vector<LIRVal>{});
-                    vec->second.push_back(def);
-                }
+                collect_fixed_regs_for_instruction(inst);
             }
         }
+    }
 
-        return reg_to_lir_val;
+    void collect_fixed_regs_for_instruction(const LIRInstructionBase& inst) {
+        for (const auto& def: LIRVal::defs(&inst)) {
+            const auto fixed_reg = def.assigned_reg().to_gp_op();
+            if (!fixed_reg.has_value()) {
+                continue;
+            }
+            const auto as_gp_reg = fixed_reg.value().as_gp_reg();
+            if (!as_gp_reg.has_value()) {
+                continue;
+            }
+
+            auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+            vec->second.push_back(def);
+        }
     }
 
     void setup_fixed_reg_groups() {
-        auto reg_to_lir_val = collect_fixed_regs();
-        for (auto& [fixed_reg, lir_values]: reg_to_lir_val) {
+        for (auto& [fixed_reg, lir_values]: m_reg_to_lir_val) {
             add_group(create_live_intervals(lir_values), std::move(lir_values), fixed_reg);
         }
     }
@@ -215,6 +232,7 @@ private:
     const LiveIntervals& m_intervals;
     const LIRFuncData& m_data;
 
+    aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val;
     std::deque<Group> m_groups;
     LIRValMap<LiveIntervalsGroups::group_iterator> m_group_mapping{};
 };

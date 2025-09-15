@@ -40,21 +40,21 @@ private:
     }
 
     void emit(const aasm::Address &out, const std::int64_t in1, aasm::GPReg in2) override {
-        const auto offset = static_cast<std::int64_t>(out.offset()) + m_size * in1;
+        const auto offset = static_cast<std::int64_t>(m_size) * in1;
         assertion(std::in_range<std::int32_t>(offset), "Offset out of range for store on stack");
-        m_as.mov(m_size, in2, aasm::Address(out.base().value(), offset));
+        m_as.mov(m_size, in2, out.add_offset(offset));
     }
 
     void emit(const aasm::Address &out, const std::int64_t in1, const std::int64_t in2) override {
-        const auto offset = static_cast<std::int64_t>(out.offset()) + m_size * in1;
+        const auto offset = static_cast<std::int64_t>(m_size) * in1;
         assertion(std::in_range<std::int32_t>(offset), "Offset out of range for store on stack");
 
         if (std::in_range<std::int32_t>(in2)) {
-            m_as.mov(m_size, static_cast<std::int32_t>(in2), aasm::Address(out.base().value(), offset));
+            m_as.mov(m_size, static_cast<std::int32_t>(in2), out.add_offset(offset));
 
         } else {
             m_as.copy(m_size, in2, m_temporal_regs.gp_temp1());
-            m_as.mov(m_size, m_temporal_regs.gp_temp1(), aasm::Address(out.base().value(), offset));
+            m_as.mov(m_size, m_temporal_regs.gp_temp1(), out.add_offset(offset));
         }
     }
 

@@ -25,16 +25,16 @@ protected:
 };
 
 template<typename T>
-concept GlobalConstantVarians = std::integral<T> ||
-    std::is_same_v<T, double> ||
-    std::is_same_v<T, std::string>;
+concept GlobalConstantVarians = std::convertible_to<T, std::int64_t> ||
+    std::convertible_to<T, double> ||
+    std::convertible_to<T, std::string_view>;
 
 class GlobalConstant final: public GlobalSymbol {
 public:
     template<typename T>
-    explicit GlobalConstant(std::string&& name, const NonTrivialType* type, T value) noexcept:
+    explicit GlobalConstant(std::string&& name, const NonTrivialType* type, T&& value) noexcept:
         GlobalSymbol(std::move(name), type),
-        m_value(value) {}
+        m_value(std::forward<T>(value)) {}
 
     template<typename Fn>
     decltype(auto) visit(Fn&& vis) const {

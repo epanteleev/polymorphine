@@ -11,6 +11,7 @@
 #include "lir/x64/asm/emitters/DivIntEmit.h"
 #include "lir/x64/asm/emitters/DivUIntEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/StoreGPEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
 namespace details {
@@ -20,6 +21,10 @@ namespace details {
         }
         if (const auto cst = val.as_cst(); cst.has_value()) {
             return cst.value().value();
+        }
+        if (const auto addr = val.as_slot(); addr.has_value()) {
+            // Doesn't matter exact address, we just need a valid address type.
+            return aasm::Address(aasm::rax);
         }
 
         die("Invalid LIROperand");
@@ -75,5 +80,13 @@ namespace details {
         EmptyEmitter empty_emitter;
         StoreOnStackGPEmit emitter(m_temp_counter, empty_emitter, value.size());
         emitter.apply(out_addr.value(), index_op, value_op);
+    }
+
+    void AllocTemporalRegs::store_i(const LIRVal &pointer, const LIROperand &value) {
+        const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
+        const auto value_op = convert_to_gp_op(value);
+        EmptyEmitter empty_emitter;
+        StoreGPEmit emitter(m_temp_counter, empty_emitter, value.size());
+        emitter.apply(pointer_reg, value_op);
     }
 }

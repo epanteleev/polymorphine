@@ -14,10 +14,10 @@ namespace aasm {
             static constexpr std::uint8_t MODRM = 0x05; // ModR/M byte for direct addressing
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
             buffer.emit32(INT32_MAX);
-            switch (m_symbol->linkage()) {
-                case Linkage::EXTERNAL: return Relocation(RelType::X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
-                case Linkage::INTERNAL: return Relocation(RelType::X86_64_PC32, buffer.size(), m_displacement, m_symbol);
-                default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(m_symbol->linkage()));
+            switch (m_symbol->bind()) {
+                case BindAttribute::EXTERNAL: return Relocation(RelType::X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
+                case BindAttribute::INTERNAL: return Relocation(RelType::X86_64_PC32, buffer.size(), m_displacement, m_symbol);
+                default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(m_symbol->bind()));
             }
         }
 
@@ -35,18 +35,13 @@ namespace aasm {
         }
 
         [[nodiscard]]
-        std::size_t hash() const noexcept {
-            return std::hash<const Symbol*>()(m_symbol) ^ std::hash<std::int32_t>()(m_displacement);
-        }
-
-        [[nodiscard]]
         std::int32_t offset() const noexcept {
             return m_displacement;
         }
 
         [[nodiscard]]
         AddressLiteral add_offset(const std::int32_t offset) const noexcept {
-            const auto new_offset = static_cast<std::int64_t>(offset) + offset;
+            const auto new_offset = static_cast<std::int64_t>(offset) + m_displacement;
             return AddressLiteral(m_symbol, aasm::checked_cast<std::int32_t>(new_offset));
         }
 

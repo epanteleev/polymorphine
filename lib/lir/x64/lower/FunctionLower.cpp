@@ -267,7 +267,7 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
 }
 
 LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
-    const auto vis = [&]<typename U>(const U& glob) -> Slot* {
+    const auto vis = [&]<typename U>(const U& glob) -> NamedSlot* {
         if constexpr (std::is_same_v<U, double>) {
             unimplemented();
 
@@ -396,7 +396,7 @@ void FunctionLower::accept(Call *inst) {
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto->ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->linkage()));
+    const auto call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->bind()));
     cont->ins(LIRAdjustStack::up_stack());
     const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
     memorize(inst, copy_ret->def(0));
@@ -666,7 +666,7 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
     if (arg.isa(any_stack_alloc())) {
         // Escaped stack allocation. We need to load stack address.
         const auto arg_vreg = get_lir_operand(arg);
-        const auto lea = m_bb->ins(LIRProducerInstruction::load_stack_addr(type->size_of(), arg_vreg.as_vreg().value(), LirCst::imm64(0UL)));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), arg_vreg.as_vreg().value(), LirCst::imm64(0UL)));
         return lea->def(0);
     }
 
@@ -676,11 +676,17 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
         const auto src_vreg = get_lir_val(src);
         const auto idx_lir_op = get_lir_operand(idx);
         if (src.isa(any_stack_alloc())) {
-            const auto lea_stack_val = m_bb->ins(LIRProducerInstruction::load_stack_addr(type->size_of(), src_vreg, idx_lir_op));
+            const auto lea_stack_val = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
             return lea_stack_val->def(0);
         }
 
         const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
+        return lea->def(0);
+    }
+
+    if (arg.isa(g_constant())) {
+        const auto slot = lower_global_cst(*arg.get<GlobalConstant*>());
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), slot, LirCst::imm64(0L)));
         return lea->def(0);
     }
 

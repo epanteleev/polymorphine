@@ -14,7 +14,7 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         constexpr void emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMOV_RR = 0x0F;
-            emit_op_prologue(buffer, m_size, m_dst, m_src);
+            EncodeUtils::emit_op_prologue(buffer, m_size, m_dst, m_src);
             switch (m_size) {
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
@@ -50,7 +50,7 @@ namespace aasm::details {
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t CMOV_RM = 0x0F;
-            emit_op_prologue(buffer, m_size, m_dst, m_src);
+            EncodeUtils::emit_op_prologue(buffer, m_size, m_dst, m_src);
             switch (m_size) {
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];

@@ -120,7 +120,6 @@ private:
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
         void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
         void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
-        void load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {}
         void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
         void jmp(const LIRBlock *bb) override {}
 
@@ -132,7 +131,7 @@ private:
             return addr;
         }
 
-        void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionVisibility linkage) override {
+        void call(const LIRVal &out, std::string_view name, const std::span<LIRVal const> args, FunctionBind linkage) override {
             out.assign_reg(aasm::rax);
             std::int32_t caller_arg_area_size{};
             std::size_t idx{};

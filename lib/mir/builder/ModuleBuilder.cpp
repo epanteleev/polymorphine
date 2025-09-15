@@ -5,11 +5,11 @@
 
 #include <ranges>
 
-const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, std::vector<AttributeSet> &&attributes, const FunctionVisibility visibility) {
+const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, std::vector<AttributeSet> &&attributes, const FunctionBind visibility) {
     return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::move(attributes), visibility).first;
 }
 
-const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, const FunctionVisibility visibility) {
+const FunctionPrototype *ModuleBuilder::add_function_prototype(const Type *ret_type, std::vector<const NonTrivialType *> &&arg_types, std::string &&name, const FunctionBind visibility) {
     return m_prototypes.insert(ret_type, std::move(arg_types), std::move(name), std::vector(arg_types.size(), AttributeSet{}), visibility).first;
 }
 

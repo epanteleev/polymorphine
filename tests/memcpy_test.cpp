@@ -6,7 +6,7 @@
 
 static Module memcpy_test_module() {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), PointerType::ptr(), UnsignedIntegerType::u64()}, "memcpy_test", FunctionVisibility::DEFAULT);
+    const auto prototype = builder.add_function_prototype(VoidType::type(), {PointerType::ptr(), PointerType::ptr(), UnsignedIntegerType::u64()}, "memcpy_test", FunctionBind::DEFAULT);
 
     auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();

@@ -8,7 +8,7 @@
 static Module min_max_phi(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
@@ -30,7 +30,7 @@ static Module min_max_phi(const IntegerType* ty) {
         data.ret(phi);
     }
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);
@@ -75,7 +75,7 @@ TEST(SanityCheck2, min_max_phi_u8) {
 static Module xor_values(const IntegerType* ty) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "xor", FunctionVisibility::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "xor", FunctionBind::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto arg0 = data.arg(0);
         const auto arg1 = data.arg(1);

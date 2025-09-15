@@ -42,7 +42,7 @@ JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::si
     std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols_;
     external_symbols_.reserve(external_symbols.size());
     for (const auto& [name, addr] : external_symbols) {
-        const auto [symbol, _] = obj.symbol_table()->add(name, aasm::Linkage::INTERNAL);
+        const auto [symbol, _] = obj.symbol_table()->add(name, aasm::BindAttribute::INTERNAL);
         external_symbols_[symbol] = addr;
     }
 

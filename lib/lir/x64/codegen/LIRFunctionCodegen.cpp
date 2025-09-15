@@ -31,7 +31,6 @@
 #include "lir/x64/asm/emitters/DivUIntEmit.h"
 #include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
-#include "lir/x64/asm/emitters/LoadStackAddrGPEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 #include "lir/x64/operand/LIRVal.h"
@@ -65,12 +64,12 @@ void LIRFunctionCodegen::traverse_instructions() {
     }
 }
 
-static aasm::Linkage cvt_linkage(const FunctionVisibility linkage) noexcept {
-    switch (linkage) {
-        case FunctionVisibility::DEFAULT:  return aasm::Linkage::DEFAULT;
-        case FunctionVisibility::INTERNAL: return aasm::Linkage::INTERNAL;
-        case FunctionVisibility::EXTERN:   return aasm::Linkage::EXTERNAL;
-        default: die("Unsupported LIRLinkage type");
+static aasm::BindAttribute cvt_bind_attribute(const FunctionBind bind) noexcept {
+    switch (bind) {
+        case FunctionBind::DEFAULT:  return aasm::BindAttribute::DEFAULT;
+        case FunctionBind::INTERNAL: return aasm::BindAttribute::INTERNAL;
+        case FunctionBind::EXTERN:   return aasm::BindAttribute::EXTERNAL;
+        default: die("Unsupported bind type");
     }
 }
 
@@ -82,7 +81,7 @@ GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
         return cst.value().value();
     }
     if (const auto slot = val.as_slot(); slot.has_value()) {
-        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::Linkage::INTERNAL);
+        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
         return aasm::Address(symbol);
     }
 
@@ -208,21 +207,11 @@ void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIRVal &poin
     emitter.apply(out_reg, index_op, pointer_addr.value());
 }
 
-void LIRFunctionCodegen::load_stack_addr_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
-    const auto out_reg = out.assigned_reg().to_gp_op().value();
-    const auto index_op = convert_to_gp_op(index);
-    const auto pointer_op = pointer.assigned_reg().to_gp_op().value();
-    const auto pointer_addr = pointer_op.as_address();
-    assertion(pointer_addr.has_value(), "Invalid LIRVal for load_stack_addr_i");
-
-    LoadStackAddrGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
-    emitter.apply(out_reg, index_op, pointer_addr.value());
-}
-
 void LIRFunctionCodegen::store_i(const LIRVal &pointer, const LIROperand &value) {
     const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
     const auto value_op = convert_to_gp_op(value);
-    StoreGPEmit::apply(m_as, value.size(), pointer_reg, value_op);
+    StoreGPEmit emitter(m_current_inst->temporal_regs(), m_as, value.size());
+    emitter.apply(pointer_reg, value_op);
 }
 
 void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) {
@@ -294,7 +283,7 @@ void LIRFunctionCodegen::lea_i(const LIRVal &out, const LIROperand &pointer, con
     const auto index_op = convert_to_gp_op(index);
     const auto pointer_op = convert_to_gp_op(pointer);
 
-    LeaStackAddrGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
+    LeaAddrGPEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
     emitter.apply(out_reg, index_op, pointer_op.as_address().value());
 }
 
@@ -332,8 +321,8 @@ void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
     emitter.emit(out_reg, pointer_reg);
 }
 
-void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionVisibility linkage) {
-    const auto [symbol, _] = m_symbol_tab.add(name, cvt_linkage(linkage));
+void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) {
+    const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
     m_as.call(symbol);
 }
 

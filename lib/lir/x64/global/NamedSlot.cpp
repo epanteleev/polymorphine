@@ -1,6 +1,6 @@
 #include <ostream>
 
-#include "Slot.h"
+#include "NamedSlot.h"
 
 #include <utility>
 
@@ -15,7 +15,7 @@ std::ostream & operator<<(std::ostream &os, const SlotType &type) {
     }
 }
 
-std::uint8_t Slot::size() const noexcept {
+std::uint8_t NamedSlot::size() const noexcept {
     switch (m_type) {
         case SlotType::Byte:  return 1;
         case SlotType::Word:  return 2;
@@ -26,7 +26,7 @@ std::uint8_t Slot::size() const noexcept {
     }
 }
 
-void Slot::print_description(std::ostream &os) const {
+void NamedSlot::print_description(std::ostream &os) const {
     const auto vis = [&]<typename T>(const T& value) {
         os << value;
     };
@@ -36,6 +36,6 @@ void Slot::print_description(std::ostream &os) const {
     os << std::endl;
 }
 
-std::ostream &operator<<(std::ostream &os, const Slot &slot) {
+std::ostream &operator<<(std::ostream &os, const NamedSlot &slot) {
     return os << '$' << slot.m_name;
 }

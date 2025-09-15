@@ -19,6 +19,7 @@ enum class Error {
     NotFoundError,
     AlreadyExists,
     FunctionExistsError,
+    InvalidArgument,
 };
 
 
