@@ -12,7 +12,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,6 +22,9 @@ jobs:
         cpp_compiler: [g++, clang++]
 
     container:
+      credentials:
+        password: ${{ secrets.GH_TOKEN }}
+        username: ${{ secrets.GH_ACTOR }}
       image: ghcr.io/epanteleev/ubuntu25.10-clang21:latest
       options: --user root:root
 
