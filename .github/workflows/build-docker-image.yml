@@ -23,7 +23,7 @@ jobs:
             context: .
             file: .devcontainer/Dockerfile
             push: true
-            tags: ${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
+            tags: ghcr.io/${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
             build-args: |
               BUILD_DATE=${{ github.event.head_commit.timestamp }}
               VCS_REF=${{ github.sha }}
