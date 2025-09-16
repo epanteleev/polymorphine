@@ -4,10 +4,16 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
+  workflow_run:
+    workflows: ["Build Docker Image"]
+    branches: [main]
+    types:
+      - completed
+      - requested
+      
 jobs:
   build:
-    needs: ['Build Docker Image']
+
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
