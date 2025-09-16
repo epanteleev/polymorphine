@@ -16,13 +16,15 @@ jobs:
     name: Build and Test (${{ matrix.os }}, ${{ matrix.build_type }}, ${{ matrix.c_compiler }}/\${{ matrix.cpp_compiler }})
     runs-on: ${{ matrix.os }}
     container:
-      options: --user root
+      options:
+        --user root
+        -w ${{ github.workspace }}
       credentials:
         password: ${{ secrets.GH_TOKEN }}
         username: ${{ secrets.GH_ACTOR }}
       image: ghcr.io/epanteleev/ubuntu25.10-clang21:latest
       volumes:
-        - ${{ github.workspace }}:/github/workspace
+        - ${{ github.workspace }}:${{ github.workspace }}
 
     strategy:
       fail-fast: false
@@ -34,7 +36,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Instance information
         shell: bash
         run: >
