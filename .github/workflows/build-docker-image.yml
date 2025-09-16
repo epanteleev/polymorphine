@@ -25,7 +25,7 @@ jobs:
             context: .
             file: .devcontainer/Dockerfile
             push: true
-            tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ubuntu25.10-clang21:latest
+            tags: ${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
             build-args: |
               BUILD_DATE=${{ github.event.head_commit.timestamp }}
               VCS_REF=${{ github.sha }}
