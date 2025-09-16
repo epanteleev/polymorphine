@@ -16,7 +16,7 @@ jobs:
     name: Build and Test (${{ matrix.os }}, ${{ matrix.build_type }}, ${{ matrix.c_compiler }}/\${{ matrix.cpp_compiler }})
     runs-on: ${{ matrix.os }}
     container:
-      options: --user root:root
+      options: --user root
       credentials:
         password: ${{ secrets.GH_TOKEN }}
         username: ${{ secrets.GH_ACTOR }}
