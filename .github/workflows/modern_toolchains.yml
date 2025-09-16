@@ -5,15 +5,10 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  workflow_run:
-    types:
-      - completed
-      - requested
-    workflows:
-        - Build Docker Image
 
 jobs:
   build:
+    needs: ['Build Docker Image']
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -24,8 +19,8 @@ jobs:
         cpp_compiler: [g++, clang++]
 
     container:
-        image: ghcr.io/${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
-        options: --user root:root
+      image: ghcr.io/${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
+      options: --user root:root
 
     steps:
       - uses: actions/checkout@v4
