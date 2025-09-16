@@ -1,0 +1,62 @@
+name: Clang21 and GCC15 on Ubuntu25.10
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_run:
+    types:
+      - completed
+      - requested
+    workflows:
+        - Build Docker Image
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Coverage, Release, Asan, Usan]
+        c_compiler: [gcc, clang]
+        cpp_compiler: [g++, clang++]
+
+    container:
+        image: ghcr.io/${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
+        options: --user root:root
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instance information
+        shell: bash
+        run: >
+          echo -e "CORES: $(nproc)" &&
+          echo -e "CPU: $(lscpu | grep 'Model name' | sed 's/Model name:\s*//')" &&
+          echo -e "RAM: $(free -h | grep 'Mem:' | awk '{print $2}')" &&
+          echo -e "OS: $(uname -s)" &&
+          echo -e "OS Version: $(uname -r)"
+
+      - name: Setup reused build output directory
+        id: strings
+        shell: bash
+        run: echo "build-output-dir=build/${{ matrix.os }}/${{ matrix.build_type }}" >> $GITHUB_OUTPUT
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel $(nproc)
+
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        env:
+          CTEST_EXTRA_COMMAND_OPTIONS: ${{ matrix.build_type == 'Coverage' && '-T Test -T coverage' || '' }}
+        run: 'ctest --output-on-failure --parallel $(nproc) --build-config ${{ matrix.build_type }} ${CTEST_EXTRA_COMMAND_OPTIONS}'
