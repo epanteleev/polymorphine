@@ -1,5 +1,4 @@
 name: Clang21 and GCC15 on Ubuntu25.10
-
 on:
   push:
     branches: [ "master" ]
@@ -19,7 +18,7 @@ jobs:
         cpp_compiler: [g++, clang++]
 
     container:
-      image: ghcr.io/${{ secrets.GH_ACTOR }}/ubuntu25.10-clang21:latest
+      image: ghcr.io/epanteleev/ubuntu25.10-clang21:latest
       options: --user root:root
 
     steps:
