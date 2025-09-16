@@ -30,9 +30,34 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        build_type: [Coverage, Release, Asan, Usan]
+        build_type: [Release, Asan, Usan]
         c_compiler: [gcc, clang]
         cpp_compiler: [g++, clang++]
+        include:
+          - os: ubuntu-latest
+            build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+          - os: ubuntu-latest
+            build_type: Asan
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            build_type: Asan
+            c_compiler: clang
+            cpp_compiler: clang++
+          - os: ubuntu-latest
+            build_type: Usan
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            build_type: Usan
+            c_compiler: clang
+            cpp_compiler: clang++
 
     steps:
       - uses: actions/checkout@v4
