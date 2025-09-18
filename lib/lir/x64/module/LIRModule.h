@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include "LIRFuncData.h"
-#include "lir/x64/global/GlobalData.h"
 
 class LIRModule final {
 public:

@@ -6,7 +6,7 @@
 
 #include "MasmEmitter.h"
 #include "asm/symbol/SymbolTable.h"
-#include "lir/x64/global/NamedSlot.h"
+#include "global/NamedSlot.h"
 
 class AsmModule final {
 public:

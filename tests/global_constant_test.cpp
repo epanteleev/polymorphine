@@ -199,6 +199,30 @@ TEST(GlobalConstant, load_global_constant_inner_struct) {
     ASSERT_EQ(result->c, 168);
 }
 
+static Module get_pointer_to_struct_field() {
+    ModuleBuilder builder;
+    {
+        const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto constant = builder.add_constant("my_global_const", struct_type, Initializer{1L, 2L}).value();
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "get_pointer_to_struct_field", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto field_ptr = data.gfp(struct_type, constant, 1);
+        data.ret(field_ptr);
+    }
+    return builder.build();
+}
+
+TEST(GlobalConstant, get_pointer_to_struct_field) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"get_pointer_to_struct_field", 2},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, get_pointer_to_struct_field(), asm_size, true);
+    const auto fn = buffer.code_start_as<std::int64_t*()>("get_pointer_to_struct_field").value();
+    const auto result = fn();
+    ASSERT_EQ(*result, 2);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

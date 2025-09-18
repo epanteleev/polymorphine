@@ -3,7 +3,6 @@
 #include "OpCodeBuffer.h"
 #include "asm/x64/SizeEvaluator.h"
 #include "utility/ArithmeticUtils.h"
-#include "asm/x64/AssembleGlobals.h"
 
 static constexpr auto PAGE_SIZE = 4096;
 
@@ -55,9 +54,8 @@ private:
 
     void assemble_global_slots() {
         for (const auto& [symbol, slot]: m_module.globals()) {
-            aasm::details::AssembleGlobals globals(jit_assembler);
             const auto start = jit_assembler.size();
-            globals.emit(slot);
+            slot.root().emit(jit_assembler);
             offset_table.emplace(symbol, JitDataChunk(start, jit_assembler.size() - start));
         }
     }
@@ -80,7 +78,7 @@ private:
         if (external == m_plt_table.end()) {
             die("PLT relocation for label '{}' not found in external symbols", reloc.symbol_name());
         }
-        const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + static_cast<std::int64_t>(m_code_buffer_offset));
+        const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + static_cast<std::int64_t>(m_code_buffer_offset)) + reloc.displacement();
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit PLT patching", offset);
         }
@@ -94,7 +92,7 @@ private:
         }
 
         const auto& [start, _] = chunk->second;
-        const auto offset = static_cast<std::int64_t>(start) - reloc.offset();
+        const auto offset = static_cast<std::int64_t>(start) - reloc.offset() + reloc.displacement();
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit patching", offset);
         }

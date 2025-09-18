@@ -50,9 +50,11 @@ namespace aasm {
     template<std::integral To, std::integral From >
     constexpr static To checked_cast(const From & from) {
         To result = To( from );
+#ifndef NDEBUG
         From original{};
         std::memcpy(&original, &result, sizeof(To));
         assertion(std::in_range<To>(from) || std::memcmp(&original, &from, sizeof(From)) == 0, "Checked cast failed: {} cannot be safely converted. Result is {}", from, result);
+#endif
         return result;
     }
 

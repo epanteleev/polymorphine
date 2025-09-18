@@ -505,6 +505,14 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L), fixed_reg));
         return lea->def(0);
     }
+    if (val.isa(field_access())) {
+        const auto gep = dynamic_cast<FieldAccess*>(val.get<ValueInstruction*>());
+        const auto [src, idx] = try_fold_field_access(gep);
+        const auto src_vreg = get_lir_operand(src);
+        const auto idx_lir_op = get_lir_operand(idx);
+        const auto load = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), src_vreg, idx_lir_op, fixed_reg));
+        return load->def(0);
+    }
 
     const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val), fixed_reg));
     return copy->def(0);
@@ -768,13 +776,8 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
     if (arg.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(arg.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
-        const auto src_vreg = get_lir_val(src);
+        const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        if (src.isa(any_stack_alloc())) {
-            const auto lea_stack_val = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
-            return lea_stack_val->def(0);
-        }
-
         const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
         return lea->def(0);
     }

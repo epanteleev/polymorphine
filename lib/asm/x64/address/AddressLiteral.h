@@ -51,6 +51,6 @@ namespace aasm {
     };
 
     inline std::ostream &operator<<(std::ostream &os, const AddressLiteral &address) {
-        return os << address.m_symbol->name();
+        return os << '$' << address.m_symbol->name() << (address.m_displacement >= 0 ? "+" : "") << address.m_displacement;
     }
 }

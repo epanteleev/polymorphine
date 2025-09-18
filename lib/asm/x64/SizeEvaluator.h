@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-#include "AssembleGlobals.h"
-
 namespace aasm {
     class SizeEvaluator final {
     public:
@@ -37,10 +35,7 @@ namespace aasm {
             }
 
             for (const auto& slot: masm.globals() | std::views::values) {
-                SizeEvaluator evaluator;
-                details::AssembleGlobals globals(evaluator);
-                globals.emit(slot);
-                acc += evaluator.size();
+                acc += emit(slot.root());
             }
 
             return acc;

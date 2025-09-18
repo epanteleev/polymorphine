@@ -2,7 +2,7 @@
 
 #include "lir/x64/lir_frwd.h"
 #include "base/FunctionDataBase.h"
-#include "lir/x64/global/GlobalData.h"
+#include "lir/x64/asm/global/GlobalData.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
 

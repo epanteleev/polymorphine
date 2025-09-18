@@ -5,7 +5,7 @@
 
 #include "LIRCst.h"
 #include "LIRVal.h"
-#include "lir/x64/global/NamedSlot.h"
+#include "lir/x64/asm/global/NamedSlot.h"
 
 class LIROperand final {
 public:
