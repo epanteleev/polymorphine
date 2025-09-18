@@ -27,6 +27,6 @@ function(try_setup_coverage_options target)
     endif()
 endfunction()
 
-register_build_type(Asan "-fsanitize=address")
-register_build_type(Usan "-fsanitize=undefined")
+register_build_type(Asan "-fsanitize=address -DUSE_ASAN")
+register_build_type(Usan "-fsanitize=undefined -DUSE_USAN")
 register_build_type(Coverage "") # No specific flags for coverage, handled in try_setup_coverage_options

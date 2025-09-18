@@ -19,7 +19,7 @@ static Module ret_i32(const std::int32_t value) {
 TEST(SanityCheck, ret_i32) {
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
         const auto buffer = jit_compile_and_assembly(ret_i32(i));
-        const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret_one").value());
+        const auto fn = buffer.code_start_as<std::int32_t()>("ret_one").value();
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
     }
@@ -39,7 +39,7 @@ static Module ret_i64(const std::int64_t value) {
 TEST(SanityCheck, ret_i64) {
     for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
         const auto buffer = jit_compile_and_assembly(ret_i64(i));
-        const auto fn = reinterpret_cast<long(*)()>(buffer.code_start("ret_one").value());
+        const auto fn = buffer.code_start_as<std::int64_t()>("ret_one").value();
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
     }
@@ -66,8 +66,8 @@ static Module ret_i8_u8(const std::int8_t value) {
 TEST(SanityCheck, ret_i8_u8) {
     for (const auto i: {0, 1, -1, 42, -42, 100, -100, INT8_MAX, INT8_MIN}) {
         const auto buffer = jit_compile_and_assembly(ret_i8_u8(static_cast<std::int8_t>(i)));
-        const auto fn_i8 = reinterpret_cast<std::int8_t(*)()>(buffer.code_start("ret_i8").value());
-        const auto fn_u8 = reinterpret_cast<std::uint8_t(*)()>(buffer.code_start("ret_u8").value());
+        const auto fn_i8 = buffer.code_start_as<std::int8_t()>("ret_i8").value();
+        const auto fn_u8 = buffer.code_start_as<std::uint8_t()>("ret_u8").value();
         const auto res_i8 = fn_i8();
         const auto res_u8 = fn_u8();
         ASSERT_EQ(res_i8, i) << "Failed for i8 value: " << i;
@@ -88,7 +88,7 @@ static Module ret_i32_arg() {
 
 TEST(SanityCheck, ret_i32_arg) {
     const auto buffer = jit_compile_and_assembly(ret_i32_arg());
-    const auto fn = reinterpret_cast<int(*)(int)>(buffer.code_start("ret_i32").value());
+    const auto fn = buffer.code_start_as<int(int)>("ret_i32").value();
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
         const auto res = fn(i);
         ASSERT_EQ(res, i) << "Failed for value: " << i;
@@ -110,7 +110,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
 
 TEST(SanityCheck, add_i32_args) {
     const auto buffer = jit_compile_and_assembly(add_i32_args(SignedIntegerType::i32()), true);
-    const auto fn = reinterpret_cast<int(*)(int, int)>(buffer.code_start("add").value());
+    const auto fn = buffer.code_start_as<int(int, int)>("add").value();
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
     for (const auto i: values) {
@@ -123,7 +123,7 @@ TEST(SanityCheck, add_i32_args) {
 
 TEST(SanityCheck, add_i64_args) {
     const auto buffer = jit_compile_and_assembly(add_i32_args(SignedIntegerType::i64()));
-    const auto fn = reinterpret_cast<long(*)(long, long)>(buffer.code_start("add").value());
+    const auto fn = buffer.code_start_as<long(long, long)>("add").value();
 
     std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
     for (const auto i: values) {
@@ -151,7 +151,7 @@ static Module branch() {
 TEST(SanityCheck, branch1) {
     const auto buffer = jit_compile_and_assembly(branch(), true);
     std::cout << buffer << std::endl;
-    const auto fn = reinterpret_cast<int(*)()>(buffer.code_start("ret").value());
+    const auto fn = buffer.code_start_as<int()>("ret").value();
     const auto res = fn();
     ASSERT_EQ(res, 10) << "Failed for value: " << 0;
 }
@@ -209,12 +209,12 @@ TEST(SanityCheck, is_i32_predicate) {
 
     for (const auto j: values) {
         const auto buffer0 = jit_compile_and_assembly(is_predicate(SignedIntegerType::i32(), Value::i32(j)));
-        const auto is_neg = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_neg").value());
-        const auto is_le = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_le").value());
-        const auto is_gt = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_gt").value());
-        const auto is_eq = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_eq").value());
-        const auto is_ne = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_ne").value());
-        const auto is_ge = reinterpret_cast<std::int8_t(*)(int)>(buffer0.code_start("is_ge").value());
+        const auto is_neg = buffer0.code_start_as<std::int8_t(int)>("is_neg").value();
+        const auto is_le = buffer0.code_start_as<std::int8_t(int)>("is_le").value();
+        const auto is_gt = buffer0.code_start_as<std::int8_t(int)>("is_gt").value();
+        const auto is_eq = buffer0.code_start_as<std::int8_t(int)>("is_eq").value();
+        const auto is_ne = buffer0.code_start_as<std::int8_t(int)>("is_ne").value();
+        const auto is_ge = buffer0.code_start_as<std::int8_t(int)>("is_ge").value();
 
         for (const auto i: values) {
             const auto res = is_neg(i);

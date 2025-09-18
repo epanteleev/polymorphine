@@ -171,7 +171,7 @@ private:
         allocate_temporal_registers(inst_range);
     }
 
-    void finalize_prologue_epilogue() {
+    void finalize_prologue_epilogue() const {
         const auto prologue = m_obj_func_data.prologue();
         const auto epilogue = m_obj_func_data.epilogue();
         for (const auto reg: m_used_callee_saved_regs) {

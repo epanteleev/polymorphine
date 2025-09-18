@@ -10,6 +10,27 @@
 #include "asm/symbol/SymbolTable.h"
 #include "lir/x64/asm/AsmModule.h"
 #include "utility/Error.h"
+#include "utility/Sanitizer.h"
+
+template<typename T>
+requires std::is_function_v<T>
+class JitFunctionFunctor {
+public:
+    explicit JitFunctionFunctor(T* fn) noexcept:
+        m_fn(fn) {}
+
+    template<typename... Args>
+    no_usan decltype(auto) operator()(Args... args) const noexcept {
+        // Usan: clang's undefined behavior sanitizeris checking the function pointer call here.
+        // SIGSEGV is raised when calling the function pointer.
+        assert(m_fn != nullptr);
+        return m_fn(std::forward<Args>(args)...);
+    }
+
+private:
+    T* m_fn;
+};
+
 
 class JitModule final {
 public:
@@ -24,6 +45,27 @@ public:
     }
 
     /**
+     * Finds the start of the code section for a given function name and casts it to a specific type.
+     * @tparam T the type to cast the code section to.
+     * @return pointer to the code section cast to type T if found, otherwise an error.
+     */
+    template<typename T>
+    requires std::is_function_v<T>
+    [[nodiscard]]
+    std::expected<JitFunctionFunctor<T>, Error> code_start_as(const std::string& name) const {
+        if (const auto code = code_start(name); code.has_value()) {
+            return JitFunctionFunctor<T>(reinterpret_cast<T*>(code.value()));
+        }
+
+        return std::unexpected(Error::NotFoundError);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const JitModule& blob);
+
+    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const AsmModule& module);
+
+private:
+    /**
      * Finds the start of the code section for a given function name.
      * @return start address of the code section if found, otherwise an error.
      */
@@ -37,27 +79,6 @@ public:
         return m_code_blob.code_start(sym.value());
     }
 
-    /**
-     * Finds the start of the code section for a given function name and casts it to a specific type.
-     * @tparam T the type to cast the code section to.
-     * @return pointer to the code section cast to type T if found, otherwise an error.
-     */
-    template<typename T>
-    requires std::is_function_v<T>
-    [[nodiscard]]
-    std::expected<T*, Error> code_start_as(const std::string& name) const {
-        if (const auto code = code_start(name); code.has_value()) {
-            return reinterpret_cast<T*>(code.value());
-        }
-
-        return std::unexpected(Error::NotFoundError);
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const JitModule& blob);
-
-    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const AsmModule& module);
-
-private:
     std::shared_ptr<aasm::SymbolTable> m_symbol_table;
     std::span<std::uint8_t> m_total_mem;
     JitDataBlob m_code_blob;
