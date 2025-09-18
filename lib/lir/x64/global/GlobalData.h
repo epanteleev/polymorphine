@@ -25,10 +25,9 @@ public:
         return &it->second;
     }
 
-    template<typename T>
     [[nodiscard]]
-    std::expected<NamedSlot*, Error> add_slot(std::string_view name, SlotType type, T&& value) {
-        const auto [it, inserted] = m_slots.emplace(name, NamedSlot(std::forward<T>(value), std::string(name), type));
+    std::expected<NamedSlot*, Error> add_slot(std::string_view name, NamedSlot&& value) {
+        const auto [it, inserted] = m_slots.emplace(name, std::move(value));
         if (!inserted) {
             return std::unexpected(Error::AlreadyExists);
         }

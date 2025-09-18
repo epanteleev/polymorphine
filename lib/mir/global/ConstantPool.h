@@ -23,14 +23,16 @@ public:
         return std::unexpected(Error::NotFoundError);
     }
 
-    template<std::convertible_to<std::int64_t> T>
     [[nodiscard]]
-    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const IntegerType* type, T value) {
-        return add_constant_internal(name, type, std::forward<T>(value));
-    }
+    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) {
+        std::string key(name);
+        const auto [it, inserted] = m_constants.emplace(std::move(key), GlobalConstant(std::string(name), type, std::move(value)));
+        if (!inserted) {
+            return std::unexpected(Error::AlreadyExists);
+        }
 
-    [[nodiscard]]
-    std::expected<const GlobalConstant*, Error> add_constant(std::string_view name, const ArrayType* type, std::string_view value);
+        return &it->second;
+    }
 
     [[nodiscard]]
     bool empty() const noexcept {
@@ -54,17 +56,7 @@ public:
     }
 
 private:
-    template <typename T>
-    [[nodiscard]]
-    std::expected<const GlobalConstant*, Error> add_constant_internal(const std::string_view name, const NonTrivialType* type, T&& value) {
-        std::string key(name);
-        const auto [it, inserted] = m_constants.emplace(std::move(key), GlobalConstant(std::string(name), type, std::forward<T>(value)));
-        if (!inserted) {
-            return std::unexpected(Error::AlreadyExists);
-        }
 
-        return &it->second;
-    }
 
     std::unordered_map<std::string, GlobalConstant> m_constants;
 };

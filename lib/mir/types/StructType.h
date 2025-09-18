@@ -5,11 +5,11 @@
 #include <span>
 #include <iosfwd>
 
-#include "NonTrivialType.h"
+#include "AggregateType.h"
 #include "utility/ArithmeticUtils.h"
 
 
-class StructType final: public NonTrivialType {
+class StructType final: public AggregateType {
 public:
     explicit StructType(const std::string_view name, std::vector<const NonTrivialType*>&& field_types, std::vector<std::size_t>&& m_offsets,
         const std::size_t size, const std::size_t alignment) noexcept:
@@ -49,7 +49,7 @@ public:
     }
 
     [[nodiscard]]
-    const NonTrivialType* field(const std::size_t index) const {
+    const NonTrivialType* type_by_index(const std::size_t index) const override {
         return m_field_types.at(index);
     }
 

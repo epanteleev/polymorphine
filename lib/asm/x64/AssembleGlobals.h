@@ -10,6 +10,11 @@ namespace aasm::details {
             m_buffer(buffer) {}
 
         constexpr void emit(const NamedSlot& slot) const {
+            emit(slot.root());
+        }
+
+    private:
+        constexpr void emit(const Slot& slot) const {
             const auto start = m_buffer.size();
             const auto vis = [&]<typename T>(const T& val) {
                 if constexpr (std::same_as<T, std::int64_t>) {
@@ -17,6 +22,9 @@ namespace aasm::details {
 
                 } else if constexpr (std::same_as<T, std::string>) {
                     assemble_slot_string(val);
+
+                } else if constexpr (std::same_as<T, std::vector<Slot>>) {
+                    for (const auto& s: val) emit(s);
 
                 } else {
                     static_assert(false);
@@ -27,7 +35,6 @@ namespace aasm::details {
             slot.visit(vis);
         }
 
-    private:
         constexpr void assemble_slot_imm(const SlotType type, const std::int64_t imm) const {
             switch (type) {
                 case SlotType::Byte: m_buffer.emit8(aasm::checked_cast<std::uint8_t>(imm)); break;

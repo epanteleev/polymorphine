@@ -46,10 +46,9 @@ public:
     [[nodiscard]]
     LIRAdjustStack* epilogue() const;
 
-    template<typename T>
     [[nodiscard]]
-    std::expected<NamedSlot*, Error> add_slot(const std::string_view name, const SlotType type, T&& value) {
-        return m_global_data.add_slot<T>(name, type, std::forward<T>(value));
+    std::expected<NamedSlot*, Error> add_slot(const std::string_view name, NamedSlot&& value) {
+        return m_global_data.add_slot(name, std::move(value));
     }
 
     [[nodiscard]]

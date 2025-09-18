@@ -2,10 +2,12 @@
 
 #include <cstdint>
 #include <string>
-#include <variant>
 #include <iosfwd>
+#include <utility>
 
+#include "Initializer.h"
 #include "mir/types/NonTrivialType.h"
+#include "utility/Error.h"
 
 class GlobalSymbol {
 public:
@@ -24,27 +26,25 @@ protected:
     const NonTrivialType* m_type;
 };
 
-template<typename T>
-concept GlobalConstantVarians = std::convertible_to<T, std::int64_t> ||
-    std::convertible_to<T, double> ||
-    std::convertible_to<T, std::string_view>;
 
 class GlobalConstant final: public GlobalSymbol {
 public:
-    template<typename T>
-    explicit GlobalConstant(std::string&& name, const NonTrivialType* type, T&& value) noexcept:
+    explicit GlobalConstant(std::string&& name, const NonTrivialType* type, Initializer&& value) noexcept:
         GlobalSymbol(std::move(name), type),
-        m_value(std::forward<T>(value)) {}
+        m_value(std::move(value)) {}
 
     template<typename Fn>
     decltype(auto) visit(Fn&& vis) const {
-        return std::visit(std::forward<Fn>(vis), m_value);
+        return m_value.visit(std::forward<Fn>(vis));
     }
 
     friend std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym);
 
     void print_description(std::ostream& os) const;
 
+    [[nodiscard]]
+    const Initializer& initializer() const noexcept { return m_value; }
+
 private:
-    std::variant<std::int64_t, double, std::string> m_value;
+    Initializer m_value;
 };

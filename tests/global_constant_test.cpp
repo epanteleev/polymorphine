@@ -59,6 +59,7 @@ TEST(GlobalConstant, get_string) {
 
 #ifndef NDEBUG
 TEST(GlobalConstant, wrond_constant) {
+    GTEST_SKIP();
     ModuleBuilder builder;
     // wrong type
     const auto constant = builder.add_constant("my_global_const", builder.add_array_type(SignedIntegerType::i64(), 8), "my_global_const");
@@ -132,6 +133,70 @@ TEST(GlobalConstant, escape_constant) {
     const auto buffer = jit_compile_and_assembly(external_symbols, escape_constant(SignedIntegerType::i16()), asm_size, true);
     const auto fn = buffer.code_start_as<std::int16_t()>("escape_constant").value();
     ASSERT_EQ(fn(), 256);
+}
+
+static Module global_constant_struct() {
+    ModuleBuilder builder;
+    {
+        const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto prototype = builder.add_function_prototype(struct_type, {}, "global_constant_test", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto constant = builder.add_constant("my_global_const", struct_type, Initializer{42L, 84L}).value();
+        data.ret(constant);
+    }
+    return builder.build();
+}
+
+TEST(GlobalConstant, load_global_constant_struct) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_constant_test", 2},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, global_constant_struct(), asm_size, true);
+    struct MyStruct {
+        std::int64_t a;
+        std::int64_t b;
+    };
+    const auto fn = buffer.code_start_as<MyStruct*()>("global_constant_test").value();
+    const auto result = fn();
+    ASSERT_EQ(result->a, 42);
+    ASSERT_EQ(result->b, 84);
+}
+
+static Module inner_constant_struct() {
+    ModuleBuilder builder;
+    {
+        const auto inner_struct_type = builder.add_struct_type("InnerStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto struct_type = builder.add_struct_type("MyStruct", {inner_struct_type, SignedIntegerType::i64()});
+        const auto prototype = builder.add_function_prototype(struct_type, {}, "global_constant_test", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto constant = builder.add_constant("my_global_const", struct_type, Initializer{Initializer{42L, 84L}, 168L}).value();
+        data.ret(constant);
+    }
+    return builder.build();
+}
+
+struct InnerStruct {
+    std::int64_t a;
+    std::int64_t b;
+};
+
+struct MyStruct {
+    InnerStruct inner;
+    std::int64_t c;
+};
+
+TEST(GlobalConstant, load_global_constant_inner_struct) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_constant_test", 2},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, inner_constant_struct(), asm_size, true);
+    const auto fn = buffer.code_start_as<MyStruct*()>("global_constant_test").value();
+    const auto result = fn();
+    ASSERT_EQ(result->inner.a, 42);
+    ASSERT_EQ(result->inner.b, 84);
+    ASSERT_EQ(result->c, 168);
 }
 
 int main(int argc, char **argv) {

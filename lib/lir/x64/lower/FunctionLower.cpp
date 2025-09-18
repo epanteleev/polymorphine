@@ -138,7 +138,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 static std::pair<Value, Value> try_fold_gfp_index(const GetFieldPtr* gfp_inst) noexcept {
     auto [pointer, offset] = try_fold_field_access_iter(gfp_inst);
 
-    const auto& field_type = gfp_inst->access_type()->field(gfp_inst->index());
+    const auto& field_type = gfp_inst->access_type()->type_by_index(gfp_inst->index());
     const auto index = offset / field_type->size_of();
     return {pointer, Value::i64(static_cast<std::int64_t>(index))};
 }
@@ -316,18 +316,36 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
     }
 }
 
-LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
-    const auto vis = [&]<typename U>(const U& glob) -> NamedSlot* {
+static Slot create_slot(const NonTrivialType* ty, const Initializer& global) {
+    const auto vis = [&]<typename U>(const U& glob) -> Slot {
         if constexpr (std::is_same_v<U, double>) {
             unimplemented();
 
         } else if constexpr (std::is_same_v<U, std::int64_t>) {
-            const auto slot_type = to_slot_type(global.content_type()->size_of());
-            return m_obj_function.add_slot(global.name(), slot_type.value(), glob).value();
+            const auto int_type = dynamic_cast<const IntegerType*>(ty);
+            assertion(int_type != nullptr, "Expected IntegerType for integer constant");
+            const auto slot_type = to_slot_type(int_type->size_of());
+            return Slot(glob, slot_type.value());
 
         } else if constexpr (std::is_same_v<U, std::string>) {
+            const auto array_type = dynamic_cast<const ArrayType*>(ty);
+            assertion(array_type != nullptr, "Expected ArrayType for string constant");
+            assertion(array_type->element_type()->isa(byte_type()), "Expected byte type for string constant");
+            assertion(array_type->length() >= glob.size(), "String constant is too large");
             // TODO handle different sizes
-            return m_obj_function.add_slot(global.name(), SlotType::String, glob).value();
+            return Slot(glob, SlotType::String);
+
+        } else if constexpr (std::is_same_v<U, std::vector<Initializer>>) {
+            const auto agg_type = dynamic_cast<const AggregateType*>(ty);
+            assertion(agg_type != nullptr, "Expected AggregateType for aggregate constant");
+
+            std::vector<Slot> slots;
+            slots.reserve(glob.size());
+            for (const auto& [idx, field]: std::views::enumerate(glob)) {
+                const auto field_type = agg_type->type_by_index(idx);
+                slots.push_back(create_slot(field_type, field));
+            }
+            return Slot(std::move(slots), SlotType::Aggregate);
 
         } else {
             static_assert(false);
@@ -336,6 +354,11 @@ LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
     };
 
     return global.visit(vis);
+}
+
+LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
+    auto slot = create_slot(global.content_type(), global.initializer());
+    return m_obj_function.add_slot(global.name(), NamedSlot(std::string(global.name()), std::move(slot))).value();
 }
 
 LIROperand FunctionLower::get_lir_operand(const Value &val) {

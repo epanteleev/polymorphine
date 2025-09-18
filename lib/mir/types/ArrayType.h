@@ -1,9 +1,10 @@
 #pragma once
 
-#include "NonTrivialType.h"
+#include "AggregateType.h"
+#include "utility/Error.h"
 
 
-class ArrayType final: public NonTrivialType {
+class ArrayType final: public AggregateType {
 public:
     explicit ArrayType(const NonTrivialType* element_type, const std::size_t length) noexcept:
         m_element_type(element_type),
@@ -21,6 +22,12 @@ public:
     [[nodiscard]]
     std::size_t align_of() const override {
         return m_element_type->align_of();
+    }
+
+    [[nodiscard]]
+    const NonTrivialType *type_by_index(const std::size_t index) const override {
+        assertion(index < m_length, "Index out of bounds");
+        return m_element_type;
     }
 
     [[nodiscard]]

@@ -17,3 +17,7 @@ buildType:
       short: Usan
       long: Instrument with Undefined Bechaviour Sanitizer
       buildType: Usan
+    coverage:
+      short: Coverage
+      long: Enable code coverage reporting
+      buildType: Coverage

@@ -22,15 +22,9 @@ public:
 
     const ArrayType* add_array_type(const NonTrivialType* element_type, std::size_t length);
 
-    template<std::convertible_to<std::int64_t> T>
     [[nodiscard]]
-    std::expected<const GlobalConstant *, Error> add_constant(const std::string_view name, const IntegerType *type, T &&value) {
-        return m_constant_pool.add_constant(name, type, std::forward<T>(value));
-    }
-
-    [[nodiscard]]
-    std::expected<const GlobalConstant *, Error> add_constant(const std::string_view name, const ArrayType *type, const std::string_view value) {
-        return m_constant_pool.add_constant(name, type, value);
+    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) {
+        return m_constant_pool.add_constant(name, type, std::move(value));
     }
 
     Module build() noexcept;
