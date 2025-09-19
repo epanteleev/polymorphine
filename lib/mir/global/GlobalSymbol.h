@@ -48,3 +48,5 @@ public:
 private:
     Initializer m_value;
 };
+
+std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym);

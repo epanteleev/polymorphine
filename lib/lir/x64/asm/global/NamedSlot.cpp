@@ -4,7 +4,7 @@
 
 void NamedSlot::print_description(std::ostream &os) const {
     os << m_name << ':' << std::endl;
-    m_value.print_description(os);
+    m_value->print_description(os);
 }
 
 std::ostream &operator<<(std::ostream &os, const NamedSlot &slot) {

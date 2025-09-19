@@ -5,8 +5,8 @@
 
 class Codegen final {
 public:
-    explicit Codegen(LIRModule &module) noexcept:
-        m_module(module),
+    explicit Codegen(LIRModule &&module) noexcept:
+        m_module(std::move(module)),
         m_symbol_table(std::make_shared<aasm::SymbolTable>()) {}
 
     void run();
@@ -16,7 +16,7 @@ public:
     }
 
 private:
-    LIRModule& m_module;
+    LIRModule m_module;
     std::shared_ptr<aasm::SymbolTable> m_symbol_table; // Symbol table for the module
     std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer> m_assemblers;
     std::unordered_map<const aasm::Symbol*, NamedSlot> m_slots;

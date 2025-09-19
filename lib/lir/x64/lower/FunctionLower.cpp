@@ -316,7 +316,7 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
     }
 }
 
-static Slot create_slot(const NonTrivialType* ty, const Initializer& global) {
+static Slot create_slot_iter(const NonTrivialType* ty, const Initializer& global) {
     const auto vis = [&]<typename U>(const U& glob) -> Slot {
         if constexpr (std::is_same_v<U, double>) {
             unimplemented();
@@ -343,9 +343,12 @@ static Slot create_slot(const NonTrivialType* ty, const Initializer& global) {
             slots.reserve(glob.size());
             for (const auto& [idx, field]: std::views::enumerate(glob)) {
                 const auto field_type = agg_type->type_by_index(idx);
-                slots.push_back(create_slot(field_type, field));
+                slots.push_back(create_slot_iter(field_type, field));
             }
             return Slot(std::move(slots), SlotType::Aggregate);
+
+        } else if constexpr (std::is_same_v<U, const GlobalConstant*>) {
+            unimplemented();
 
         } else {
             static_assert(false);
@@ -354,6 +357,10 @@ static Slot create_slot(const NonTrivialType* ty, const Initializer& global) {
     };
 
     return global.visit(vis);
+}
+
+static std::shared_ptr<Slot> create_slot(const NonTrivialType* ty, const Initializer& global) {
+    return std::make_shared<Slot>(create_slot_iter(ty, global));
 }
 
 LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
@@ -366,7 +373,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         if constexpr (std::is_same_v<T, double>) {
             unimplemented();
 
-        } else if constexpr (std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint64_t>) {
+        } else if constexpr (std::is_same_v<T, std::int64_t>) {
             return make_constant(*val.type(), v);
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *>) {

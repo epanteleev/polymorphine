@@ -1,4 +1,5 @@
 #include "Initializer.h"
+#include "GlobalSymbol.h"
 
 #include <ostream>
 #include <ranges>
@@ -15,6 +16,9 @@ std::ostream & operator<<(std::ostream &os, const Initializer &sym) {
 
         } else if constexpr (std::is_same_v<T, std::string>) {
             os << '"' << val << '"';
+
+        } else if constexpr (std::is_same_v<T, const GlobalConstant*>) {
+            os << *val;
 
         } else {
             os << val;

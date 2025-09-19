@@ -5,12 +5,12 @@
 #include <variant>
 #include <vector>
 #include <iosfwd>
-
-class Initializer;
+#include "mir/mir_frwd.h"
 
 template<typename T>
 concept InitializerVarians = std::convertible_to<T, std::int64_t> ||
     std::convertible_to<T, double> ||
+    std::convertible_to<T, const GlobalSymbol*> ||
     std::convertible_to<T, std::string> ||
     std::convertible_to<T, std::vector<Initializer>>;
 
@@ -31,5 +31,5 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Initializer& sym);
 
 private:
-    std::variant<std::int64_t, double, std::string, std::vector<Initializer>> m_value;
+    std::variant<std::int64_t, double, const GlobalConstant*, std::string, std::vector<Initializer>> m_value;
 };

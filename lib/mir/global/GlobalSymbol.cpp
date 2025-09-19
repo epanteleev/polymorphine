@@ -7,5 +7,5 @@ std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym) {
 }
 
 void GlobalConstant::print_description(std::ostream &os) const {
-    os << '$' << m_name << " = constant " << *m_type << m_value;
+    os << '$' << m_name << " = constant " << *m_type << ' ' << m_value;
 }

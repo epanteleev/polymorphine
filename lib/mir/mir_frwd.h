@@ -50,3 +50,7 @@ enum class Error;
 class AnalysisPassResult;
 
 class FunctionBuilder;
+
+class Initializer;
+class GlobalSymbol;
+class GlobalConstant;

@@ -1,4 +1,4 @@
-#include "Lowering.h"
+#include "lir/x64/lower/Lowering.h"
 #include "lir/x64/lower/FunctionLower.h"
 #include "lir/x64/asm/cc/LinuxX64.h"
 
