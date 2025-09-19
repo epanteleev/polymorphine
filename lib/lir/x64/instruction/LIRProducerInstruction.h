@@ -81,12 +81,12 @@ public:
         return create(LIRProdInstKind::Load, loaded_ty_size, op);
     }
 
-    static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIRVal &pointer, const LIROperand &index) {
-        return create(LIRProdInstKind::LoadByIdx, loaded_ty_size, LIROperand(pointer), index);
+    static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIROperand &pointer, const LIROperand &index) {
+        return create(LIRProdInstKind::LoadByIdx, loaded_ty_size, pointer, index);
     }
 
-    static std::unique_ptr<LIRProducerInstruction> load_from_stack(const std::uint8_t loaded_ty_size, const LIRVal &pointer, const LIROperand &index) {
-        return create(LIRProdInstKind::LoadFromStack, loaded_ty_size, LIROperand(pointer), index);
+    static std::unique_ptr<LIRProducerInstruction> load_from_stack(const std::uint8_t loaded_ty_size, const LIROperand &pointer, const LIROperand &index) {
+        return create(LIRProdInstKind::LoadFromStack, loaded_ty_size, pointer, index);
     }
 
     static std::unique_ptr<LIRProducerInstruction> lea(const std::uint8_t size, const LIROperand &pointer, const LIROperand &index) {

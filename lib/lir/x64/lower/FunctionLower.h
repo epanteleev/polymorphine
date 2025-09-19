@@ -53,6 +53,10 @@ private:
 
     void finalize_parallel_copies() const noexcept;
 
+    LIRSlot create_slot_iter(const NonTrivialType *ty, const Initializer &global);
+
+    LIRSlot create_slot(const NonTrivialType *ty, const Initializer &global);
+
     LIROperand lower_global_cst(const GlobalConstant &global);
 
     LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);

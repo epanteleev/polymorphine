@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "asm/global/Directive.h"
 
 namespace aasm {
     class SizeEvaluator final {
@@ -35,7 +36,7 @@ namespace aasm {
             }
 
             for (const auto& slot: masm.globals() | std::views::values) {
-                acc += emit(slot.root());
+                acc += emit(slot);
             }
 
             return acc;
@@ -45,7 +46,7 @@ namespace aasm {
         template<typename E>
         static constexpr std::size_t emit(const E& emitter) {
             SizeEvaluator evaluator;
-            emitter.emit(evaluator);
+            (void)(emitter.emit(evaluator));
             return evaluator.size();
         }
     };

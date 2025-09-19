@@ -233,14 +233,11 @@ static Module get_pointer_to_inner_struct_field() {
         const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "get_pointer_to_inner_struct_field", FunctionBind::DEFAULT);
         const auto data = builder.make_function_builder(prototype).value();
         const auto field_ptr = data.gfp(inner_struct_type, constant, 0);
-        data.ret(field_ptr);
+        const auto str_ptr = data.load(PointerType::ptr(), field_ptr);
+        data.ret(str_ptr);
     }
     return builder.build();
 }
-
-struct StringHolder {
-    char* str;
-};
 
 TEST(GlobalConstant, get_pointer_to_inner_struct_field) {
     const std::unordered_map<std::string, std::size_t> asm_size{
@@ -248,9 +245,9 @@ TEST(GlobalConstant, get_pointer_to_inner_struct_field) {
     };
 
     const auto buffer = jit_compile_and_assembly({}, get_pointer_to_inner_struct_field(), asm_size, true);
-    const auto fn = buffer.code_start_as<StringHolder*()>("get_pointer_to_inner_struct_field").value();
+    const auto fn = buffer.code_start_as<const char*()>("get_pointer_to_inner_struct_field").value();
     const auto result = fn();
-    ASSERT_STREQ(result->str, "hello");
+    ASSERT_STREQ(result, "hello");
 }
 
 int main(int argc, char **argv) {

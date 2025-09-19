@@ -1,6 +1,8 @@
 #include "AsmModule.h"
+#include "asm/global/Directive.h"
 
 #include <iomanip>
+
 
 std::ostream & operator<<(std::ostream &os, const AsmModule &module) {
     for (const auto &slot: module.m_slots | std::views::values) {

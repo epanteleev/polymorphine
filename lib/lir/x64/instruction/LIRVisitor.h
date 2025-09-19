@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lir/x64/lir_frwd.h"
-#include "asm/x64/asm_frwd.h"
+#include "asm/asm_frwd.h"
 
 class LIRVisitor {
 public:
@@ -41,8 +41,8 @@ public:
 
     virtual void copy_i(const LIRVal& out, const LIROperand& in) = 0;
     virtual void load_i(const LIRVal& out, const LIRVal& pointer) = 0;
-    virtual void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) = 0;
-    virtual void load_from_stack_i(const LIRVal& out, const LIRVal& pointer, const LIROperand& index) = 0;
+    virtual void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) = 0;
+    virtual void load_from_stack_i(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
     virtual void lea_i(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;

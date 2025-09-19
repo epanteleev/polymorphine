@@ -25,4 +25,6 @@ class GPOp;
 class MasmEmitter;
 
 class TemporalRegs;
-class RegisterAllocation;
+
+class LIRSlot;
+class LIRNamedSlot;

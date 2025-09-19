@@ -9,4 +9,7 @@ namespace aasm {
     template<typename V>
     class GPRegMap;
     enum class CondType: std::uint8_t;
+
+    class Slot;
+    class Directive;
 }

@@ -187,7 +187,7 @@ void LIRFunctionCodegen::store_on_stack_i(const LIRVal &pointer, const LIROperan
     emitter.apply(out_addr.value(), index_op, value_op);
 }
 
-void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
     const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
     const auto pointer_op = convert_to_gp_op(pointer);
@@ -196,10 +196,10 @@ void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIRVal &pointer,
     emitter.apply(out_reg, pointer_op, index_op);
 }
 
-void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) {
+void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
     const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
-    const auto pointer_op = pointer.assigned_reg().to_gp_op().value();
+    const auto pointer_op = convert_to_gp_op(pointer);
     const auto pointer_addr = pointer_op.as_address();
     assertion(pointer_addr.has_value(), "Invalid LIRVal for load_from_stack_i");
 

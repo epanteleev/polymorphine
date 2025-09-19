@@ -4,19 +4,19 @@
 #include <string>
 #include <unordered_map>
 
-#include "NamedSlot.h"
+#include "LIRNamedSlot.h"
 #include "utility/Error.h"
 
 
 class GlobalData final {
 public:
-    using iterator = std::unordered_map<std::string, NamedSlot>::iterator;
-    using const_iterator = std::unordered_map<std::string, NamedSlot>::const_iterator;
+    using iterator = std::unordered_map<std::string, LIRNamedSlot>::iterator;
+    using const_iterator = std::unordered_map<std::string, LIRNamedSlot>::const_iterator;
 
     explicit GlobalData() = default;
 
     [[nodiscard]]
-    std::expected<const NamedSlot*, Error> lookup(const std::string &name) const noexcept {
+    std::expected<const LIRNamedSlot*, Error> lookup(const std::string &name) const noexcept {
         const auto it = m_slots.find(name);
         if (it == m_slots.end()) {
             return std::unexpected(Error::NotFoundError);
@@ -26,7 +26,7 @@ public:
     }
 
     [[nodiscard]]
-    std::expected<NamedSlot*, Error> add_slot(std::string_view name, NamedSlot&& value) {
+    std::expected<const LIRNamedSlot*, Error> add_slot(std::string_view name, LIRNamedSlot&& value) {
         const auto [it, inserted] = m_slots.emplace(name, std::move(value));
         if (!inserted) {
             return std::unexpected(Error::AlreadyExists);
@@ -56,5 +56,5 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, NamedSlot> m_slots;
+    std::unordered_map<std::string, LIRNamedSlot> m_slots;
 };

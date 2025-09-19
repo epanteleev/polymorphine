@@ -316,16 +316,16 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
     }
 }
 
-static Slot create_slot_iter(const NonTrivialType* ty, const Initializer& global) {
-    const auto vis = [&]<typename U>(const U& glob) -> Slot {
+LIRSlot FunctionLower::create_slot_iter(const NonTrivialType* ty, const Initializer& global) {
+    const auto vis = [&]<typename U>(const U& glob) -> LIRSlot {
         if constexpr (std::is_same_v<U, double>) {
             unimplemented();
 
         } else if constexpr (std::is_same_v<U, std::int64_t>) {
             const auto int_type = dynamic_cast<const IntegerType*>(ty);
             assertion(int_type != nullptr, "Expected IntegerType for integer constant");
-            const auto slot_type = to_slot_type(int_type->size_of());
-            return Slot(glob, slot_type.value());
+            const auto slot_type = aasm::to_slot_type(int_type->size_of());
+            return LIRSlot(glob, slot_type.value());
 
         } else if constexpr (std::is_same_v<U, std::string>) {
             const auto array_type = dynamic_cast<const ArrayType*>(ty);
@@ -333,22 +333,24 @@ static Slot create_slot_iter(const NonTrivialType* ty, const Initializer& global
             assertion(array_type->element_type()->isa(byte_type()), "Expected byte type for string constant");
             assertion(array_type->length() >= glob.size(), "String constant is too large");
             // TODO handle different sizes
-            return Slot(glob, SlotType::String);
+            return LIRSlot(glob, aasm::SlotType::String);
 
         } else if constexpr (std::is_same_v<U, std::vector<Initializer>>) {
             const auto agg_type = dynamic_cast<const AggregateType*>(ty);
             assertion(agg_type != nullptr, "Expected AggregateType for aggregate constant");
 
-            std::vector<Slot> slots;
+            std::vector<LIRSlot> slots;
             slots.reserve(glob.size());
             for (const auto& [idx, field]: std::views::enumerate(glob)) {
                 const auto field_type = agg_type->type_by_index(idx);
                 slots.push_back(create_slot_iter(field_type, field));
             }
-            return Slot(std::move(slots), SlotType::Aggregate);
+            return LIRSlot(std::move(slots), aasm::SlotType::Aggregate);
 
         } else if constexpr (std::is_same_v<U, const GlobalConstant*>) {
-            unimplemented();
+            auto slot = create_slot(glob->content_type(), glob->initializer());
+            const auto named_slot = m_obj_function.add_slot(glob->name(), LIRNamedSlot(std::string(glob->name()), std::move(slot))).value();
+            return LIRSlot(named_slot, aasm::SlotType::QWord);
 
         } else {
             static_assert(false);
@@ -359,13 +361,13 @@ static Slot create_slot_iter(const NonTrivialType* ty, const Initializer& global
     return global.visit(vis);
 }
 
-static std::shared_ptr<Slot> create_slot(const NonTrivialType* ty, const Initializer& global) {
-    return std::make_shared<Slot>(create_slot_iter(ty, global));
+LIRSlot FunctionLower::create_slot(const NonTrivialType* ty, const Initializer& global) {
+    return create_slot_iter(ty, global);
 }
 
 LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
     auto slot = create_slot(global.content_type(), global.initializer());
-    return m_obj_function.add_slot(global.name(), NamedSlot(std::string(global.name()), std::move(slot))).value();
+    return m_obj_function.add_slot(global.name(), LIRNamedSlot(std::string(global.name()), std::move(slot))).value();
 }
 
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
@@ -730,7 +732,7 @@ void FunctionLower::lower_load(const Unary *inst) {
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 
     if (pointer.isa(any_stack_alloc())) {
-        const auto pointer_vreg = get_lir_val(pointer);
+        const auto pointer_vreg = get_lir_operand(pointer);
         const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
         memorize(inst, copy_inst->def(0));
         return;
@@ -739,10 +741,10 @@ void FunctionLower::lower_load(const Unary *inst) {
     if (pointer.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(pointer.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
-        const auto src_vreg = get_lir_val(src);
+        const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
 
-        if (src.isa(any_stack_alloc())) {
+        if (src.isa(value_semantic())) {
             const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(type->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
             return;

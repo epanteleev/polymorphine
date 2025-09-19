@@ -6,13 +6,13 @@
 
 #include "MasmEmitter.h"
 #include "asm/symbol/SymbolTable.h"
-#include "global/NamedSlot.h"
+#include "asm/global/Directive.h"
 
 class AsmModule final {
 public:
     explicit AsmModule(std::shared_ptr<aasm::SymbolTable> symbol_table,
         std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer>&& modules,
-        std::unordered_map<const aasm::Symbol*, NamedSlot>&& slots) noexcept:
+        std::unordered_map<const aasm::Symbol*, aasm::Directive>&& slots) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_modules(std::move(modules)),
         m_slots(std::move(slots)) {}
@@ -47,7 +47,7 @@ public:
 private:
     std::shared_ptr<aasm::SymbolTable> m_symbol_table; // Symbol table for the module
     std::unordered_map<const aasm::Symbol*, aasm::AsmBuffer> m_modules;
-    std::unordered_map<const aasm::Symbol*, NamedSlot> m_slots;
+    std::unordered_map<const aasm::Symbol*, aasm::Directive> m_slots;
 };
 
 std::ostream & operator<<(std::ostream &os, const AsmModule &module);

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "helpers/Utils.h"
-#include "../lib/asm/x64/asm.h"
+#include "asm/x64/asm.h"
 
 static std::vector cond_types = {
     aasm::CondType::O,

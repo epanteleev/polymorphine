@@ -159,11 +159,11 @@ namespace {
             m_os << "load_i out(" << out << ") pointer(" << pointer << ')';
         }
 
-        void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
+        void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
             m_os << "load_by_idx_i out(" << out << ") index(" << index << ") pointer(" << pointer << ')';
         }
 
-        void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override {
+        void load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
             m_os << "load_from_stack_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 

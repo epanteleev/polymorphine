@@ -80,8 +80,8 @@ private:
     void mov_i(const LIRVal &in1, const LIROperand &in2) override;
     void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override;
     void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
-    void load_by_idx_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
-    void load_from_stack_i(const LIRVal &out, const LIRVal &pointer, const LIROperand &index) override;
+    void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override;
+    void load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override;
     void store_i(const LIRVal &pointer, const LIROperand &value) override;
     void up_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;
     void down_stack(const aasm::GPRegSet& reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override;

@@ -15,7 +15,7 @@ namespace aasm::details {
          * @param instructions The vector of X64 instructions to assemble.
          * @param label_table A vector mapping labels to instruction indices.
          */
-        template <CodeBuffer Buffer>
+        template<CodeBuffer Buffer>
         static constexpr std::vector<Relocation> assemble(Buffer& buffer, const std::vector<X64Instruction> &instructions, const std::vector<std::uint32_t> &label_table) {
             Assembler assembler(instructions, label_table);
             return assembler.emit(buffer);

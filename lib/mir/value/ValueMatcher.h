@@ -53,6 +53,19 @@ namespace impls {
         return value_inst<Alloc>(value);
     }
 
+    inline bool value_semantic(const Value& value) noexcept {
+        if (value.is<ArgumentValue*>()) {
+            if (const auto arg = value.get<ArgumentValue*>(); arg->attributes().has(Attribute::ByValue)) {
+                return true;
+            }
+        }
+        if (value_inst<Alloc>(value)) {
+            return true;
+        }
+
+        return value.is<GlobalConstant*>();
+    }
+
     template<typename... Args>
     bool match_args(const std::span<const Value>& values, Args&& ...args) noexcept {
         std::size_t index{};
@@ -121,6 +134,10 @@ consteval auto icmp(LHS&& l, RHS&& r) noexcept {
 
 consteval auto alloc() noexcept {
     return impls::value_inst<Alloc>;
+}
+
+consteval auto value_semantic() noexcept {
+    return impls::value_semantic;
 }
 
 consteval auto any_stack_alloc() noexcept {

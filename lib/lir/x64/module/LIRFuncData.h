@@ -2,7 +2,7 @@
 
 #include "lir/x64/lir_frwd.h"
 #include "base/FunctionDataBase.h"
-#include "lir/x64/asm/global/GlobalData.h"
+#include "lir/x64/global/GlobalData.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/operand/LIRVal.h"
 
@@ -47,7 +47,7 @@ public:
     LIRAdjustStack* epilogue() const;
 
     [[nodiscard]]
-    std::expected<NamedSlot*, Error> add_slot(const std::string_view name, NamedSlot&& value) {
+    std::expected<const LIRNamedSlot*, Error> add_slot(const std::string_view name, LIRNamedSlot&& value) {
         return m_global_data.add_slot(name, std::move(value));
     }
 

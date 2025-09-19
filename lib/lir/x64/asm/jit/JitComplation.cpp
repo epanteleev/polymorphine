@@ -68,7 +68,7 @@ AsmModule jit_compile(const Module &module, const bool verbose) {
         std::cout << result << std::endl;
     }
 
-    Codegen codegen(std::move(result));
+    Codegen codegen(result);
     codegen.run();
     auto obj = codegen.result();
     if (verbose) {
