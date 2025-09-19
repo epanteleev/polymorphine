@@ -31,11 +31,11 @@ namespace aasm {
     public:
         static std::size_t module_size_eval(const AsmModule& masm) {
             std::size_t acc{};
-            for (const auto& emitter : masm.assembler() | std::views::values) {
+            for (const auto& emitter : masm.m_asm_buffers | std::views::values) {
                 acc += emit(emitter);
             }
 
-            for (const auto& slot: masm.globals() | std::views::values) {
+            for (const auto& slot: masm.m_global_slots | std::views::values) {
                 acc += emit(slot);
             }
 

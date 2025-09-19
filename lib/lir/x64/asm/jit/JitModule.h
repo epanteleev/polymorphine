@@ -6,8 +6,8 @@
 #include <expected>
 #include <memory>
 
-#include "JitDataBlob.h"
 #include "asm/symbol/SymbolTable.h"
+#include "lir/x64/asm/jit/JitDataBlob.h"
 #include "lir/x64/asm/AsmModule.h"
 #include "utility/Error.h"
 #include "utility/Sanitizer.h"
@@ -21,7 +21,7 @@ public:
 
     template<typename... Args>
     no_usan decltype(auto) operator()(Args... args) const noexcept {
-        // Usan: clang's undefined behavior sanitizeris checking the function pointer call here.
+        // Usan: clang's undefined behavior sanitizers checking the function pointer call here.
         // SIGSEGV is raised when calling the function pointer.
         assert(m_fn != nullptr);
         return m_fn(std::forward<Args>(args)...);
@@ -34,7 +34,7 @@ private:
 
 class JitModule final {
 public:
-    JitModule(std::shared_ptr<aasm::SymbolTable> symbol_table, std::span<std::uint8_t> total_mem, JitDataBlob&& code_blob) noexcept:
+    JitModule(aasm::SymbolTable&& symbol_table, const std::span<std::uint8_t> total_mem, JitDataBlob&& code_blob) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_total_mem(total_mem),
         m_code_blob(std::move(code_blob)) {}
@@ -62,7 +62,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const JitModule& blob);
 
-    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, const AsmModule& module);
+    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, AsmModule&& module);
 
 private:
     /**
@@ -71,7 +71,7 @@ private:
      */
     [[nodiscard]]
     std::expected<std::uint8_t*, Error> code_start(const std::string& name) const {
-        const auto sym = m_symbol_table->find(name);
+        const auto sym = m_symbol_table.find(name);
         if (!sym.has_value()) {
             return std::unexpected(Error::NotFoundError);
         }
@@ -79,7 +79,7 @@ private:
         return m_code_blob.code_start(sym.value());
     }
 
-    std::shared_ptr<aasm::SymbolTable> m_symbol_table;
+    aasm::SymbolTable m_symbol_table;
     std::span<std::uint8_t> m_total_mem;
     JitDataBlob m_code_blob;
 };

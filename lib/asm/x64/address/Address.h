@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <ostream>
+#include <iosfwd>
 #include <variant>
 
 #include "asm/symbol/Symbol.h"
@@ -46,12 +46,12 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
-        std::optional<Relocation> encode(C& c, std::uint32_t modrm_pattern) const {
-            const auto visit = [&](const auto& addr) {
+        std::optional<Relocation> encode(C& c, const std::uint32_t modrm_pattern) const {
+            const auto visit = [&](const auto& addr) -> std::optional<Relocation> {
                 return addr.encode(c, modrm_pattern);
             };
 
-            return std::visit<std::optional<Relocation>>(visit, m_address);
+            return std::visit(visit, m_address);
         }
 
         template<typename Addr>
@@ -94,13 +94,7 @@ namespace aasm {
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
 
-    inline std::ostream& operator<<(std::ostream & os, const Address & addr) {
-        const auto visit = [&](const auto& address) {
-            os << address;
-        };
-        std::visit(visit, addr.m_address);
-        return os;
-    }
+    std::ostream& operator<<(std::ostream & os, const Address & addr);
 
     static constexpr std::uint8_t X(const Address& arg) {
         const auto as_index_addr = arg.as<AddressIndexScale>();

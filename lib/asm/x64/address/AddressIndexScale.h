@@ -80,18 +80,5 @@ namespace aasm {
         std::uint8_t scale;
     };
 
-    inline std::ostream& operator<<(std::ostream & os, const AddressIndexScale & addr) {
-        if (addr.m_displacement != 0) {
-            os << addr.m_displacement;
-        }
-        os << '(';
-        os << '%' << addr.m_base.name(8);
-        os << ',';
-
-        os << '%' << addr.m_index.name(8);
-        if (addr.scale != 1) {
-            os << ',' << static_cast<std::int32_t>(addr.scale);
-        }
-        return os << ')';
-    }
+    std::ostream& operator<<(std::ostream & os, const AddressIndexScale & addr);
 }

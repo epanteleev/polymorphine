@@ -67,11 +67,5 @@ namespace aasm {
         GPReg m_base;
     };
 
-    inline std::ostream& operator<<(std::ostream & os, const AddressBaseDisp & addr) {
-        if (addr.m_displacement != 0) {
-            os << addr.m_displacement;
-        }
-        os << "(%" << addr.m_base.name(8);
-        return os << ')';
-    }
+    std::ostream& operator<<(std::ostream & os, const AddressBaseDisp & addr);
 }

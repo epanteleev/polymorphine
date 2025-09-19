@@ -49,8 +49,4 @@ namespace aasm {
         const Symbol* m_symbol;
         std::int32_t m_displacement;
     };
-
-    inline std::ostream &operator<<(std::ostream &os, const AddressLiteral &address) {
-        return os << '$' << address.m_symbol->name() << (address.m_displacement >= 0 ? "+" : "") << address.m_displacement;
-    }
 }

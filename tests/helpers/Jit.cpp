@@ -6,7 +6,7 @@
 #include "mir/mir.h"
 
 JitModule jit_compile_and_assembly(const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, const bool verbose) {
-    const auto obj = jit_compile(module, verbose);
+    auto obj = jit_compile(module, verbose);
     for (const auto &[name, size]: asm_size) {
         const auto fun = obj.function(name);
         if (!fun.has_value()) {
@@ -19,7 +19,7 @@ JitModule jit_compile_and_assembly(const Module& module, const std::unordered_ma
     }
 
     static const std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols;
-    const auto buffer = JitModule::assembly(external_symbols, obj);
+    const auto buffer = JitModule::assembly(external_symbols, std::move(obj));
     if (verbose) {
         std::cout << buffer << std::endl;
     }
@@ -38,11 +38,11 @@ JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::si
 }
 
 JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, const bool verbose) {
-    const auto obj = jit_compile(module, verbose);
+    auto obj = jit_compile(module, verbose);
     std::unordered_map<const aasm::Symbol*, std::size_t> external_symbols_;
     external_symbols_.reserve(external_symbols.size());
     for (const auto& [name, addr] : external_symbols) {
-        const auto [symbol, _] = obj.symbol_table()->add(name, aasm::BindAttribute::INTERNAL);
+        const auto [symbol, _] = obj.m_symbol_table.add(name, aasm::BindAttribute::INTERNAL);
         external_symbols_[symbol] = addr;
     }
 
@@ -57,7 +57,7 @@ JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::si
         }
     }
 
-    const auto buffer = JitModule::assembly(external_symbols_, obj);
+    const auto buffer = JitModule::assembly(external_symbols_, std::move(obj));
     if (verbose) {
         std::cout << buffer << std::endl;
     }

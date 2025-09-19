@@ -31,7 +31,7 @@ Elf Elf::collect(const AsmModule &module) {
     std::vector<uint8_t> code_buffer;
     code_buffer.resize(aasm::ModuleSizeEvaluator::module_size_eval(module));
     OpCodeBuffer assembler{code_buffer};
-    for (const auto &asm_buffer: module.assembler() | std::views::values) {
+    for (const auto &asm_buffer: module.m_asm_buffers | std::views::values) {
         asm_buffer.emit(assembler);
     }
     text_sec->set_data(reinterpret_cast<const char*>(code_buffer.data()), code_buffer.size());

@@ -12,7 +12,7 @@ namespace aasm {
             } else if constexpr (std::is_same_v<T, std::string>) {
                 os << '\t' << '.' << to_string(m_type) << ' ' << '"' << value << '"' << std::endl;
 
-            } else if constexpr (std::is_same_v<T, Directive*>) {
+            } else if constexpr (std::is_same_v<T, const Directive*>) {
                 os << '\t' << '.' << to_string(m_type) << ' ' << *value << std::endl;
 
             } else {

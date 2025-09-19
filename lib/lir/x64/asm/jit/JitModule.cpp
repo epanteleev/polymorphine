@@ -44,13 +44,13 @@ public:
 
 private:
     void assemble_functions() {
-        for (const auto& [name, emitter] : m_module.assembler()) {
+        for (const auto& [name, emitter] : m_module.m_asm_buffers) {
             assemble_slot(name, emitter);
         }
     }
 
     void assemble_global_slots() {
-        for (const auto& [name, slot]: m_module.globals()) {
+        for (const auto& [name, slot]: m_module.m_global_slots) {
             assemble_slot(name, slot);
         }
     }
@@ -129,7 +129,7 @@ private:
     std::unordered_map<const aasm::Symbol*, JitDataChunk> offset_table;
 };
 
-JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, const AsmModule &module) {
+JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, AsmModule &&module) {
     const auto code_buffer_size = aasm::ModuleSizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
     const auto memory = map_memory(plt_size, code_buffer_size);
@@ -148,7 +148,7 @@ JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std
     resolver.run();
 
     JitDataBlob code_blob(resolver.result(), memory.code_buffer);
-    return {module.symbol_table(), memory.memory, std::move(code_blob)};
+    return {std::move(module.m_symbol_table), memory.memory, std::move(code_blob)};
 }
 
 std::ostream & operator<<(std::ostream &os, const JitModule &blob) {

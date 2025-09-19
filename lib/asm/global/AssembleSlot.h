@@ -26,7 +26,7 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         constexpr std::vector<Relocation> emit(Buffer& buffer) {
             emit_internal(buffer, m_slot);
-            return std::move(relocs);
+            return std::move(m_relocations);
         }
 
         template<CodeBuffer Buffer>
@@ -43,9 +43,9 @@ namespace aasm::details {
                         emit_internal(buffer, s);
                     }
 
-                } else if constexpr (std::same_as<T, Directive*>) {
+                } else if constexpr (std::same_as<T, const Directive*>) {
                     buffer.emit64(UINT64_MAX);
-                    relocs.emplace_back(Relocation(RelType::X86_64_GLOB_DAT, buffer.size(), 0, val->symbol()));
+                    m_relocations.emplace_back(Relocation(RelType::X86_64_GLOB_DAT, buffer.size(), 0, val->symbol()));
 
                 } else {
                     static_assert(false);
@@ -82,6 +82,6 @@ namespace aasm::details {
         }
 
         const Slot& m_slot;
-        std::vector<Relocation> relocs;
+        std::vector<Relocation> m_relocations;
     };
 }

@@ -16,10 +16,10 @@ namespace aasm {
 
     inline std::optional<SlotType> to_slot_type(const std::uint8_t size) {
         switch (size) {
-            case 1: return SlotType::Byte;
-            case 2: return SlotType::Word;
-            case 4: return SlotType::DWord;
-            case 8: return SlotType::QWord;
+            case 1:  return SlotType::Byte;
+            case 2:  return SlotType::Word;
+            case 4:  return SlotType::DWord;
+            case 8:  return SlotType::QWord;
             default: return std::nullopt;
         }
     }

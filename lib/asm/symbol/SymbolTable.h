@@ -4,7 +4,7 @@
 #include <optional>
 #include <unordered_map>
 
-#include "Symbol.h"
+#include "asm/symbol/Symbol.h"
 #include "utility/Error.h"
 
 namespace aasm {
