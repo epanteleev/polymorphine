@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "ValueInstruction.h"
 #include "mir/types/TupleType.h"
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "mir/module/FunctionPrototype.h"
 #include "Instruction.h"
 #include "mir/types/TupleType.h"
@@ -115,6 +117,7 @@ public:
         return m_values[1];
     }
 
+    [[nodiscard]]
     const Type* ret_type() const {
         switch (m_values.size()) {
             case 1: return m_values[0].type();

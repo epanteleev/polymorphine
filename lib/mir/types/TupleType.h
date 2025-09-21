@@ -33,18 +33,18 @@ public:
         }
     }
 
-    template< std::derived_from<PrimitiveType> F, std::derived_from<PrimitiveType> S>
-    static const TupleType* tuple(const F* first, const S* second) noexcept {
-        if (const auto f = dynamic_cast<const SignedIntegerType*>(first)) {
+    template<std::derived_from<PrimitiveType> F, std::derived_from<PrimitiveType> S>
+    static const TupleType *tuple(const F *first, const S *second) noexcept {
+        if (const auto f = dynamic_cast<const SignedIntegerType *>(first)) {
             return tuple2(f, second);
         }
-        if (const auto f = dynamic_cast<const UnsignedIntegerType*>(first)) {
+        if (const auto f = dynamic_cast<const UnsignedIntegerType *>(first)) {
             return tuple2(f, second);
         }
-        if (const auto f = dynamic_cast<const FloatingPointType*>(first)) {
+        if (const auto f = dynamic_cast<const FloatingPointType *>(first)) {
             return tuple2(f, second);
         }
-        if (const auto f = dynamic_cast<const PointerType*>(first)) {
+        if (const auto f = dynamic_cast<const PointerType *>(first)) {
             return tuple2(f, second);
         }
 

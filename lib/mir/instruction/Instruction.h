@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <vector>
 #include <iosfwd>
-#include <memory>
 #include <span>
 
 #include "InstructionVisitor.h"

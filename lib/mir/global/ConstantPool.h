@@ -56,7 +56,5 @@ public:
     }
 
 private:
-
-
     std::unordered_map<std::string, GlobalConstant> m_constants;
 };

@@ -4,7 +4,7 @@
 
 class Store final: public Instruction {
 public:
-    Store(const Value& ptr, const Value& value) noexcept:
+    explicit Store(const Value& ptr, const Value& value) noexcept:
         Instruction({ptr, value}) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }

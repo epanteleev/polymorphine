@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "ValueInstruction.h"
 
 enum class UnaryOp {
