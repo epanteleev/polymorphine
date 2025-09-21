@@ -4,6 +4,7 @@
 
 #include "utility/OrderedSet.h"
 #include "base/FunctionDataBase.h"
+#include "mir/global/ConstantPool.h"
 #include "mir/instruction/InstructionMatcher.h"
 
 #include "mir/value/ArgumentValue.h"
@@ -52,8 +53,19 @@ public:
         return m_basic_blocks.push_back(std::move(bb));
     }
 
+    [[nodiscard]]
+    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) {
+        return m_local_constant_pool.add_constant(name, type, std::move(value));
+    }
+
+    [[nodiscard]]
+    const ConstantPool& local_constant_pool() const noexcept {
+        return m_local_constant_pool;
+    }
+
 private:
     const FunctionPrototype* m_prototype;
+    ConstantPool m_local_constant_pool;
 };
 
 static_assert(Function<FunctionData>, "assumed to be");

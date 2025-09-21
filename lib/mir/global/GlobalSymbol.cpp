@@ -1,11 +1,6 @@
 #include "GlobalSymbol.h"
-
 #include <ostream>
 
-std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym) {
+std::ostream& operator<<(std::ostream& os, const GlobalSymbol& sym) {
     return os << '$' << sym.name();
-}
-
-void GlobalConstant::print_description(std::ostream &os) const {
-    os << '$' << m_name << " = constant " << *m_type << ' ' << m_value;
 }

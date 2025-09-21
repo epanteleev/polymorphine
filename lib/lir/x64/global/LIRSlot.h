@@ -8,8 +8,8 @@
 #include <variant>
 #include <vector>
 
-#include "asm/global/Slot.h"
 #include "utility/Error.h"
+#include "asm/global/Slot.h"
 #include "lir/x64/lir_frwd.h"
 
 template<typename T>

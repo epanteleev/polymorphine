@@ -3,7 +3,7 @@
 #include <expected>
 #include <unordered_map>
 
-#include "GlobalSymbol.h"
+#include "GlobalConstant.h"
 #include "utility/Error.h"
 
 

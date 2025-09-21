@@ -196,7 +196,8 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
     lir_args.reserve(function.args().size());
 
     for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
-        const auto& inserted = args.emplace_back(idx, varg.type()->size_of(), varg.attributes());
+        const auto non_trivial_type = dynamic_cast<const NonTrivialType*>(varg.type());
+        const auto& inserted = args.emplace_back(idx, non_trivial_type->size_of(), varg.attributes());
         lir_args.push_back(LIRVal::from(&inserted));
     }
 
@@ -379,20 +380,23 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
             return make_constant(*val.type(), v);
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *>) {
-            return m_value_mapping.at(LocalValue::from(v));
+            return m_value_mapping.at(UsedValue::from(v));
 
         } else if constexpr (std::is_same_v<T, ValueInstruction *>) {
-            const auto lir_val_iter = m_value_mapping.find(LocalValue::from(v));
+            const auto lir_val_iter = m_value_mapping.find(UsedValue::from(v));
             if (lir_val_iter != m_value_mapping.end()) {
                 return lir_val_iter->second;
             }
 
             assertion(m_late_schedule_instructions.contains(v), "invariant");
             schedule_late(v);
-            return m_value_mapping.at(LocalValue::from(v));
+            return m_value_mapping.at(UsedValue::from(v));
 
         } else if constexpr (std::is_same_v<T, GlobalConstant *>) {
             return lower_global_cst(*v);
+
+        } else if constexpr (std::is_same_v<T, GlobalVariable*>) {
+            unimplemented();
 
         } else {
             static_assert(false, "Unsupported type in Value variant");
@@ -400,7 +404,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         }
     };
 
-    return val.visit<LIROperand>(visitor);
+    return val.visit(visitor);
 }
 
 LIRVal FunctionLower::get_lir_val(const Value &val) {

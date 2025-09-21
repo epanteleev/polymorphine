@@ -331,7 +331,7 @@ static Module escape_array_slice_constant_in_argument(const IntegerType* ty) {
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "escape_array_slice_constant_in_argument", FunctionBind::DEFAULT);
         const auto array_type = builder.add_array_type(ty, 5);
         auto data = builder.make_function_builder(prototype).value();
-        const auto constant = builder.add_constant("my_global_const", array_type, Initializer{42L, 84L, 75L, 89, 12}).value();
+        const auto constant = data.add_constant("my_global_const", array_type, Initializer{42L, 84L, 75L, 89, 12}).value();
         const auto third = data.gep(ty, constant, Value::i64(2));
         const auto cont = data.create_basic_block();
         const auto call = data.call(sum_fintype, cont, {third, Value::i64(3)});

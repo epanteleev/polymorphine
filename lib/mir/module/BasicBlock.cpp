@@ -1,7 +1,7 @@
 #include "mir/module/BasicBlock.h"
 #include "mir/instruction/Terminator.h"
 #include "utility/Error.h"
-#include "mir/value/LocalValue.h"
+#include "mir/value/UsedValue.h"
 
 Terminator BasicBlock::last() const noexcept {
     const auto back = m_instructions.back();
@@ -19,7 +19,7 @@ Terminator BasicBlock::last() const noexcept {
 
 void BasicBlock::make_def_use_chain(Instruction *inst) {
     for (const auto& operand: inst->operands()) {
-        auto local = LocalValue::try_from(operand);
+        auto local = UsedValue::try_from(operand);
         if (!local.has_value()) {
             continue;
         }

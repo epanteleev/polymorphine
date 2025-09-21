@@ -147,6 +147,11 @@ public:
         m_bb->ins(Return::ret());
     }
 
+    [[nodiscard]]
+    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) const {
+        return m_fd->add_constant(name, type, std::move(value));
+    }
+
 private:
     BasicBlock* m_bb;
     FunctionData* m_fd;

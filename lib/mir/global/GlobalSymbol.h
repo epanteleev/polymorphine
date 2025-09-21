@@ -6,47 +6,34 @@
 #include <utility>
 
 #include "Initializer.h"
-#include "mir/types/NonTrivialType.h"
-#include "utility/Error.h"
+#include "mir/mir_frwd.h"
 
 class GlobalSymbol {
 public:
-    explicit GlobalSymbol(std::string&& name, const NonTrivialType* type) noexcept:
+    explicit GlobalSymbol(std::string&& name, const NonTrivialType* type, Initializer&& value) noexcept:
         m_name(std::move(name)),
-        m_type(type) {}
+        m_content_type(type),
+        m_value(std::move(value)) {}
 
     [[nodiscard]]
-    std::string_view name() const noexcept { return m_name; }
+    std::string_view name() const noexcept {
+        return m_name;
+    }
 
     [[nodiscard]]
-    const NonTrivialType* content_type() const noexcept { return m_type; }
+    const NonTrivialType* content_type() const noexcept {
+        return m_content_type;
+    }
+
+    [[nodiscard]]
+    const Initializer& initializer() const noexcept {
+        return m_value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const GlobalSymbol& sym);
 
 protected:
     std::string m_name;
-    const NonTrivialType* m_type;
-};
-
-
-class GlobalConstant final: public GlobalSymbol {
-public:
-    explicit GlobalConstant(std::string&& name, const NonTrivialType* type, Initializer&& value) noexcept:
-        GlobalSymbol(std::move(name), type),
-        m_value(std::move(value)) {}
-
-    template<typename Fn>
-    decltype(auto) visit(Fn&& vis) const {
-        return m_value.visit(std::forward<Fn>(vis));
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym);
-
-    void print_description(std::ostream& os) const;
-
-    [[nodiscard]]
-    const Initializer& initializer() const noexcept { return m_value; }
-
-private:
+    const NonTrivialType* m_content_type;
     Initializer m_value;
 };
-
-std::ostream& operator<<(std::ostream& os, const GlobalConstant& sym);

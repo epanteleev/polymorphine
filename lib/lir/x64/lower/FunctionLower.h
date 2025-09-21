@@ -119,7 +119,7 @@ private:
 
     template <IsLocalValueType T>
     void memorize(const T* val, const LIROperand& lir_val) {
-        m_value_mapping.emplace(LocalValue::from(val), lir_val);
+        m_value_mapping.emplace(UsedValue::from(val), lir_val);
     }
 
     LIRFuncData m_obj_function;
@@ -129,7 +129,7 @@ private:
     const call_conv::CallConvProvider* m_call_conv;
 
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
-    LocalValueMap<LIROperand> m_value_mapping;
+    UsedValueMap<LIROperand> m_value_mapping;
     // Inserted parallel copies in the current function for late handling.
     std::unordered_set<LIRBlock*> m_parallel_copy_owners;
     // Temporal storage for late scheduled instructions.

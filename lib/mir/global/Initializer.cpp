@@ -1,5 +1,5 @@
 #include "Initializer.h"
-#include "GlobalSymbol.h"
+#include "GlobalConstant.h"
 
 #include <ostream>
 #include <ranges>

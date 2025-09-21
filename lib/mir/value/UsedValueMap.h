@@ -5,12 +5,12 @@
 
 #include "mir/instruction/ValueInstruction.h"
 #include "utility/Error.h"
-#include "mir/value/LocalValue.h"
+#include "mir/value/UsedValue.h"
 
 
-struct HashLocalVal final {
+struct HashUsedVal final {
     [[nodiscard]]
-    size_t operator()(const LocalValue& val) const noexcept {
+    size_t operator()(const UsedValue& val) const noexcept {
         if (val.is<ArgumentValue>()) {
             return val.get<ArgumentValue>()->index();
         }
@@ -22,12 +22,12 @@ struct HashLocalVal final {
     }
 };
 
-struct LocalValEqualTo final {
-    bool operator()(const LocalValue& x, const LocalValue& y) const { return x == y; }
+struct UsedValEqualTo final {
+    bool operator()(const UsedValue& x, const UsedValue& y) const { return x == y; }
 };
 
 
 template <typename V>
-using LocalValueMap = std::unordered_map<LocalValue, V, HashLocalVal, LocalValEqualTo>;
+using UsedValueMap = std::unordered_map<UsedValue, V, HashUsedVal, UsedValEqualTo>;
 
-using LocalValueSet = std::unordered_set<LocalValue, HashLocalVal, LocalValEqualTo>;
+using UsedValueSet = std::unordered_set<UsedValue, HashUsedVal, UsedValEqualTo>;

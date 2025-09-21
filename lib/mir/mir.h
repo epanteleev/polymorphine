@@ -17,7 +17,7 @@
 #include "instruction/TerminateInstruction.h"
 #include "instruction/InstructionMatcher.h"
 
-#include "value/LocalValueMap.h"
+#include "value/UsedValueMap.h"
 #include "value/ValueMatcher.h"
 
 #include "analysis/Analysis.h"

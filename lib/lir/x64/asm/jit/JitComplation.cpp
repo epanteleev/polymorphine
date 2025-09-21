@@ -4,13 +4,13 @@
 
 #include "lir/x64/codegen/Codegen.h"
 #include "lir/x64/lower/Lowering.h"
-#include "mir/value/LocalValue.h"
+#include "mir/value/UsedValue.h"
 
 #ifndef NDEBUG
 static void verify_def_use_chain(const std::string_view name, const BasicBlock* bb) {
     for (const auto& inst: bb->instructions()) {
         for (const auto& operand: inst.operands()) {
-            const auto local = LocalValue::try_from(operand);
+            const auto local = UsedValue::try_from(operand);
             if (!local.has_value()) {
                 continue;
             }

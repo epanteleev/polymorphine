@@ -7,6 +7,7 @@
 
 #include "mir/mir_frwd.h"
 #include "mir/global/GlobalSymbol.h"
+#include "mir/global/GlobalVariable.h"
 #include "mir/types/Type.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
@@ -16,7 +17,8 @@ concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
     std::is_same_v<T, ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *> ||
-    std::is_same_v<T, GlobalConstant *>;
+    std::is_same_v<T, GlobalConstant *> ||
+    std::is_same_v<T, GlobalVariable *>;
 
 class Value final {
 public:
@@ -26,6 +28,7 @@ public:
     Value(const ArgumentValue* value) noexcept;
     Value(const ValueInstruction* value) noexcept;
     Value(const GlobalConstant* value) noexcept;
+    Value(const GlobalVariable* value) noexcept;
 
     template <IsValueType T>
     [[nodiscard]]
@@ -59,8 +62,8 @@ public:
         std::unreachable();
     }
 
-    template <typename T, typename Visitor>
-    constexpr T visit(Visitor&& visitor) const {
+    template <typename Visitor>
+    constexpr decltype(auto) visit(Visitor&& visitor) const {
         return std::visit(std::forward<Visitor>(visitor), m_value);
     }
 
@@ -103,7 +106,8 @@ private:
         std::int64_t,
         ArgumentValue*,
         ValueInstruction *,
-        GlobalConstant*> m_value;
+        GlobalConstant*,
+        GlobalVariable*> m_value;
     const Type* m_type;
 };
 
