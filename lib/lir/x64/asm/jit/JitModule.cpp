@@ -25,7 +25,7 @@ static MmapAllocation map_memory(const std::size_t plt_size, const std::size_t c
 class RelocResolver final {
 public:
     explicit RelocResolver(const std::unordered_map<const aasm::Symbol*, std::size_t>& plt_table,
-        const AsmModule& module,
+        const aasm::AsmModule& module,
         const std::span<std::uint8_t> code_buffer, const std::size_t code_buffer_offset) noexcept:
         m_plt_table(plt_table),
         m_module(module),
@@ -96,7 +96,7 @@ private:
     void try_plt_patch_relocation(const aasm::Relocation& reloc) {
         const auto& external = m_plt_table.find(reloc.symbol());
         if (external == m_plt_table.end()) {
-            die("PLT relocation for label '{}' not found in external symbols", reloc.symbol_name());
+            die("PLT relocation for symbol '{}' not found in external symbols", reloc.symbol_name());
         }
         const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + static_cast<std::int64_t>(m_code_buffer_offset)) + reloc.displacement();
         if (!std::in_range<std::int32_t>(offset)) {
@@ -121,7 +121,7 @@ private:
     }
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;
-    const AsmModule& m_module;
+    const aasm::AsmModule& m_module;
     OpCodeBuffer jit_assembler;
     std::size_t m_code_buffer_offset;
 
@@ -129,7 +129,7 @@ private:
     std::unordered_map<const aasm::Symbol*, JitDataChunk> offset_table;
 };
 
-JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, AsmModule &&module) {
+JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, aasm::AsmModule &&module) {
     const auto code_buffer_size = aasm::ModuleSizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
     const auto memory = map_memory(plt_size, code_buffer_size);

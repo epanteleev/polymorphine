@@ -14,10 +14,10 @@ namespace aasm {
             static constexpr std::uint8_t MODRM = 0x05; // ModR/M byte for direct addressing
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
             buffer.emit32(INT32_MAX);
-            switch (m_symbol->bind()) {
+            switch (const auto bind = m_symbol->bind()) {
                 case BindAttribute::EXTERNAL: return Relocation(RelType::X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
                 case BindAttribute::INTERNAL: return Relocation(RelType::X86_64_PC32, buffer.size(), m_displacement, m_symbol);
-                default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(m_symbol->bind()));
+                default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(bind));
             }
         }
 

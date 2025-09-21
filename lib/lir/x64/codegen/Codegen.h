@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lir/x64/asm/AsmModule.h"
+#include "asm/x64/AsmModule.h"
 #include "lir/x64/module/LIRModule.h"
 
 class Codegen final {
@@ -10,9 +10,7 @@ public:
 
     void run();
 
-    AsmModule result() {
-        return AsmModule(std::move(m_symbol_table), std::move(m_assemblers), std::move(m_slots));
-    }
+    aasm::AsmModule result();
 
 private:
     aasm::Slot convert_lir_slot(aasm::SlotType type, const LIRSlot &lir_slot) noexcept;

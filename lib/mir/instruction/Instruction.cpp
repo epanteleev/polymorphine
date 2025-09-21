@@ -176,7 +176,7 @@ namespace {
         void print(const std::string_view name, const T* fa) const {
             print_val(fa);
             os << name << ' ';
-            os << *static_cast<const NonTrivialType*>(fa->access_type());
+            os << *static_cast<const NonTrivialType*>(fa->inner_type());
             os << ' ' << fa->pointer() << ", " << fa->index();
         }
 

@@ -54,7 +54,7 @@ static void verify_data_and_control_flow_edges(const Module& module) {
 }
 #endif
 
-AsmModule jit_compile(const Module &module, const bool verbose) {
+aasm::AsmModule jit_compile(const Module &module, const bool verbose) {
 #ifndef NDEBUG
     verify_data_and_control_flow_edges(module);
 #endif

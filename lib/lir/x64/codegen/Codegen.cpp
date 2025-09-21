@@ -57,3 +57,7 @@ void Codegen::run() {
         m_assemblers.emplace(symbol, fn_codegen.result().to_buffer());
     }
 }
+
+aasm::AsmModule Codegen::result() {
+    return aasm::AsmModule(std::move(m_symbol_table), std::move(m_assemblers), std::move(m_slots));
+}

@@ -4,7 +4,7 @@
 #include "lir/x64/asm/jit/OpCodeBuffer.h"
 #include "lir/x64/asm/jit/JitDataBlob.h"
 
-Elf Elf::collect(const AsmModule &module) {
+Elf Elf::collect(const aasm::AsmModule &module) {
     elf::elfio writer;
 
     writer.set_os_abi(ELFOSABI_LINUX);

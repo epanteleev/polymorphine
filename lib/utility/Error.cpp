@@ -14,8 +14,8 @@ namespace error {
     }
 
     [[noreturn]]
-    void assert0(const bool condition, std::source_location loc, const std::string& msg) {
-        std::cerr << "Assertion " << condition << " failed: " << msg << std::endl;
+    void assert0(const std::string_view condition, const std::source_location loc, const std::string& msg) {
+        std::cerr << "Assertion '" << condition << "' failed: " << msg << std::endl;
         raise(loc, msg);
     }
 

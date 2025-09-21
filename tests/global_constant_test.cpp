@@ -250,6 +250,159 @@ TEST(GlobalConstant, get_pointer_to_inner_struct_field) {
     ASSERT_STREQ(result, "hello");
 }
 
+static Module escape_constant_in_argument() {
+    ModuleBuilder builder;
+    {
+        const auto sum_fintype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "sum", FunctionBind::EXTERN);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "escape_constant_in_argument", FunctionBind::DEFAULT);
+        const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        auto data = builder.make_function_builder(prototype).value();
+        const auto constant = builder.add_constant("my_global_const", struct_type, Initializer{42L, 84L}).value();
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(sum_fintype, cont, {constant});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+    return builder.build();
+}
+
+struct Point2 {
+    std::int64_t x;
+    std::int64_t y;
+};
+
+static std::int64_t sum(const Point2* p) {
+    return p->x + p->y;
+}
+
+TEST(GlobalConstant, escape_struct_constant_in_argument) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_constant_in_argument", 3},
+    };
+    const auto external_symbols = std::unordered_map<std::string, std::size_t>{
+        {"sum", reinterpret_cast<std::size_t>(&sum)},
+    };
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_constant_in_argument(), asm_size, true);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 126);
+}
+
+static Module escape_field_constant_in_argument() {
+    ModuleBuilder builder;
+    {
+        const auto sum_fintype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "deref", FunctionBind::EXTERN);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "escape_field_constant_in_argument", FunctionBind::DEFAULT);
+        const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        auto data = builder.make_function_builder(prototype).value();
+        const auto constant = builder.add_constant("my_global_const", struct_type, Initializer{42L, 84L}).value();
+
+        const auto field2 = data.gfp(struct_type, constant, 1);
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(sum_fintype, cont, {field2});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+    return builder.build();
+}
+
+static std::int64_t deref_i64(const std::int64_t* p) {
+    return *p;
+}
+
+TEST(GlobalConstant, escape_struct_field_constant_in_argument) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_field_constant_in_argument", 3},
+    };
+    const auto external_symbols = std::unordered_map<std::string, std::size_t>{
+        {"deref", reinterpret_cast<std::size_t>(&deref_i64)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_field_constant_in_argument(), asm_size, true);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_field_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 84);
+}
+
+static Module escape_array_slice_constant_in_argument(const IntegerType* ty) {
+    ModuleBuilder builder;
+    {
+        const auto sum_fintype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr(), SignedIntegerType::i64()}, "sum", FunctionBind::EXTERN);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "escape_array_slice_constant_in_argument", FunctionBind::DEFAULT);
+        const auto array_type = builder.add_array_type(ty, 5);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto constant = builder.add_constant("my_global_const", array_type, Initializer{42L, 84L, 75L, 89, 12}).value();
+        const auto third = data.gep(ty, constant, Value::i64(2));
+        const auto cont = data.create_basic_block();
+        const auto call = data.call(sum_fintype, cont, {third, Value::i64(3)});
+        data.switch_block(cont);
+        data.ret(call);
+    }
+
+    return builder.build();
+}
+
+template<std::integral T>
+static std::int64_t sum_slice(const T* p, const std::size_t size) {
+    std::int64_t sum{};
+    for (std::size_t i{}; i < size; ++i) {
+        sum += p[i];
+    }
+    return sum;
+}
+
+TEST(GlobalConstant, espace_array_slice_constant_in_argument_i64) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_array_slice_constant_in_argument", 4},
+    };
+    const std::unordered_map<std::string, std::size_t> external_symbols {
+        {"sum", reinterpret_cast<std::size_t>(&sum_slice<std::int64_t>)}
+    };
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_array_slice_constant_in_argument(SignedIntegerType::i64()), asm_size);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_array_slice_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 75L + 89 + 12);
+}
+
+TEST(GlobalConstant, espace_array_slice_constant_in_argument_i32) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_array_slice_constant_in_argument", 4},
+    };
+    const std::unordered_map<std::string, std::size_t> external_symbols {
+        {"sum", reinterpret_cast<std::size_t>(&sum_slice<std::int32_t>)}
+    };
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_array_slice_constant_in_argument(SignedIntegerType::i32()), asm_size);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_array_slice_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 75L + 89 + 12);
+}
+
+TEST(GlobalConstant, espace_array_slice_constant_in_argument_i16) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_array_slice_constant_in_argument", 4},
+    };
+    const std::unordered_map<std::string, std::size_t> external_symbols {
+        {"sum", reinterpret_cast<std::size_t>(&sum_slice<std::int16_t>)}
+    };
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_array_slice_constant_in_argument(SignedIntegerType::i16()), asm_size, true);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_array_slice_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 75L + 89 + 12);
+}
+
+TEST(GlobalConstant, espace_array_slice_constant_in_argument_i8) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"escape_array_slice_constant_in_argument", 4},
+    };
+    const std::unordered_map<std::string, std::size_t> external_symbols {
+        {"sum", reinterpret_cast<std::size_t>(&sum_slice<std::int8_t>)}
+    };
+    const auto buffer = jit_compile_and_assembly(external_symbols, escape_array_slice_constant_in_argument(SignedIntegerType::i8()), asm_size, true);
+    const auto fn = buffer.code_start_as<std::int64_t()>("escape_array_slice_constant_in_argument").value();
+    const auto res = fn();
+    ASSERT_EQ(res, 75L + 89 + 12);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

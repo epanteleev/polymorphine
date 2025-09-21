@@ -8,7 +8,7 @@
 
 #include "asm/symbol/SymbolTable.h"
 #include "lir/x64/asm/jit/JitDataBlob.h"
-#include "lir/x64/asm/AsmModule.h"
+#include "asm/x64/AsmModule.h"
 #include "utility/Error.h"
 #include "utility/Sanitizer.h"
 
@@ -62,7 +62,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const JitModule& blob);
 
-    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, AsmModule&& module);
+    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, aasm::AsmModule&& module);
 
 private:
     /**

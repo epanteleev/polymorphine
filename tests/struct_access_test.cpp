@@ -245,9 +245,9 @@ static Module escaped_array_slice() {
         const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_array", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(array_type);
-        const auto field0 = data.gep(array_type, alloca, Value::i64(0));
-        const auto field1 = data.gep(array_type, alloca, Value::i64(1));
-        const auto field2 = data.gep(array_type, alloca, Value::i64(2));
+        const auto field0 = data.gep(SignedIntegerType::i64(), alloca, Value::i64(0));
+        const auto field1 = data.gep(SignedIntegerType::i64(), alloca, Value::i64(1));
+        const auto field2 = data.gep(SignedIntegerType::i64(), alloca, Value::i64(2));
         data.store(field0, Value::i64(-42));
         data.store(field1, Value::i64(static_cast<std::int64_t>(INT_MAX)+2));
         data.store(field2, Value::i64(100));
@@ -279,18 +279,20 @@ TEST(StructAlloc, escaped_array_slice_stack_alloc) {
     ASSERT_EQ(sum, static_cast<std::int64_t>(INT_MAX)+2 + 100);
 }
 
-static Module escaped_struct_field() {
+template<typename Fn>
+static Module escaped_struct_field(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto sum_prototype = builder.add_function_prototype(SignedIntegerType::i64(), {PointerType::ptr()}, "deref_ptr", FunctionBind::EXTERN);
-        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        auto point_type = builder.add_struct_type("Point", {ty, ty});
         const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "make_point", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto alloca = data.alloc(point_type);
         const auto field0 = data.gfp(point_type, alloca, 0);
         const auto field1 = data.gfp(point_type, alloca, 1);
-        data.store(field0, Value::i64(-42));
-        data.store(field1, Value::u64(static_cast<std::int64_t>(INT_MAX)+2));
+
+        data.store(field0, fn(-42));
+        data.store(field1, fn(static_cast<std::int64_t>(INT_MAX)+2));
         const auto cont = data.create_basic_block();
         const auto deref = data.call(sum_prototype, cont, {field1});
         data.switch_block(cont);
@@ -305,21 +307,37 @@ static Module escaped_struct_field() {
     return builder.build();
 }
 
-static std::int64_t deref_ptr(const std::int64_t* p) {
+template<std::integral T>
+static std::int64_t deref_ptr(const T* p) {
     return *p;
 }
 
-TEST(StructAlloc, escaped_struct_field_stack_alloc) {
+TEST(StructAlloc, escaped_struct_field_stack_alloc_i64) {
     const std::unordered_map<std::string, std::size_t> asm_size {
         {"make_point", 18},
     };
 
     const std::unordered_map<std::string, std::size_t> externs {
-        {"deref_ptr", reinterpret_cast<std::size_t>(&deref_ptr)}
+        {"deref_ptr", reinterpret_cast<std::size_t>(&deref_ptr<std::int64_t>)}
     };
 
-    const auto buffer = jit_compile_and_assembly(externs, escaped_struct_field(), asm_size);
+    const auto buffer = jit_compile_and_assembly(externs, escaped_struct_field(SignedIntegerType::i64(), Value::i64), asm_size, true);
     const auto make_point = buffer.code_start_as<int64_t()>("make_point").value();
+    const auto val = make_point();
+    ASSERT_EQ(val, -42 + static_cast<std::int64_t>(INT_MAX)+2);
+}
+
+TEST(StructAlloc, escaped_struct_field_stack_alloc_u64) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"make_point", 18},
+    };
+
+    const std::unordered_map<std::string, std::size_t> externs {
+        {"deref_ptr", reinterpret_cast<std::size_t>(&deref_ptr<std::uint64_t>)}
+    };
+
+    const auto buffer = jit_compile_and_assembly(externs, escaped_struct_field(UnsignedIntegerType::u64(), Value::u64), asm_size, true);
+    const auto make_point = buffer.code_start_as<uint64_t()>("make_point").value();
     const auto val = make_point();
     ASSERT_EQ(val, -42 + static_cast<std::int64_t>(INT_MAX)+2);
 }

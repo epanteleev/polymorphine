@@ -119,7 +119,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 
         if (current.isa(gep(any_value(), constant()))) {
             const auto gep = dynamic_cast<const GetElementPtr*>(current.get<ValueInstruction*>());
-            const auto& access_type = gep->access_type();
+            const auto& access_type = gep->inner_type();
             const auto index = gep->index().get<std::int64_t>();
             offset += static_cast<std::int64_t>(access_type->size_of() * index);
             current = gep->pointer();
@@ -152,7 +152,7 @@ static std::pair<Value, Value> try_fold_gep_index(const GetElementPtr* gep_inst)
     }
 
     auto [pointer, offset] = try_fold_field_access_iter(gep_inst);
-    const auto index = offset / gep_inst->access_type()->size_of();
+    const auto index = offset / gep_inst->inner_type()->size_of();
     return {pointer, Value::i64(static_cast<std::int64_t>(index))};
 }
 
@@ -519,7 +519,7 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        const auto load = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), src_vreg, idx_lir_op, fixed_reg));
+        const auto load = m_bb->ins(LIRProducerInstruction::lea(gep->inner_type()->size_of(), src_vreg, idx_lir_op, fixed_reg));
         return load->def(0);
     }
 
@@ -745,12 +745,12 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx_lir_op = get_lir_operand(idx);
 
         if (src.isa(value_semantic())) {
-            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(type->size_of(), src_vreg, idx_lir_op));
+            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
             return;
         }
 
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(type->size_of(), src_vreg, idx_lir_op));
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
         memorize(inst, load_inst->def(0));
         return;
     }
@@ -777,8 +777,9 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
 
     if (arg.isa(any_stack_alloc())) {
         // Escaped stack allocation. We need to load stack address.
+        const auto alloc = dynamic_cast<Alloc*>(arg.get<ValueInstruction*>());
         const auto arg_vreg = get_lir_operand(arg);
-        const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), arg_vreg.as_vreg().value(), LirCst::imm64(0UL)));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(alloc->allocated_type()->size_of(), arg_vreg.as_vreg().value(), LirCst::imm64(0UL)));
         return lea->def(0);
     }
 
@@ -787,7 +788,7 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), src_vreg, idx_lir_op));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
         return lea->def(0);
     }
 

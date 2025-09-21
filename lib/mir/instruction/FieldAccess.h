@@ -13,4 +13,7 @@ public:
     const Value &pointer() const {
         return m_values.at(0);
     }
+
+    [[nodiscard]]
+    virtual const NonTrivialType* inner_type() const noexcept = 0;
 };

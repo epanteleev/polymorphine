@@ -5,6 +5,7 @@
 #include <iosfwd>
 #include <span>
 
+#include "utility/Error.h"
 #include "base/Attribute.h"
 #include "base/FunctionBind.h"
 #include "mir/mir_frwd.h"
@@ -35,6 +36,7 @@ public:
 
     [[nodiscard]]
     const NonTrivialType* arg_type(const std::size_t index) const noexcept {
+        assertion(index < m_arg_types.size(), "Index out of bounds");
         return m_arg_types[index];
     }
 
@@ -46,7 +48,8 @@ public:
 
     [[nodiscard]]
     AttributeSet attribute(const std::size_t index) const noexcept {
-        return m_arg_attributes.at(index);
+        assertion(index < m_arg_attributes.size(), "Index out of bounds");
+        return m_arg_attributes[index];
     }
 
     friend std::ostream &operator<<(std::ostream &os, const FunctionPrototype &proto);
