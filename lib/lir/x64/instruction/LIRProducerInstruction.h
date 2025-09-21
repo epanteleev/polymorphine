@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "lir/x64/instruction/LIRProducerInstructionBase.h"
 
 enum class LIRProdInstKind: std::uint8_t {

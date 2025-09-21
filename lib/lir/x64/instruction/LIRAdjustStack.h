@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "LIRInstructionBase.h"
 #include "asm/x64/reg/RegSet.h"
 

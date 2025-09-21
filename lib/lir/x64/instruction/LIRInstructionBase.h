@@ -1,19 +1,17 @@
 #pragma once
 
 #include <iosfwd>
-#include <memory>
 
+#include "base/CommonInstruction.h"
 #include "lir/x64/asm/TemporalRegs.h"
 #include "lir/x64/operand/LIROperand.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 
-class LIRInstructionBase {
+class LIRInstructionBase : public CommonInstruction<LIRBlock> {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
     explicit LIRInstructionBase(std::vector<LIROperand> &&uses) noexcept:
-        m_id(NO_ID),
-        m_owner(nullptr),
         m_inputs(std::move(uses)) {}
 
     virtual ~LIRInstructionBase() = default;
@@ -47,18 +45,6 @@ public:
 
     void print(std::ostream &os) const;
 
-    [[nodiscard]]
-    std::size_t id() const noexcept {
-        assertion(m_id != NO_ID, "instruction id is not set");
-        return m_id;
-    }
-
-    [[nodiscard]]
-    LIRBlock* owner() const noexcept {
-        assertion(m_owner != nullptr, "owner is null");
-        return m_owner;
-    }
-
     template<typename Fn>
     [[nodiscard]]
     bool isa(const Fn& matcher) const noexcept {
@@ -78,11 +64,6 @@ public:
 protected:
     friend class LIRBlock;
 
-    void connect(const std::size_t idx, LIRBlock* owner) {
-        m_id = idx;
-        m_owner = owner;
-    }
-
     [[nodiscard]]
     static std::vector<LIRVal> to_lir_vals_only(const std::span<LIROperand const> inputs) {
         std::vector<LIRVal> lir_vals;
@@ -95,8 +76,6 @@ protected:
         return lir_vals;
     }
 
-    std::size_t m_id;
-    LIRBlock* m_owner;
     std::vector<LIROperand> m_inputs;
     TemporalRegs m_temporal_regs;
 };

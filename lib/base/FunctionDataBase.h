@@ -25,8 +25,6 @@ public:
         m_args(std::move(other.m_args)),
         m_basic_blocks(std::move(other.m_basic_blocks)) {}
 
-    virtual ~FunctionDataBase() = default;
-
     /**
      * Returns begin block of the function.
      * The begin block is the first basic block in the function.

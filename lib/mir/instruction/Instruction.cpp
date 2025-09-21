@@ -172,20 +172,18 @@ namespace {
             os << icmp->lhs() << ", " << icmp->rhs();
         }
 
-        template<typename T>
-        void print(const std::string_view name, const T* fa) const {
-            print_val(fa);
-            os << name << ' ';
-            os << *static_cast<const NonTrivialType*>(fa->inner_type());
-            os << ' ' << fa->pointer() << ", " << fa->index();
-        }
-
         void accept(GetElementPtr *gep) override {
-            print("gep", gep);
+            print_val(gep);
+            os << "gep" << ' ';
+            os << *gep->access_type();
+            os << ' ' << gep->pointer() << ", " << gep->index();
         }
 
         void accept(GetFieldPtr *gfp) override {
-            print("gfp", gfp);
+            print_val(gfp);
+            os << "gep" << ' ';
+            os << *gfp->basic_type();
+            os << ' ' << gfp->pointer() << ", " << gfp->index();
         }
 
         void accept(Select *select) override {

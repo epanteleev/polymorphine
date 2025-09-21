@@ -14,7 +14,7 @@ public:
     }
 
     [[nodiscard]]
-    const NonTrivialType* inner_type() const noexcept override {
+    const NonTrivialType* access_type() const noexcept override {
         return m_basic_type;
     }
 

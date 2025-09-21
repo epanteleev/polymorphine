@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 #include "base/FunctionBind.h"
 #include "lir/x64/instruction/LIRControlInstruction.h"

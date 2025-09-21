@@ -21,8 +21,6 @@ class BasicBlockBase {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:
-    virtual ~BasicBlockBase() = default;
-
     /**
      * Returns the unique identifier of the block in the function.
      */

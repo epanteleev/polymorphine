@@ -18,13 +18,13 @@ public:
     }
 
     [[nodiscard]]
-    const StructType* access_type() const noexcept {
+    const StructType* basic_type() const noexcept {
         return m_basic_type;
     }
 
     [[nodiscard]]
-    const NonTrivialType *inner_type() const noexcept override {
-        return m_basic_type->type_by_index(m_index);
+    const NonTrivialType *access_type() const noexcept override {
+        return m_basic_type->field_type_of(m_index);
     }
 
     static std::unique_ptr<GetFieldPtr> gfp(const StructType* basic_type, const Value &pointer, const std::size_t index) {

@@ -5,6 +5,7 @@
 #include <variant>
 
 #include "mir/mir_frwd.h"
+#include "mir/instruction/Instruction.h"
 
 template<typename T>
 concept IsTerminator = std::derived_from<T, TerminateInstruction> ||
@@ -18,8 +19,7 @@ public:
     [[nodiscard]]
     std::span<BasicBlock* const> targets() const noexcept;
 
-    template<typename Fn>
-    requires std::is_invocable_r_v<bool, Fn, const Instruction*>
+    template<InstructionMatcher Fn>
     [[nodiscard]]
     bool isa(Fn&& matcher) const noexcept {
         return std::visit(matcher, m_value);

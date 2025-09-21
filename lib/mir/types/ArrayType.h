@@ -25,7 +25,7 @@ public:
     }
 
     [[nodiscard]]
-    const NonTrivialType *type_by_index(const std::size_t index) const override {
+    const NonTrivialType *field_type_of(const std::size_t index) const override {
         assertion(index < m_length, "Index out of bounds");
         return m_element_type;
     }

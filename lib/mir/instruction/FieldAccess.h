@@ -15,5 +15,5 @@ public:
     }
 
     [[nodiscard]]
-    virtual const NonTrivialType* inner_type() const noexcept = 0;
+    virtual const NonTrivialType* access_type() const noexcept = 0;
 };

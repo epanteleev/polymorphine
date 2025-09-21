@@ -110,7 +110,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
     while (true) {
         if (current.isa(gfp())) {
             const auto gfp = dynamic_cast<const GetFieldPtr*>(current.get<ValueInstruction*>());
-            const auto& access_type = gfp->access_type();
+            const auto& access_type = gfp->basic_type();
             offset += static_cast<std::int64_t>(access_type->offset_of(gfp->index()));
             current = gfp->pointer();
             pointer = gfp->pointer();
@@ -119,7 +119,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 
         if (current.isa(gep(any_value(), constant()))) {
             const auto gep = dynamic_cast<const GetElementPtr*>(current.get<ValueInstruction*>());
-            const auto& access_type = gep->inner_type();
+            const auto& access_type = gep->access_type();
             const auto index = gep->index().get<std::int64_t>();
             offset += static_cast<std::int64_t>(access_type->size_of() * index);
             current = gep->pointer();
@@ -138,7 +138,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 static std::pair<Value, Value> try_fold_gfp_index(const GetFieldPtr* gfp_inst) noexcept {
     auto [pointer, offset] = try_fold_field_access_iter(gfp_inst);
 
-    const auto& field_type = gfp_inst->access_type()->type_by_index(gfp_inst->index());
+    const auto& field_type = gfp_inst->basic_type()->field_type_of(gfp_inst->index());
     const auto index = offset / field_type->size_of();
     return {pointer, Value::i64(static_cast<std::int64_t>(index))};
 }
@@ -152,7 +152,7 @@ static std::pair<Value, Value> try_fold_gep_index(const GetElementPtr* gep_inst)
     }
 
     auto [pointer, offset] = try_fold_field_access_iter(gep_inst);
-    const auto index = offset / gep_inst->inner_type()->size_of();
+    const auto index = offset / gep_inst->access_type()->size_of();
     return {pointer, Value::i64(static_cast<std::int64_t>(index))};
 }
 
@@ -343,7 +343,7 @@ LIRSlot FunctionLower::create_slot_iter(const NonTrivialType* ty, const Initiali
             std::vector<LIRSlot> slots;
             slots.reserve(glob.size());
             for (const auto& [idx, field]: std::views::enumerate(glob)) {
-                const auto field_type = agg_type->type_by_index(idx);
+                const auto field_type = agg_type->field_type_of(idx);
                 slots.push_back(create_slot_iter(field_type, field));
             }
             return LIRSlot(std::move(slots), aasm::SlotType::Aggregate);
@@ -523,7 +523,7 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        const auto load = m_bb->ins(LIRProducerInstruction::lea(gep->inner_type()->size_of(), src_vreg, idx_lir_op, fixed_reg));
+        const auto load = m_bb->ins(LIRProducerInstruction::lea(gep->access_type()->size_of(), src_vreg, idx_lir_op, fixed_reg));
         return load->def(0);
     }
 
@@ -749,12 +749,12 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx_lir_op = get_lir_operand(idx);
 
         if (src.isa(value_semantic())) {
-            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
+            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(gep->access_type()->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
             return;
         }
 
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(gep->access_type()->size_of(), src_vreg, idx_lir_op));
         memorize(inst, load_inst->def(0));
         return;
     }
@@ -792,7 +792,7 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        const auto lea = m_bb->ins(LIRProducerInstruction::lea(gep->inner_type()->size_of(), src_vreg, idx_lir_op));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(gep->access_type()->size_of(), src_vreg, idx_lir_op));
         return lea->def(0);
     }
 
