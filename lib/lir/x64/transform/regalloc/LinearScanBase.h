@@ -81,6 +81,10 @@ private:
                 do_stack_alloc(lir_val);
                 continue;
             }
+            for (std::int64_t i = range_begin; i < unhandled_interval->start()-1; ++i) {
+                allocate_temporal_register(m_instruction_ordering[i]);
+            }
+            range_begin = unhandled_interval->start();
 
             const auto active_eraser = [&](const IntervalEntry& entry) {
                 const auto real_interval = get_real_interval(entry);
@@ -161,14 +165,14 @@ private:
             select_virtual_reg(lir_val, unhandled_interval->hint());
             m_active_intervals.emplace_back(unhandled_interval, lir_val);
 
-            const std::span inst_range(m_instruction_ordering.begin() + range_begin, unhandled_interval->start() - range_begin);
-            allocate_temporal_registers(inst_range);
-            range_begin = unhandled_interval->start();
+            // Allocate temporals for current instruction.
+            allocate_temporal_register(m_instruction_ordering[range_begin-1]);
         }
 
         // Process the remaining instructions.
-        const std::span inst_range(m_instruction_ordering.begin() + range_begin, m_instruction_ordering.end());
-        allocate_temporal_registers(inst_range);
+        for (std::int64_t i = range_begin; i < static_cast<std::int64_t>(m_instruction_ordering.size()); ++i) {
+            allocate_temporal_register(m_instruction_ordering[i]);
+        }
     }
 
     void finalize_prologue_epilogue() const {
@@ -240,26 +244,28 @@ private:
         m_used_callee_saved_regs.emplace(reg);
     }
 
-    void allocate_temporal_registers(const std::span<LIRInstructionBase*> instructions) noexcept {
-        for (const auto inst: instructions) {
-            switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst)) {
-                case 0: break;
-                case 1: {
-                    const auto reg = m_reg_set.top(IntervalHint::NOTHING);
-                    m_reg_set.push(reg);
-                    inst->init_temporal_regs(TemporalRegs(reg));
-                    break;
-                }
-                case 2: {
-                    const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
-                    const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
-                    m_reg_set.push(reg2);
-                    m_reg_set.push(reg1);
-                    inst->init_temporal_regs(TemporalRegs(reg1, reg2));
-                    break;
-                }
-                default: die("Unexpected number of temporal registers allocated: {}", temp_num);
+    void allocate_temporal_register(LIRInstructionBase* inst) noexcept {
+        if (!inst->temporal_regs().empty()) {
+            return;
+        }
+
+        switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst)) {
+            case 0: break;
+            case 1: {
+                const auto reg = m_reg_set.top(IntervalHint::NOTHING);
+                m_reg_set.push(reg);
+                inst->init_temporal_regs(TemporalRegs(reg));
+                break;
             }
+            case 2: {
+                const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
+                const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
+                m_reg_set.push(reg2);
+                m_reg_set.push(reg1);
+                inst->init_temporal_regs(TemporalRegs(reg1, reg2));
+                break;
+            }
+            default: die("Unexpected number of temporal registers allocated: {}", temp_num);
         }
     }
 

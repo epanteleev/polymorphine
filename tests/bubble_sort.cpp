@@ -23,7 +23,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
     auto for_end20 = data.create_basic_block();
 
     auto a_addr = data.alloc(PointerType::ptr());
-    auto n_addr = data.alloc(ty);
+    auto n_addr = data.alloc(inc_type);
     auto i = data.alloc(inc_type);
     auto j = data.alloc(inc_type);
     auto tmp = data.alloc(ty);
@@ -38,7 +38,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
 
     data.switch_block(for_cond);
     auto v0 = data.load(inc_type, i);
-    auto v1 = data.load(ty, n_addr);
+    auto v1 = data.load(inc_type, n_addr);
     auto cmp = data.icmp(IcmpPredicate::Lt, v0, v1);
     data.br_cond(cmp, for_body, for_end20);
 
@@ -48,7 +48,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
 
     data.switch_block(for_cond1);
     auto v2 = data.load(inc_type, j);
-    auto v3 = data.load(ty, n_addr);
+    auto v3 = data.load(inc_type, n_addr);
     auto v4 = data.load(inc_type, i);
 
     auto sub = data.sub(v3, v4);
@@ -126,44 +126,37 @@ static std::unordered_map<std::string, std::size_t> symbol_sizes = {
     {"bubble_sort", 54}
 };
 
-template<std::integral T>
-static bool is_sorted(const std::span<T>& arr) {
-    for (std::size_t i = 1; i < arr.size(); ++i) {
-        if (arr[i - 1] > arr[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
 TEST(BubbleSort, bubble_sort_i32) {
     const auto module = bubble_sort(SignedIntegerType::i32(), SignedIntegerType::i32(), Value::i32);
     const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
     const auto fn = code.code_start_as<void(int*, int)>("bubble_sort").value();
 
-    int arr[] = {5, 3, 8, 1, 2};
-    fn(arr, 5);
-    ASSERT_TRUE(is_sorted(std::span(arr, 5)));
+    int arr[] = {5, 9, 0};
+    int sorted[] = {0, 5, 9};
+    fn(arr, 3);
+    ASSERT_TRUE(std::equal(arr, arr + 3, sorted));
 }
 
 TEST(BubbleSort, bubble_sort_i64) {
     const auto module = bubble_sort(SignedIntegerType::i64(), SignedIntegerType::i32(), Value::i32);
     const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
-    const auto fn = code.code_start_as<void(int64_t*, int64_t)>("bubble_sort").value();
+    const auto fn = code.code_start_as<void(int64_t*, int32_t)>("bubble_sort").value();
 
     int64_t arr[] = {5, 3, 8, 1, 2};
+    int64_t sorted[] = {1, 2, 3, 5, 8};
     fn(arr, 5);
-    ASSERT_TRUE(is_sorted(std::span(arr, 5)));
+    ASSERT_TRUE(std::equal(arr, arr + 5, sorted));
 }
 
 TEST(BubbleSort, bubble_sort_i16) {
-    const auto module = bubble_sort(SignedIntegerType::i16(), SignedIntegerType::i8(), Value::i8);
+    const auto module = bubble_sort(SignedIntegerType::i16(), SignedIntegerType::i8(), Value::i32);
     const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
-    const auto fn = code.code_start_as<void(int16_t*, int8_t)>("bubble_sort").value();
+    const auto fn = code.code_start_as<void(int16_t*, int32_t)>("bubble_sort").value();
 
     int16_t arr[] = {5, 3, 8, 1, 2};
+    int16_t sorted[] = {1, 2, 3, 5, 8};
     fn(arr, 5);
-    ASSERT_TRUE(is_sorted(std::span(arr, 5)));
+    ASSERT_TRUE(std::equal(arr, arr + 5, sorted));
 }
 
 TEST(BubbleSort, bubble_sort_u32) {
@@ -172,8 +165,9 @@ TEST(BubbleSort, bubble_sort_u32) {
     const auto fn = code.code_start_as<void(uint64_t*, uint32_t)>("bubble_sort").value();
 
     uint64_t arr[] = {5, 3, 8, 1, 2};
+    uint64_t sorted[] = {1, 2, 3, 5, 8};
     fn(arr, 5);
-    ASSERT_TRUE(is_sorted(std::span(arr, 5)));
+    ASSERT_TRUE(std::equal(arr, arr + 5, sorted));
 }
 
 int main(int argc, char **argv) {

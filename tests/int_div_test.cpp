@@ -111,7 +111,7 @@ TEST(Idiv, idiv_to_2_u32) {
         {"idiv_2", 5},
     };
 
-    const auto buffer = jit_compile_and_assembly({}, idiv_2(UnsignedIntegerType::u32(), Value::u32), asm_size);
+    const auto buffer = jit_compile_and_assembly({}, idiv_2(UnsignedIntegerType::u32(), Value::u32), asm_size, true);
     const auto idiv = buffer.code_start_as<std::uint32_t(std::uint32_t)>("idiv_2").value();
     const auto p = idiv(5);
     ASSERT_EQ(p, 2);

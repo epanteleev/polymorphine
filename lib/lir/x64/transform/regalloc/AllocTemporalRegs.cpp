@@ -109,6 +109,7 @@ namespace details {
     void AllocTemporalRegs::store_i(const LIRVal &pointer, const LIROperand &value) {
         const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
         const auto value_op = convert_to_gp_op(value);
+
         EmptyEmitter empty_emitter;
         StoreGPEmit emitter(m_temp_counter, empty_emitter, value.size());
         emitter.apply(pointer_reg, value_op);
