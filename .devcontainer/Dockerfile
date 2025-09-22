@@ -3,6 +3,7 @@ FROM ubuntu:25.10
 RUN apt-get update && apt-get install -y \
     build-essential \
     clang \
+    llvm-20 \
     gdb \
     clangd \
     cmake \

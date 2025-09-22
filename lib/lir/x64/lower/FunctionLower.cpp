@@ -709,7 +709,7 @@ void FunctionLower::lower_load(const Unary *inst) {
     const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 
-    if (pointer.isa(any_stack_alloc())) {
+    if (pointer.isa(value_semantic())) {
         const auto pointer_vreg = get_lir_operand(pointer);
         memorize(inst, pointer_vreg);
         return;
@@ -736,12 +736,6 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto pointer_vreg = get_lir_val(pointer);
         const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
-        return;
-    }
-
-    if (pointer.isa(g_value())) {
-        const auto slot = lower_global_cst(*pointer.get<GlobalValue*>());
-        memorize(inst, slot);
         return;
     }
 
