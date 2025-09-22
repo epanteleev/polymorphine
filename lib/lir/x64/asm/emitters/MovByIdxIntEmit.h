@@ -63,15 +63,20 @@ private:
     }
 
     void emit(const aasm::Address &out, aasm::GPReg in1, aasm::GPReg in2) override {
-        unimplemented();
+        m_as.mov(8, out, m_temporal_regs.gp_temp1());
+        m_as.mov(m_size, in2, aasm::Address(m_temporal_regs.gp_temp1(), in1, m_size, 0));
     }
 
-    void emit(const aasm::Address &out, aasm::GPReg in1, const aasm::Address &in2) override {
-        unimplemented();
+    void emit(const aasm::Address &out, const aasm::GPReg in1, const aasm::Address &in2) override {
+        m_as.mov(8, out, m_temporal_regs.gp_temp1());
+        m_as.mov(m_size, in2, m_temporal_regs.gp_temp2());
+        m_as.mov(m_size, m_temporal_regs.gp_temp2(), aasm::Address(m_temporal_regs.gp_temp1(), in1, m_size, 0));
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in1, aasm::GPReg in2) override {
-        unimplemented();
+        m_as.mov(8, out, m_temporal_regs.gp_temp1());
+        m_as.mov(8, in1, m_temporal_regs.gp_temp2());
+        m_as.mov(m_size, in2, aasm::Address(m_temporal_regs.gp_temp1(), m_temporal_regs.gp_temp2(), m_size, 0));
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in1, const aasm::Address &in2) override {

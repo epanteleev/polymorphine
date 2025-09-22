@@ -68,6 +68,38 @@ TEST(GlobalVariable, load_store_global_i8) {
     ASSERT_EQ(*result, 47); // Ensure the value is retained
 }
 
+static Module global_struct_variable_test() {
+    ModuleBuilder builder;
+    {
+        const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
+        const auto global = builder.add_variable("my_global_var", struct_type, Initializer{1L, 2L}).value();
+        const auto prototype = builder.add_function_prototype(struct_type, {}, "load_store", FunctionBind::INTERNAL);
+        auto data = builder.make_function_builder(prototype).value();
+        const auto field_ptr = data.gfp(struct_type, global, 1);
+        data.store(field_ptr, Value::i64(84));
+        data.ret(global);
+    }
+    return builder.build();
+}
+
+struct MyStruct {
+    std::int64_t a;
+    std::int64_t b;
+};
+
+TEST(GlobalVariable, load_store_global_struct) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"load_store", 3},
+    };
+
+    const auto module = global_struct_variable_test();
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size, true);
+    const auto fn = buffer.code_start_as<MyStruct*()>("load_store").value();
+    const auto result = fn();
+    ASSERT_EQ(result->a, 1);
+    ASSERT_EQ(result->b, 84);
+    ASSERT_EQ(result->b, 84); // Ensure the value is retained
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

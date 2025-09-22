@@ -155,7 +155,8 @@ void LIRFunctionCodegen::cmov_i(aasm::CondType cond_type, const LIRVal& out, con
 void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     const auto in1_reg = convert_to_gp_op(in1);
     const auto in2_reg = convert_to_gp_op(in2);
-    CmpGPEmit::apply(m_as, in1.size(), in1_reg, in2_reg);
+    CmpGPEmit emitter(m_current_inst->temporal_regs(), m_as, in1.size());
+    emitter.apply(in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::mov_i(const LIROperand &in1, const LIROperand &in2) {
@@ -164,7 +165,8 @@ void LIRFunctionCodegen::mov_i(const LIROperand &in1, const LIROperand &in2) {
     assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
 
     const auto in2_op = convert_to_gp_op(in2);
-    MovGPEmit::apply(m_as, in1.size(), add_opt.value(), in2_op);
+    MovGPEmit emitter(m_current_inst->temporal_regs(), m_as, in1.size());
+    emitter.apply(add_opt.value(), in2_op);
 }
 
 void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) {
@@ -176,8 +178,8 @@ void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index
     emitter.apply(out_reg, index_op, in2_op);
 }
 
-void LIRFunctionCodegen::store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) {
-    const auto out_vreg = pointer.assigned_reg().to_gp_op().value();
+void LIRFunctionCodegen::store_by_offset_i(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) {
+    const auto out_vreg = convert_to_gp_op(pointer);
     const auto out_addr = out_vreg.as_address();
     assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
 
@@ -192,11 +194,11 @@ void LIRFunctionCodegen::load_by_idx_i(const LIRVal &out, const LIROperand &poin
     const auto index_op = convert_to_gp_op(index);
     const auto pointer_op = convert_to_gp_op(pointer);
 
-    LoadByIdxIntEmit emitter(m_as, out.size());
+    LoadByIdxIntEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
     emitter.apply(out_reg, pointer_op, index_op);
 }
 
-void LIRFunctionCodegen::load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
+void LIRFunctionCodegen::read_by_offset_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
     const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
     const auto pointer_op = convert_to_gp_op(pointer);

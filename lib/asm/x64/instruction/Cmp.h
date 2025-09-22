@@ -99,8 +99,8 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> CMP_MR = {0x3B};
-            static constexpr std::array<std::uint8_t, 1> CMP_MR_8 = {0x3A};
+            static constexpr std::array<std::uint8_t, 1> CMP_MR = {0x39};
+            static constexpr std::array<std::uint8_t, 1> CMP_MR_8 = {0x38};
             Encoder enc(buffer, CMP_MR_8, CMP_MR);
             return enc.encode_MR(m_size, m_src, m_dst);
         }

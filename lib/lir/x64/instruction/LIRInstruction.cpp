@@ -10,12 +10,7 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.mov_by_idx_i(inout.value(), in(1), in(2));
             break;
         }
-        case LIRInstKind::StoreOnStack: {
-            const auto inout = LIRVal::try_from(in(0));
-            assertion(inout.has_value(), "invariant");
-            visitor.store_on_stack_i(inout.value(), in(1), in(2));
-            break;
-        }
+        case LIRInstKind::StoreByOffset: visitor.store_by_offset_i(in(0), in(1), in(2)); break;
         case LIRInstKind::Store: {
             const auto pointer = LIRVal::try_from(in(0));
             assertion(pointer.has_value(), "invariant");

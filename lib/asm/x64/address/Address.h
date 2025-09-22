@@ -30,7 +30,7 @@ namespace aasm {
             m_address(AddressIndexScale(base, index, scale, displacement)) {}
 
         explicit constexpr Address(const GPReg base, const std::int32_t displacement = 0) noexcept:
-                    m_address(AddressBaseDisp(base, displacement)) {}
+            m_address(AddressBaseDisp(base, displacement)) {}
 
         explicit constexpr Address(const Symbol* symbol, const std::int32_t displacement = 0) noexcept:
             m_address(AddressLiteral(symbol, displacement)) {}

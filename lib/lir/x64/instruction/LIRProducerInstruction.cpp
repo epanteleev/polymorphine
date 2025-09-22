@@ -23,7 +23,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRProdInstKind::LoadByIdx: visitor.load_by_idx_i(def(0), in(0), in(1)); break;
-        case LIRProdInstKind::LoadFromStack: visitor.load_from_stack_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::ReadByOffset: visitor.read_by_offset_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Lea: visitor.lea_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Movz: visitor.movzx_i(def(0), in(0)); break;
         case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;

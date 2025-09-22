@@ -790,8 +790,33 @@ TEST(Asm, cmp_mem_reg1) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rcx, 23);
+        constexpr aasm::Address addr(aasm::rcx, 23);
         a.cmp(size, addr, aasm::r12);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, cmp_reg_mem3) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x38,0x55,0xd0},
+        {0x66,0x39,0x55,0xd0},
+        {0x39,0x55,0xd0},
+        {0x48,0x39,0x55,0xd0}
+    };
+
+    const std::vector<std::string> names = {
+        "cmpb %dl, -48(%rbp)",
+        "cmpw %dx, -48(%rbp)",
+        "cmpl %edx, -48(%rbp)",
+        "cmpq %rdx, -48(%rbp)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        const aasm::Address addr(aasm::rbp, -48);
+        a.cmp(size, aasm::rdx, addr);
         return a;
     };
 

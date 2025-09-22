@@ -3,7 +3,7 @@
 namespace aasm {
     class AddressLiteral final {
     public:
-        explicit AddressLiteral(const Symbol* symbol, const std::int32_t displacement) noexcept:
+        constexpr explicit AddressLiteral(const Symbol* symbol, const std::int32_t displacement) noexcept:
             m_symbol(symbol),
             m_displacement(displacement) {}
 

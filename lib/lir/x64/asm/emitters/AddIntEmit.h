@@ -30,21 +30,28 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, const aasm::Address &in1, aasm::GPReg in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::Address &in1, const aasm::GPReg in2) override {
+        if (in2 == out) {
+            m_as.add(m_size, in1, out);
+
+        } else {
+            m_as.copy(m_size, in2, out);
+            m_as.add(m_size, in1, out);
+        }
     }
 
-    void emit(aasm::GPReg out, const aasm::Address &in1, const aasm::Address &in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::Address &in1, const aasm::Address &in2) override {
+        m_as.mov(m_size, in1, out);
+        m_as.add(m_size, in2, out);
     }
 
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const std::int64_t in2) override {
         assertion(std::in_range<std::int32_t>(in2), "Immediate value out of range for add instruction");
         if (in1 == out) {
-            m_as.add(m_size, static_cast<std::int32_t>(in2), out);
+            m_as.add(m_size, aasm::checked_cast<std::int32_t>(in2), out);
         } else {
             m_as.copy(m_size, in1, out);
-            m_as.add(m_size, static_cast<std::int32_t>(in2), out);
+            m_as.add(m_size, aasm::checked_cast<std::int32_t>(in2), out);
         }
     }
 
@@ -58,8 +65,10 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, const aasm::Address &in1, std::int64_t in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::Address &in1, const std::int64_t in2) override {
+        assertion(std::in_range<std::int32_t>(in2), "Immediate value out of range for add instruction");
+        m_as.mov(m_size, in1, out);
+        m_as.add(m_size, static_cast<std::int32_t>(in2), out);
     }
 
     void emit(const aasm::Address &out, aasm::GPReg in1, aasm::GPReg in2) override {

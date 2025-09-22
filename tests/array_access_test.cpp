@@ -32,7 +32,7 @@ static Module create_array() {
 
 TEST(ArrayAccess, basic) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"create_array", 32},
+        {"create_array", 27},
     };
     const auto buffer = jit_compile_and_assembly({}, create_array(), asm_size, true);
     const auto create_array_fn = buffer.code_start_as<std::int64_t()>("create_array").value();
@@ -127,7 +127,7 @@ static Module create_struct_of_arrays() {
 
 TEST(ArrayAccess, struct_of_arrays) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"create_struct_of_arrays", 26},
+        {"create_struct_of_arrays", 23},
     };
 
     const auto buffer = jit_compile_and_assembly({}, create_struct_of_arrays(), asm_size, true);

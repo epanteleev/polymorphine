@@ -38,8 +38,9 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::GPReg out, const aasm::Address &in1, const aasm::Address &in2) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, const aasm::Address &in1, const aasm::Address &in2) override {
+        m_as.mov(m_size, in1, out);
+        m_as.sub(m_size, in2, out);
     }
 
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const std::int64_t in2) override {

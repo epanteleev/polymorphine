@@ -123,7 +123,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
 }
 
 static std::unordered_map<std::string, std::size_t> symbol_sizes = {
-    {"bubble_sort", 61}
+    {"bubble_sort", 54}
 };
 
 template<std::integral T>

@@ -459,8 +459,8 @@ std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span
 
         const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of()));
         for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) { //FIXME handle <8 bytes
-            const auto load = m_bb->ins(LIRProducerInstruction::load_from_stack(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
-            m_bb->ins(LIRInstruction::store_on_stack(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
+            const auto load = m_bb->ins(LIRProducerInstruction::read_by_offset(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
+            m_bb->ins(LIRInstruction::store_by_offset(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
         }
 
         args.emplace_back(gen->def(0));
@@ -547,8 +547,8 @@ void FunctionLower::accept(Store *store) {
     const auto value = store->value();
 
     const auto value_vreg = get_lir_operand(value);
-    if (pointer.isa(any_stack_alloc())) {
-        const auto pointer_vreg = get_lir_val(pointer);
+    if (pointer.isa(value_semantic())) {
+        const auto pointer_vreg = get_lir_operand(pointer);
         m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
         return;
     }
@@ -556,25 +556,19 @@ void FunctionLower::accept(Store *store) {
     if (pointer.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(pointer.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
-        const auto src_vreg = get_lir_val(src);
+        const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        if (src.isa(any_stack_alloc())) {
-            m_bb->ins(LIRInstruction::store_on_stack(src_vreg, idx_lir_op, value_vreg));
+        if (src.isa(value_semantic())) {
+            m_bb->ins(LIRInstruction::store_by_offset(src_vreg, idx_lir_op, value_vreg));
             return;
         }
-        m_bb->ins(LIRInstruction::mov_by_idx(src_vreg, idx_lir_op, value_vreg));
+        m_bb->ins(LIRInstruction::mov_by_idx(src_vreg.as_vreg().value(), idx_lir_op, value_vreg));
         return;
     }
 
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
-        return;
-    }
-
-    if (pointer.isa(g_variable())) {
-        const auto slot = lower_global_cst(*pointer.get<GlobalValue*>());
-        m_bb->ins(LIRInstruction::mov(slot, value_vreg));
         return;
     }
 
@@ -717,8 +711,7 @@ void FunctionLower::lower_load(const Unary *inst) {
 
     if (pointer.isa(any_stack_alloc())) {
         const auto pointer_vreg = get_lir_operand(pointer);
-        const auto copy_inst = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), pointer_vreg));
-        memorize(inst, copy_inst->def(0));
+        memorize(inst, pointer_vreg);
         return;
     }
 
@@ -729,7 +722,7 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx_lir_op = get_lir_operand(idx);
 
         if (src.isa(value_semantic())) {
-            const auto load_inst = m_bb->ins(LIRProducerInstruction::load_from_stack(gep->access_type()->size_of(), src_vreg, idx_lir_op));
+            const auto load_inst = m_bb->ins(LIRProducerInstruction::read_by_offset(gep->access_type()->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
             return;
         }

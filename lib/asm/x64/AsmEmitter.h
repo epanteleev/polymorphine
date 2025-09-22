@@ -118,8 +118,8 @@ namespace aasm {
             m_instructions.emplace_back(details::CmpRM(size, src, dst));
         }
 
-        constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const Address& src) {
-            m_instructions.emplace_back(details::CmpMI(size, imm, src));
+        constexpr void cmp(const std::uint8_t size, const std::int32_t imm, const Address& dst) {
+            m_instructions.emplace_back(details::CmpMI(size, imm, dst));
         }
 
         constexpr void cmp(const std::uint8_t size, const GPReg src, const Address& dst) {

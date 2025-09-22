@@ -3,7 +3,7 @@
 namespace aasm {
     class AddressBaseDisp final {
     public:
-        explicit AddressBaseDisp(const GPReg base, const std::int32_t displacement = 0) noexcept:
+        constexpr explicit AddressBaseDisp(const GPReg base, const std::int32_t displacement = 0) noexcept:
             m_displacement(displacement),
             m_base(base) {}
 

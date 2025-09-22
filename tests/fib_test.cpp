@@ -100,7 +100,7 @@ static T fib_value(T n) {
 }
 
 static const std::unordered_map<std::string, std::size_t> fib_sizes = {
-    {"fib", 34}
+    {"fib", 31}
 };
 
 TEST(Fib, i8) {
@@ -154,12 +154,12 @@ TEST(Fib, u32) {
 }
 
 TEST(Fib, i32) {
-    const auto buffer = jit_compile_and_assembly(fib(SignedIntegerType::i32(), Value::i32), fib_sizes, false);
+    const auto buffer = jit_compile_and_assembly(fib(SignedIntegerType::i32(), Value::i32), fib_sizes, true);
     const auto fn = buffer.code_start_as<int(int)>("fib").value();
 
     for (int i = 0; i < 20; ++i) {
         const auto res = fn(i);
-        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+        ASSERT_EQ(res, fib_value<int>(i)) << "Failed for value: " << i;
     }
 }
 

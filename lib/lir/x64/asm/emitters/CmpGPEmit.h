@@ -1,18 +1,19 @@
 #pragma once
 
+template<typename TemporalRegStorage, typename AsmEmit>
 class CmpGPEmit final: public GPUnaryVisitor {
 public:
-    static void apply(MasmEmitter& as, const std::uint8_t size, const GPOp& out, const GPOp& in) {
-        CmpGPEmit emitter(as, size);
-        dispatch(emitter, out, in);
+    explicit CmpGPEmit(const TemporalRegStorage& temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as),
+        m_temporal_regs(temporal_regs) {}
+
+    void apply(const GPOp& out, const GPOp& in) {
+        dispatch(*this, out, in);
     }
 
 private:
     friend class GPUnaryVisitor;
-
-    explicit CmpGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
-        m_size(size),
-        m_as(as) {}
 
     void emit(const aasm::GPReg out, const aasm::GPReg in) override {
         m_as.cmp(m_size, in, out);
@@ -23,19 +24,20 @@ private:
     }
 
     void emit(const aasm::Address &out, aasm::GPReg in) override {
-        unimplemented();
+        m_as.cmp(m_size, in, out);
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in) override {
-        unimplemented();
+        m_as.mov(m_size, in, m_temporal_regs.gp_temp1());
+        m_as.cmp(m_size, m_temporal_regs.gp_temp1(), out);
     }
 
     void emit(const aasm::GPReg out, const std::int64_t in) override {
         m_as.cmp(m_size, aasm::checked_cast<std::int32_t>(in), out);
     }
 
-    void emit(const aasm::Address &out, std::int64_t in) override {
-        unimplemented();
+    void emit(const aasm::Address &out, const std::int64_t in) override {
+        m_as.cmp(m_size, aasm::checked_cast<std::int32_t>(in), out);
     }
 
     void emit(std::int64_t in1, std::int64_t in2) override {
@@ -51,5 +53,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TemporalRegStorage& m_temporal_regs;
 };

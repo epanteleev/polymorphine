@@ -2,15 +2,19 @@
 
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 #include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryVisitor.h"
 #include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
 #include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
 
 #include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/GPOp.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
+#include "lir/x64/asm/emitters/CmpGPEmit.h"
 #include "lir/x64/asm/emitters/DivIntEmit.h"
 #include "lir/x64/asm/emitters/DivUIntEmit.h"
+#include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/MovGPEmit.h"
 #include "lir/x64/asm/emitters/StoreGPEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
@@ -55,8 +59,28 @@ namespace details {
         const auto in1_reg = convert_to_gp_op(in1);
         const auto in2_reg = convert_to_gp_op(in2);
         EmptyEmitter empty_emitter;
-        CMovGPEmit emitter( m_temp_counter, empty_emitter, cond_type, out.size());
+        CMovGPEmit emitter(m_temp_counter, empty_emitter, cond_type, out.size());
         emitter.apply(out_reg, in1_reg, in2_reg);
+    }
+
+    void AllocTemporalRegs::cmp_i(const LIROperand &in1, const LIROperand &in2) {
+        const auto in1_reg = convert_to_gp_op(in1);
+        const auto in2_reg = convert_to_gp_op(in2);
+
+        EmptyEmitter empty_emitter;
+        CmpGPEmit emitter(m_temp_counter, empty_emitter, in1.size());
+        emitter.apply(in1_reg, in2_reg);
+    }
+
+    void AllocTemporalRegs::mov_i(const LIROperand &in1, const LIROperand &in2) {
+        const auto in1_reg = convert_to_gp_op(in1);
+        const auto add_opt = in1_reg.as_address();
+        assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
+
+        const auto in2_op = convert_to_gp_op(in2);
+        EmptyEmitter empty_emitter;
+        MovGPEmit emitter(m_temp_counter, empty_emitter, in1.size());
+        emitter.apply(add_opt.value(), in2_op);
     }
 
     void AllocTemporalRegs::mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) {
@@ -69,8 +93,8 @@ namespace details {
         emitter.apply(out_reg, index_op, in2_op);
     }
 
-    void AllocTemporalRegs::store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) {
-        const auto out_vreg = pointer.assigned_reg().to_gp_op().value();
+    void AllocTemporalRegs::store_by_offset_i(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) {
+        const auto out_vreg = convert_to_gp_op(pointer);
         const auto out_addr = out_vreg.as_address();
         assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
 
@@ -88,5 +112,15 @@ namespace details {
         EmptyEmitter empty_emitter;
         StoreGPEmit emitter(m_temp_counter, empty_emitter, value.size());
         emitter.apply(pointer_reg, value_op);
+    }
+
+    void AllocTemporalRegs::load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) {
+        const auto out_reg = out.assigned_reg().to_gp_op().value();
+        const auto index_op = convert_to_gp_op(index);
+        const auto pointer_op = convert_to_gp_op(pointer);
+
+        EmptyEmitter empty_emitter;
+        LoadByIdxIntEmit emitter(m_temp_counter, empty_emitter, out.size());
+        emitter.apply(out_reg, pointer_op, index_op);
     }
 }

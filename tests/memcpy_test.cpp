@@ -73,7 +73,7 @@ TEST(Memcpy, basic) {
     const char* src = "Hello";
 
     std::unordered_map<std::string, std::size_t> asm_size {
-        {"memcpy_test", 27},
+        {"memcpy_test", 26},
     };
 
     const auto func = jit_compile_and_assembly(memcpy_test_module(), asm_size, true);

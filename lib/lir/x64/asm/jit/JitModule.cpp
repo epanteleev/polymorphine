@@ -33,8 +33,16 @@ public:
         m_code_buffer_offset(code_buffer_offset) {}
 
     void run() {
-        assemble_global_slots();
-        assemble_functions();
+        relocation_table.resize(m_module.m_asm_buffers.size() + m_module.m_global_slots.size());
+
+        for (const auto& [name, slot]: m_module.m_global_slots) {
+            assemble_slot(name, slot);
+        }
+
+        for (const auto& [name, emitter] : m_module.m_asm_buffers) {
+            assemble_slot(name, emitter);
+        }
+
         try_resolve_relocations();
     }
 
@@ -43,18 +51,6 @@ public:
     }
 
 private:
-    void assemble_functions() {
-        for (const auto& [name, emitter] : m_module.m_asm_buffers) {
-            assemble_slot(name, emitter);
-        }
-    }
-
-    void assemble_global_slots() {
-        for (const auto& [name, slot]: m_module.m_global_slots) {
-            assemble_slot(name, slot);
-        }
-    }
-
     template<typename T>
     void assemble_slot(const aasm::Symbol* name, T& element) {
         const auto start = jit_assembler.size();
@@ -89,11 +85,9 @@ private:
         if (external == m_plt_table.end()) {
             die("PLT relocation for symbol '{}' not found in external symbols", reloc.symbol_name());
         }
+
         const auto offset = static_cast<std::int64_t>(external->second) - static_cast<std::int64_t>(m_code_buffer_offset) - reloc.displacement();
-        if (!std::in_range<std::int32_t>(offset)) {
-            die("Offset {} is out of range for 32-bit PLT patching", offset);
-        }
-        jit_assembler.patch32(reloc.offset(), offset);
+        jit_assembler.patch32(reloc.offset(), aasm::checked_cast<std::int32_t>(offset));
     }
 
     void try_patch_relocation(const aasm::Relocation& reloc) {
@@ -104,11 +98,7 @@ private:
 
         const auto& [start, _] = chunk->second;
         const auto offset = static_cast<std::int64_t>(start) - reloc.displacement();
-        if (!std::in_range<std::int32_t>(offset)) {
-            die("Offset {} is out of range for 32-bit patching", offset);
-        }
-
-        jit_assembler.patch32(reloc.offset(), offset);
+        jit_assembler.patch32(reloc.offset(), aasm::checked_cast<std::int32_t>(offset));
     }
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;
@@ -123,23 +113,24 @@ private:
 JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, aasm::AsmModule &&module) {
     const auto code_buffer_size = aasm::ModuleSizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
-    const auto memory = map_memory(plt_size, code_buffer_size);
+    const auto [memory, plt_table, code_buffer] = map_memory(plt_size, code_buffer_size);
 
-    std::unordered_map<const aasm::Symbol*, std::size_t> plt_table;
-    std::span plt_table_span{reinterpret_cast<std::uint64_t*>(memory.plt_table.data()), memory.plt_table.size() / sizeof(std::uint64_t)};
+    std::unordered_map<const aasm::Symbol*, std::size_t> plt_table_map;
+    plt_table_map.reserve(external_symbols.size());
 
+    std::span plt_table_span{reinterpret_cast<std::uint64_t*>(plt_table.data()), plt_table.size() / sizeof(std::uint64_t)};
     std::size_t plt_table_offset{};
     for (const auto& [symbol, address] : external_symbols) {
         plt_table_span[plt_table_offset] = address;
         plt_table_offset += 1;
-        plt_table.emplace(symbol, sizeof(std::int64_t) * (plt_table_offset-1));
+        plt_table_map.emplace(symbol, sizeof(std::int64_t) * (plt_table_offset-1));
     }
 
-    RelocResolver resolver(plt_table, module, memory.code_buffer, memory.plt_table.size());
+    RelocResolver resolver(plt_table_map, module, code_buffer, plt_table.size());
     resolver.run();
 
-    JitDataBlob code_blob(resolver.result(), memory.code_buffer);
-    return {std::move(module.m_symbol_table), memory.memory, std::move(code_blob)};
+    JitDataBlob code_blob(resolver.result(), code_buffer);
+    return {std::move(module.m_symbol_table), memory, std::move(code_blob)};
 }
 
 std::ostream & operator<<(std::ostream &os, const JitModule &blob) {

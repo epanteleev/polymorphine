@@ -122,7 +122,7 @@ namespace {
             m_os << "mov_by_idx_i pointer(" << pointer << ") index(" << index << ") in(" << in << ')';
         }
 
-        void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override {
+        void store_by_offset_i(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) override {
             m_os << "store_on_stack_i pointer(" << pointer << ") index(" << index << ") value(" << value << ')';
         }
 
@@ -167,7 +167,7 @@ namespace {
             m_os << "load_by_idx_i out(" << out << ") index(" << index << ") pointer(" << pointer << ')';
         }
 
-        void load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+        void read_by_offset_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
             m_os << "load_from_stack_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 

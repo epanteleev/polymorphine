@@ -73,17 +73,17 @@ namespace details {
 
         void trunc_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void cmp_i(const LIROperand &in1, const LIROperand &in2) override {}
+        void cmp_i(const LIROperand &in1, const LIROperand &in2) override;
 
         void neg_i(const LIRVal &out, const LIROperand &in) override {}
 
         void not_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void mov_i(const LIROperand &in1, const LIROperand &in2) override {}
+        void mov_i(const LIROperand &in1, const LIROperand &in2) override;
 
         void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override;
 
-        void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
+        void store_by_offset_i(const LIROperand  &pointer, const LIROperand &index, const LIROperand &value) override;
 
         void store_i(const LIRVal &pointer, const LIROperand &value) override;
 
@@ -99,9 +99,9 @@ namespace details {
 
         void load_i(const LIRVal &out, const LIRVal &pointer) override {}
 
-        void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
+        void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override;
 
-        void load_from_stack_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
+        void read_by_offset_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
 
         void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
 

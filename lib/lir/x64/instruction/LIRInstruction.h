@@ -7,7 +7,7 @@
 enum class LIRInstKind: std::uint8_t {
     Mov,
     MovByIdx,
-    StoreOnStack,
+    StoreByOffset,
     Store,
     Cmp,
 };
@@ -36,8 +36,8 @@ public:
         return std::make_unique<LIRInstruction>(LIRInstKind::Cmp, std::vector{lhs, rhs});
     }
 
-    static std::unique_ptr<LIRInstruction> store_on_stack(const LIRVal& pointer, const LIROperand& index, const LIROperand& value) {
-        return std::make_unique<LIRInstruction>(LIRInstKind::StoreOnStack, std::vector<LIROperand>{pointer, index, value});
+    static std::unique_ptr<LIRInstruction> store_by_offset(const LIROperand& pointer, const LIROperand& index, const LIROperand& value) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::StoreByOffset, std::vector{pointer, index, value});
     }
 
 private:
