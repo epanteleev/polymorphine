@@ -30,7 +30,7 @@ public:
     virtual void neg_i(const LIRVal& out, const LIROperand& in) = 0;
     virtual void not_i(const LIRVal& out, const LIROperand& in) = 0;
 
-    virtual void mov_i(const LIRVal& in1, const LIROperand& in2) = 0;
+    virtual void mov_i(const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void mov_by_idx_i(const LIRVal& pointer, const LIROperand& index, const LIROperand& in) = 0;
     virtual void store_on_stack_i(const LIRVal& pointer, const LIROperand& index, const LIROperand& value) = 0;
     virtual void store_i(const LIRVal& pointer, const LIROperand& value) = 0;
@@ -48,8 +48,8 @@ public:
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
-    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) = 0;
-    virtual void vcall(std::span<LIRVal const> args) = 0;
+    virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) = 0;
+    virtual void vcall(std::string_view name, std::span<LIRVal const> args, FunctionBind bind) = 0;
     virtual void icall(const LIRVal& out, const LIRVal& pointer, std::span<LIRVal const> args) = 0;
     virtual void ivcall(const LIRVal& pointer, std::span<LIRVal const> args) = 0;
 

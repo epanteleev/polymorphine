@@ -23,7 +23,8 @@ aasm::Slot Codegen::convert_lir_slot(const aasm::SlotType type, const LIRSlot& l
         } else if constexpr (std::is_same_v<T, const LIRNamedSlot*>) {
             auto slot = convert_lir_slot(data->type(), data->root());
             auto [symbol, _] = m_symbol_table.add(data->name(), aasm::BindAttribute::INTERNAL);
-            auto [directive, _unused] = m_slots.emplace(symbol, aasm::Directive(symbol, std::move(slot)));
+            auto [directive, has] = m_slots.emplace(symbol, aasm::Directive(symbol, std::move(slot)));
+            assertion(has, "Slot already exists in Codegen::convert_lir_slot");
             return aasm::Slot(&directive->second, type, lir_slot.size());
 
         } else {
@@ -35,13 +36,25 @@ aasm::Slot Codegen::convert_lir_slot(const aasm::SlotType type, const LIRSlot& l
     return lir_slot.visit(vis);
 }
 
-void Codegen::run() {
-    for (auto& func: m_module | std::views::values) {
-        for (auto &slot: func.global_data() | std::views::values) {
-            auto asm_slot = convert_lir_slot(slot.type(), slot.root());
-            auto [symbol, _] = m_symbol_table.add(slot.name(), aasm::BindAttribute::INTERNAL);
-            m_slots.emplace(symbol, aasm::Directive(symbol, std::move(asm_slot)));
+void Codegen::convert_lir_slots(const GlobalData& global_data) {
+    for (const auto &slot: global_data | std::views::values) {
+        auto [symbol, _] = m_symbol_table.add(slot.name(), aasm::BindAttribute::INTERNAL);
+        const auto element = m_slots.find(symbol);
+        if (element != m_slots.end()) {
+            // Slot already exists, skip
+            continue;
         }
+
+        auto asm_slot = convert_lir_slot(slot.type(), slot.root());
+        m_slots.emplace_hint(element, symbol, aasm::Directive(symbol, std::move(asm_slot)));
+    }
+}
+
+void Codegen::run() {
+    convert_lir_slots(m_module.global_data());
+
+    for (auto& func: m_module | std::views::values) {
+        convert_lir_slots(func.global_data());
 
         LIRAnalysisPassManager cache;
         auto linear_scan = LinearScanBase::create(&cache, &func, call_conv::CC_LinuxX64());
@@ -54,7 +67,8 @@ void Codegen::run() {
         fn_codegen.run();
 
         const auto [symbol, _] = m_symbol_table.add(func.name(), aasm::BindAttribute::INTERNAL);
-        m_assemblers.emplace(symbol, fn_codegen.result().to_buffer());
+        const auto [_unused, has] = m_assemblers.emplace(symbol, fn_codegen.result().to_buffer());
+        assertion(has, "Function already exists");
     }
 }
 

@@ -22,6 +22,9 @@ public:
     }
 
 private:
+    void lower_globals_pool();
+    void lower_functions();
+
     const Module& m_module;
     std::unordered_map<std::string, LIRFuncData> m_obj_functions;
     GlobalData m_global_data{};

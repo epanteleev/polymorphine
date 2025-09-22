@@ -52,6 +52,11 @@ public:
     }
 
     [[nodiscard]]
+    const GlobalData& global_data() const noexcept {
+        return m_global_data;
+    }
+
+    [[nodiscard]]
     GlobalData& global_data() noexcept {
         return m_global_data;
     }

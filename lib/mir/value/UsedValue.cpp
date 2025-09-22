@@ -1,8 +1,7 @@
 #include "UsedValue.h"
 
 #include "mir/instruction/ValueInstruction.h"
-#include "mir/global/GlobalVariable.h"
-#include "mir/global/GlobalConstant.h"
+#include "mir/global/GlobalValue.h"
 #include "mir/types/PointerType.h"
 #include "mir/value/ArgumentValue.h"
 #include "mir/value/Value.h"
@@ -11,15 +10,11 @@
 
 static_assert(IsLocalValueType<ArgumentValue>, "sanity check");
 static_assert(IsLocalValueType<ValueInstruction>, "sanity check");
-static_assert(IsLocalValueType<GlobalVariable>, "sanity check");
 
 UsedValue::UsedValue(ArgumentValue *value) noexcept :
     m_value(value) {}
 
 UsedValue::UsedValue(ValueInstruction *value) noexcept:
-    m_value(value) {}
-
-UsedValue::UsedValue(GlobalVariable *value) noexcept:
     m_value(value) {}
 
 std::expected<UsedValue, Error> UsedValue::try_from(const Value &value) {
@@ -69,7 +64,7 @@ std::span<const Instruction * const> UsedValue::users() const noexcept {
 
 std::ostream& operator<<(std::ostream& os, const UsedValue& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, ArgumentValue *> || std::same_as<T, GlobalVariable*> ) {
+        if constexpr (std::is_same_v<T, ArgumentValue *>) {
             os << val;
 
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {

@@ -13,12 +13,13 @@
  * It traverses the function's basic blocks in a domination order.
  */
 class FunctionLower final: public Visitor {
-    FunctionLower(LIRFuncData&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering, const call_conv::CallConvProvider* call_conv) noexcept:
+    FunctionLower(LIRFuncData&& obj_function, const FunctionData &function, const Ordering<BasicBlock>& dom_ordering, GlobalData& global_data, const call_conv::CallConvProvider* call_conv) noexcept:
         m_obj_function(std::move(obj_function)),
         m_function(function),
         m_dom_ordering(dom_ordering),
-        m_bb(m_obj_function.first()),
-        m_call_conv(call_conv) {}
+        m_global_data(global_data),
+        m_call_conv(call_conv),
+        m_bb(m_obj_function.first()) {}
 
 public:
     void run() {
@@ -28,10 +29,10 @@ public:
         finalize_parallel_copies();
     }
 
-    static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data, const call_conv::CallConvProvider* call_conv) {
+    static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data, GlobalData& global_data, const call_conv::CallConvProvider* call_conv) {
         // It is assumed that bfs order guarantees domination order.
         const auto* bfs = cache->analyze<BFSOrderTraverseBase<FunctionData>>(data);
-        return {create_lir_function(*data), *data, *bfs, call_conv};
+        return {create_lir_function(*data), *data, *bfs, global_data, call_conv};
     }
 
     LIRFuncData result() {
@@ -43,7 +44,7 @@ private:
 
     void allocate_fixed_regs_for_arguments() const;
 
-    void allocate_arguments_for_call(const LIRVal &out, std::span<LIROperand const> args) const;
+    void allocate_arguments_for_call(std::span<LIROperand const> args) const;
 
     void setup_arguments();
 
@@ -53,11 +54,7 @@ private:
 
     void finalize_parallel_copies() const noexcept;
 
-    LIRSlot create_slot_iter(const NonTrivialType *ty, const Initializer &global);
-
-    LIRSlot create_slot(const NonTrivialType *ty, const Initializer &global);
-
-    LIROperand lower_global_cst(const GlobalConstant &global);
+    LIROperand lower_global_cst(const GlobalValue &global);
 
     LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);
 
@@ -73,22 +70,20 @@ private:
 
     void accept(CondBranch *cond_branch) override;
 
-    void accept(Call *inst) override;
+    void accept(Call *call) override;
 
     void accept(Return *inst) override;
 
     void accept(ReturnValue *inst) override;
 
     void accept(Switch *inst) override {
-
+        unimplemented();
     }
 
-    void accept(VCall *call) override {
-
-    }
+    void accept(VCall *call) override;
 
     void accept(IVCall *call) override {
-
+        unimplemented();
     }
 
     void accept(Phi *inst) override;
@@ -111,6 +106,8 @@ private:
 
     void lower_load(const Unary *inst);
     LIRVal lower_primitive_type_argument(const Value& arg);
+    std::vector<LIROperand> lower_function_prototypes(std::span<const Value> operands, const FunctionPrototype& proto);
+
     void make_setcc(const ValueInstruction *inst, aasm::CondType cond_type);
 
     void try_schedule_late(const Value& cond);
@@ -125,9 +122,10 @@ private:
     LIRFuncData m_obj_function;
     const FunctionData& m_function;
     const Ordering<BasicBlock>& m_dom_ordering;
-    LIRBlock* m_bb;
+    GlobalData& m_global_data;
     const call_conv::CallConvProvider* m_call_conv;
 
+    LIRBlock* m_bb;
     std::unordered_map<const BasicBlock*, LIRBlock*> m_bb_mapping;
     UsedValueMap<LIROperand> m_value_mapping;
     // Inserted parallel copies in the current function for late handling.

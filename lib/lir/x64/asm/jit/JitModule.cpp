@@ -59,12 +59,14 @@ private:
     void assemble_slot(const aasm::Symbol* name, T& element) {
         const auto start = jit_assembler.size();
         auto reloc = element.emit(jit_assembler);
-        relocation_table.emplace(name, std::move(reloc));
-        offset_table.emplace(name, JitDataChunk(start, jit_assembler.size() - start));
+
+        relocation_table.push_back(std::move(reloc));
+        const auto [_unused2, has2] = offset_table.emplace(name, JitDataChunk(start, jit_assembler.size() - start));
+        assertion(has2, "Offset for symbol already exists: {}", name->name());
     }
 
     void try_resolve_relocations() {
-        for (const auto& relocation : relocation_table | std::views::values) {
+        for (const auto& relocation : relocation_table) {
             for (const auto& reloc : relocation) {
                 switch (reloc.type()) {
                     case RelType::X86_64_NONE:     break;
@@ -78,19 +80,8 @@ private:
     }
 
     void try_glob_patch_relocation(const aasm::Relocation& reloc) {
-        const auto chunk = offset_table.find(reloc.symbol());
-        if (chunk == offset_table.end()) {
-            die("Relocation for label '{}' not found in offset table", reloc.symbol_name());
-        }
-
-        const auto& [start, _] = chunk->second;
-        const auto offset = static_cast<std::int64_t>(start) - reloc.offset() + reloc.displacement();
-        if (!std::in_range<std::int32_t>(offset)) {
-            die("Offset {} is out of range for 32-bit patching", offset);
-        }
-
-        const auto address = reinterpret_cast<std::int64_t>(jit_assembler.data()) + offset+8;
-        jit_assembler.patch64(static_cast<std::int64_t>(reloc.offset()) - sizeof(std::int64_t), address);
+        const auto address = reinterpret_cast<std::int64_t>(jit_assembler.data()) + reloc.displacement();
+        jit_assembler.patch64(reloc.offset(), address);
     }
 
     void try_plt_patch_relocation(const aasm::Relocation& reloc) {
@@ -98,11 +89,11 @@ private:
         if (external == m_plt_table.end()) {
             die("PLT relocation for symbol '{}' not found in external symbols", reloc.symbol_name());
         }
-        const auto offset = static_cast<std::int64_t>(external->second) - (reloc.offset() + static_cast<std::int64_t>(m_code_buffer_offset)) + reloc.displacement();
+        const auto offset = static_cast<std::int64_t>(external->second) - static_cast<std::int64_t>(m_code_buffer_offset) - reloc.displacement();
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit PLT patching", offset);
         }
-        jit_assembler.patch32(static_cast<std::int64_t>(reloc.offset()) - sizeof(std::int32_t), offset);
+        jit_assembler.patch32(reloc.offset(), offset);
     }
 
     void try_patch_relocation(const aasm::Relocation& reloc) {
@@ -112,12 +103,12 @@ private:
         }
 
         const auto& [start, _] = chunk->second;
-        const auto offset = static_cast<std::int64_t>(start) - reloc.offset() + reloc.displacement();
+        const auto offset = static_cast<std::int64_t>(start) - reloc.displacement();
         if (!std::in_range<std::int32_t>(offset)) {
             die("Offset {} is out of range for 32-bit patching", offset);
         }
 
-        jit_assembler.patch32(static_cast<std::int64_t>(reloc.offset()) - sizeof(std::int32_t), offset);
+        jit_assembler.patch32(reloc.offset(), offset);
     }
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;
@@ -125,7 +116,7 @@ private:
     OpCodeBuffer jit_assembler;
     std::size_t m_code_buffer_offset;
 
-    std::unordered_map<const aasm::Symbol*, std::vector<aasm::Relocation>> relocation_table;
+    std::vector<std::vector<aasm::Relocation>> relocation_table;
     std::unordered_map<const aasm::Symbol*, JitDataChunk> offset_table;
 };
 

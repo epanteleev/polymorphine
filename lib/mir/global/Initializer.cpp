@@ -1,5 +1,5 @@
 #include "Initializer.h"
-#include "GlobalConstant.h"
+#include "GlobalValue.h"
 
 #include <ostream>
 #include <ranges>
@@ -17,7 +17,7 @@ std::ostream & operator<<(std::ostream &os, const Initializer &sym) {
         } else if constexpr (std::is_same_v<T, std::string>) {
             os << '"' << val << '"';
 
-        } else if constexpr (std::is_same_v<T, const GlobalConstant*>) {
+        } else if constexpr (std::is_same_v<T, const GlobalValue*>) {
             os << *val;
 
         } else {

@@ -40,6 +40,11 @@ public:
         return m_functions.end();
     }
 
+    [[nodiscard]]
+    const GlobalData& global_data() const noexcept {
+        return m_global_data;
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const LIRModule &module);
 
 private:

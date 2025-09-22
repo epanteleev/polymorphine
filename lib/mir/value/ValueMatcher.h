@@ -63,7 +63,7 @@ namespace impls {
             return true;
         }
 
-        return value.is<GlobalConstant*>();
+        return value.is<GlobalValue*>();
     }
 
     template<typename... Args>
@@ -99,6 +99,19 @@ namespace impls {
         }
 
         return false;
+    }
+
+    inline bool g_value(const Value& value) noexcept {
+        return value.is<GlobalValue*>();
+    }
+
+    inline bool g_variable(const Value& value) noexcept {
+        if (!value.is<GlobalValue*>()) {
+            return false;
+        }
+
+        const auto gvalue = value.get<GlobalValue*>();
+        return gvalue->kind() == GValueKind::VARIABLE;
     }
 }
 
@@ -167,8 +180,12 @@ consteval auto argument() noexcept {
     return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
 }
 
-consteval auto g_constant() noexcept {
-    return [](const Value& inst) { return inst.is<GlobalConstant*>(); };
+consteval auto g_value() noexcept {
+    return impls::g_value;
+}
+
+consteval auto g_variable() noexcept {
+    return impls::g_variable;
 }
 
 consteval auto integral(const std::uint64_t cst) noexcept {

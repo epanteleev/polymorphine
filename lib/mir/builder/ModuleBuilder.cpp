@@ -56,7 +56,7 @@ Module ModuleBuilder::build() noexcept {
         finalize_function(&fd);
     }
 
-    return Module(std::move(m_prototypes), std::move(m_functions), std::move(m_known_structs), std::move(m_array_types), std::move(m_constant_pool));
+    return Module(std::move(m_prototypes), std::move(m_functions), std::move(m_known_structs), std::move(m_array_types), std::move(m_gvalue_pool));
 }
 
 const StructType *ModuleBuilder::add_struct_type(const std::string_view name, std::vector<const NonTrivialType *> &&field_types) {

@@ -158,8 +158,8 @@ void LIRFunctionCodegen::cmp_i(const LIROperand &in1, const LIROperand &in2) {
     CmpGPEmit::apply(m_as, in1.size(), in1_reg, in2_reg);
 }
 
-void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
-    const auto in1_reg = in1.assigned_reg().to_gp_op().value();
+void LIRFunctionCodegen::mov_i(const LIROperand &in1, const LIROperand &in2) {
+    const auto in1_reg = convert_to_gp_op(in1);
     const auto add_opt = in1_reg.as_address();
     assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
 
@@ -167,12 +167,12 @@ void LIRFunctionCodegen::mov_i(const LIRVal &in1, const LIROperand &in2) {
     MovGPEmit::apply(m_as, in1.size(), add_opt.value(), in2_op);
 }
 
-void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in) {
+void LIRFunctionCodegen::mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) {
     const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto index_op = convert_to_gp_op(index);
-    const auto in2_op = convert_to_gp_op(in);
+    const auto in2_op = convert_to_gp_op(in2);
 
-    MovByIdxIntEmit emitter(m_current_inst->temporal_regs(), m_as, in.size());
+    MovByIdxIntEmit emitter(m_current_inst->temporal_regs(), m_as, in2.size());
     emitter.apply(out_reg, index_op, in2_op);
 }
 
@@ -328,6 +328,11 @@ void LIRFunctionCodegen::trunc_i(const LIRVal &out, const LIROperand &in) {
 }
 
 void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) {
+    const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
+    m_as.call(symbol);
+}
+
+void LIRFunctionCodegen::vcall(const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
     m_as.call(symbol);
 }

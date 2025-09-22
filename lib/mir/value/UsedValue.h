@@ -9,13 +9,11 @@
 
 template<typename T>
 concept IsLocalValueType = std::derived_from<T, ValueInstruction> ||
-    std::derived_from<T, ArgumentValue> ||
-    std::derived_from<T, GlobalVariable>;
+    std::derived_from<T, ArgumentValue>;
 
 class UsedValue final {
     explicit UsedValue(ArgumentValue* value) noexcept;
     explicit UsedValue(ValueInstruction * value) noexcept;
-    explicit UsedValue(GlobalVariable* value) noexcept;
 
 public:
     template <IsLocalValueType T>
@@ -50,8 +48,7 @@ public:
 private:
     std::variant<
         ArgumentValue *,
-        ValueInstruction *,
-        GlobalVariable* > m_value;
+        ValueInstruction *> m_value;
 };
 
 std::ostream& operator<<(std::ostream& os, const UsedValue& obj);

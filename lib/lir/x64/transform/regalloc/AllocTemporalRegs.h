@@ -79,7 +79,7 @@ namespace details {
 
         void not_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void mov_i(const LIRVal &in1, const LIROperand &in2) override {}
+        void mov_i(const LIROperand &in1, const LIROperand &in2) override {}
 
         void mov_by_idx_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override;
 
@@ -111,7 +111,7 @@ namespace details {
 
         void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {}
 
-        void vcall(std::span<LIRVal const> args) override {}
+        void vcall(const std::string_view, std::span<LIRVal const>, FunctionBind) override {}
 
         void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override {}
 

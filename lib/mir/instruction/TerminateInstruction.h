@@ -2,9 +2,11 @@
 
 #include <memory>
 
+#include "Callable.h"
 #include "mir/module/FunctionPrototype.h"
 #include "Instruction.h"
 #include "mir/types/TupleType.h"
+#include "mir/types/TypeMatcher.h"
 
 
 class TerminateInstruction: public Instruction {
@@ -142,27 +144,31 @@ private:
     std::vector<BasicBlock* > m_successors;
 };
 
-class VCall final: public TerminateInstruction {
+class VCall final: public TerminateInstruction, public Callable {
 public:
-    VCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
-        TerminateInstruction(std::move(args), {successor}), m_prototype(prototype) {}
+    explicit VCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
+        TerminateInstruction(std::move(args), {successor}),
+        Callable(prototype) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
-    static std::unique_ptr<VCall> call(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock *successor) {
-        return std::make_unique<VCall>(prototype, std::move(args), successor);
+    [[nodiscard]]
+    const BasicBlock * cont() const noexcept {
+        assertion(m_successors.size() == 1, "VCall must have exactly one successor");
+        return m_successors.front();
     }
 
-private:
-    [[maybe_unused]]
-    const FunctionPrototype *m_prototype;
+    static std::unique_ptr<VCall> call(const FunctionPrototype* proto, BasicBlock* cont, std::vector<Value>&& args) {
+        assertion(proto->ret_type()->isa(void_type()), "Call instruction must have a non-void return type");
+        return std::make_unique<VCall>(proto, std::move(args), cont);
+    }
 };
 
-class IVCall final: public TerminateInstruction {
+class IVCall final: public TerminateInstruction, public Callable {
 public:
-    IVCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
+    explicit IVCall(const FunctionPrototype* prototype, std::vector<Value> &&args, BasicBlock * successor) noexcept:
         TerminateInstruction(std::move(args), {successor}),
-        m_prototype(prototype) {}
+        Callable(prototype) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -170,7 +176,4 @@ public:
         args.push_back(pointer);
         return std::make_unique<IVCall>(prototype, std::move(args), successor);
     }
-private:
-    [[maybe_unused]]
-    const FunctionPrototype *m_prototype;
 };

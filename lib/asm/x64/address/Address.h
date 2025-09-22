@@ -46,9 +46,9 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
-        std::optional<Relocation> encode(C& c, const std::uint32_t modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, const std::uint32_t modrm_pattern, const std::int32_t offset_to_end) const {
             const auto visit = [&](const auto& addr) -> std::optional<Relocation> {
-                return addr.encode(c, modrm_pattern);
+                return addr.encode(c, modrm_pattern, offset_to_end);
             };
 
             return std::visit(visit, m_address);

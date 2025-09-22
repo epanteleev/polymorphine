@@ -40,7 +40,7 @@ static Module create_wrappers_reversed(const IntegerType* ty, Fn&& fn) {
 
 TEST(CallTest, call_i32) {
     const auto module = create_wrappers(SignedIntegerType::i32(), Value::i32);
-    auto code = jit_compile_and_assembly(module);
+    auto code = jit_compile_and_assembly(module, true);
     const auto fn = code.code_start_as<std::int32_t()>("call_test").value();
     ASSERT_EQ(fn(), 42);
 }

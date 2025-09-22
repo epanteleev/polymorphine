@@ -77,7 +77,7 @@ private:
 
     }
 
-    void mov_i(const LIRVal &in1, const LIROperand &in2) override;
+    void mov_i(const LIROperand &in1, const LIROperand &in2) override;
     void mov_by_idx_i(const LIRVal &out, const LIROperand &index, const LIROperand &in2) override;
     void store_on_stack_i(const LIRVal &pointer, const LIROperand &index, const LIROperand &value) override;
     void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override;
@@ -98,9 +98,7 @@ private:
     void trunc_i(const LIRVal &out, const LIROperand &in) override;
     void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionBind) override;
 
-    void vcall(std::span<LIRVal const> args) override {
-
-    }
+    void vcall(std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override;
 
     void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override {
 

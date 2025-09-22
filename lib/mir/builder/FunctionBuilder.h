@@ -88,6 +88,10 @@ public:
         return m_bb->ins(Call::call(prototype, cont, std::move(args)));
     }
 
+    void vcall(const FunctionPrototype* prototype, BasicBlock* cont, std::vector<Value>&& args) const {
+        m_bb->ins(VCall::call(prototype, cont, std::move(args)));
+    }
+
     [[nodiscard]]
     Value gep(const NonTrivialType* ty, const Value& pointer, const Value& index) const {
         return m_bb->ins(GetElementPtr::gep(ty, pointer, index));
@@ -148,7 +152,7 @@ public:
     }
 
     [[nodiscard]]
-    std::expected<const GlobalConstant*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) const {
+    std::expected<const GlobalValue*, Error> add_constant(const std::string_view name, const NonTrivialType* type, Initializer&& value) const {
         return m_fd->add_constant(name, type, std::move(value));
     }
 

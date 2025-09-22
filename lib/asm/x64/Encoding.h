@@ -179,14 +179,14 @@ namespace aasm::details {
             const auto new_size = size == 8 ? 4 : size; // Avoid REX.W in this contexts by using 32-bit ops
             EncodeUtils::emit_op_prologue(m_buffer, new_size, addr);
             emit_opcodes(size);
-            return addr.encode(m_buffer, modrm);
+            return addr.encode(m_buffer, modrm, 0);
         }
 
         [[nodiscard]]
         constexpr std::optional<Relocation> encode_M_with_REXW(const std::uint8_t modrm, const std::uint8_t size, const Address& addr) {
             EncodeUtils::emit_op_prologue(m_buffer, size, addr);
             emit_opcodes(size);
-            return addr.encode(m_buffer, modrm);
+            return addr.encode(m_buffer, modrm, 0);
         }
 
         constexpr void encode_M(const std::uint8_t modrm, const std::uint8_t size, const GPReg reg) {
@@ -205,7 +205,8 @@ namespace aasm::details {
         constexpr std::optional<Relocation> encode_MI32(std::uint8_t modrm, const std::uint8_t size, const std::int32_t imm, const Address& dst) {
             EncodeUtils::emit_op_prologue(m_buffer, size, dst);
             emit_opcodes(size);
-            const auto reloc = dst.encode(m_buffer, modrm);
+            const auto imm_size = size == 8 ? 4 : size;
+            const auto reloc = dst.encode(m_buffer, modrm, imm_size);
             emit_imm_below_i32(size, imm);
             return reloc;
         }
@@ -261,7 +262,7 @@ namespace aasm::details {
         constexpr std::optional<Relocation> encode_MR(const std::uint8_t size, const GPReg src, const Address& dest) {
             EncodeUtils::emit_op_prologue(m_buffer, size, src, dest);
             emit_opcodes(size);
-            return dest.encode(m_buffer, reg3(src));
+            return dest.encode(m_buffer, reg3(src), 0);
         }
 
         [[nodiscard]]
@@ -277,7 +278,7 @@ namespace aasm::details {
 
             EncodeUtils::emit_op_prologue(m_buffer, to_size, src, dest);
             emit_opcodes(from_size);
-            return dest.encode(m_buffer, reg3(src));
+            return dest.encode(m_buffer, reg3(src), 0);
         }
 
         [[nodiscard]]

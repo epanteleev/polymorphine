@@ -33,12 +33,12 @@ std::ostream & operator<<(std::ostream &os, const Module &module) {
         os << std::endl;
     }
 
-    for (const auto &c: std::ranges::views::values(module.m_constant_pool)) {
+    for (const auto &c: std::ranges::views::values(module.m_gvalue_pool)) {
         c.print_description(os);
         os << std::endl;
     }
 
-    if (!module.m_constant_pool.empty()) {
+    if (!module.m_gvalue_pool.empty()) {
         os << std::endl;
     }
 

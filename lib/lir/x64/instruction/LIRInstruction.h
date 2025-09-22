@@ -20,8 +20,8 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    static std::unique_ptr<LIRInstruction> mov(const LIRVal& dst, const LIROperand& src) {
-        return std::make_unique<LIRInstruction>(LIRInstKind::Mov, std::vector<LIROperand>{dst, src});
+    static std::unique_ptr<LIRInstruction> mov(const LIROperand& dst, const LIROperand& src) {
+        return std::make_unique<LIRInstruction>(LIRInstKind::Mov, std::vector{dst, src});
     }
 
     static std::unique_ptr<LIRInstruction> mov_by_idx(const LIRVal& dst, const LIROperand& index, const LIROperand& src) {

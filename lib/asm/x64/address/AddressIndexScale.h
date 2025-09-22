@@ -23,7 +23,7 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
-        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern, const std::int32_t) const {
             /* Explicit m_displacement must be used with BP or R13. */
             const auto has_displacement = m_displacement || m_base == rbp;
 

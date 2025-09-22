@@ -3,12 +3,7 @@
 
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
-        case LIRInstKind::Mov: {
-            const auto inout = LIRVal::try_from(in(0));
-            assertion(inout.has_value(), "invariant");
-            visitor.mov_i(inout.value(), in(1));
-            break;
-        }
+        case LIRInstKind::Mov: visitor.mov_i(in(0), in(1)); break;
         case LIRInstKind::MovByIdx: {
             const auto inout = LIRVal::try_from(in(0));
             assertion(inout.has_value(), "invariant");

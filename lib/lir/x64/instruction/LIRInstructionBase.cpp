@@ -53,7 +53,9 @@ namespace {
             m_os << ") in(" << in1 << ", " << in2 << ')';
         }
 
-        void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void and_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            unimplemented();
+        }
 
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
@@ -61,10 +63,12 @@ namespace {
             m_os << "xor_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
-        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            unimplemented();
+        }
 
         void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
-
+            unimplemented();
         }
 
         void setcc_i(const LIRVal &out, const aasm::CondType cond_type) override {
@@ -103,14 +107,14 @@ namespace {
         }
 
         void neg_i(const LIRVal &out, const LIROperand &in) override {
-
+            unimplemented();
         }
 
         void not_i(const LIRVal &out, const LIROperand &in) override {
-
+            unimplemented();
         }
 
-        void mov_i(const LIRVal &in0, const LIROperand &in) override {
+        void mov_i(const LIROperand &in0, const LIROperand &in) override {
             m_os << "mov_i in(" << in0 << ") in(" << in << ')';
         }
 
@@ -183,8 +187,8 @@ namespace {
             on_false->print_short_name(m_os);
         }
 
-        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {
-            m_os << "call " << name << " out(" << out << ") args(";
+        void print_arguments(std::span<LIRVal const> args) const {
+            m_os << "args(";
             for (auto [idx, arg]: std::ranges::views::enumerate(args)) {
                 if (idx != 0) {
                     m_os << ", ";
@@ -195,16 +199,22 @@ namespace {
             m_os << ")";
         }
 
-        void vcall(std::span<LIRVal const> args) override {
+        void call(const LIRVal &out, const std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {
+            m_os << "call " << name << " out(" << out << ')';
+            print_arguments(args);
+        }
 
+        void vcall(const std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {
+            m_os << "vcall(" << name << ')';
+            print_arguments(args);
         }
 
         void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override {
-
+            unimplemented();
         }
 
         void ivcall(const LIRVal &pointer, std::span<LIRVal const> args) override {
-
+            unimplemented();
         }
 
         void ret(std::span<LIRVal const> ret_values) override {

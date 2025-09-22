@@ -21,15 +21,18 @@ namespace aasm {
             m_displacement(displacement),
             m_symbol(symbol) {}
 
+        /** Returns the symbol associated with the relocation. */
         [[nodiscard]]
         const Symbol* symbol() const noexcept { return m_symbol; }
 
         [[nodiscard]]
         std::string_view symbol_name() const noexcept { return m_symbol->name(); }
 
+        /** Returns the offset within the code buffer where the relocation needs to be applied. */
         [[nodiscard]]
         std::int32_t offset() const noexcept { return m_offset; }
 
+        /** Returns the displacement used in the relocation calculation. */
         [[nodiscard]]
         std::int32_t displacement() const noexcept { return m_displacement; }
 

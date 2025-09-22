@@ -10,15 +10,18 @@ namespace aasm {
         friend std::ostream &operator<<(std::ostream &os, const AddressLiteral &address);
 
         template<CodeBuffer Buffer>
-        constexpr std::optional<Relocation> encode(Buffer &buffer, const std::uint32_t modrm_pattern) const {
+        constexpr std::optional<Relocation> encode(Buffer &buffer, const std::uint32_t modrm_pattern, std::int32_t offset_to_end) const {
             static constexpr std::uint8_t MODRM = 0x05; // ModR/M byte for direct addressing
             buffer.emit8((modrm_pattern & 0x7) << 3 | MODRM);
-            buffer.emit32(INT32_MAX);
+            buffer.emit32(INT32_MIN);
+
+            RelType rel_type;
             switch (const auto bind = m_symbol->bind()) {
-                case BindAttribute::EXTERNAL: return Relocation(RelType::X86_64_PLT32, buffer.size(), m_displacement, m_symbol);
-                case BindAttribute::INTERNAL: return Relocation(RelType::X86_64_PC32, buffer.size(), m_displacement, m_symbol);
+                case BindAttribute::EXTERNAL: rel_type = RelType::X86_64_PLT32; break;
+                case BindAttribute::INTERNAL: rel_type = RelType::X86_64_PC32; break;
                 default: die("Unsupported linkage type for AddressLiteral: {}", static_cast<std::uint8_t>(bind));
             }
+            return Relocation(rel_type, buffer.size()-sizeof(std::int32_t), buffer.size()+offset_to_end-m_displacement, m_symbol);
         }
 
         [[nodiscard]]

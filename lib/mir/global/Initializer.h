@@ -31,5 +31,5 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Initializer& sym);
 
 private:
-    std::variant<std::int64_t, double, const GlobalConstant*, std::string, std::vector<Initializer>> m_value;
+    std::variant<std::int64_t, double, const GlobalValue*, std::string, std::vector<Initializer>> m_value;
 };

@@ -1,4 +1,6 @@
 #include "lir/x64/lower/FunctionLower.h"
+
+#include "GlobalsLowering.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/instruction/LIRBranch.h"
 #include "lir/x64/instruction/LIRCMove.h"
@@ -317,58 +319,15 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
     }
 }
 
-LIRSlot FunctionLower::create_slot_iter(const NonTrivialType* ty, const Initializer& global) {
-    const auto vis = [&]<typename U>(const U& glob) -> LIRSlot {
-        if constexpr (std::is_same_v<U, double>) {
-            unimplemented();
-
-        } else if constexpr (std::is_same_v<U, std::int64_t>) {
-            const auto int_type = dynamic_cast<const IntegerType*>(ty);
-            assertion(int_type != nullptr, "Expected IntegerType for integer constant");
-            const auto slot_type = aasm::to_slot_type(int_type->size_of());
-            return LIRSlot(glob, slot_type.value());
-
-        } else if constexpr (std::is_same_v<U, std::string>) {
-            const auto array_type = dynamic_cast<const ArrayType*>(ty);
-            assertion(array_type != nullptr, "Expected ArrayType for string constant");
-            assertion(array_type->element_type()->isa(byte_type()), "Expected byte type for string constant");
-            assertion(array_type->length() >= glob.size(), "String constant is too large");
-            // TODO handle different sizes
-            return LIRSlot(glob, aasm::SlotType::String);
-
-        } else if constexpr (std::is_same_v<U, std::vector<Initializer>>) {
-            const auto agg_type = dynamic_cast<const AggregateType*>(ty);
-            assertion(agg_type != nullptr, "Expected AggregateType for aggregate constant");
-
-            std::vector<LIRSlot> slots;
-            slots.reserve(glob.size());
-            for (const auto& [idx, field]: std::views::enumerate(glob)) {
-                const auto field_type = agg_type->field_type_of(idx);
-                slots.push_back(create_slot_iter(field_type, field));
-            }
-            return LIRSlot(std::move(slots), aasm::SlotType::Aggregate);
-
-        } else if constexpr (std::is_same_v<U, const GlobalConstant*>) {
-            auto slot = create_slot(glob->content_type(), glob->initializer());
-            const auto named_slot = m_obj_function.add_slot(glob->name(), LIRNamedSlot(std::string(glob->name()), std::move(slot))).value();
-            return LIRSlot(named_slot, aasm::SlotType::QWord);
-
-        } else {
-            static_assert(false);
-            std::unreachable();
+LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
+    switch (global.kind()) {
+        case GValueKind::CONSTANT: {
+            GlobalsLowering lowering{m_obj_function.global_data(), global};
+            return lowering.lower();
         }
-    };
-
-    return global.visit(vis);
-}
-
-LIRSlot FunctionLower::create_slot(const NonTrivialType* ty, const Initializer& global) {
-    return create_slot_iter(ty, global);
-}
-
-LIROperand FunctionLower::lower_global_cst(const GlobalConstant& global) {
-    auto slot = create_slot(global.content_type(), global.initializer());
-    return m_obj_function.add_slot(global.name(), LIRNamedSlot(std::string(global.name()), std::move(slot))).value();
+        case GValueKind::VARIABLE: return m_global_data.lookup(std::string(global.name())).value();
+        default: die("Unsupported global value kind");
+    }
 }
 
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
@@ -392,11 +351,8 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
             schedule_late(v);
             return m_value_mapping.at(UsedValue::from(v));
 
-        } else if constexpr (std::is_same_v<T, GlobalConstant *>) {
+        } else if constexpr (std::is_same_v<T, GlobalValue *>) {
             return lower_global_cst(*v);
-
-        } else if constexpr (std::is_same_v<T, GlobalVariable*>) {
-            unimplemented();
 
         } else {
             static_assert(false, "Unsupported type in Value variant");
@@ -452,8 +408,7 @@ void FunctionLower::accept(CondBranch *cond_branch) {
     m_bb->ins(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
 }
 
-void FunctionLower::allocate_arguments_for_call(const LIRVal &out, const std::span<LIROperand const> args) const {
-    out.assign_reg(aasm::rax);
+void FunctionLower::allocate_arguments_for_call(const std::span<LIROperand const> args) const {
     std::int32_t caller_arg_area_size{};
     std::size_t idx{};
     for (const auto& lir_val: args) {
@@ -469,14 +424,30 @@ void FunctionLower::allocate_arguments_for_call(const LIRVal &out, const std::sp
     }
 }
 
-void FunctionLower::accept(Call *inst) {
+void FunctionLower::accept(Call *call) {
     m_bb->ins(LIRAdjustStack::down_stack());
 
+    const auto proto = call->prototype();
+    auto args = lower_function_prototypes(call->operands(), *proto);
+    const auto cont = m_bb_mapping.at(call->cont());
+
+    const auto ret_type = dynamic_cast<const NonTrivialType*>(proto->ret_type());
+    assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
+
+    const auto lir_call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->bind()));
+    cont->ins(LIRAdjustStack::up_stack());
+    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_call->def(0)));
+    memorize(call, copy_ret->def(0));
+
+    lir_call->def(0).assign_reg(aasm::rax);
+    allocate_arguments_for_call(lir_call->inputs());
+}
+
+std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span<const Value> operands, const FunctionPrototype& proto) {
     std::vector<LIROperand> args;
-    args.reserve(inst->operands().size());
-    const auto proto = inst->prototype();
-    for (const auto &[arg_idx, arg]: std::ranges::enumerate_view(inst->operands())) {
-        if (!proto->attribute(arg_idx).has(Attribute::ByValue)) {
+    args.reserve(operands.size());
+    for (const auto &[arg_idx, arg]: std::ranges::enumerate_view(operands)) {
+        if (!proto.attribute(arg_idx).has(Attribute::ByValue)) {
             // Primitive type arguments are passed directly via registers or stack.
             args.emplace_back(lower_primitive_type_argument(arg));
             continue;
@@ -495,16 +466,7 @@ void FunctionLower::accept(Call *inst) {
         args.emplace_back(gen->def(0));
     }
 
-    const auto cont = m_bb_mapping.at(inst->cont());
-    const auto ret_type = dynamic_cast<const NonTrivialType*>(proto->ret_type());
-    assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
-
-    const auto call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->bind()));
-    cont->ins(LIRAdjustStack::up_stack());
-    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), call->def(0)));
-    memorize(inst, copy_ret->def(0));
-
-    allocate_arguments_for_call(call->def(0), call->inputs());
+    return args;
 }
 
 void FunctionLower::accept(Return *inst) {
@@ -513,8 +475,8 @@ void FunctionLower::accept(Return *inst) {
 }
 
 LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Value& val, const aasm::GPReg fixed_reg) {
-    if (val.isa(g_constant())) {
-        const auto slot = lower_global_cst(*val.get<GlobalConstant*>());
+    if (val.isa(g_value())) {
+        const auto slot = lower_global_cst(*val.get<GlobalValue*>());
         const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L), fixed_reg));
         return lea->def(0);
     }
@@ -549,6 +511,18 @@ void FunctionLower::accept(ReturnValue *inst) {
         m_bb->ins(LIRAdjustStack::epilogue());
         m_bb->ins(LIRReturn::ret(copy_first, copy_second));
     }
+}
+
+void FunctionLower::accept(VCall *call) {
+    m_bb->ins(LIRAdjustStack::down_stack());
+
+    const auto proto = call->prototype();
+    auto args = lower_function_prototypes(call->operands(), *proto);
+    const auto cont = m_bb_mapping.at(call->cont());
+
+    const auto lir_call = m_bb->ins(LIRCall::vcall(std::string{proto->name()}, cont, std::move(args), proto->bind()));
+    cont->ins(LIRAdjustStack::up_stack());
+    allocate_arguments_for_call(lir_call->inputs());
 }
 
 void FunctionLower::accept(Phi *inst) {
@@ -595,6 +569,12 @@ void FunctionLower::accept(Store *store) {
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
         m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
+        return;
+    }
+
+    if (pointer.isa(g_variable())) {
+        const auto slot = lower_global_cst(*pointer.get<GlobalValue*>());
+        m_bb->ins(LIRInstruction::mov(slot, value_vreg));
         return;
     }
 
@@ -766,8 +746,8 @@ void FunctionLower::lower_load(const Unary *inst) {
         return;
     }
 
-    if (pointer.isa(g_constant())) {
-        const auto slot = lower_global_cst(*pointer.get<GlobalConstant*>());
+    if (pointer.isa(g_value())) {
+        const auto slot = lower_global_cst(*pointer.get<GlobalValue*>());
         memorize(inst, slot);
         return;
     }
@@ -796,8 +776,8 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
         return lea->def(0);
     }
 
-    if (arg.isa(g_constant())) {
-        const auto slot = lower_global_cst(*arg.get<GlobalConstant*>());
+    if (arg.isa(g_value())) {
+        const auto slot = lower_global_cst(*arg.get<GlobalValue*>());
         const auto lea = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), slot, LirCst::imm64(0L)));
         return lea->def(0);
     }

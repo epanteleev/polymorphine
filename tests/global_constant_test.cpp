@@ -71,7 +71,7 @@ TEST(GlobalConstant, wrond_constant) {
     ASSERT_EQ(constant2.error(), Error::InvalidArgument);
 
     const auto module = builder.build();
-    ASSERT_TRUE(module.constant_pool().empty());
+    ASSERT_TRUE(module.gvalue_pool().empty());
 }
 #endif
 

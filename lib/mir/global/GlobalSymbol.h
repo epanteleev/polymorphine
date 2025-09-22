@@ -10,10 +10,9 @@
 
 class GlobalSymbol {
 public:
-    explicit GlobalSymbol(std::string&& name, const NonTrivialType* type, Initializer&& value) noexcept:
+    explicit GlobalSymbol(std::string&& name, const NonTrivialType* type) noexcept:
         m_name(std::move(name)),
-        m_content_type(type),
-        m_value(std::move(value)) {}
+        m_content_type(type) {}
 
     [[nodiscard]]
     std::string_view name() const noexcept {
@@ -25,15 +24,9 @@ public:
         return m_content_type;
     }
 
-    [[nodiscard]]
-    const Initializer& initializer() const noexcept {
-        return m_value;
-    }
-
     friend std::ostream& operator<<(std::ostream& os, const GlobalSymbol& sym);
 
 protected:
     std::string m_name;
     const NonTrivialType* m_content_type;
-    Initializer m_value;
 };

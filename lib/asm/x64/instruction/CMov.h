@@ -58,7 +58,7 @@ namespace aasm::details {
                 default: die("Invalid size for cmov instruction: {}", m_size);
             }
             buffer.emit8(0x40 | static_cast<std::uint8_t>(m_cond));
-            return m_src.encode(buffer, reg3(m_dst));
+            return m_src.encode(buffer, reg3(m_dst), 0);
         }
 
     private:

@@ -20,7 +20,7 @@ void LIRCall::visit(LIRVisitor &visitor) {
             visitor.ivcall(pointer.value(), lir_vals);
             break;
         }
-        case LIRCallKind::VCall: visitor.vcall(to_lir_vals_only(inputs())); break;
+        case LIRCallKind::VCall: visitor.vcall(m_name, to_lir_vals_only(inputs()), m_bind); break;
         default: std::unreachable();
     }
 }

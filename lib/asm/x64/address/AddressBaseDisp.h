@@ -18,7 +18,7 @@ namespace aasm {
         friend std::ostream& operator<<(std::ostream & os, const AddressBaseDisp & addr);
 
         template<CodeBuffer C>
-        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern) const {
+        std::optional<Relocation> encode(C& c, unsigned int modrm_pattern, const std::int32_t) const {
             const auto has_displacement = m_displacement || m_base == rbp;
 
             // Emit ModR/M byte: [7-6]=mod, [5-3]=reg, [2-0]=r/m or 4 if SIB present

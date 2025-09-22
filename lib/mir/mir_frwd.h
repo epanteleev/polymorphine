@@ -53,5 +53,4 @@ class FunctionBuilder;
 
 class Initializer;
 class GlobalSymbol;
-class GlobalConstant;
-class GlobalVariable;
+class GlobalValue;

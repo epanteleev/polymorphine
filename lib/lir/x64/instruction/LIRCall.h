@@ -70,6 +70,10 @@ public:
         return call;
     }
 
+    static std::unique_ptr<LIRCall> vcall(std::string&& name, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionBind bind) {
+        return std::make_unique<LIRCall>(std::move(name), LIRCallKind::VCall, std::move(args), cont, bind);
+    }
+
 protected:
     void add_def(const LIRVal& def) {
         m_defs.push_back(def);

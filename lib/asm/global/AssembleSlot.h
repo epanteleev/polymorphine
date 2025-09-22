@@ -45,7 +45,7 @@ namespace aasm::details {
 
                 } else if constexpr (std::same_as<T, const Directive*>) {
                     buffer.emit64(UINT64_MAX);
-                    m_relocations.emplace_back(Relocation(RelType::X86_64_GLOB_DAT, buffer.size(), 0, val->symbol()));
+                    m_relocations.emplace_back(Relocation(RelType::X86_64_GLOB_DAT, buffer.size()-sizeof(std::int64_t), buffer.size(), val->symbol()));
 
                 } else {
                     static_assert(false);

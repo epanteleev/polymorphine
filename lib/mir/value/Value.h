@@ -7,7 +7,6 @@
 
 #include "mir/mir_frwd.h"
 #include "mir/global/GlobalSymbol.h"
-#include "mir/global/GlobalVariable.h"
 #include "mir/types/Type.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
@@ -17,8 +16,7 @@ concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
     std::is_same_v<T, ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *> ||
-    std::is_same_v<T, GlobalConstant *> ||
-    std::is_same_v<T, GlobalVariable *>;
+    std::is_same_v<T, GlobalValue *>;
 
 class Value final {
 public:
@@ -27,8 +25,7 @@ public:
 
     Value(const ArgumentValue* value) noexcept;
     Value(const ValueInstruction* value) noexcept;
-    Value(const GlobalConstant* value) noexcept;
-    Value(const GlobalVariable* value) noexcept;
+    Value(const GlobalValue* value) noexcept;
 
     template <IsValueType T>
     [[nodiscard]]
@@ -106,8 +103,7 @@ private:
         std::int64_t,
         ArgumentValue*,
         ValueInstruction *,
-        GlobalConstant*,
-        GlobalVariable*> m_value;
+        GlobalValue*> m_value;
     const Type* m_type;
 };
 
