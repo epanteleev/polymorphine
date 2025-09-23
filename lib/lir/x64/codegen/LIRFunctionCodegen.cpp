@@ -226,7 +226,7 @@ void LIRFunctionCodegen::up_stack(const aasm::GPRegSet& reg_set, const std::size
         size_to_adjust += remains;
     }
     if (size_to_adjust != 0) {
-        m_as.add(8, aasm::checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
+        m_as.add(8, checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
     }
 }
 
@@ -236,7 +236,7 @@ void LIRFunctionCodegen::down_stack(const aasm::GPRegSet& reg_set, const std::si
         size_to_adjust += remains;
     }
     if (size_to_adjust != 0) {
-        m_as.sub(8, aasm::checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
+        m_as.sub(8, checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
     }
 
     for (auto rev: std::ranges::reverse_view(reg_set)) {
@@ -257,7 +257,7 @@ void LIRFunctionCodegen::prologue(const aasm::GPRegSet &reg_set, const std::size
         size_to_adjust += remains; // Stack must be aligned on 16.
     }
 
-    m_as.sub(8, aasm::checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
+    m_as.sub(8, checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
     for (const auto& reg: reg_set) {
         m_as.push(8, reg);
     }

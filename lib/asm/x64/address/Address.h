@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <variant>
 
+#include "utility/ArithmeticUtils.h"
 #include "asm/symbol/Symbol.h"
 #include "asm/x64/Common.h"
 #include "asm/x64/Relocation.h"

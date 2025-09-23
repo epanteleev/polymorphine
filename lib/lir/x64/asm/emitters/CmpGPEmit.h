@@ -33,11 +33,11 @@ private:
     }
 
     void emit(const aasm::GPReg out, const std::int64_t in) override {
-        m_as.cmp(m_size, aasm::checked_cast<std::int32_t>(in), out);
+        m_as.cmp(m_size, checked_cast<std::int32_t>(in), out);
     }
 
     void emit(const aasm::Address &out, const std::int64_t in) override {
-        m_as.cmp(m_size, aasm::checked_cast<std::int32_t>(in), out);
+        m_as.cmp(m_size, checked_cast<std::int32_t>(in), out);
     }
 
     void emit(std::int64_t in1, std::int64_t in2) override {

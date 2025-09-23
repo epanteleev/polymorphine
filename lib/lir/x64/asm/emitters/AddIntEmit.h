@@ -48,10 +48,10 @@ private:
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const std::int64_t in2) override {
         assertion(std::in_range<std::int32_t>(in2), "Immediate value out of range for add instruction");
         if (in1 == out) {
-            m_as.add(m_size, aasm::checked_cast<std::int32_t>(in2), out);
+            m_as.add(m_size, checked_cast<std::int32_t>(in2), out);
         } else {
             m_as.copy(m_size, in1, out);
-            m_as.add(m_size, aasm::checked_cast<std::int32_t>(in2), out);
+            m_as.add(m_size, checked_cast<std::int32_t>(in2), out);
         }
     }
 

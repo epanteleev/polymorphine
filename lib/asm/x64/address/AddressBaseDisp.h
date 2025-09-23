@@ -58,7 +58,7 @@ namespace aasm {
         [[nodiscard]]
         AddressBaseDisp add_offset(const std::int32_t offset) const noexcept {
             const auto new_offset = static_cast<std::int64_t>(offset) + m_displacement;
-            return AddressBaseDisp(m_base, aasm::checked_cast<std::int32_t>(new_offset));
+            return AddressBaseDisp(m_base, checked_cast<std::int32_t>(new_offset));
         }
 
     private:

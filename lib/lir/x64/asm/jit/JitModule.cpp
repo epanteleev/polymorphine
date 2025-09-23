@@ -87,7 +87,7 @@ private:
         }
 
         const auto offset = static_cast<std::int64_t>(external->second) - static_cast<std::int64_t>(m_code_buffer_offset) - reloc.displacement();
-        jit_assembler.patch32(reloc.offset(), aasm::checked_cast<std::int32_t>(offset));
+        jit_assembler.patch32(reloc.offset(), checked_cast<std::int32_t>(offset));
     }
 
     void try_patch_relocation(const aasm::Relocation& reloc) {
@@ -98,7 +98,7 @@ private:
 
         const auto& [start, _] = chunk->second;
         const auto offset = static_cast<std::int64_t>(start) - reloc.displacement();
-        jit_assembler.patch32(reloc.offset(), aasm::checked_cast<std::int32_t>(offset));
+        jit_assembler.patch32(reloc.offset(), checked_cast<std::int32_t>(offset));
     }
 
     const std::unordered_map<const aasm::Symbol*, std::size_t>& m_plt_table;

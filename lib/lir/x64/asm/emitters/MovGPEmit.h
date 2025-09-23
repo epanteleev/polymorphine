@@ -29,7 +29,7 @@ private:
     }
 
     void emit(const aasm::Address &out, const std::int64_t in) override {
-        m_as.mov(m_size, aasm::checked_cast<std::int32_t>(in), out);
+        m_as.mov(m_size, checked_cast<std::int32_t>(in), out);
     }
 
     std::uint8_t m_size;

@@ -9,7 +9,7 @@ static Module load_store_global_test(const IntegerType* ty, Fn&& fn) {
     {
         const auto global = builder.add_variable("my_global_var", ty, 40L).value();
         const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "load_store", FunctionBind::INTERNAL);
-        auto data = builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         data.store(global, fn(47));
         data.ret(global);
     }
@@ -74,7 +74,7 @@ static Module global_struct_variable_test() {
         const auto struct_type = builder.add_struct_type("MyStruct", {SignedIntegerType::i64(), SignedIntegerType::i64()});
         const auto global = builder.add_variable("my_global_var", struct_type, Initializer{1L, 2L}).value();
         const auto prototype = builder.add_function_prototype(struct_type, {}, "load_store", FunctionBind::INTERNAL);
-        auto data = builder.make_function_builder(prototype).value();
+        const auto data = builder.make_function_builder(prototype).value();
         const auto field_ptr = data.gfp(struct_type, global, 1);
         data.store(field_ptr, Value::i64(84));
         data.ret(global);

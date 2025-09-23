@@ -227,12 +227,125 @@ static Module recursive_fib(const IntegerType* ty) {
     return builder.build();
 }
 
-TEST(Fib, RecursiveFib) {
-    const std::unordered_map<std::string, size_t> sizes = {
-        {"fib_recursive", 28}
-    };
-    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i64()), true);
+static const std::unordered_map<std::string, size_t> sizes = {
+    {"fib_recursive", 28}
+};
+
+TEST(Fib, RecursiveFib_i64) {
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i64()));
     const auto fn = buffer.code_start_as<long(long)>("fib_recursive").value();
+
+    for (long i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+TEST(Fib, RecursiveFib_i32) {
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i32()));
+    const auto fn = buffer.code_start_as<int(int)>("fib_recursive").value();
+    for (int i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+TEST(Fib, RecursiveFib_i16) {
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i16()));
+    const auto fn = buffer.code_start_as<short(short)>("fib_recursive").value();
+
+    for (short i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+template<typename Fn>
+static Module fib_with_global_variable(const IntegerType* ty, Fn&& fn) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionBind::DEFAULT);
+
+    auto fn_builder = builder.make_function_builder(prototype);
+    auto data = fn_builder.value();
+
+    auto n = data.arg(0);
+    auto ret_addr = data.alloc(ty);
+    auto n_addr = builder.add_variable("n_addr", ty, 0).value();
+
+    auto a = builder.add_variable("a", ty, 0).value();
+    auto b = builder.add_variable("b", ty, 1).value();
+    auto c = builder.add_variable("c", ty, 0).value();
+    auto i = builder.add_variable("i", ty, 0).value();
+
+    data.store(n_addr, n);
+    data.store(a, fn(0));
+    data.store(b, fn(1));
+
+    auto v0 = data.load(ty, n_addr);
+    auto cmp0 = data.icmp(IcmpPredicate::Eq, v0, fn(0));
+
+    auto if_then = data.create_basic_block();
+    auto if_end = data.create_basic_block();
+    auto for_cond = data.create_basic_block();
+    auto for_body = data.create_basic_block();
+    auto for_inc = data.create_basic_block();
+    auto for_end = data.create_basic_block();
+    auto ret = data.create_basic_block();
+
+    data.br_cond(cmp0, if_then, if_end);
+
+    data.switch_block(if_then);
+
+    auto v1 = data.load(ty, a);
+    data.store(ret_addr, v1);
+    data.br(ret);
+
+    data.switch_block(if_end);
+    data.store(i, fn(2));
+    data.br(for_cond);
+
+    data.switch_block(for_cond);
+    auto v2 = data.load(ty, i);
+    auto v3 = data.load(ty, n_addr);
+
+    auto cmp = data.icmp(IcmpPredicate::Le, v2, v3);
+    data.br_cond(cmp, for_body, for_end);
+
+    data.switch_block(for_body);
+    auto v4 = data.load(ty, a);
+    auto v5 = data.load(ty, b);
+    auto add = data.add(v4, v5);
+    data.store(c, add);
+    auto v6 = data.load(ty, b);
+    data.store(a, v6);
+    auto v7 = data.load(ty, c);
+    data.store(b, v7);
+    data.br(for_inc);
+
+    data.switch_block(for_inc);
+
+    auto v8 = data.load(ty, i);
+    auto inc = data.add(v8, fn(1));
+    data.store(i, inc);
+
+    data.br(for_cond);
+
+    data.switch_block(for_end);
+    auto v9 = data.load(ty, b);
+    data.store(ret_addr, v9);
+    data.br(ret);
+
+    data.switch_block(ret);
+    auto v10 = data.load(ty, ret_addr);
+
+    data.ret(v10);
+    return builder.build();
+}
+
+TEST(Fib_with_global, fib_i64) {
+    GTEST_SKIP();
+    const auto buffer = jit_compile_and_assembly(sizes, fib_with_global_variable(SignedIntegerType::i64(), Value::i64), true);
+    const auto fn = buffer.code_start_as<long(long)>("fib").value();
 
     for (long i = 0; i < 20; ++i) {
         const auto res = fn(i);

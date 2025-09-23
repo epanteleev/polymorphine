@@ -59,9 +59,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         static constexpr void assemble_slot_imm(Buffer& buffer, const Slot& slot, const std::int64_t imm) {
             switch (slot.type()) {
-                case SlotType::Byte: buffer.emit8(aasm::checked_cast<std::uint8_t>(imm)); break;
-                case SlotType::Word: buffer.emit16(aasm::checked_cast<std::uint16_t>(imm)); break;
-                case SlotType::DWord: buffer.emit32(aasm::checked_cast<std::uint32_t>(imm)); break;
+                case SlotType::Byte: buffer.emit8(checked_cast<std::uint8_t>(imm)); break;
+                case SlotType::Word: buffer.emit16(checked_cast<std::uint16_t>(imm)); break;
+                case SlotType::DWord: buffer.emit32(checked_cast<std::uint32_t>(imm)); break;
                 case SlotType::QWord: buffer.emit64(imm); break;
                 default: std::unreachable();
             }

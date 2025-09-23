@@ -47,17 +47,6 @@ namespace aasm {
         buffer.emit8(constants::PREFIX_OPERAND_SIZE);
     }
 
-    template<std::integral To, std::integral From >
-    constexpr static To checked_cast(const From & from) {
-        To result = To( from );
-#ifndef NDEBUG
-        From original{};
-        std::memcpy(&original, &result, sizeof(To));
-        assertion(std::in_range<To>(from) || std::memcmp(&original, &from, sizeof(From)) == 0, "Checked cast failed: {} cannot be safely converted. Result is {}", from, result);
-#endif
-        return result;
-    }
-
     [[maybe_unused]]
     static char prefix_size(std::uint8_t size) {
         switch (size) {

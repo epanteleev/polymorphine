@@ -24,28 +24,28 @@
 template<std::integral T>
 static LirCst make_constant(const Type& type, const T integer) noexcept {
     if (type.isa(i8())) {
-        return LirCst::imm8(aasm::checked_cast<std::int8_t>(integer));
+        return LirCst::imm8(checked_cast<std::int8_t>(integer));
     }
     if (type.isa(u8())) {
-        return LirCst::imm8(aasm::checked_cast<std::uint8_t>(integer));
+        return LirCst::imm8(checked_cast<std::uint8_t>(integer));
     }
     if (type.isa(i16())) {
-        return LirCst::imm16(aasm::checked_cast<std::int16_t>(integer));
+        return LirCst::imm16(checked_cast<std::int16_t>(integer));
     }
     if (type.isa(u16())) {
-        return LirCst::imm16(aasm::checked_cast<std::uint16_t>(integer));
+        return LirCst::imm16(checked_cast<std::uint16_t>(integer));
     }
     if (type.isa(i32())) {
-        return LirCst::imm32(aasm::checked_cast<std::int32_t>(integer));
+        return LirCst::imm32(checked_cast<std::int32_t>(integer));
     }
     if (type.isa(u32())) {
-        return LirCst::imm32(aasm::checked_cast<std::uint32_t>(integer));
+        return LirCst::imm32(checked_cast<std::uint32_t>(integer));
     }
     if (type.isa(i64())) {
-        return LirCst::imm64(aasm::checked_cast<std::int64_t>(integer));
+        return LirCst::imm64(checked_cast<std::int64_t>(integer));
     }
     if (type.isa(u64())) {
-        return LirCst::imm64(aasm::checked_cast<std::uint64_t>(integer));
+        return LirCst::imm64(checked_cast<std::uint64_t>(integer));
     }
 
     die("Unsupported type for constant");
@@ -210,7 +210,7 @@ void FunctionLower::allocate_fixed_regs_for_arguments() const {
     std::size_t m_arg_area_size{};
     const auto arg_stack_alloc = [&](const std::size_t size) noexcept {
         m_arg_area_size = align_up(m_arg_area_size, size) + size;
-        return aasm::Address(aasm::rbp, 8+m_arg_area_size);
+        return aasm::Address(aasm::rbp, checked_cast<std::int32_t>(8+m_arg_area_size));
     };
 
     std::size_t m_callee_overflow_area_size{};
@@ -223,14 +223,14 @@ void FunctionLower::allocate_fixed_regs_for_arguments() const {
     std::size_t idx{};
     for (const auto& lir_val_arg: m_obj_function.args()) {
         if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
-            // Struct type argument in overflow area.
+            // Struct type argument in the overflow area.
             lir_val_arg.assign_reg(overflow_arg_stack_alloc(arg.size()));
             continue;
         }
 
         if (idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
             // No more arguments to process.
-            // Put argument in overflow area.
+            // Put an argument in the overflow area.
             lir_val_arg.assign_reg(arg_stack_alloc(8));
             continue;
         }
@@ -244,8 +244,8 @@ void FunctionLower::allocate_fixed_regs_for_arguments() const {
 void FunctionLower::setup_arguments() {
     m_bb->ins(LIRAdjustStack::prologue());
 
-    // rdx & rcx might be used for sal & sar instruction. We do not track these instruction,
-    // so that we have to isolate corresponded arguments.
+    // rdx & rcx might be used for sal & sar instruction. We do not track these instructions,
+    // so that we have to isolate corresponding arguments.
     static constexpr auto RDX_IDX = 2;
     static constexpr auto RCX_IDX = 3;
     for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, m_function.args(), m_obj_function.args())) {
