@@ -30,8 +30,8 @@ namespace aasm {
         std::string_view name(std::size_t size) const noexcept;
 
         [[nodiscard]]
-        std::size_t hash() const noexcept {
-            return m_code;
+        constexpr std::size_t encode() const noexcept {
+            return m_code & 0x7;
         }
 
     private:
@@ -65,10 +65,6 @@ namespace aasm {
 
     constexpr std::uint8_t R(const GPReg arg) noexcept {
         return static_cast<std::uint8_t>(arg.is_64_bit_reg()) << 2;
-    }
-
-    constexpr std::uint8_t reg3(const GPReg arg) noexcept {
-        return arg.code() & 0x7;
     }
 
     constexpr bool is_special_byte_reg(const GPReg arg) {

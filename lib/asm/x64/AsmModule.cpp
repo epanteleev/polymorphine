@@ -2,7 +2,10 @@
 
 #include <iomanip>
 
+
 namespace aasm {
+    static_assert(sizeof(X64Instruction) == 40, "controlling sizeof the object");
+
     std::ostream & operator<<(std::ostream &os, const AsmModule &module) {
         for (const auto &slot: module.m_global_slots | std::views::values) {
             slot.print_description(os);

@@ -116,8 +116,8 @@ namespace aasm::details {
     public:
         constexpr MovMI(const std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
             m_src(src),
-            m_dest(dst),
-            m_size(size) {}
+            m_size(size),
+            m_dest(dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovMI &movrm);
 
@@ -132,8 +132,8 @@ namespace aasm::details {
 
     private:
         const std::int32_t m_src;
-        const Address m_dest;
         std::uint8_t m_size;
+        const Address m_dest;
     };
 
     inline std::ostream & operator<<(std::ostream &os, const MovMI &movrm) {

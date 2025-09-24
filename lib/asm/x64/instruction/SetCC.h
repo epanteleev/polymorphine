@@ -14,7 +14,7 @@ namespace aasm::details {
             EncodeUtils::emit_op_prologue(buffer, 1, m_reg);
             buffer.emit8(0x0F);
             buffer.emit8(0x90 | static_cast<std::uint8_t>(m_cond));
-            buffer.emit8(reg3(m_reg) | 0xC0);
+            buffer.emit8(m_reg.encode() | 0xC0);
         }
 
     private:

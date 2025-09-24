@@ -22,7 +22,7 @@ namespace aasm::details {
                 default: die("Invalid size for mov instruction: {}", m_size);
             }
             buffer.emit8(0x40 | static_cast<std::uint8_t>(m_cond));
-            buffer.emit8(0xC0 | reg3(m_dst) << 3 | reg3(m_src));
+            buffer.emit8(0xC0 | m_dst.encode() << 3 | m_src.encode());
         }
 
     private:
@@ -40,9 +40,9 @@ namespace aasm::details {
     public:
         constexpr explicit CMovRM(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) noexcept:
             m_dst(dst),
-            m_src(src),
             m_size(size),
-            m_cond(cond) {}
+            m_cond(cond),
+            m_src(src) {}
 
         friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst);
 
@@ -58,14 +58,14 @@ namespace aasm::details {
                 default: die("Invalid size for cmov instruction: {}", m_size);
             }
             buffer.emit8(0x40 | static_cast<std::uint8_t>(m_cond));
-            return m_src.encode(buffer, reg3(m_dst), 0);
+            return m_src.encode(buffer, m_dst.encode(), 0);
         }
 
     private:
         GPReg m_dst;
-        Address m_src;
         std::uint8_t m_size;
         CondType m_cond;
+        Address m_src;
     };
 
     inline std::ostream & operator<<(std::ostream &os, const CMovRM &inst) {

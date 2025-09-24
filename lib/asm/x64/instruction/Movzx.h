@@ -43,8 +43,8 @@ namespace aasm::details {
         explicit constexpr MovzxRM(const std::uint8_t from_size, const std::uint8_t to_size, const Address& src, const GPReg& dest) noexcept:
             m_from_size(from_size),
             m_to_size(to_size),
-            m_src(src),
-            m_dest(dest) {}
+            m_dest(dest),
+            m_src(src) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovzxRM& movzxrm);
 
@@ -62,8 +62,8 @@ namespace aasm::details {
     private:
         std::uint8_t m_from_size;
         std::uint8_t m_to_size;
-        Address m_src;
         GPReg m_dest;
+        Address m_src;
     };
 
     inline std::ostream & operator<<(std::ostream &os, const MovzxRM &movzxrm) {

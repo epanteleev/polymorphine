@@ -43,7 +43,7 @@ namespace aasm {
             std::uint8_t sib = (scale == 2 ? 1 :
                         scale == 4 ? 2 :
                         scale == 8 ? 3 : 0) << 6;
-            sib |= reg3(m_index) << 3 | reg3(m_base);
+            sib |= m_index.encode() << 3 | m_base.encode();
             c.emit8(sib);
 
             /* Displacement */

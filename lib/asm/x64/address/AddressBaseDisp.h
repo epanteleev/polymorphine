@@ -22,7 +22,7 @@ namespace aasm {
             const auto has_displacement = m_displacement || m_base == rbp;
 
             // Emit ModR/M byte: [7-6]=mod, [5-3]=reg, [2-0]=r/m or 4 if SIB present
-            std::uint8_t modrm = ((modrm_pattern & 0x7) << 3) | (m_base == rsp ? 4 : reg3(m_base));
+            std::uint8_t modrm = ((modrm_pattern & 0x7) << 3) | (m_base == rsp ? 4 : m_base.encode());
 
             // Set Mod bits according to m_displacement presence and range
             if (!std::in_range<std::int8_t>(m_displacement)) {
@@ -37,7 +37,7 @@ namespace aasm {
             /* SIB */
             if (m_base == rsp) {
                 // SIB: [7-6] scale, [5-3] index, [2-0] m_base
-                c.emit8(reg3(rsp) << 3 | reg3(m_base));
+                c.emit8(rsp.encode() << 3 | m_base.encode());
             }
 
             /* Displacement */

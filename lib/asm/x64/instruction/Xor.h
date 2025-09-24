@@ -87,8 +87,8 @@ namespace aasm::details {
     public:
         constexpr explicit XorRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
             m_size(size),
-            m_src(src),
-            m_dst(dst) {}
+            m_dst(dst),
+            m_src(src) {}
 
         friend std::ostream& operator<<(std::ostream &os, const XorRM& xorrm);
 
@@ -103,8 +103,8 @@ namespace aasm::details {
 
     private:
         std::uint8_t m_size;
-        Address m_src;
         GPReg m_dst;
+        Address m_src;
     };
 
     inline std::ostream& operator<<(std::ostream &os, const XorRM &xorrm) {
