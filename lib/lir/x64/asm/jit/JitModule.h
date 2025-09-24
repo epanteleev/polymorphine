@@ -67,7 +67,7 @@ public:
 private:
     /**
      * Finds the start of the code section for a given function name.
-     * @return start address of the code section if found, otherwise an error.
+     * @return start the address of the code section if found, otherwise an error.
      */
     [[nodiscard]]
     std::expected<std::uint8_t*, Error> code_start(const std::string& name) const {

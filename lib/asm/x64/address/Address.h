@@ -47,6 +47,7 @@ namespace aasm {
         }
 
         template<CodeBuffer C>
+        [[nodiscard]]
         std::optional<Relocation> encode(C& c, const std::uint32_t modrm_pattern, const std::int32_t offset_to_end) const {
             const auto visit = [&](const auto& addr) -> std::optional<Relocation> {
                 return addr.encode(c, modrm_pattern, offset_to_end);
@@ -97,7 +98,8 @@ namespace aasm {
 
     std::ostream& operator<<(std::ostream & os, const Address & addr);
 
-    static constexpr std::uint8_t X(const Address& arg) {
+    [[nodiscard]]
+    constexpr std::uint8_t X(const Address& arg) {
         const auto as_index_addr = arg.as<AddressIndexScale>();
         if (as_index_addr == nullptr) {
             return 0;

@@ -56,7 +56,7 @@ public:
 
 private:
     [[nodiscard]]
-    std::expected<const GlobalValue*, Error> add_constant_internal(const std::string_view name, const NonTrivialType* type, Initializer&& value, GValueKind kind) {
+    std::expected<const GlobalValue*, Error> add_constant_internal(const std::string_view name, const NonTrivialType* type, Initializer&& value, const GValueKind kind) {
         std::string key(name);
         const auto [it, inserted] = m_gvalues.emplace(std::move(key), GlobalValue(std::string(name), type, std::move(value), kind));
         if (!inserted) {

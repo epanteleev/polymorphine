@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mir/global/Initializer.h"
 #include "mir/global/GlobalSymbol.h"
 
 enum class GValueKind : uint8_t {

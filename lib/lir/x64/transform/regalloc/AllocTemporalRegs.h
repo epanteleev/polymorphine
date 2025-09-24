@@ -1,6 +1,5 @@
 #pragma once
 
-#include "lir/x64/instruction/LIRInstruction.h"
 #include "lir/x64/module/LIRBlock.h"
 
 namespace details {

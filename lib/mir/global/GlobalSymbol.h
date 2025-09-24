@@ -5,7 +5,6 @@
 #include <iosfwd>
 #include <utility>
 
-#include "Initializer.h"
 #include "mir/mir_frwd.h"
 
 class GlobalSymbol {

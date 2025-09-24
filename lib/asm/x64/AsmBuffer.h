@@ -25,7 +25,7 @@ namespace aasm {
         }
 
         /**
-         * Returns number of instructions.
+         * Returns a number of instructions.
          */
         [[nodiscard]]
         constexpr std::size_t size() const noexcept {
