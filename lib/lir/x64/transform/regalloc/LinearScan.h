@@ -12,13 +12,17 @@
 #include "utility/StdExtensions.h"
 
 
-class LinearScanBase final {
-    explicit LinearScanBase(const LIRFuncData &obj_func_data, details::VRegSelection&& reg_set, const LiveIntervals& intervals, const LiveIntervalsGroups& groups, const Ordering<LIRBlock>& preorder, const call_conv::CallConvProvider* call_conv) noexcept:
+class LinearScan final {
+    explicit LinearScan(const LIRFuncData &obj_func_data, details::VRegSelection &&reg_set,
+                            const LiveIntervals &intervals, const LiveIntervalsGroups &groups,
+                            const Ordering<LIRBlock> &preorder, aasm::SymbolTable &symbol_tab,
+                            const call_conv::CallConvProvider *call_conv) noexcept :
         m_obj_func_data(obj_func_data),
         m_intervals(intervals),
         m_groups(groups),
         m_preorder(preorder),
         m_reg_set(std::move(reg_set)),
+        m_symbol_tab(symbol_tab),
         m_call_conv(call_conv) {}
 
 public:
@@ -30,12 +34,12 @@ public:
         finalize_prologue_epilogue();
     }
 
-    static LinearScanBase create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data, const call_conv::CallConvProvider* call_conv) {
+    static LinearScan create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data, aasm::SymbolTable& symbol_tab, const call_conv::CallConvProvider* call_conv) {
         const auto intervals = cache->analyze<LiveIntervalsEval>(data);
         const auto joins = cache->analyze<LiveIntervalsJoinEval>(data);
         const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
         auto vreg_selection = details::VRegSelection::create(call_conv, collect_used_callee_saved_regs(data->args()));
-        return LinearScanBase(*data, std::move(vreg_selection), *intervals, *joins, *preorder, call_conv);
+        return LinearScan(*data, std::move(vreg_selection), *intervals, *joins, *preorder, symbol_tab, call_conv);
     }
 
 private:
@@ -249,7 +253,7 @@ private:
             return;
         }
 
-        switch (const auto temp_num = details::AllocTemporalRegs::allocate(inst)) {
+        switch (const auto temp_num = details::AllocTemporalRegs::allocate(m_symbol_tab, inst)) {
             case 0: break;
             case 1: {
                 const auto reg = m_reg_set.top(IntervalHint::NOTHING);
@@ -314,6 +318,7 @@ private:
     const Ordering<LIRBlock>& m_preorder;
 
     details::VRegSelection m_reg_set;
+    aasm::SymbolTable& m_symbol_tab;
     const call_conv::CallConvProvider* m_call_conv;
 
     aasm::GPRegSet m_used_callee_saved_regs{};

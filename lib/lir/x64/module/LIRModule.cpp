@@ -1,11 +1,12 @@
 #include <ranges>
 #include "LIRModule.h"
 
-#include <ostream>
 
 std::ostream & operator<<(std::ostream &os, const LIRModule &module) {
-    for (const auto &val: module.m_global_data | std::views::values) {
+    for (const auto &[idx, val]: module.m_global_data | std::views::values | std::views::enumerate) {
         val.print_description(os);
+    }
+    if (!module.m_global_data.empty()) {
         os << std::endl;
     }
 

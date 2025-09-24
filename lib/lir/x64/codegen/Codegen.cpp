@@ -3,7 +3,7 @@
 #include "lir/x64/codegen/LIRFunctionCodegen.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/transform/callinfo/CallInfoInitialize.h"
-#include "lir/x64/transform/regalloc/LinearScanBase.h"
+#include "lir/x64/transform/regalloc/LinearScan.h"
 #include "asm/global/Directive.h"
 
 aasm::Slot Codegen::convert_lir_slot(const aasm::SlotType type, const LIRSlot& lir_slot) noexcept {
@@ -57,7 +57,7 @@ void Codegen::run() {
         convert_lir_slots(func.global_data());
 
         LIRAnalysisPassManager cache;
-        auto linear_scan = LinearScanBase::create(&cache, &func, call_conv::CC_LinuxX64());
+        auto linear_scan = LinearScan::create(&cache, &func, m_symbol_table, call_conv::CC_LinuxX64());
         linear_scan.run();
 
         auto call_info = CallInfoInitialize::create(&cache, &func, call_conv::CC_LinuxX64());

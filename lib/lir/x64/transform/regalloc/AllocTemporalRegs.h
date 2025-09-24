@@ -1,14 +1,16 @@
 #pragma once
 
 #include "lir/x64/instruction/LIRInstruction.h"
+#include "lir/x64/module/LIRBlock.h"
 
 namespace details {
     class AllocTemporalRegs final: public LIRVisitor {
     public:
-        static std::uint8_t allocate(const LIRInstructionBase* inst) {
-            AllocTemporalRegs emitter;
+        static std::uint8_t allocate(aasm::SymbolTable& symbol_tab, const LIRInstructionBase* inst) {
+            AllocTemporalRegs emitter(symbol_tab);
             const_cast<LIRInstructionBase*>(inst)->visit(emitter);
-            return emitter.m_temp_counter.used_gp_regs();
+            const auto s = emitter.m_temp_counter.used_gp_regs();
+            return s;
         }
 
     private:
@@ -34,10 +36,11 @@ namespace details {
             mutable std::uint8_t m_used_gp_regs{};
         };
 
-        explicit AllocTemporalRegs() noexcept = default;
+        explicit AllocTemporalRegs(aasm::SymbolTable& symbol_tab) noexcept:
+            m_symbol_tab(symbol_tab) {}
 
         [[nodiscard]]
-        static GPOp convert_to_gp_op(const LIROperand &val);
+        GPOp convert_to_gp_op(const LIROperand &val) const;
 
         void gen(const LIRVal &out) override {}
 
@@ -120,5 +123,6 @@ namespace details {
         void ret(std::span<LIRVal const> ret_values) override {}
 
         TemporalRegsCounter m_temp_counter{};
+        aasm::SymbolTable& m_symbol_tab;
     };
 }

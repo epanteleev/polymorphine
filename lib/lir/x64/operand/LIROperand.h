@@ -59,6 +59,7 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
+
 private:
     std::variant<LirCst, LIRVal, const LIRNamedSlot*> m_operand;
 };

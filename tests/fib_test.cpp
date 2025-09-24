@@ -343,13 +343,42 @@ static Module fib_with_global_variable(const IntegerType* ty, Fn&& fn) {
 }
 
 TEST(Fib_with_global, fib_i64) {
-    GTEST_SKIP();
     const auto buffer = jit_compile_and_assembly(sizes, fib_with_global_variable(SignedIntegerType::i64(), Value::i64), true);
     const auto fn = buffer.code_start_as<long(long)>("fib").value();
 
     for (long i = 0; i < 20; ++i) {
         const auto res = fn(i);
         ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+TEST(Fib_with_global, fib_i32) {
+    const auto buffer = jit_compile_and_assembly(sizes, fib_with_global_variable(SignedIntegerType::i32(), Value::i32), true);
+    const auto fn = buffer.code_start_as<int(int)>("fib").value();
+
+    for (int i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+TEST(Fib_with_global, fib_i16) {
+    const auto buffer = jit_compile_and_assembly(sizes, fib_with_global_variable(SignedIntegerType::i16(), Value::i16), true);
+    const auto fn = buffer.code_start_as<short(short)>("fib").value();
+
+    for (short i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
+}
+
+TEST(Fib_with_global, fib_i8) {
+    const auto buffer = jit_compile_and_assembly(sizes, fib_with_global_variable(SignedIntegerType::i8(), Value::i8), true);
+    const auto fn = buffer.code_start_as<std::int8_t(std::int8_t)>("fib").value();
+
+    for (std::int8_t i = 0; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << static_cast<int>(i);
     }
 }
 

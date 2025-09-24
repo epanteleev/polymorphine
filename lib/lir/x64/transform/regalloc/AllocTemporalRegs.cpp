@@ -19,16 +19,16 @@
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
 namespace details {
-    GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) {
+    GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) const {
         if (const auto vreg = val.as_vreg(); vreg.has_value()) {
             return vreg.value().assigned_reg().to_gp_op().value();
         }
         if (const auto cst = val.as_cst(); cst.has_value()) {
             return cst.value().value();
         }
-        if (const auto addr = val.as_slot(); addr.has_value()) {
-            // Doesn't matter exact address, we just need a valid address type.
-            return aasm::Address(aasm::rax);
+        if (const auto slot = val.as_slot(); slot.has_value()) {
+            const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
+            return aasm::Address(symbol);
         }
 
         die("Invalid LIROperand");

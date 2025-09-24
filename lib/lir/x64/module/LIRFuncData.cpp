@@ -39,7 +39,7 @@ void LIRFuncData::print(std::ostream &os) const {
     if (!m_global_data.empty()) {
         os << std::endl << "constants: [" << std::endl;
         for (const auto& [idx, data] : std::ranges::enumerate_view(m_global_data)) {
-            if (idx > 0) {
+            if (idx != 0) {
                 os << std::endl;
             }
 
