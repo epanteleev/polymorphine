@@ -49,6 +49,11 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t length() const noexcept override {
+        return m_field_types.size();
+    }
+
+    [[nodiscard]]
     const NonTrivialType* field_type_of(const std::size_t index) const override {
         return m_field_types.at(index);
     }

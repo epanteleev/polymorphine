@@ -101,6 +101,49 @@ TEST(GlobalVariable, load_store_global_struct) {
     ASSERT_EQ(result->b, 84); // Ensure the value is retained
 }
 
+static Module global_array_test(const IntegerType* ty) {
+    ModuleBuilder builder;
+    {
+        const auto array_type = builder.add_array_type(ty, 100);
+        const auto global_array = builder.add_variable("array", array_type, Initializer{1L, 2L}).value();
+        const auto prototype = builder.add_function_prototype(PointerType::ptr(), {}, "global_array", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        data.ret(global_array);
+    }
+
+    return builder.build();
+}
+
+TEST(GlobalVariable, escape_array_i32) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_array", 2}
+    };
+    const auto module = global_array_test(SignedIntegerType::i32());
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size);
+    const auto fn = buffer.code_start_as<std::int32_t*()>("global_array").value();
+    const auto result = fn();
+    ASSERT_EQ(result[0], 1);
+    ASSERT_EQ(result[1], 2);
+    for (auto i = 3; i < 100; i++) {
+        ASSERT_EQ(result[i], 0);
+    }
+}
+
+TEST(GlobalVariable, escape_array_u64) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_array", 2}
+    };
+    const auto module = global_array_test(UnsignedIntegerType::u64());
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size);
+    const auto fn = buffer.code_start_as<std::uint64_t*()>("global_array").value();
+    const auto result = fn();
+    ASSERT_EQ(result[0], 1);
+    ASSERT_EQ(result[1], 2);
+    for (auto i = 3; i < 100; i++) {
+        ASSERT_EQ(result[i], 0);
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

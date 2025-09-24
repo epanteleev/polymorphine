@@ -2,16 +2,12 @@
 
 #include "LIRSlot.h"
 
+
 class LIRNamedSlot final {
 public:
     explicit LIRNamedSlot(std::string&& name, LIRSlot&& value) noexcept:
         m_name(std::move(name)),
         m_value(std::move(value)) {}
-
-    [[nodiscard]]
-    aasm::SlotType type() const noexcept {
-        return m_value.type();
-    }
 
     [[nodiscard]]
     const LIRSlot& root() const noexcept {

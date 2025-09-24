@@ -15,6 +15,7 @@ public:
 private:
     LIRSlot create_slot_iter(const NonTrivialType *ty, const Initializer &global);
     LIRSlot create_slot(const NonTrivialType* ty, const Initializer& global);
+    LIRSlot lower_aggregate_slot(const AggregateType* aggregate_type, const std::vector<Initializer>& initializers);
 
     GlobalData& m_global_data;
     const GlobalValue &m_global_value;

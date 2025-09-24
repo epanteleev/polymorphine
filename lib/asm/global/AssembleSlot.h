@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "asm/global/Slot.h"
-#include "asm/global/SlotType.h"
+#include "base/global/SlotType.h"
 #include "asm/x64/Relocation.h"
 #include "asm/x64/Common.h"
 #include "utility/ArithmeticUtils.h"
@@ -32,8 +32,8 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         constexpr void emit_internal(Buffer& buffer, const Slot& slot) {
             const auto vis = [&]<typename T>(const T& val) {
-                if constexpr (std::same_as<T, std::int64_t>) {
-                    assemble_slot_imm(buffer, slot, val);
+                if constexpr (std::same_as<T, Constant>) {
+                    assemble_slot_imm(buffer, val);
 
                 } else if constexpr (std::same_as<T, std::string>) {
                     assemble_slot_string(buffer, val);
@@ -47,6 +47,11 @@ namespace aasm::details {
                     buffer.emit64(UINT64_MAX);
                     m_relocations.emplace_back(Relocation(RelType::X86_64_GLOB_DAT, buffer.size()-sizeof(std::int64_t), buffer.size(), val->symbol()));
 
+                } else if constexpr (std::is_same_v<T, ZeroInit>) {
+                    for (std::size_t i{}; i < val.length(); i++) {
+                        buffer.emit8(0);
+                    }
+
                 } else {
                     static_assert(false);
                     std::unreachable();
@@ -57,12 +62,12 @@ namespace aasm::details {
         }
 
         template<CodeBuffer Buffer>
-        static constexpr void assemble_slot_imm(Buffer& buffer, const Slot& slot, const std::int64_t imm) {
-            switch (slot.type()) {
-                case SlotType::Byte: buffer.emit8(checked_cast<std::uint8_t>(imm)); break;
-                case SlotType::Word: buffer.emit16(checked_cast<std::uint16_t>(imm)); break;
-                case SlotType::DWord: buffer.emit32(checked_cast<std::uint32_t>(imm)); break;
-                case SlotType::QWord: buffer.emit64(imm); break;
+        static constexpr void assemble_slot_imm(Buffer& buffer, const Constant& imm) {
+            switch (imm.type()) {
+                case SlotType::Byte: buffer.emit8(checked_cast<std::uint8_t>(imm.value())); break;
+                case SlotType::Word: buffer.emit16(checked_cast<std::uint16_t>(imm.value())); break;
+                case SlotType::DWord: buffer.emit32(checked_cast<std::uint32_t>(imm.value())); break;
+                case SlotType::QWord: buffer.emit64(imm.value()); break;
                 default: std::unreachable();
             }
         }

@@ -36,7 +36,7 @@ public:
     }
 
     [[nodiscard]]
-    std::size_t length() const noexcept {
+    std::size_t length() const noexcept override {
         return m_length;
     }
 

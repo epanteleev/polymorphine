@@ -13,7 +13,7 @@ public:
     aasm::AsmModule result();
 
 private:
-    aasm::Slot convert_lir_slot(aasm::SlotType type, const LIRSlot &lir_slot) noexcept;
+    aasm::Slot convert_lir_slot(const LIRSlot &lir_slot) noexcept;
     void convert_lir_slots(const GlobalData& global_data);
 
     LIRModule& m_module;

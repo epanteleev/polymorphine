@@ -6,26 +6,26 @@
 #include "lir/x64/transform/regalloc/LinearScan.h"
 #include "asm/global/Directive.h"
 
-aasm::Slot Codegen::convert_lir_slot(const aasm::SlotType type, const LIRSlot& lir_slot) noexcept {
+aasm::Slot Codegen::convert_lir_slot(const LIRSlot& lir_slot) noexcept {
     const auto vis = [&]<typename T>(const T& data) -> aasm::Slot {
-        if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::int64_t>) {
-            return aasm::Slot(data, type, lir_slot.size());
+        if constexpr (std::is_same_v<T, Constant> || std::is_same_v<T, std::string> || std::is_same_v<T, ZeroInit>) {
+            return aasm::Slot(data, lir_slot.size());
 
         } else if constexpr (std::is_same_v<T, std::vector<LIRSlot>>) {
             std::vector<aasm::Slot> slots;
             slots.reserve(data.size());
             for (const auto& slot: data) {
-                slots.push_back(convert_lir_slot(slot.type(), slot));
+                slots.push_back(convert_lir_slot(slot));
             }
 
-            return aasm::Slot(std::move(slots), type, lir_slot.size());
+            return aasm::Slot(std::move(slots), lir_slot.size());
 
         } else if constexpr (std::is_same_v<T, const LIRNamedSlot*>) {
-            auto slot = convert_lir_slot(data->type(), data->root());
+            auto slot = convert_lir_slot(data->root());
             auto [symbol, _] = m_symbol_table.add(data->name(), aasm::BindAttribute::INTERNAL);
             auto [directive, has] = m_slots.emplace(symbol, aasm::Directive(symbol, std::move(slot)));
             assertion(has, "Slot already exists in Codegen::convert_lir_slot");
-            return aasm::Slot(&directive->second, type, lir_slot.size());
+            return aasm::Slot(&directive->second, lir_slot.size());
 
         } else {
             static_assert(false, "Unsupported type in Slot::compute_size");
@@ -45,7 +45,7 @@ void Codegen::convert_lir_slots(const GlobalData& global_data) {
             continue;
         }
 
-        auto asm_slot = convert_lir_slot(slot.type(), slot.root());
+        auto asm_slot = convert_lir_slot(slot.root());
         m_slots.emplace_hint(element, symbol, aasm::Directive(symbol, std::move(asm_slot)));
     }
 }
