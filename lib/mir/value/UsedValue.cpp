@@ -2,7 +2,6 @@
 
 #include "mir/instruction/ValueInstruction.h"
 #include "mir/global/GlobalValue.h"
-#include "mir/types/PointerType.h"
 #include "mir/value/ArgumentValue.h"
 #include "mir/value/Value.h"
 
@@ -18,7 +17,7 @@ UsedValue::UsedValue(ValueInstruction *value) noexcept:
     m_value(value) {}
 
 std::expected<UsedValue, Error> UsedValue::try_from(const Value &value) {
-    const auto visit = [&]<typename T>(const T &val) -> std::expected<UsedValue, Error> {
+    const auto visit = []<typename T>(const T &val) -> std::expected<UsedValue, Error> {
         if constexpr (IsLocalValueType<std::remove_pointer_t<T>>) {
             return UsedValue(val);
         } else {
@@ -29,19 +28,7 @@ std::expected<UsedValue, Error> UsedValue::try_from(const Value &value) {
     return value.visit(visit);
 }
 
-const Type * UsedValue::type() const noexcept {
-    const auto visitor = [&]<typename T>(const T &val) {
-        return val->type();
-    };
-
-    return std::visit(visitor, m_value);
-}
-
 bool UsedValue::operator==(const UsedValue &other) const noexcept {
-    if (&other == this) {
-        return true;
-    }
-
     return m_value == other.m_value;
 }
 
@@ -54,27 +41,9 @@ void UsedValue::add_user(Instruction* user) {
 }
 
 std::span<const Instruction * const> UsedValue::users() const noexcept {
-    const auto visitor = [&]<typename T>(const T &val) {
+    const auto visitor = []<typename T>(const T &val) {
         return val->users();
     };
 
     return std::visit(visitor, m_value);
-}
-
-
-std::ostream& operator<<(std::ostream& os, const UsedValue& obj) {
-    auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, ArgumentValue *>) {
-            os << val;
-
-        } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
-            os << '%' << val->id();
-
-        } else {
-            static_assert(false, "Unsupported type in Value variant");
-        }
-    };
-
-    std::visit(visitor, obj.m_value);
-    return os;
 }

@@ -20,7 +20,7 @@ static void verify_def_use_chain(const std::string_view name, const BasicBlock* 
             }
 
             std::cerr << "Def-Use chain error in function '" << name << "': instruction " << inst.id()
-                      << " uses value " << local.value() << " which has no user." << std::endl;
+                      << " uses value " << operand << " which has no user." << std::endl;
             std::abort();
         }
     }

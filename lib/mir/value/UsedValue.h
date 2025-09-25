@@ -1,7 +1,6 @@
 #pragma once
 
 #include <expected>
-#include <iosfwd>
 #include <span>
 #include <variant>
 
@@ -27,9 +26,6 @@ public:
         return std::holds_alternative<T*>(m_value);
     }
 
-    [[nodiscard]]
-    const Type* type() const noexcept;
-
     bool operator==(const UsedValue& other) const noexcept;
 
     void add_user(Instruction* user);
@@ -37,7 +33,6 @@ public:
     [[nodiscard]]
     std::span<const Instruction* const> users() const noexcept;
 
-    friend std::ostream& operator<<(std::ostream& os, const UsedValue& obj);
     static std::expected<UsedValue, Error> try_from(const Value& value);
 
     template <IsLocalValueType T>
@@ -50,5 +45,3 @@ private:
         ArgumentValue *,
         ValueInstruction *> m_value;
 };
-
-std::ostream& operator<<(std::ostream& os, const UsedValue& obj);

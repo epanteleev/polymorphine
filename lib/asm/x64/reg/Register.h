@@ -55,18 +55,6 @@ namespace aasm {
     constexpr GPReg r14(14);
     constexpr GPReg r15(15);
 
-    constexpr std::uint8_t B(const GPReg arg) {
-        return arg.is_64_bit_reg();
-    }
-
-    constexpr std::uint8_t W(const GPReg arg) noexcept {
-        return (arg.code() == 8) << 3;
-    }
-
-    constexpr std::uint8_t R(const GPReg arg) noexcept {
-        return static_cast<std::uint8_t>(arg.is_64_bit_reg()) << 2;
-    }
-
     constexpr bool is_special_byte_reg(const GPReg arg) {
         return arg == rsi || arg == rdi;
     }

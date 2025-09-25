@@ -13,5 +13,5 @@ public:
     }
 
 private:
-    std::size_t m_length{};
+    std::size_t m_length;
 };

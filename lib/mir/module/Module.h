@@ -23,8 +23,6 @@ public:
         m_functions(std::move(functions)),
         m_gvalue_pool(std::move(gvalue_pool)) {}
 
-    const FunctionData* add_function_data(const FunctionPrototype* proto, std::vector<ArgumentValue>&& args);
-
     std::expected<FunctionData*, Error> find_function_data(const std::string& name) {
         const auto& it = m_functions.find(name);
         if (it == m_functions.end()) {

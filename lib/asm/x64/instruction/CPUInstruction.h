@@ -5,8 +5,10 @@
 
 #include "asm/x64/Common.h"
 #include "asm/symbol/Symbol.h"
-#include "asm/x64/Encoding.h"
+#include "asm/x64/encoding/Encoding.h"
+#include "asm/x64/encoding/SSEEncoding.h"
 #include "Label.h"
+#include "asm/x64/reg/XmmRegister.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"
@@ -30,6 +32,7 @@
 #include "Idiv.h"
 #include "Div.h"
 #include "Cdq.h"
+#include "Movss.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -53,7 +56,9 @@ namespace aasm {
         details::Jmp, details::Jcc,
         details::SetCCR,
         details::Call, details::CallM,
-        details::Leave
+        details::Leave,
+        // SSE Instructions
+        details::MovssRR
     >;
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {

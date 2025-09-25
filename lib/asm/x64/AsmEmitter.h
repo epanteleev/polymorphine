@@ -228,6 +228,12 @@ namespace aasm {
             m_instructions.emplace_back(details::Lea(dst, src));
         }
 
+        // Move or Merge Scalar Single Precision Floating-Point Value
+        constexpr void movss(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::MovssRR(src, dst));
+        }
+
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);
