@@ -4,51 +4,64 @@ namespace aasm::details {
     static constexpr std::array<std::uint8_t, 1> DIV_8 = {0xf6};
     static constexpr std::array<std::uint8_t, 1> DIV = {0xf7};
 
-    class UDivR final {
+    template<std::uint8_t MODRM, typename SRC>
+    class Div {
     public:
-        constexpr explicit UDivR(const std::uint8_t size, const GPReg divisor) noexcept:
+        template<typename S = SRC>
+        constexpr explicit Div(const std::uint8_t size, S&& divisor) noexcept:
             m_size(size),
-            m_divisor(divisor) {}
-
-        friend std::ostream& operator<<(std::ostream &os, const UDivR& idiv);
-
-        template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
-            Encoder enc(buffer, DIV_8, DIV);
-            enc.encode_M(6, m_size, m_divisor);
-        }
-
-    private:
-        std::uint8_t m_size;
-        GPReg m_divisor;
-    };
-
-    inline std::ostream & operator<<(std::ostream &os, const UDivR &idiv) {
-        return os << "div" << prefix_size(idiv.m_size) << " %"
-                   << idiv.m_divisor.name(idiv.m_size);
-    }
-
-    class UDivM final {
-    public:
-        constexpr explicit UDivM(const std::uint8_t size, const Address& divisor) noexcept:
-            m_size(size),
-            m_divisor(divisor) {}
-
-        friend std::ostream& operator<<(std::ostream &os, const UDivM &idiv);
+            m_divisor(std::forward<S>(divisor)) {}
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             Encoder enc(buffer, DIV_8, DIV);
-            return enc.encode_M_with_REXW(6, m_size, m_divisor);
+            return enc.encode_M(MODRM, m_size, m_divisor);
         }
 
-    private:
+    protected:
         std::uint8_t m_size;
-        Address m_divisor;
+        SRC m_divisor;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const UDivM &idiv) {
-        return os << "div" << prefix_size(idiv.m_size) << ' ' << idiv.m_divisor;
-    }
+    class UDivR final: public Div<6, GPReg> {
+    public:
+        constexpr explicit UDivR(const std::uint8_t size, const GPReg divisor) noexcept:
+            Div(size, divisor) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const UDivR& idiv) {
+            return os << "div" << prefix_size(idiv.m_size) << " %" << idiv.m_divisor.name(idiv.m_size);
+        }
+    };
+
+    class UDivM final: public Div<6, Address> {
+    public:
+        constexpr explicit UDivM(const std::uint8_t size, const Address& divisor) noexcept:
+            Div(size, divisor) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const UDivM &idiv) {
+            return os << "div" << prefix_size(idiv.m_size) << ' ' << idiv.m_divisor;
+        }
+    };
+
+    class IdivR final: public Div<7, GPReg> {
+    public:
+        constexpr explicit IdivR(const std::uint8_t size, const GPReg divisor) noexcept:
+            Div(size, divisor) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const IdivR& idiv) {
+            return os << "idiv" << prefix_size(idiv.m_size) << " %"
+                   << idiv.m_divisor.name(idiv.m_size);
+        }
+    };
+
+    class IdivM final: public Div<7, Address> {
+    public:
+        constexpr explicit IdivM(const std::uint8_t size, const Address& divisor) noexcept:
+            Div(size, divisor) {}
+
+        friend std::ostream& operator<<(std::ostream &os, const IdivM &idiv) {
+            return os << "idiv" << prefix_size(idiv.m_size) << ' ' << idiv.m_divisor;
+        }
+    };
 }

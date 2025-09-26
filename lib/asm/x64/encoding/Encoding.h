@@ -38,30 +38,30 @@ namespace aasm::details {
         }
 
         [[nodiscard]]
-        constexpr std::optional<Relocation> encode_M(const std::uint8_t modrm, const std::uint8_t size, const Address &addr) {
+        constexpr std::optional<Relocation> encode_M_without_REXW(const std::uint8_t modrm, const std::uint8_t size, const Address &addr) {
             const auto new_size = size == 8 ? 4 : size; // Avoid REX.W in this contexts by using 32-bit ops
             EncodeUtils::emit_op_prologue(m_buffer, new_size, addr);
             emit_opcodes(size);
             return addr.encode(m_buffer, modrm, 0);
         }
 
+        template <typename Op>
+        requires std::is_same_v<Op, Address> || std::is_same_v<Op, GPReg>
         [[nodiscard]]
-        constexpr std::optional<Relocation> encode_M_with_REXW(const std::uint8_t modrm, const std::uint8_t size, const Address& addr) {
+        constexpr std::optional<Relocation> encode_M(const std::uint8_t modrm, const std::uint8_t size, const Op& addr) {
             EncodeUtils::emit_op_prologue(m_buffer, size, addr);
             emit_opcodes(size);
-            return addr.encode(m_buffer, modrm, 0);
-        }
+            if constexpr (std::is_same_v<Op, GPReg>) {
+                m_buffer.emit8(0xC0 | modrm << 3 | addr.encode());
+                return std::nullopt;
 
-        constexpr void encode_M(const std::uint8_t modrm, const std::uint8_t size, const GPReg reg) {
-            if (size == 2) {
-                EncodeUtils::add_word_op_size(m_buffer);
-            }
-            if (auto rex = EncodeUtils::prefix(size, reg); rex.has_value()) {
-                m_buffer.emit8(rex.value());
-            }
+            } else if constexpr (std::is_same_v<Op, Address>) {
+                return addr.encode(m_buffer, modrm, 0);
 
-            emit_opcodes(size);
-            m_buffer.emit8(0xC0 | modrm << 3 | reg.encode());
+            } else {
+                static_assert(false, "Unsupported type for encode_M");
+                std::unreachable();
+            }
         }
 
         [[nodiscard]]

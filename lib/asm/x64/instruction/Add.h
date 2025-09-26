@@ -129,7 +129,7 @@ namespace aasm::details {
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> ADD_MR = {0x01};
-            static constexpr std::array<std::uint8_t, 1> ADD_MR_8 = {0x00};
+            static constexpr std::array<std::uint8_t, 1> ADD_MR_8 = {};
             Encoder enc(buffer, ADD_MR_8, ADD_MR);
             return enc.encode_MR(m_size, m_src, m_dst);
         }

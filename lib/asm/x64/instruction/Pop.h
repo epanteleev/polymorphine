@@ -31,7 +31,7 @@ namespace aasm::details {
 
     class PopM final {
     public:
-        constexpr PopM(std::uint8_t size, const Address& addr) noexcept:
+        constexpr PopM(const std::uint8_t size, const Address& addr) noexcept:
             m_size(size),
             m_addr(addr) {}
 
@@ -44,7 +44,7 @@ namespace aasm::details {
             Encoder enc(c, POP_M, POP_M);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: return enc.encode_M(0, m_size, m_addr);
+                case 2: return enc.encode_M_without_REXW(0, m_size, m_addr);
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }

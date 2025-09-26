@@ -60,6 +60,19 @@ static std::size_t to_byte_buffer(const aasm::AsmBuffer& aasm, std::span<std::ui
     return buff.size();
 }
 
+[[maybe_unused]]
+static void check_coding(aasm::AsmEmitter&& a, const std::vector<std::uint8_t>& codes, const std::string& name) {
+    const auto asm_buffer = a.to_buffer();
+    std::uint8_t v[aasm::constants::MAX_X86_INSTRUCTION_SIZE]{};
+    const auto size = to_byte_buffer(asm_buffer, v);
+    ASSERT_EQ(size, codes.size()) << "Mismatch at scale=" << codes.size();
+    for (std::size_t i = 0; i < codes.size(); ++i) {
+        ASSERT_EQ(v[i], codes[i]) << "Mismatch at index=" << i;
+    }
+
+    ASSERT_EQ(name, make_string(asm_buffer));
+}
+
 template<std::ranges::range R>
 [[maybe_unused]]
 static void check_bytes(const std::vector<std::vector<std::uint8_t>>& codes, const std::vector<std::string>& names, aasm::AsmEmitter(*fn)(std::uint8_t), R&& scales) {

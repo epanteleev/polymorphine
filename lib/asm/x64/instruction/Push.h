@@ -43,7 +43,7 @@ namespace aasm::details {
             Encoder enc(c, PUSH_M, PUSH_M);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: return enc.encode_M(6, m_size, m_addr);
+                case 2: return enc.encode_M_without_REXW(6, m_size, m_addr);
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }

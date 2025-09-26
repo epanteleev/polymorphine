@@ -15,7 +15,7 @@ namespace aasm::details {
                 case BindAttribute::EXTERNAL: {
                     static constexpr std::array<std::uint8_t, 1> CALL = {0xFF};
                     Encoder enc(buffer, CALL, CALL);
-                    return enc.encode_M(2, 8, Address(m_name));
+                    return enc.encode_M_without_REXW(2, 8, Address(m_name));
                 }
                 case BindAttribute::INTERNAL: [[fallthrough]];
                 case BindAttribute::DEFAULT: {
@@ -53,7 +53,7 @@ namespace aasm::details {
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> CALL = {0xFF};
             Encoder enc(buffer, CALL, CALL);
-            return enc.encode_M(2, 8, m_addr);
+            return enc.encode_M_without_REXW(2, 8, m_addr);
         }
 
     private:

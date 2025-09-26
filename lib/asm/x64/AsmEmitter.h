@@ -233,6 +233,9 @@ namespace aasm {
             m_instructions.emplace_back(details::MovssRR(src, dst));
         }
 
+        constexpr void movss(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::MovssRM(src, dst));
+        }
 
         constexpr Label create_label() {
             const auto size = m_label_table.size();

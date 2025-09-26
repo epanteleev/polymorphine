@@ -31,6 +31,14 @@ namespace aasm::details {
             return std::nullopt;
         }
 
+        static constexpr std::optional<std::uint8_t> prefix(const Address& src, const XmmRegister dest) noexcept {
+            if (const auto prefix = constants::REX | R(dest) | B(src.base().value()); prefix != constants::REX) {
+                return prefix;
+            }
+
+            return std::nullopt;
+        }
+
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t to_size, const std::uint8_t from_size, const GPReg src, const Address& dest) noexcept {
             auto code = R(src) | X(dest);
             if (const auto base = dest.base(); base.has_value()) {

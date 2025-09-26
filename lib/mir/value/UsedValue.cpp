@@ -10,7 +10,7 @@
 static_assert(IsLocalValueType<ArgumentValue>, "sanity check");
 static_assert(IsLocalValueType<ValueInstruction>, "sanity check");
 
-UsedValue::UsedValue(ArgumentValue *value) noexcept :
+UsedValue::UsedValue(ArgumentValue *value) noexcept:
     m_value(value) {}
 
 UsedValue::UsedValue(ValueInstruction *value) noexcept:
@@ -26,10 +26,6 @@ std::expected<UsedValue, Error> UsedValue::try_from(const Value &value) {
     };
 
     return value.visit(visit);
-}
-
-bool UsedValue::operator==(const UsedValue &other) const noexcept {
-    return m_value == other.m_value;
 }
 
 void UsedValue::add_user(Instruction* user) {

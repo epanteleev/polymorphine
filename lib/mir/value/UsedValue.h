@@ -26,13 +26,16 @@ public:
         return std::holds_alternative<T*>(m_value);
     }
 
-    bool operator==(const UsedValue& other) const noexcept;
+    bool operator==(const UsedValue &other) const noexcept {
+        return m_value == other.m_value;
+    }
 
     void add_user(Instruction* user);
 
     [[nodiscard]]
     std::span<const Instruction* const> users() const noexcept;
 
+    [[nodiscard]]
     static std::expected<UsedValue, Error> try_from(const Value& value);
 
     template <IsLocalValueType T>

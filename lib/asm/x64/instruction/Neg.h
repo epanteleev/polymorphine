@@ -13,13 +13,14 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream& os, const NegR& negr);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer &buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer &buffer) const {
             Encoder enc(buffer, NEG_R_8, NEG_R);
             switch (m_size) {
                 case 1: [[fallthrough]];
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
-                case 8: enc.encode_M(3, m_size, m_reg); break;
+                case 8: return enc.encode_M(3, m_size, m_reg);
                 default: die("Invalid size for neg instruction: {}", m_size);
             }
         }
@@ -51,7 +52,7 @@ namespace aasm::details {
                 case 1: [[fallthrough]];
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
-                case 8: return enc.encode_M_with_REXW(3, m_size, m_addr);
+                case 8: return enc.encode_M(3, m_size, m_addr);
                 default: die("Invalid size for neg instruction: {}", m_size);
             }
         }

@@ -29,7 +29,6 @@
 #include "Movsx.h"
 #include "Movsxd.h"
 #include "Neg.h"
-#include "Idiv.h"
 #include "Div.h"
 #include "Cdq.h"
 #include "Movss.h"
@@ -58,7 +57,7 @@ namespace aasm {
         details::Call, details::CallM,
         details::Leave,
         // SSE Instructions
-        details::MovssRR
+        details::MovssRR, details::MovssRM
     >;
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {
@@ -77,14 +76,16 @@ namespace aasm {
         std::same_as<T, details::MovzxRM> ||
         std::same_as<T, details::MovsxRM> ||
         std::same_as<T, details::MovsxdRM> ||
-        std::same_as<T, details::NegM> ||
-        std::same_as<T, details::IdivM> ||
-        std::same_as<T, details::UDivM> ||
+        std::same_as<T, details::NegM> || std::same_as<T, details::NegR> ||
+        std::same_as<T, details::IdivM> || std::same_as<T, details::IdivR> ||
+        std::same_as<T, details::UDivM> || std::same_as<T, details::UDivR> ||
         std::same_as<T, details::Call> || std::same_as<T, details::CallM> ||
         std::same_as<T, details::PushM> || std::same_as<T, details::PopM> ||
         std::is_same_v<T, details::MovMR> || std::is_same_v<T, details::MovRM> || std::same_as<T, details::MovMI> ||
         std::is_same_v<T, details::AddMR> || std::is_same_v<T, details::AddRM> || std::is_same_v<T, details::AddMI> ||
         std::is_same_v<T, details::SubMR> || std::is_same_v<T, details::SubRM> || std::is_same_v<T, details::SubMI> ||
         std::is_same_v<T, details::CmpMR> || std::is_same_v<T, details::CmpRM> || std::is_same_v<T, details::CmpMI> ||
-        std::is_same_v<T, details::XorMR> || std::is_same_v<T, details::XorRM> || std::is_same_v<T, details::XorMI>;
+        std::is_same_v<T, details::XorMR> || std::is_same_v<T, details::XorRM> || std::is_same_v<T, details::XorMI> ||
+        // SSE Instructions
+        std::is_same_v<T, details::MovssRM> || std::is_same_v<T, details::MovssRR>;
 }
