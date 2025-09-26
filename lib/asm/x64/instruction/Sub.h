@@ -100,7 +100,9 @@ namespace aasm::details {
             m_dst(dst),
             m_src(src) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const SubRM &subrm);
+        friend std::ostream& operator<<(std::ostream &os, const SubRM &subrm) {
+            return os << "sub" << prefix_size(subrm.m_size) << " " << subrm.m_src << ", %" << subrm.m_dst.name(subrm.m_size);
+        }
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
@@ -116,9 +118,4 @@ namespace aasm::details {
         GPReg m_dst;
         Address m_src;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const SubRM &subrm) {
-        return os << "sub" << prefix_size(subrm.m_size) << " "
-                   << subrm.m_src << ", %" << subrm.m_dst.name(subrm.m_size);
-    }
 }

@@ -237,6 +237,15 @@ namespace aasm {
             m_instructions.emplace_back(details::MovssRM(src, dst));
         }
 
+        // Move or Merge Scalar Double Precision Floating-Point Value
+        constexpr void movsd(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::MovsdRR(src, dst));
+        }
+
+        constexpr void movsd(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::MovsdRM(src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

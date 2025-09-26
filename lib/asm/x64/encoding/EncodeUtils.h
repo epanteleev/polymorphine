@@ -13,6 +13,7 @@ namespace aasm::details {
             buffer.emit8(constants::PREFIX_OPERAND_SIZE);
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src, const Address& dest) noexcept {
             auto code = R(src) | X(dest);
             if (const auto base = dest.base(); base.has_value()) {
@@ -31,14 +32,32 @@ namespace aasm::details {
             return std::nullopt;
         }
 
-        static constexpr std::optional<std::uint8_t> prefix(const Address& src, const XmmRegister dest) noexcept {
-            if (const auto prefix = constants::REX | R(dest) | B(src.base().value()); prefix != constants::REX) {
-                return prefix;
+        template<typename Op>
+        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmRegister>
+        [[nodiscard]]
+        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const XmmRegister dest) noexcept {
+            auto code = constants::REX | R(dest);
+            if constexpr (std::is_same_v<Op, Address>) {
+                code |= X(src);
+                if (const auto base = src.base(); base.has_value()) {
+                    code |= B(base.value());
+                }
+
+            } else if constexpr (std::is_same_v<Op, XmmRegister>) {
+                code |= B(src);
+
+            } else {
+                static_assert(false, "Unsupported type");
+                std::unreachable();
             }
 
+            if (code != constants::REX) {
+                return code;
+            }
             return std::nullopt;
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t to_size, const std::uint8_t from_size, const GPReg src, const Address& dest) noexcept {
             auto code = R(src) | X(dest);
             if (const auto base = dest.base(); base.has_value()) {
@@ -57,6 +76,7 @@ namespace aasm::details {
             return std::nullopt;
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src, const GPReg dest) noexcept {
             auto code = R(src) | B(dest);
             if (size == 8) {
@@ -72,6 +92,7 @@ namespace aasm::details {
             return std::nullopt;
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t to_size, const std::uint8_t from_size, const GPReg src, const GPReg dest) noexcept {
             auto code = R(src) | B(dest);
             if (to_size == 8) {
@@ -87,6 +108,7 @@ namespace aasm::details {
             return std::nullopt;
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src) {
             if (size == 8) {
                 return constants::REX_W | B(src);
@@ -100,6 +122,7 @@ namespace aasm::details {
             return std::nullopt;
         }
 
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const Address& src) {
             auto rex = constants::REX | X(src);
             if (const auto base = src.base(); base.has_value()) {
@@ -150,6 +173,27 @@ namespace aasm::details {
 
             if (const auto pr = prefix(size, op1); pr.has_value()) {
                 buffer.emit8(pr.value());
+            }
+        }
+
+        template<CodeBuffer Buffer, std::size_t N>
+        static constexpr void emit_opcodes(Buffer& buffer, const std::array<std::uint8_t, N>& ops) {
+            for (const auto opcode : ops) buffer.emit8(opcode);
+        }
+
+        template<typename SRC, typename Op, CodeBuffer Buffer>
+        [[nodiscard]]
+        static constexpr std::optional<Relocation> emit_operands(Buffer& m_buffer, const SRC& src, const Op& dest) {
+            if constexpr (std::is_same_v<Op, GPReg> || std::is_same_v<Op, XmmRegister>) {
+                m_buffer.emit8(0xC0 | src.encode() << 3 | dest.encode());
+                return std::nullopt;
+
+            } else if constexpr (std::is_same_v<Op, Address>) {
+                return dest.encode(m_buffer, src.encode(), 0);
+
+            } else {
+                static_assert(false, "Unsupported type for encode_MR");
+                std::unreachable();
             }
         }
     };

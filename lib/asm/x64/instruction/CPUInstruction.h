@@ -32,6 +32,7 @@
 #include "Div.h"
 #include "Cdq.h"
 #include "Movss.h"
+#include "Movsd.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -57,7 +58,8 @@ namespace aasm {
         details::Call, details::CallM,
         details::Leave,
         // SSE Instructions
-        details::MovssRR, details::MovssRM
+        details::MovssRR, details::MovssRM,
+        details::MovsdRR, details::MovsdRM
     >;
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {

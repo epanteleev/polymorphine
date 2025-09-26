@@ -127,17 +127,7 @@ namespace aasm::details {
         constexpr std::optional<Relocation> encode_MR(const std::uint8_t size, const GPReg src, const Op& dest) {
             EncodeUtils::emit_op_prologue(m_buffer, size, src, dest);
             emit_opcodes(size);
-            if constexpr (std::is_same_v<Op, GPReg>) {
-                m_buffer.emit8(0xC0 | src.encode() << 3 | dest.encode());
-                return std::nullopt;
-
-            } else if constexpr (std::is_same_v<Op, Address>) {
-                return dest.encode(m_buffer, src.encode(), 0);
-
-            } else {
-                static_assert(false, "Unsupported type for encode_MR");
-                std::unreachable();
-            }
+            return EncodeUtils::emit_operands(m_buffer, src, dest);
         }
 
         template <AddressOrGPReg Op>
@@ -146,24 +136,13 @@ namespace aasm::details {
             if (from_size == to_size) {
                 die("From and to size must be different for extension");
             }
-
             if constexpr (std::is_same_v<Op, GPReg>) {
                 EncodeUtils::emit_op_prologue(m_buffer, to_size, from_size, src, dest);
             } else {
                 EncodeUtils::emit_op_prologue(m_buffer, to_size, src, dest);
             }
             emit_opcodes(from_size);
-            if constexpr (std::is_same_v<Op, GPReg>) {
-                m_buffer.emit8(0xC0 | src.encode() << 3 | dest.encode());
-                return std::nullopt;
-
-            } else if constexpr (std::is_same_v<Op, Address>) {
-                return dest.encode(m_buffer, src.encode(), 0);
-
-            } else {
-                static_assert(false, "Unsupported type for encode_MR");
-                std::unreachable();
-            }
+            return EncodeUtils::emit_operands(m_buffer, src, dest);
         }
 
         [[nodiscard]]
@@ -177,16 +156,12 @@ namespace aasm::details {
         }
 
     private:
-        constexpr void emit_opcodes(const std::array<std::uint8_t, N>& ops) const {
-            for (const auto opcode : ops) m_buffer.emit8(opcode);
-        }
-
         constexpr void emit_opcodes(const std::uint8_t size) const {
             switch (size) {
-                case 1: emit_opcodes(m_b_opcodes); break;
+                case 1: EncodeUtils::emit_opcodes(m_buffer, m_b_opcodes); break;
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
-                case 8: emit_opcodes(m_opcodes); break;
+                case 8: EncodeUtils::emit_opcodes(m_buffer, m_opcodes); break;
                 default: die("Invalid size for instruction: {}", size);
             }
         }

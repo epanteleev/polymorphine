@@ -14,24 +14,17 @@ namespace aasm::details {
             m_prefixes(prefixes),
             m_opcodes(opcodes) {}
 
-        constexpr std::optional<Relocation> encode_A(const XmmRegister src, const XmmRegister dest) {
+        template<typename Op>
+        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmRegister>
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_A(const Op& src, const XmmRegister dest) {
             emit_opcodes(m_prefixes);
-            if (const auto prefix = constants::REX | R(dest) | B(src); prefix != constants::REX) {
-                m_buffer.emit8(prefix);
+            if (const auto prefix = EncodeUtils::prefix(src, dest); prefix.has_value()) {
+                m_buffer.emit8(prefix.value());
             }
 
             emit_opcodes(m_opcodes);
-            m_buffer.emit8(0xC0 | dest.encode() << 3 | src.encode());
-            return std::nullopt;
-        }
-
-        [[nodiscard]]
-        constexpr std::optional<Relocation> encode_A(const Address& src, const XmmRegister dest) {
-            emit_opcodes(m_prefixes);
-            EncodeUtils::prefix(src, dest);
-
-            emit_opcodes(m_opcodes);
-            return src.encode(m_buffer, dest.encode(), 0);
+            return EncodeUtils::emit_operands(m_buffer, dest, src);
         }
 
     private:

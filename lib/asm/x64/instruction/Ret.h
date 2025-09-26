@@ -3,7 +3,9 @@
 namespace aasm::details {
     class Ret final {
     public:
-        friend std::ostream& operator<<(std::ostream &os, const Ret& ret);
+        friend std::ostream& operator<<(std::ostream &os, const Ret&) {
+            return os << "ret";
+        }
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
@@ -13,8 +15,4 @@ namespace aasm::details {
             return std::nullopt;
         }
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Ret &) {
-        return os << "ret";
-    }
 }
