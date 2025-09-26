@@ -4,17 +4,17 @@
 namespace aasm::details {
     class MovRR final {
     public:
-        explicit constexpr MovRR(std::uint8_t size, const GPReg& src, const GPReg& dest) noexcept:
+        explicit constexpr MovRR(const std::uint8_t size, const GPReg& src, const GPReg& dest) noexcept:
             m_size(size), m_src(src), m_dest(dest) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovRR& movrr);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> MOV_RR = {0x89};
             static constexpr std::array<std::uint8_t, 1> MOV_RR_8 = {0x88};
             Encoder enc(buffer, MOV_RR_8, MOV_RR);
-            enc.encode_MR(m_size, m_src, m_dest);
+            return enc.encode_MR(m_size, m_src, m_dest);
         }
 
     private:
@@ -29,17 +29,17 @@ namespace aasm::details {
 
     class MovRI final {
     public:
-        constexpr MovRI(std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
+        constexpr MovRI(const std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
             m_size(size), m_src(src), m_dest(dest) {}
 
         friend std::ostream& operator<<(std::ostream &os, const MovRI &movri);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> MOV_RI_8 = {0xB0};
             static constexpr std::array<std::uint8_t, 1> MOV_RI = {0xB8};
             Encoder enc(buffer, MOV_RI_8, MOV_RI);
-            enc.encode_RI64(m_size, m_src, m_dest);
+            return enc.encode_RI64(m_size, m_src, m_dest);
         }
 
     private:

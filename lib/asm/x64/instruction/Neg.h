@@ -4,13 +4,13 @@ namespace aasm::details {
     static constexpr std::array<std::uint8_t, 1> NEG_R_8 = {0xF6};
     static constexpr std::array<std::uint8_t, 1> NEG_R = {0xF7};
 
-    class NegR final {
+    template<typename SRC>
+    class Neg {
     public:
-        explicit constexpr NegR(const std::uint8_t size, const GPReg reg) noexcept:
+        template<typename S = SRC>
+        explicit constexpr Neg(const std::uint8_t size, S&& reg) noexcept:
             m_size(size),
-            m_reg(reg) {}
-
-        friend std::ostream& operator<<(std::ostream& os, const NegR& negr);
+            m_src(std::forward<S>(reg)) {}
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
@@ -20,49 +20,33 @@ namespace aasm::details {
                 case 1: [[fallthrough]];
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
-                case 8: return enc.encode_M(3, m_size, m_reg);
+                case 8: return enc.encode_M(3, m_size, m_src);
                 default: die("Invalid size for neg instruction: {}", m_size);
             }
         }
 
-    private:
+    protected:
         std::uint8_t m_size;
-        GPReg m_reg;
+        SRC m_src;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const NegR &negr) {
-        return os << "neg" << prefix_size(negr.m_size) << " %" << negr.m_reg.name(negr.m_size);
-    }
+    class NegR final: public Neg<GPReg> {
+    public:
+        explicit constexpr NegR(const std::uint8_t size, const GPReg reg) noexcept:
+            Neg(size, reg) {}
 
-    class NegM final {
+        friend std::ostream& operator<<(std::ostream& os, const NegR& negr) {
+            return os << "neg" << prefix_size(negr.m_size) << " %" << negr.m_src.name(negr.m_size);
+        }
+    };
+
+    class NegM final: public Neg<Address> {
     public:
         explicit constexpr NegM(const std::uint8_t size, const Address& addr) noexcept:
-            m_size(size),
-            m_addr(addr) {}
+            Neg(size, addr) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const NegM &negm);
-
-        template<CodeBuffer Buffer>
-        [[nodiscard]]
-        constexpr std::optional<Relocation> emit(Buffer &buffer) const {
-            static constexpr std::array<std::uint8_t, 1> NEG_M_8 = {0xF6};
-            static constexpr std::array<std::uint8_t, 1> NEG_M = {0xF7};
-            Encoder enc(buffer, NEG_M_8, NEG_M);
-            switch (m_size) {
-                case 1: [[fallthrough]];
-                case 2: [[fallthrough]];
-                case 4: [[fallthrough]];
-                case 8: return enc.encode_M(3, m_size, m_addr);
-                default: die("Invalid size for neg instruction: {}", m_size);
-            }
+        friend std::ostream& operator<<(std::ostream& os, const NegM &negm) {
+            return os << "neg" << prefix_size(negm.m_size) << ' ' << negm.m_src;
         }
-
-    private:
-        std::uint8_t m_size;
-        Address m_addr;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const NegM &negm) {
-        return os << "neg" << prefix_size(negm.m_size) << ' ' << negm.m_addr;
-    }
 }

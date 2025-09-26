@@ -6,9 +6,11 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const Ret& ret);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::uint8_t RET = 0xC3;
             buffer.emit8(RET);
+            return std::nullopt;
         }
     };
 

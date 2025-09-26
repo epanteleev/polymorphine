@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <ranges>
-#include <unordered_map>
 
 #include "instruction/CPUInstruction.h"
 
@@ -45,13 +44,10 @@ namespace aasm::details {
             if constexpr (std::is_same_v<T, Jmp> || std::is_same_v<T, Jcc>) {
                 emit_jump(buffer, inst);
 
-            } else if constexpr (MemoryInstruction<T>) {
+            } else {
                 if (const auto reloc = inst.emit(buffer); reloc.has_value()) {
                     m_relocations.emplace_back(std::move(reloc.value()));
                 }
-
-            } else {
-                inst.emit(buffer);
             }
         }
 
@@ -68,7 +64,7 @@ namespace aasm::details {
                 unresolved_labels[var.label().id()].emplace_back(buffer.size());
             } else {
                 const auto offset_from_function_start = offsets_from_start[inst_idx];
-                var.emit(buffer, offset_from_function_start - static_cast<std::int64_t>(buffer.size()));
+                (void)var.emit(buffer, offset_from_function_start - static_cast<std::int64_t>(buffer.size()));
             }
         }
 

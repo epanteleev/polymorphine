@@ -1,50 +1,15 @@
 #pragma once
 
 namespace aasm::details {
-    class CMovRR final {
+    template<typename SRC>
+    class CMov {
     public:
-        constexpr explicit CMovRR(const std::uint8_t size, const GPReg src, const GPReg dst, const CondType cond) noexcept:
-            m_src(src),
-            m_dst(dst),
-            m_size(size),
-            m_cond(cond) {}
-
-        friend std::ostream& operator<<(std::ostream& os, const CMovRR& inst);
-
-        template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
-            static constexpr std::uint8_t CMOV_RR = 0x0F;
-            EncodeUtils::emit_op_prologue(buffer, m_size, m_dst, m_src);
-            switch (m_size) {
-                case 2: [[fallthrough]];
-                case 4: [[fallthrough]];
-                case 8: buffer.emit8(CMOV_RR); break;
-                default: die("Invalid size for mov instruction: {}", m_size);
-            }
-            buffer.emit8(0x40 | static_cast<std::uint8_t>(m_cond));
-            buffer.emit8(0xC0 | m_dst.encode() << 3 | m_src.encode());
-        }
-
-    private:
-        GPReg m_src;
-        GPReg m_dst;
-        std::uint8_t m_size;
-        CondType m_cond;
-    };
-
-    inline std::ostream & operator<<(std::ostream &os, const CMovRR &inst) {
-        return os << "cmov" << inst.m_cond << " %" << inst.m_src.name(inst.m_size) << ", %" << inst.m_dst.name(inst.m_size);
-    }
-
-    class CMovRM final {
-    public:
-        constexpr explicit CMovRM(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) noexcept:
-            m_dst(dst),
+        template<typename S = SRC>
+        constexpr explicit CMov(const std::uint8_t size, S&& src, const GPReg dst, const CondType cond) noexcept:
             m_size(size),
             m_cond(cond),
-            m_src(src) {}
-
-        friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst);
+            m_dst(dst),
+            m_src(std::forward<S>(src)) {}
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
@@ -55,20 +20,46 @@ namespace aasm::details {
                 case 2: [[fallthrough]];
                 case 4: [[fallthrough]];
                 case 8: buffer.emit8(CMOV_RM); break;
-                default: die("Invalid size for cmov instruction: {}", m_size);
+                default: die("Invalid size for mov instruction: {}", m_size);
             }
             buffer.emit8(0x40 | static_cast<std::uint8_t>(m_cond));
-            return m_src.encode(buffer, m_dst.encode(), 0);
+            if constexpr (std::is_same_v<SRC, GPReg>) {
+                buffer.emit8(0xC0 | m_dst.encode() << 3 | m_src.encode());
+                return std::nullopt;
+
+            } else if constexpr (std::is_same_v<SRC, Address>) {
+                return m_src.encode(buffer, m_dst.encode(), 0);
+
+            } else {
+                static_assert(false, "Unsupported source type for CMov instruction");
+                std::unreachable();
+            }
         }
 
-    private:
-        GPReg m_dst;
+    protected:
         std::uint8_t m_size;
         CondType m_cond;
-        Address m_src;
+        GPReg m_dst;
+        SRC m_src;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const CMovRM &inst) {
-        return os << "cmov" << inst.m_cond << " " << inst.m_src << ", %" << inst.m_dst.name(inst.m_size);
-    }
+    class CMovRR final: public CMov<GPReg> {
+    public:
+        constexpr explicit CMovRR(const std::uint8_t size, const GPReg src, const GPReg dst, const CondType cond) noexcept:
+            CMov(size, src, dst, cond) {}
+
+        friend std::ostream& operator<<(std::ostream& os, const CMovRR& inst) {
+            return os << "cmov" << inst.m_cond << " %" << inst.m_src.name(inst.m_size) << ", %" << inst.m_dst.name(inst.m_size);
+        }
+    };
+
+    class CMovRM final: public CMov<Address> {
+    public:
+        constexpr explicit CMovRM(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) noexcept:
+            CMov(size, src, dst, cond) {}
+
+        friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst) {
+            return os << "cmov" << inst.m_cond << " " << inst.m_src << ", %" << inst.m_dst.name(inst.m_size);
+        }
+    };
 }

@@ -5,15 +5,15 @@ namespace aasm::details {
     public:
         constexpr Leave() noexcept = default;
 
-        friend std::ostream &operator<<(std::ostream &os, const Leave &leave);
+        friend std::ostream &operator<<(std::ostream &os, const Leave &leave) {
+            return os << "leave";
+        }
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             buffer.emit8(0xC9);
+            return std::nullopt;
         }
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Leave &) {
-        return os << "leave";
-    }
 }

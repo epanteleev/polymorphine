@@ -10,7 +10,7 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const Jcc& jcc);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer, const std::int32_t offset) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer, const std::int32_t offset) const {
             if (std::in_range<std::int8_t>(offset)) {
                 buffer.emit8(static_cast<std::uint8_t>(m_type) | JCC_REL8);
                 buffer.emit8(static_cast<std::int8_t>(offset) - 2);
@@ -20,6 +20,8 @@ namespace aasm::details {
                 buffer.emit8(static_cast<std::uint8_t>(m_type) | 0x80);
                 buffer.emit32(offset - 6);
             }
+
+            return std::nullopt;
         }
 
         template<CodeBuffer Buffer>

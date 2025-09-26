@@ -10,12 +10,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream& os, const PopR& popr);
 
         template<CodeBuffer C>
-        constexpr void emit(C &c) const {
+        constexpr std::optional<Relocation> emit(C &c) const {
             static constexpr std::array<std::uint8_t, 1> POP_R = {0x58};
             Encoder enc(c, POP_R, POP_R);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: enc.encode_O(m_size, m_reg); break;
+                case 2: return enc.encode_O(m_size, m_reg);
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }

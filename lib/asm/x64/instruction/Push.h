@@ -9,12 +9,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const PushR& pushr);
 
         template <CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> PUSH_R = {0x50};
             Encoder enc(buffer, PUSH_R, PUSH_R);
             switch (m_size) {
                 case 8: [[fallthrough]];
-                case 2: enc.encode_O(m_size, m_reg); break;
+                case 2: return enc.encode_O(m_size, m_reg);
                 default: die("Invalid size for pop instruction: {}", m_size);
             }
         }
@@ -65,14 +65,14 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream &os, const PushI& pushi);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> PUSH_IMM = {0x68};
             static constexpr std::array<std::uint8_t, 1> PUSH_IMM_8 = {0x6A};
             Encoder enc(buffer, PUSH_IMM_8, PUSH_IMM);
             switch (m_size) {
                 case 1: [[fallthrough]];
                 case 2: [[fallthrough]];
-                case 4: enc.encode_I(m_size, m_imm); break;
+                case 4: return enc.encode_I(m_size, m_imm);
                 default: die("Invalid size for push instruction: {}", m_size);
             }
         }

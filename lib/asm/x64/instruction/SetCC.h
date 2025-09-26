@@ -10,11 +10,12 @@ namespace aasm::details {
         friend std::ostream& operator<<(std::ostream& os, const SetCCR& set);
 
         template<CodeBuffer Buffer>
-        constexpr void emit(Buffer& buffer) const {
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             EncodeUtils::emit_op_prologue(buffer, 1, m_reg);
             buffer.emit8(0x0F);
             buffer.emit8(0x90 | static_cast<std::uint8_t>(m_cond));
             buffer.emit8(m_reg.encode() | 0xC0);
+            return std::nullopt;
         }
 
     private:
