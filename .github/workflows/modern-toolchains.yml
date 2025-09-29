@@ -58,7 +58,6 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-      - uses: actions/setup-node@v5.0.0
       - uses: actions/checkout@v4
       - name: Instance information
         shell: bash
