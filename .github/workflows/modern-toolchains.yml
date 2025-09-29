@@ -25,6 +25,7 @@ jobs:
       image: ghcr.io/epanteleev/ubuntu25.10-clang21:latest
       volumes:
         - ${{ github.workspace }}:${{ github.workspace }}
+        - /home/runner/:/home/github
 
     strategy:
       fail-fast: false
