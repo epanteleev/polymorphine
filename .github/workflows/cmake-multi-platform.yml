@@ -20,7 +20,13 @@ jobs:
         cpp_compiler: [g++]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository (manual git clone)
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: >
+        git clone --depth 1 --branch "${{ github.ref_name }}"
+        "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@${{ github.server_url }}/${{ github.repository }}.git"
+        "${{ github.workspace }}"
     - name: Instance information
       shell: bash
       run: >
