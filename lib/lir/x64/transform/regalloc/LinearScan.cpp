@@ -275,7 +275,7 @@ void LinearScan::do_stack_alloc(const LIRVal &lir_val) {
         return;
     }
 
-    lir_val.assign_reg(m_reg_set.stack_alloc(lir_val.size()));
+    lir_val.assign_reg(m_reg_set.stack_alloc(lir_val.size(), lir_val.alignment()));
 }
 
 void LinearScan::instruction_ordering() {

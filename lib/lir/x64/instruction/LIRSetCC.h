@@ -15,7 +15,7 @@ public:
 
     static std::unique_ptr<LIRSetCC> setcc(aasm::CondType cond_type) {
         auto setcc = std::make_unique<LIRSetCC>(cond_type);
-        setcc->add_def(LIRVal::reg(1, 0, setcc.get()));
+        setcc->add_def(LIRVal::reg(cst::BYTE_SIZE, cst::BYTE_SIZE, 0, setcc.get()));
         return setcc;
     }
 

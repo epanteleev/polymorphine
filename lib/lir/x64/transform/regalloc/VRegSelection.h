@@ -13,8 +13,8 @@ namespace details {
             m_free_regs(std::move(free_regs)),
             m_call_conv(call_conv) {}
 
-        aasm::Address stack_alloc(const std::size_t size) noexcept {
-            m_local_area_size = align_up(m_local_area_size, size) + size;
+        aasm::Address stack_alloc(const std::size_t size, const std::size_t align) noexcept {
+            m_local_area_size = align_up(m_local_area_size, align) + size;
             return aasm::Address(aasm::rbp, -m_local_area_size);
         }
 

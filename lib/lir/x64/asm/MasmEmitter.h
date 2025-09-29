@@ -126,7 +126,7 @@ public:
 
     // Move With Zero-Extend
     void movzx(const std::uint8_t src_size, const std::uint8_t dst_size, const aasm::GPReg src, const aasm::GPReg dst) {
-        if (src_size == 4 && dst_size == 8) {
+        if (src_size == cst::DWORD_SIZE && dst_size == cst::QWORD_SIZE) {
             copy(src_size, src, dst);
 
         } else {
@@ -135,7 +135,7 @@ public:
     }
 
     void movzx(const std::uint8_t src_size, const std::uint8_t dst_size, const aasm::Address& src, const aasm::GPReg dst) {
-        if (src_size == 4 && dst_size == 8) {
+        if (src_size == cst::DWORD_SIZE && dst_size == cst::QWORD_SIZE) {
             m_asm.mov(src_size, src, dst);
 
         } else {
@@ -146,7 +146,7 @@ public:
     template<typename Op>
     requires std::is_same_v<Op, aasm::Address> || std::is_same_v<Op, aasm::GPReg>
     void movsx(const std::uint8_t src_size, const std::uint8_t dst_size, const Op& src, const aasm::GPReg dst) {
-        if (src_size == 4 && dst_size == 8) {
+        if (src_size == cst::DWORD_SIZE && dst_size == cst::QWORD_SIZE) {
             m_asm.movsxd(src_size, dst_size, src, dst);
 
         } else {

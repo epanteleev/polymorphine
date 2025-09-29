@@ -17,13 +17,17 @@
  */
 class LIRArg final {
 public:
-    explicit LIRArg(const std::uint32_t index, const std::uint8_t size, AttributeSet attributes) noexcept:
+    explicit LIRArg(const std::uint32_t index, const std::uint8_t size, const std::uint8_t alignment, const AttributeSet attributes) noexcept:
         m_index(index),
         m_size(size),
+        m_alignment(alignment),
         m_attributes(attributes) {}
 
     [[nodiscard]]
     std::uint8_t size() const noexcept { return m_size; }
+
+    [[nodiscard]]
+    std::uint8_t alignment() const noexcept { return m_alignment; }
 
     [[nodiscard]]
     std::uint32_t index() const noexcept { return m_index; }
@@ -60,6 +64,7 @@ public:
 private:
     const std::uint32_t m_index;
     const std::uint8_t m_size;
+    const std::uint8_t m_alignment;
     OptionalGPVReg m_assigned_reg;
     std::vector<LIRInstructionBase *> m_used_in;
     AttributeSet m_attributes;

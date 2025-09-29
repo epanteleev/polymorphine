@@ -58,6 +58,9 @@ public:
         return std::visit(visitor, m_operand);
     }
 
+    [[nodiscard]]
+    std::uint8_t align() const noexcept;
+
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;
 
 private:

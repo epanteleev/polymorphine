@@ -19,6 +19,12 @@ namespace aasm {
         class EncodeUtils;
     }
 
+    template<typename T>
+    concept AddressVariant =
+        std::same_as<T, AddressBaseDisp> ||
+        std::same_as<T, AddressIndexScale> ||
+        std::same_as<T, AddressLiteral>;
+
     class Address final {
         friend class details::EncodeUtils;
 
@@ -56,8 +62,7 @@ namespace aasm {
             return std::visit(visit, m_address);
         }
 
-        template<typename Addr>
-        requires std::same_as<Addr, AddressBaseDisp> || std::same_as<Addr, AddressIndexScale> || std::same_as<Addr, AddressLiteral>
+        template<AddressVariant Addr>
         [[nodiscard]]
         const Addr* as() const noexcept {
             return std::get_if<Addr>(&m_address);

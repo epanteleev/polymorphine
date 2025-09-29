@@ -27,7 +27,7 @@ public:
 
     /**
      * Returns begin block of the function.
-     * The begin block is the first basic block in the function.
+     * The beginning block is the first basic block in the function.
      * It doesn't have predecessors.
      */
     [[nodiscard]]
@@ -36,7 +36,7 @@ public:
     }
 
     /**
-     * Returns number of basic blocks in the function.
+     * Returns a number of basic blocks in the function.
      */
     [[nodiscard]]
     std::size_t size() const noexcept {

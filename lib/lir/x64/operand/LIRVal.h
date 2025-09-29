@@ -18,22 +18,25 @@ class LIRVal final {
         Call
     };
 
-    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRArg *def) noexcept:
+    LIRVal(const std::uint8_t size, const std::uint8_t align, const std::uint8_t index, LIRArg *def) noexcept:
         m_size(size),
+        m_align(align),
         m_index(index),
         m_type(Op::Arg) {
         m_variant.m_arg = def;
     }
 
-    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRProducerInstructionBase *def) noexcept:
+    LIRVal(const std::uint8_t size, const std::uint8_t align, const std::uint8_t index, LIRProducerInstructionBase *def) noexcept:
         m_size(size),
+        m_align(align),
         m_index(index),
         m_type(Op::Inst) {
         m_variant.m_inst = def;
     }
 
-    LIRVal(const std::uint8_t size, const std::uint8_t index, LIRCall *def) noexcept:
+    LIRVal(const std::uint8_t size, const std::uint8_t align, const std::uint8_t index, LIRCall *def) noexcept:
         m_size(size),
+        m_align(align),
         m_index(index),
         m_type(Op::Call) {
         m_variant.m_call = def;
@@ -80,6 +83,11 @@ public:
     }
 
     [[nodiscard]]
+    std::uint8_t alignment() const noexcept {
+        return m_align;
+    }
+
+    [[nodiscard]]
     std::uint8_t index() const noexcept {
         return m_index;
     }
@@ -90,6 +98,7 @@ public:
         }
 
         return m_size == rhs.m_size &&
+               m_align == rhs.m_align &&
                m_index == rhs.m_index &&
                m_type == rhs.m_type &&
                m_variant.m_arg == rhs.m_variant.m_arg;
@@ -109,13 +118,13 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
 
     static LIRVal from(const LIRArg* def) noexcept {
-        return {def->size(), static_cast<std::uint8_t>(def->index()), const_cast<LIRArg *>(def)};
+        return {def->size(), def->alignment(), static_cast<std::uint8_t>(def->index()), const_cast<LIRArg *>(def)};
     }
 
     template<typename T>
     requires std::derived_from<T, LIRProducerInstructionBase> || std::derived_from<T, LIRCall>
-    static LIRVal reg(std::uint8_t size, std::uint8_t index, T* def) noexcept {
-        return {size, index, def};
+    static LIRVal reg(std::uint8_t size, std::uint8_t align, std::uint8_t index, T* def) noexcept {
+        return {size, align, index, def};
     }
 
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
@@ -127,6 +136,7 @@ private:
     std::size_t id() const noexcept;
 
     std::uint8_t m_size;
+    std::uint8_t m_align;
     std::uint8_t m_index;
     Op m_type;
     union {

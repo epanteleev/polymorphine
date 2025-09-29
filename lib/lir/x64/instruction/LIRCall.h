@@ -66,7 +66,7 @@ public:
 
     static std::unique_ptr<LIRCall> call(std::string&& name, const std::uint8_t size, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionBind bind) {
         auto call = std::make_unique<LIRCall>(std::move(name), LIRCallKind::Call, std::move(args), cont, bind);
-        call->add_def(LIRVal::reg(size, 0, call.get()));
+        call->add_def(LIRVal::reg(size, size, 0, call.get()));
         return call;
     }
 

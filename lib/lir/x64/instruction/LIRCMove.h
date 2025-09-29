@@ -15,7 +15,7 @@ public:
 
     static std::unique_ptr<LIRCMove> cmov(aasm::CondType cond_type, const LIROperand &src, const LIROperand &dest) {
         auto cmov = std::make_unique<LIRCMove>(cond_type, std::vector{src, dest});
-        cmov->add_def(LIRVal::reg(src.size(), 0, cmov.get()));
+        cmov->add_def(LIRVal::reg(src.size(), src.align(), 0, cmov.get()));
         return cmov;
     }
 

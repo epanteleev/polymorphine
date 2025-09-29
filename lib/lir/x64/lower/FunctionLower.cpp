@@ -199,7 +199,7 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
 
     for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
         const auto non_trivial_type = dynamic_cast<const NonTrivialType*>(varg.type());
-        const auto& inserted = args.emplace_back(idx, non_trivial_type->size_of(), varg.attributes());
+        const auto& inserted = args.emplace_back(idx, non_trivial_type->size_of(), non_trivial_type->align_of(), varg.attributes());
         lir_args.push_back(LIRVal::from(&inserted));
     }
 
@@ -457,7 +457,7 @@ std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span
         const auto alloc = dynamic_cast<Alloc*>(arg.get<ValueInstruction*>());
         const auto allocated_type = alloc->allocated_type();
 
-        const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of()));
+        const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of(), allocated_type->align_of()));
         for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) { //FIXME handle <8 bytes
             const auto load = m_bb->ins(LIRProducerInstruction::read_by_offset(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
             m_bb->ins(LIRInstruction::store_by_offset(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
@@ -576,8 +576,8 @@ void FunctionLower::accept(Store *store) {
 }
 
 void FunctionLower::accept(Alloc *alloc) {
-    const auto size = alloc->allocated_type()->size_of();
-    const auto alloc_inst = m_bb->ins(LIRProducerInstruction::gen(size));
+    const auto type = alloc->allocated_type();
+    const auto alloc_inst = m_bb->ins(LIRProducerInstruction::gen(type->size_of(), type->align_of()));
     memorize(alloc, alloc_inst->def(0));
 }
 

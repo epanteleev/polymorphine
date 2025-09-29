@@ -24,7 +24,7 @@ public:
     static std::unique_ptr<ParallelCopy> copy(std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) {
         const auto size = uses.front().size();
         auto copy = std::make_unique<ParallelCopy>(std::move(uses), std::move(blocks));
-        copy->add_def(LIRVal::reg(size, 0, copy.get()));
+        copy->add_def(LIRVal::reg(size, size, 0, copy.get()));
         return copy;
     }
 

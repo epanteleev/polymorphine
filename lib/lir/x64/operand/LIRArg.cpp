@@ -11,7 +11,7 @@ std::expected<LIRArg, Error> LIRArg::try_from(const LIRVal &val) noexcept {
         return std::unexpected(Error::CastError);
     }
 
-    return LIRArg{val.index(), val.size(), arg.value()->attributes()};
+    return LIRArg{val.index(), val.size(), val.alignment(), arg.value()->attributes()};
 }
 
 std::ostream & operator<<(std::ostream &os, const LIRArg &op) noexcept {
