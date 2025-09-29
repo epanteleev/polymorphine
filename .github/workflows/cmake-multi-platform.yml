@@ -21,7 +21,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
+    - run: '/__e/node20/bin/node --version'
     - name: Instance information
       shell: bash
       run: >
