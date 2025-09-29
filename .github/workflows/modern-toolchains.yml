@@ -58,7 +58,6 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-      - run: '/__e/node20/bin/node --version'
       - uses: actions/checkout@v4
       - name: Instance information
         shell: bash
