@@ -58,6 +58,8 @@ jobs:
             cpp_compiler: clang++
 
     steps:
+      - run: >
+          ls -Ra /__e/
       - uses: actions/checkout@v4
       - name: Instance information
         shell: bash
