@@ -32,27 +32,27 @@ jobs:
         os: [self-hosted]
         build_type: [Release, Asan, Usan]
         include:
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Release
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Release
             c_compiler: clang
             cpp_compiler: clang++
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Asan
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Asan
             c_compiler: clang
             cpp_compiler: clang++
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Usan
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: self-hosted
             build_type: Usan
             c_compiler: clang
             cpp_compiler: clang++
