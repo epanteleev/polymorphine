@@ -27,6 +27,19 @@ namespace impls {
     inline bool void_type(const Type *type) noexcept {
         return dynamic_cast<const VoidType *>(type) != nullptr;
     }
+
+    inline bool gp_type(const Type *type) noexcept {
+        const auto int_type = dynamic_cast<const IntegerType*>(type);
+        if (int_type != nullptr) {
+            return true;
+        }
+
+        return dynamic_cast<const PointerType*>(type) != nullptr;
+    }
+
+    inline bool float_type(const Type *type) noexcept {
+        return dynamic_cast<const FloatingPointType*>(type) != nullptr;
+    }
 }
 
 consteval auto signed_type() noexcept {
@@ -79,4 +92,12 @@ consteval auto u64() noexcept {
 
 consteval auto void_type() noexcept {
     return impls::void_type;
+}
+
+consteval auto gp_type() noexcept {
+    return impls::gp_type;
+}
+
+consteval auto float_type() noexcept {
+    return impls::float_type;
 }

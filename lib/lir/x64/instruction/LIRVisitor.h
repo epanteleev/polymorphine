@@ -45,6 +45,10 @@ public:
     virtual void read_by_offset_i(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
     virtual void lea_i(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
 
+    // Floating point instructions
+    virtual void copy_f(const LIRVal& out, const LIROperand& in) = 0;
+    virtual void load_f(const LIRVal& out, const LIRVal& pointer) = 0;
+
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 

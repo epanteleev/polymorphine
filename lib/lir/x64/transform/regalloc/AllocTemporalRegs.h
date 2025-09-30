@@ -107,6 +107,9 @@ namespace details {
 
         void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {}
 
+        void copy_f(const LIRVal &out, const LIROperand &in) override {}
+        void load_f(const LIRVal &out, const LIRVal &pointer) override {}
+
         void jmp(const LIRBlock *bb) override {}
 
         void jcc(aasm::CondType cond_type, const LIRBlock *on_true, const LIRBlock *on_false) override {}

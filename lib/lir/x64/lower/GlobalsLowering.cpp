@@ -3,6 +3,8 @@
 #include "mir/global/GlobalValue.h"
 #include "mir/types/ArrayType.h"
 #include "mir/types/IntegerType.h"
+#include "mir/types/PointerType.h"
+#include "mir/types/FloatingPointType.h"
 #include "mir/types/TypeMatcher.h"
 #include "GlobalsLowering.h"
 

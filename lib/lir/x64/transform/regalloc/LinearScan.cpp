@@ -228,7 +228,7 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const GPVReg &reg) {
 }
 
 void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::GPReg reg) {
-    if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+    if (!lir_val.assigned_reg().empty()) {
         return;
     }
     lir_val.assign_reg(reg);

@@ -175,6 +175,14 @@ namespace {
             m_os << "lea_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
+        void copy_f(const LIRVal &out, const LIROperand &in) override {
+            m_os << "copy_f out(" << out << ") in(" << in << ')';
+        }
+
+        void load_f(const LIRVal &out, const LIRVal &pointer) override {
+            m_os << "load_f out(" << out << ") pointer(" << pointer << ')';
+        }
+
         void jmp(const LIRBlock *bb) override {
             m_os << "jmp ";
             bb->print_short_name(m_os);

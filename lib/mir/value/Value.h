@@ -98,6 +98,14 @@ public:
         return {static_cast<std::int64_t>(value), UnsignedIntegerType::u64()};
     }
 
+    constexpr static Value f64(const double value) noexcept {
+        return {value, FloatingPointType::f64()};
+    }
+
+    constexpr static Value f32(const float value) noexcept {
+        return {value, FloatingPointType::f32()};
+    }
+
 private:
     std::variant<double,
         std::int64_t,

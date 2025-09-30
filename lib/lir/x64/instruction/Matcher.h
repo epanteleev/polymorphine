@@ -29,7 +29,7 @@ consteval auto parallel_copy() {
 }
 
 consteval auto unary_copy() {
-    return x64::matchers::producer<LIRProdInstKind::Copy>;
+    return x64::matchers::producer<LIRProdInstKind::CopyI>;
 }
 
 consteval auto call() {

@@ -330,10 +330,17 @@ LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
     }
 }
 
+static std::string create_anon_constant_label(std::size_t id, std::size_t idx) {
+    std::string str(".LCP");
+    return str + std::to_string(id) + "_" + std::to_string(idx);
+}
+
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
-            unimplemented();
+            auto& global = m_obj_function.global_data();
+            auto label = create_anon_constant_label(1, 1);
+            return global.add_slot(label, LIRNamedSlot(std::move(label), LIRSlot(Constant(SlotType::QWord, v)))).value();
 
         } else if constexpr (std::is_same_v<T, std::int64_t>) {
             return make_constant(*val.type(), v);
@@ -489,8 +496,16 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         return load->def(0);
     }
 
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val), fixed_reg));
-    return copy->def(0);
+    if (ret_type->isa(gp_type())) {
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val), fixed_reg));
+        return copy->def(0);
+    }
+    if (ret_type->isa(float_type())) {
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(ret_type->size_of(), get_lir_operand(val), aasm::xmm0));
+        return copy->def(0);
+
+    }
+    unimplemented();
 }
 
 void FunctionLower::accept(ReturnValue *inst) {

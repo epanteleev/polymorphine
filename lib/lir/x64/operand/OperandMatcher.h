@@ -35,7 +35,7 @@ consteval auto gen_v() {
 }
 
 consteval auto copy_v() {
-    return impl::is_producer<LIRProdInstKind::Copy>;
+    return impl::is_producer<LIRProdInstKind::CopyI>;
 }
 
 consteval auto parallel_copy_v() {

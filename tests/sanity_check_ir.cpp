@@ -45,6 +45,27 @@ TEST(SanityCheck, ret_i64) {
     }
 }
 
+static Module ret_f32(const float value) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(FloatingPointType::f32(), {}, "ret_one", FunctionBind::DEFAULT);
+
+    const auto fn_builder = builder.make_function_builder(prototype);
+    const auto data = fn_builder.value();
+
+    data.ret(Value::f32(value));
+    return builder.build();
+}
+
+TEST(SanityCheck, ret_f32) {
+    GTEST_SKIP();
+    for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
+        const auto buffer = jit_compile_and_assembly(ret_f32(static_cast<float>(i)), true);
+        const auto fn = buffer.code_start_as<std::int64_t()>("ret_one").value();
+        const auto res = fn();
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
+
 static Module ret_i8_u8(const std::int8_t value) {
     ModuleBuilder builder;
     {

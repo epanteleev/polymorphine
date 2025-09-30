@@ -19,8 +19,10 @@ enum class LIRProdInstKind: std::uint8_t {
     Shr,
     Neg,
     Not,
-    Copy,
-    Load,
+    CopyI,
+    LoadI,
+    CopyF,
+    LoadF,
     LoadByIdx,
     ReadByOffset,
     Lea,
@@ -38,11 +40,22 @@ public:
     void visit(LIRVisitor &visitor) override;
 
     static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op)  {
-        return create(LIRProdInstKind::Copy, size, size, op);
+        return create(LIRProdInstKind::CopyI, size, size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op)  {
+        return create(LIRProdInstKind::CopyF, size, size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op, const aasm::GPReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, std::vector{op});
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyI, std::vector{op});
+        prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
+        prod->assign_reg(0, fixed_reg);
+        return prod;
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmRegister fixed_reg)  {
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyF, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);
         return prod;
@@ -81,7 +94,11 @@ public:
     }
 
     static std::unique_ptr<LIRProducerInstruction> load(const std::uint8_t loaded_ty_size, const LIROperand &op) {
-        return create(LIRProdInstKind::Load, loaded_ty_size, loaded_ty_size, op);
+        return create(LIRProdInstKind::LoadI, loaded_ty_size, loaded_ty_size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> load_f(const std::uint8_t loaded_ty_size, const LIROperand &op) {
+        return create(LIRProdInstKind::LoadF, loaded_ty_size, loaded_ty_size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIROperand &pointer, const LIROperand &index) {

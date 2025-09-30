@@ -68,7 +68,7 @@ inline std::ostream & operator<<(std::ostream &os, const GPVReg &reg) noexcept {
 
 class OptionalGPVReg final {
 public:
-    template<GPVRegVariant T>
+    template<typename T>
     OptionalGPVReg(const T& reg) noexcept:
         m_reg(reg) {}
 
@@ -87,7 +87,7 @@ public:
     [[nodiscard]]
     std::optional<GPVReg> to_gp_op() const noexcept {
         const auto visitor = [&]<typename T>(const T &val) -> std::optional<GPVReg> {
-            if constexpr (GPVRegVariant<T>) {
+            if constexpr (std::is_same_v<T, aasm::GPReg> || std::is_same_v<T, aasm::Address>) {
                 return GPVReg(val);
             }
 
@@ -98,5 +98,5 @@ public:
     }
 
 private:
-    std::variant<std::monostate, aasm::GPReg, aasm::Address> m_reg;
+    std::variant<std::monostate, aasm::GPReg, aasm::XmmRegister, aasm::Address> m_reg;
 };
