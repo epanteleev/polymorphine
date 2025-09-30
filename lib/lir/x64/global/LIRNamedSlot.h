@@ -15,7 +15,7 @@ public:
     }
 
     [[nodiscard]]
-    std::uint8_t size() const noexcept {
+    std::size_t size() const noexcept {
         return m_value.size();
     }
 

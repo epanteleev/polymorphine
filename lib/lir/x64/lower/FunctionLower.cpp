@@ -199,8 +199,8 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
 
     for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
         const auto non_trivial_type = dynamic_cast<const NonTrivialType*>(varg.type());
-        const auto& inserted = args.emplace_back(idx, non_trivial_type->size_of(), non_trivial_type->align_of(), varg.attributes());
-        lir_args.push_back(LIRVal::from(&inserted));
+        const auto& inserted = args.emplace_back(idx, varg.attributes());
+        lir_args.push_back(LIRVal::from(&inserted, non_trivial_type->size_of(), non_trivial_type->align_of()));
     }
 
     return {function.name(), std::move(args), std::move(lir_args)};
@@ -224,7 +224,7 @@ void FunctionLower::allocate_fixed_regs_for_arguments() const {
     for (const auto& lir_val_arg: m_obj_function.args()) {
         if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
             // Struct type argument in the overflow area.
-            lir_val_arg.assign_reg(overflow_arg_stack_alloc(arg.size()));
+            lir_val_arg.assign_reg(overflow_arg_stack_alloc(lir_val_arg.size()));
             continue;
         }
 

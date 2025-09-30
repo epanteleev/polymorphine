@@ -6,7 +6,6 @@
 #include "asm/asm_frwd.h"
 #include "base/global/CommonSlot.h"
 
-
 namespace aasm {
     class Slot final : public CommonSlot<Slot, Directive> {
     public:

@@ -20,8 +20,8 @@ class LirCst final {
 
 public:
     [[nodiscard]]
-    constexpr std::uint8_t size() const noexcept {
-        return static_cast<std::uint8_t>(m_kind);
+    constexpr std::size_t size() const noexcept {
+        return static_cast<std::size_t>(m_kind);
     }
 
     [[nodiscard]]

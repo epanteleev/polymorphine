@@ -80,6 +80,11 @@ public:
     explicit OptionalGPVReg() noexcept: m_reg(std::monostate{}) {}
 
     [[nodiscard]]
+    bool empty() const noexcept {
+        return std::holds_alternative<std::monostate>(m_reg);
+    }
+
+    [[nodiscard]]
     std::optional<GPVReg> to_gp_op() const noexcept {
         const auto visitor = [&]<typename T>(const T &val) -> std::optional<GPVReg> {
             if constexpr (GPVRegVariant<T>) {

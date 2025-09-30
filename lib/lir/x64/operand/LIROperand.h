@@ -46,7 +46,7 @@ public:
     }
 
     [[nodiscard]]
-    std::uint8_t size() const noexcept {
+    std::size_t size() const noexcept {
         const auto visitor = [&]<typename T>(const T &val) {
             if constexpr (std::is_same_v<T, const LIRNamedSlot*>) {
                 return val->size();
