@@ -246,6 +246,42 @@ namespace aasm {
             m_instructions.emplace_back(details::MovsdRM(src, dst));
         }
 
+        // Add Scalar Single Precision Floating-Point Values
+        constexpr void addss(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::AddssRR(src, dst));
+        }
+
+        constexpr void addss(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::AddssRM(src, dst));
+        }
+
+        // Add Scalar Double Precision Floating-Point Values
+        constexpr void addsd(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::AddssRR(src, dst));
+        }
+
+        constexpr void addsd(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::AddssRM(src, dst));
+        }
+
+        // Subtract Scalar Single Precision Floating-Point Value
+        constexpr void subss(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::SubssRR(src, dst));
+        }
+
+        constexpr void subss(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::SubssRM(src, dst));
+        }
+
+        // Add Scalar Double Precision Floating-Point Values
+        constexpr void subsd(const XmmRegister src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::SubsdRR(src, dst));
+        }
+
+        constexpr void subsd(const Address& src, const XmmRegister dst) {
+            m_instructions.emplace_back(details::SubsdRM(src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

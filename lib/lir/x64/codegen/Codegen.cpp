@@ -56,14 +56,14 @@ void Codegen::run() {
     for (auto& func: m_module | std::views::values) {
         convert_lir_slots(func.global_data());
 
-        LIRAnalysisPassManager cache;
-        auto linear_scan = LinearScan::create(&cache, &func, m_symbol_table, call_conv::CC_LinuxX64());
+        LIRAnalysisPassManager manager;
+        auto linear_scan = LinearScan::create(&manager, &func, m_symbol_table, call_conv::CC_LinuxX64());
         linear_scan.run();
 
-        auto call_info = CallInfoInitialize::create(&cache, &func, call_conv::CC_LinuxX64());
+        auto call_info = CallInfoInitialize::create(&manager, &func, call_conv::CC_LinuxX64());
         call_info.run();
 
-        auto fn_codegen = LIRFunctionCodegen::create(&cache, &func, m_symbol_table);
+        auto fn_codegen = LIRFunctionCodegen::create(&manager, &func, m_symbol_table);
         fn_codegen.run();
 
         const auto [symbol, _] = m_symbol_table.add(func.name(), aasm::BindAttribute::INTERNAL);

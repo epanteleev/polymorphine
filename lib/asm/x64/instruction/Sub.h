@@ -59,9 +59,9 @@ namespace aasm::details {
 
         template<CodeBuffer Buffer>
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> SUB_RI = {0x81};
-            static constexpr std::array<std::uint8_t, 1> SUB_RI_8 = {0x80};
-            Encoder enc(buffer, SUB_RI_8, SUB_RI);
+            static constexpr std::array<std::uint8_t, 1> SUB = {0x81};
+            static constexpr std::array<std::uint8_t, 1> SUB_8 = {0x80};
+            Encoder enc(buffer, SUB_8, SUB);
             return enc.encode_MI32(5, m_size, m_src, m_dst);
         }
 

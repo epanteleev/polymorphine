@@ -13,9 +13,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> ADD_RR = {0x01};
-            static constexpr std::array<std::uint8_t, 1> ADD_RR_8 = {};
-            Encoder enc(buffer, ADD_RR_8, ADD_RR);
+            static constexpr std::array<std::uint8_t, 1> ADD = {0x01};
+            static constexpr std::array<std::uint8_t, 1> ADD_8 = {};
+            Encoder enc(buffer, ADD_8, ADD);
             return enc.encode_MR(m_size, m_src, m_dst);
         }
 

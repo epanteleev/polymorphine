@@ -13,9 +13,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> XOR_RR = {0x31};
-            static constexpr std::array<std::uint8_t, 1> XOR_RR_8 = {0x30};
-            Encoder enc(buffer, XOR_RR_8, XOR_RR);
+            static constexpr std::array<std::uint8_t, 1> XOR = {0x31};
+            static constexpr std::array<std::uint8_t, 1> XOR_8 = {0x30};
+            Encoder enc(buffer, XOR_8, XOR);
             return enc.encode_MR(m_size, m_src, m_dst);
         }
 
@@ -57,9 +57,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> XOR_RI = {0x81};
-            static constexpr std::array<std::uint8_t, 1> XOR_RI_8 = {0x80};
-            Encoder enc(buffer, XOR_RI_8, XOR_RI);
+            static constexpr std::array<std::uint8_t, 1> XOR = {0x81};
+            static constexpr std::array<std::uint8_t, 1> XOR_8 = {0x80};
+            Encoder enc(buffer, XOR_8, XOR);
             return enc.encode_MI32(6, m_size, m_src, m_dst);
         }
 
@@ -103,9 +103,9 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            static constexpr std::array<std::uint8_t, 1> XOR_RM = {0x33};
-            static constexpr std::array<std::uint8_t, 1> XOR_RM_8 = {0x32};
-            Encoder enc(buffer, XOR_RM_8, XOR_RM);
+            static constexpr std::array<std::uint8_t, 1> XOR = {0x33};
+            static constexpr std::array<std::uint8_t, 1> XOR_8 = {0x32};
+            Encoder enc(buffer, XOR_8, XOR);
             return enc.encode_RM(m_size, m_src, m_dst);
         }
 

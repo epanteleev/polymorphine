@@ -33,6 +33,8 @@
 #include "Cdq.h"
 #include "Movss.h"
 #include "Movsd.h"
+#include "Addss.h"
+#include "Subss.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -59,7 +61,11 @@ namespace aasm {
         details::Leave,
         // SSE Instructions
         details::MovssRR, details::MovssRM,
-        details::MovsdRR, details::MovsdRM
+        details::MovsdRR, details::MovsdRM,
+        details::AddssRR, details::AddssRM,
+        details::AddsdRR, details::AddsdRM,
+        details::SubsdRR, details::SubsdRM,
+        details::SubssRR, details::SubssRM
     >;
 
     inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {

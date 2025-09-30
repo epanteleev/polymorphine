@@ -18,6 +18,7 @@ namespace aasm {
             m_asm_buffers(std::move(asm_buffers)),
             m_global_slots(std::move(slots)) {}
 
+        [[nodiscard]]
         std::expected<const AsmBuffer*, Error> function(const std::string& name) const noexcept {
             const auto symbol = m_symbol_table.find(name);
             if (!symbol.has_value()) {
