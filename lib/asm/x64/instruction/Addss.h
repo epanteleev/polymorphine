@@ -9,7 +9,7 @@ namespace aasm::details {
     class AddssR_RM {
     public:
         template<typename S = SRC>
-        explicit constexpr AddssR_RM(S&& src, XmmRegister dst) noexcept:
+        explicit constexpr AddssR_RM(S&& src, XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
@@ -22,12 +22,12 @@ namespace aasm::details {
 
     protected:
         SRC m_src;
-        XmmRegister m_dst;
+        XmmReg m_dst;
     };
 
-    class AddssRR final: public AddssR_RM<XmmRegister, ADDSS_PREFIX> {
+    class AddssRR final: public AddssR_RM<XmmReg, ADDSS_PREFIX> {
     public:
-        explicit constexpr AddssRR(const XmmRegister src, const XmmRegister dst) noexcept:
+        explicit constexpr AddssRR(const XmmReg src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddssRR& rr) {
@@ -37,7 +37,7 @@ namespace aasm::details {
 
     class AddssRM final: public AddssR_RM<Address, ADDSS_PREFIX> {
     public:
-        explicit constexpr AddssRM(const Address& src, const XmmRegister dst) noexcept:
+        explicit constexpr AddssRM(const Address& src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddssRM& rr) {
@@ -45,9 +45,9 @@ namespace aasm::details {
         }
     };
 
-    class AddsdRR final: public AddssR_RM<XmmRegister, ADDSD_PREFIX> {
+    class AddsdRR final: public AddssR_RM<XmmReg, ADDSD_PREFIX> {
     public:
-        explicit constexpr AddsdRR(const XmmRegister src, const XmmRegister dst) noexcept:
+        explicit constexpr AddsdRR(const XmmReg src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddsdRR& rr) {
@@ -57,7 +57,7 @@ namespace aasm::details {
 
     class AddsdRM final: public AddssR_RM<Address, ADDSS_PREFIX> {
     public:
-        explicit constexpr AddsdRM(const Address& src, const XmmRegister dst) noexcept:
+        explicit constexpr AddsdRM(const Address& src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddsdRM& rr) {

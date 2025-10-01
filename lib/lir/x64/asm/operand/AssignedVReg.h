@@ -52,5 +52,5 @@ public:
     }
 
 private:
-    std::variant<std::monostate, aasm::GPReg, aasm::XmmRegister, aasm::Address> m_reg;
+    std::variant<std::monostate, aasm::GPReg, aasm::XmmReg, aasm::Address> m_reg;
 };

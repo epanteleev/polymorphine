@@ -1,9 +1,9 @@
-#include "XmmRegister.h"
+#include "XmmReg.h"
 
 #include <utility>
 
 namespace aasm {
-    std::string_view XmmRegister::name(const std::size_t size) const noexcept {
+    std::string_view XmmReg::name(const std::size_t size) const noexcept {
         static constexpr std::string_view xmm_names[] = {
             "xmm0",  "xmm1",  "xmm2",  "xmm3",
             "xmm4",  "xmm5",  "xmm6",  "xmm7",

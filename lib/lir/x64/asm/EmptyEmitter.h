@@ -92,8 +92,8 @@ public:
     constexpr void div(std::uint8_t, const Op&) {}
 
     template<typename Op>
-    requires std::is_same_v<Op, aasm::XmmRegister> || std::is_same_v<Op, aasm::Address>
-    constexpr void movfp(const std::uint8_t, const Op&, const aasm::XmmRegister) {}
+    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void movfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include "asm/x64/Common.h"
-#include "asm/x64/reg/XmmRegister.h"
+#include "asm/x64/reg/XmmReg.h"
 
 namespace aasm::details {
     template<std::size_t N, std::size_t M, CodeBuffer Buffer>
@@ -15,9 +15,9 @@ namespace aasm::details {
             m_opcodes(opcodes) {}
 
         template<typename Op>
-        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmRegister>
+        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmReg>
         [[nodiscard]]
-        constexpr std::optional<Relocation> encode_A(const Op& src, const XmmRegister dest) {
+        constexpr std::optional<Relocation> encode_A(const Op& src, const XmmReg dest) {
             emit_opcodes(m_prefixes);
             if (const auto prefix = EncodeUtils::prefix(src, dest); prefix.has_value()) {
                 m_buffer.emit8(prefix.value());

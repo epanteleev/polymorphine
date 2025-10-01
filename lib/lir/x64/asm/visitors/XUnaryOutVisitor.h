@@ -8,11 +8,11 @@ class XUnaryOutVisitor {
 public:
     virtual ~XUnaryOutVisitor() = default;
 
-    virtual void emit(aasm::XmmRegister out, aasm::XmmRegister in) = 0;
-    virtual void emit(aasm::XmmRegister out, const aasm::Address& in) = 0;
-    virtual void emit(const aasm::Address& out, aasm::XmmRegister in) = 0;
+    virtual void emit(aasm::XmmReg out, aasm::XmmReg in) = 0;
+    virtual void emit(aasm::XmmReg out, const aasm::Address& in) = 0;
+    virtual void emit(const aasm::Address& out, aasm::XmmReg in) = 0;
     virtual void emit(const aasm::Address& out, const aasm::Address& in) = 0;
-    virtual void emit(aasm::XmmRegister out, std::int64_t in) = 0;
+    virtual void emit(aasm::XmmReg out, std::int64_t in) = 0;
     virtual void emit(const aasm::Address& out, std::int64_t in) = 0;
 
     template<std::derived_from<XUnaryOutVisitor> Vis>

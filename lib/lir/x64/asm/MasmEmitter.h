@@ -176,8 +176,8 @@ public:
     }
 
     template<typename Op>
-    requires std::is_same_v<Op, aasm::XmmRegister> || std::is_same_v<Op, aasm::Address>
-    constexpr void movfp(const std::uint8_t size, const Op& src, const aasm::XmmRegister dst) {
+    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void movfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (size) {
             case cst::DWORD_SIZE: m_asm.movss(src, dst); break;
             case cst::QWORD_SIZE: m_asm.movsd(src, dst); break;

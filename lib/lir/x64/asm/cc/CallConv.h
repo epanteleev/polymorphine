@@ -10,11 +10,19 @@ namespace call_conv {
         explicit consteval CallConvProvider(const std::span<aasm::GPReg const> gp_argument_registers,
                                   const std::span<aasm::GPReg const> gp_caller_save_registers,
                                   const std::span<aasm::GPReg const> gp_callee_save_registers,
-                                  const std::span<aasm::GPReg const> all_gp_registers) noexcept:
+                                  const std::span<aasm::GPReg const> all_gp_registers,
+                                  const std::span<aasm::XmmReg const> xmm_argument_registers,
+                                  const std::span<aasm::XmmReg const> xmm_caller_save_registers,
+                                  const std::span<aasm::XmmReg const> xmm_callee_save_registers,
+                                  const std::span<aasm::XmmReg const> all_xmm_registers) noexcept:
             m_gp_argument_registers(gp_argument_registers),
             m_gp_caller_save_registers(gp_caller_save_registers),
             m_gp_callee_save_registers(gp_callee_save_registers),
-            m_all_gp_registers(all_gp_registers) {}
+            m_all_gp_registers(all_gp_registers),
+            m_xmm_argument_registers(xmm_argument_registers),
+            m_xmm_caller_save_registers(xmm_caller_save_registers),
+            m_xmm_callee_save_registers(xmm_callee_save_registers),
+            m_all_xmm_registers(all_xmm_registers) {}
 
         [[nodiscard]]
         constexpr std::span<aasm::GPReg const> GP_ARGUMENT_REGISTERS() const noexcept {
@@ -24,6 +32,16 @@ namespace call_conv {
         [[nodiscard]]
         constexpr aasm::GPReg GP_ARGUMENT_REGISTERS(const std::size_t idx) const noexcept {
             return m_gp_argument_registers[idx];
+        }
+
+        [[nodiscard]]
+        constexpr std::span<aasm::XmmReg const> XMM_ARGUMENT_REGISTERS() const noexcept {
+            return m_xmm_argument_registers;
+        }
+
+        [[nodiscard]]
+        constexpr aasm::XmmReg XMM_ARGUMENT_REGISTERS(const std::size_t idx) const noexcept {
+            return m_xmm_argument_registers[idx];
         }
 
         [[nodiscard]]
@@ -61,5 +79,10 @@ namespace call_conv {
         std::span<aasm::GPReg const> m_gp_caller_save_registers;
         std::span<aasm::GPReg const> m_gp_callee_save_registers;
         std::span<aasm::GPReg const> m_all_gp_registers;
+
+        std::span<aasm::XmmReg const> m_xmm_argument_registers;
+        std::span<aasm::XmmReg const> m_xmm_caller_save_registers;
+        std::span<aasm::XmmReg const> m_xmm_callee_save_registers;
+        std::span<aasm::XmmReg const> m_all_xmm_registers;
     };
 }

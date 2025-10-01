@@ -16,6 +16,17 @@ namespace call_conv {
             aasm::r9
         };
 
+        static constexpr std::array XMM_ARGUMENT_REGISTERS = {
+            aasm::xmm0,
+            aasm::xmm1,
+            aasm::xmm2,
+            aasm::xmm3,
+            aasm::xmm4,
+            aasm::xmm5,
+            aasm::xmm6,
+            aasm::xmm7
+        };
+
         static constexpr std::array GP_CALLER_SAVE_REGISTERS = {
             aasm::rax,
             aasm::rcx,
@@ -26,6 +37,25 @@ namespace call_conv {
             aasm::r9,
             aasm::r10,
             aasm::r11
+        };
+
+        static constexpr std::array XMM_CALLER_SAVE_REGISTERS = {
+            aasm::xmm0,
+            aasm::xmm1,
+            aasm::xmm2,
+            aasm::xmm3,
+            aasm::xmm4,
+            aasm::xmm5,
+            aasm::xmm6,
+            aasm::xmm7,
+            aasm::xmm8,
+            aasm::xmm9,
+            aasm::xmm10,
+            aasm::xmm11,
+            aasm::xmm12,
+            aasm::xmm13,
+            aasm::xmm14,
+            aasm::xmm15
         };
 
         static constexpr std::array GP_CALLEE_SAVE_REGISTERS = {
@@ -56,7 +86,34 @@ namespace call_conv {
             aasm::r15
         };
 
-        static constexpr CallConvProvider CC_LinuxX64_instance{GP_ARGUMENT_REGISTERS, GP_CALLER_SAVE_REGISTERS, GP_CALLEE_SAVE_REGISTERS, ALL_GP_REGISTERS};
+        static constexpr std::array ALL_XMM_REGISTERS = {
+            aasm::xmm0,
+            aasm::xmm1,
+            aasm::xmm2,
+            aasm::xmm3,
+            aasm::xmm4,
+            aasm::xmm5,
+            aasm::xmm6,
+            aasm::xmm7,
+            aasm::xmm8,
+            aasm::xmm9,
+            aasm::xmm10,
+            aasm::xmm11,
+            aasm::xmm12,
+            aasm::xmm13,
+            aasm::xmm14,
+            aasm::xmm15
+        };
+
+        static constexpr CallConvProvider CC_LinuxX64_instance{GP_ARGUMENT_REGISTERS,
+            GP_CALLER_SAVE_REGISTERS,
+            GP_CALLEE_SAVE_REGISTERS,
+            ALL_GP_REGISTERS,
+            XMM_ARGUMENT_REGISTERS,
+            XMM_CALLER_SAVE_REGISTERS,
+            {},
+            ALL_XMM_REGISTERS
+        };
     };
 
     static consteval const CallConvProvider* CC_LinuxX64() {

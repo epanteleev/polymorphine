@@ -1,5 +1,6 @@
 #include "lir/x64/lower/FunctionLower.h"
 
+#include "ArgumentRegistersAllocator.h"
 #include "GlobalsLowering.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/instruction/LIRBranch.h"
@@ -207,66 +208,52 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
 }
 
 void FunctionLower::allocate_fixed_regs_for_arguments() const {
-    std::size_t m_arg_area_size{};
-    const auto arg_stack_alloc = [&](const std::size_t size) noexcept {
-        m_arg_area_size = align_up(m_arg_area_size, size) + size;
-        return aasm::Address(aasm::rbp, checked_cast<std::int32_t>(8+m_arg_area_size));
-    };
+    details::ArgumentRegistersAllocator allocator{m_call_conv, m_obj_function.args(), m_function.args()};
+    allocator.run();
+}
 
-    std::size_t m_callee_overflow_area_size{};
-    const auto overflow_arg_stack_alloc = [&](const std::size_t size) noexcept {
-        const auto offset = m_callee_overflow_area_size;
-        m_callee_overflow_area_size = align_up(m_callee_overflow_area_size, 8) + size;
-        return aasm::Address(aasm::rsp, 8 + offset);
-    };
+void FunctionLower::setup_gp_argument(const std::size_t idx, const ArgumentValue& arg, const LIROperand& lir_arg) {
+    // rdx & rcx might be used for sal & sar instruction. We do not track these instructions,
+    // so that we have to isolate corresponding arguments.
+    static constexpr auto RDX_IDX = 2;
+    static constexpr auto RCX_IDX = 3;
 
-    std::size_t idx{};
-    for (const auto& lir_val_arg: m_obj_function.args()) {
-        if (const auto arg = LIRArg::try_from(lir_val_arg).value(); arg.attributes().has(Attribute::ByValue)) {
-            // Struct type argument in the overflow area.
-            lir_val_arg.assign_reg(overflow_arg_stack_alloc(lir_val_arg.size()));
-            continue;
+    if (idx != RDX_IDX && idx != RCX_IDX) {
+        const auto is_no_live_out = [&](const auto& user) { // TODO better live-out checker.
+            return user->owner() == m_function.first() && !user->isa(any_terminate());
+        };
+
+        if (std::ranges::all_of(arg.users(), is_no_live_out)) {
+            memorize(&arg, lir_arg);
+            return;
         }
-
-        if (idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
-            // No more arguments to process.
-            // Put an argument in the overflow area.
-            lir_val_arg.assign_reg(arg_stack_alloc(8));
-            continue;
-        }
-
-        const auto arg_reg = m_call_conv->GP_ARGUMENT_REGISTERS(idx);
-        lir_val_arg.assign_reg(arg_reg);
-        idx += 1;
     }
+
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
+    memorize(&arg, copy->def(0));
 }
 
 void FunctionLower::setup_arguments() {
     m_bb->ins(LIRAdjustStack::prologue());
 
-    // rdx & rcx might be used for sal & sar instruction. We do not track these instructions,
-    // so that we have to isolate corresponding arguments.
-    static constexpr auto RDX_IDX = 2;
-    static constexpr auto RCX_IDX = 3;
     for (const auto& [idx, arg, lir_arg]: std::ranges::zip_view(std::ranges::iota_view{0UL}, m_function.args(), m_obj_function.args())) {
         if (arg.attributes().has(Attribute::ByValue)) {
             memorize(&arg, lir_arg);
             continue;
         }
-
-        if (idx != RDX_IDX && idx != RCX_IDX) {
-            const auto is_no_live_out = [&](const auto& user) { // TODO better live-out checker.
-                return user->owner() == m_function.first() && !user->isa(any_terminate());
-            };
-
-            if (std::ranges::all_of(arg.users(), is_no_live_out)) {
-                memorize(&arg, lir_arg);
-                continue;
-            }
+        const auto type = dynamic_cast<const NonTrivialType*>(arg.type());
+        assertion(type != nullptr, "Expected NonTrivialType for argument type");
+        if (type->isa(gp_type())) {
+            setup_gp_argument(idx, arg, lir_arg);
+            continue;
+        }
+        if (type->isa(float_type())) {
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(lir_arg.size(), lir_arg));
+            memorize(&arg, copy->def(0));
+            continue;
         }
 
-        const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
-        memorize(&arg, copy->def(0));
+        die("Unknown type");
     }
     allocate_fixed_regs_for_arguments();
 }

@@ -6,7 +6,7 @@
 
 
 template<typename T>
-concept XVRegVariant = std::is_same_v<T, aasm::XmmRegister> ||
+concept XVRegVariant = std::is_same_v<T, aasm::XmmReg> ||
     std::is_same_v<T, aasm::Address>;
 
 class XVReg final {
@@ -21,8 +21,8 @@ public:
     }
 
     [[nodiscard]]
-    std::expected<aasm::XmmRegister, Error> as_xmm_reg() const noexcept {
-        if (const auto reg = std::get_if<aasm::XmmRegister>(&m_reg)) {
+    std::expected<aasm::XmmReg, Error> as_xmm_reg() const noexcept {
+        if (const auto reg = std::get_if<aasm::XmmReg>(&m_reg)) {
             return *reg;
         }
 
@@ -49,5 +49,5 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const XVReg& reg) noexcept;
 
 private:
-    std::variant<aasm::XmmRegister, aasm::Address> m_reg;
+    std::variant<aasm::XmmReg, aasm::Address> m_reg;
 };

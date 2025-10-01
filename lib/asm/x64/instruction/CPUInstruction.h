@@ -8,7 +8,7 @@
 #include "asm/x64/encoding/Encoding.h"
 #include "asm/x64/encoding/SSEEncoding.h"
 #include "Label.h"
-#include "asm/x64/reg/XmmRegister.h"
+#include "asm/x64/reg/XmmReg.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"

@@ -46,6 +46,8 @@ private:
 
     void allocate_arguments_for_call(std::span<LIROperand const> args) const;
 
+    void setup_gp_argument(std::size_t idx, const ArgumentValue& arg, const LIROperand& lir_arg);
+
     void setup_arguments();
 
     void traverse_instructions();

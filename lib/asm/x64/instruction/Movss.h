@@ -8,7 +8,7 @@ namespace aasm::details {
     class MovssR_RM {
     public:
         template<typename S = SRC>
-        explicit constexpr MovssR_RM(S&& src, XmmRegister dst) noexcept:
+        explicit constexpr MovssR_RM(S&& src, XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
@@ -21,12 +21,12 @@ namespace aasm::details {
 
     protected:
         SRC m_src;
-        XmmRegister m_dst;
+        XmmReg m_dst;
     };
 
-    class MovssRR final: public MovssR_RM<XmmRegister> {
+    class MovssRR final: public MovssR_RM<XmmReg> {
     public:
-        explicit constexpr MovssRR(const XmmRegister src, const XmmRegister dst) noexcept:
+        explicit constexpr MovssRR(const XmmReg src, const XmmReg dst) noexcept:
             MovssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const MovssRR& rr) {
@@ -36,7 +36,7 @@ namespace aasm::details {
 
     class MovssRM final: public MovssR_RM<Address> {
     public:
-        explicit constexpr MovssRM(const Address& src, const XmmRegister dst) noexcept:
+        explicit constexpr MovssRM(const Address& src, const XmmReg dst) noexcept:
             MovssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const MovssRM& rr) {

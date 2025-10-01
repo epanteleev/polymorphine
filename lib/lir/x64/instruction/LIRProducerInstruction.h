@@ -54,7 +54,7 @@ public:
         return prod;
     }
 
-    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmRegister fixed_reg)  {
+    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmReg fixed_reg)  {
         auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyF, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);

@@ -229,56 +229,56 @@ namespace aasm {
         }
 
         // Move or Merge Scalar Single Precision Floating-Point Value
-        constexpr void movss(const XmmRegister src, const XmmRegister dst) {
+        constexpr void movss(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovssRR(src, dst));
         }
 
-        constexpr void movss(const Address& src, const XmmRegister dst) {
+        constexpr void movss(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovssRM(src, dst));
         }
 
         // Move or Merge Scalar Double Precision Floating-Point Value
-        constexpr void movsd(const XmmRegister src, const XmmRegister dst) {
+        constexpr void movsd(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovsdRR(src, dst));
         }
 
-        constexpr void movsd(const Address& src, const XmmRegister dst) {
+        constexpr void movsd(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovsdRM(src, dst));
         }
 
         // Add Scalar Single Precision Floating-Point Values
-        constexpr void addss(const XmmRegister src, const XmmRegister dst) {
+        constexpr void addss(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::AddssRR(src, dst));
         }
 
-        constexpr void addss(const Address& src, const XmmRegister dst) {
+        constexpr void addss(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::AddssRM(src, dst));
         }
 
         // Add Scalar Double Precision Floating-Point Values
-        constexpr void addsd(const XmmRegister src, const XmmRegister dst) {
+        constexpr void addsd(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::AddssRR(src, dst));
         }
 
-        constexpr void addsd(const Address& src, const XmmRegister dst) {
+        constexpr void addsd(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::AddssRM(src, dst));
         }
 
         // Subtract Scalar Single Precision Floating-Point Value
-        constexpr void subss(const XmmRegister src, const XmmRegister dst) {
+        constexpr void subss(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::SubssRR(src, dst));
         }
 
-        constexpr void subss(const Address& src, const XmmRegister dst) {
+        constexpr void subss(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::SubssRM(src, dst));
         }
 
         // Add Scalar Double Precision Floating-Point Values
-        constexpr void subsd(const XmmRegister src, const XmmRegister dst) {
+        constexpr void subsd(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::SubsdRR(src, dst));
         }
 
-        constexpr void subsd(const Address& src, const XmmRegister dst) {
+        constexpr void subsd(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::SubsdRM(src, dst));
         }
 

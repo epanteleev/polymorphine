@@ -33,9 +33,9 @@ namespace aasm::details {
         }
 
         template<typename Op>
-        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmRegister>
+        requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmReg>
         [[nodiscard]]
-        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const XmmRegister dest) noexcept {
+        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const XmmReg dest) noexcept {
             auto code = constants::REX | R(dest);
             if constexpr (std::is_same_v<Op, Address>) {
                 code |= X(src);
@@ -43,7 +43,7 @@ namespace aasm::details {
                     code |= B(base.value());
                 }
 
-            } else if constexpr (std::is_same_v<Op, XmmRegister>) {
+            } else if constexpr (std::is_same_v<Op, XmmReg>) {
                 code |= B(src);
 
             } else {
@@ -184,7 +184,7 @@ namespace aasm::details {
         template<typename SRC, typename Op, CodeBuffer Buffer>
         [[nodiscard]]
         static constexpr std::optional<Relocation> emit_operands(Buffer& m_buffer, const SRC& src, const Op& dest) {
-            if constexpr (std::is_same_v<Op, GPReg> || std::is_same_v<Op, XmmRegister>) {
+            if constexpr (std::is_same_v<Op, GPReg> || std::is_same_v<Op, XmmReg>) {
                 m_buffer.emit8(0xC0 | src.encode() << 3 | dest.encode());
                 return std::nullopt;
 

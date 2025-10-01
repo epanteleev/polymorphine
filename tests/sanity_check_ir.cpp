@@ -124,6 +124,27 @@ TEST(SanityCheck, ret_i32_arg) {
     }
 }
 
+static Module ret_f32_arg() {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(FloatingPointType::f32(), {FloatingPointType::f32()}, "ret_f32", FunctionBind::DEFAULT);
+    const auto fn_builder = builder.make_function_builder(prototype);
+    const auto data = fn_builder.value();
+    const auto arg0 = data.arg(0);
+    data.ret(arg0);
+
+    return builder.build();
+}
+
+TEST(SanityCheck, ret_f32_arg) {
+    GTEST_SKIP();
+    const auto buffer = jit_compile_and_assembly(ret_f32_arg(), true);
+    const auto fn = buffer.code_start_as<float(float)>("ret_f32").value();
+    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
+
 static Module add_i32_args(const NonTrivialType* ty) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "add", FunctionBind::DEFAULT);

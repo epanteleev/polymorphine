@@ -7,7 +7,7 @@
 
 
 template<typename T>
-concept XOpVariant = std::is_same_v<T, aasm::XmmRegister> ||
+concept XOpVariant = std::is_same_v<T, aasm::XmmReg> ||
     std::is_same_v<T, aasm::Address> ||
     std::is_integral_v<T>;
 
@@ -38,5 +38,5 @@ public:
     }
 
 private:
-    std::variant<aasm::XmmRegister, aasm::Address, std::int64_t> m_reg;
+    std::variant<aasm::XmmReg, aasm::Address, std::int64_t> m_reg;
 };

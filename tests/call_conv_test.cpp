@@ -277,7 +277,7 @@ static Module struct_arg_external2() {
     ModuleBuilder builder;
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_fields", FunctionBind::DEFAULT);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}}, FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type}, "sum_ints2", std::vector{AttributeSet{Attribute::ByValue}}, FunctionBind::EXTERN);
         const auto alloc = data.alloc(vect_type);
@@ -320,7 +320,7 @@ static Module struct_arg_external3() {
     ModuleBuilder builder;
     {
         auto vect_type = builder.add_struct_type("Vec", {SignedIntegerType::i64(), SignedIntegerType::i64(), SignedIntegerType::i64()});
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_fields", FunctionBind::DEFAULT);
+        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(SignedIntegerType::i64(), {vect_type, vect_type}, "sum_ints3", std::vector{AttributeSet{Attribute::ByValue}, AttributeSet{Attribute::ByValue}}, FunctionBind::EXTERN);
 

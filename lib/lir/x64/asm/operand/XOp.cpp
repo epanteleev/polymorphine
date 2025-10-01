@@ -6,7 +6,7 @@
 
 std::ostream & operator<<(std::ostream &os, const XOp &reg) noexcept {
     const auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, aasm::XmmRegister>) {
+        if constexpr (std::is_same_v<T, aasm::XmmReg>) {
             os << val.name(cst::QWORD_SIZE*2);
 
         } else if constexpr (std::is_same_v<T, aasm::Address>) {

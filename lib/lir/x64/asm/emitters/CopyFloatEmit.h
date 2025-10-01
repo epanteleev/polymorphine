@@ -17,15 +17,15 @@ public:
 private:
     friend class XUnaryOutVisitor;
 
-    void emit(aasm::XmmRegister out, aasm::XmmRegister in) override {
+    void emit(aasm::XmmReg out, aasm::XmmReg in) override {
         unimplemented();
     }
 
-    void emit(aasm::XmmRegister out, const aasm::Address &in) override {
+    void emit(aasm::XmmReg out, const aasm::Address &in) override {
         m_as.movfp(m_size, in, out);
     }
 
-    void emit(const aasm::Address &out, aasm::XmmRegister in) override {
+    void emit(const aasm::Address &out, aasm::XmmReg in) override {
         unimplemented();
     }
 
@@ -33,7 +33,7 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::XmmRegister out, std::int64_t in) override {
+    void emit(aasm::XmmReg out, std::int64_t in) override {
         unimplemented();
     }
 
