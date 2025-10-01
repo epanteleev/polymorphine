@@ -29,37 +29,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [self-hosted]
+        os: [ubuntu-latest]
         build_type: [Release, Asan, Usan]
         include:
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Release
             c_compiler: gcc
             cpp_compiler: g++
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Release
             c_compiler: clang
             cpp_compiler: clang++
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Asan
             c_compiler: gcc
             cpp_compiler: g++
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Asan
             c_compiler: clang
             cpp_compiler: clang++
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Usan
             c_compiler: gcc
             cpp_compiler: g++
-          - os: self-hosted
+          - os: ubuntu-latest
             build_type: Usan
             c_compiler: clang
             cpp_compiler: clang++
 
     steps:
-      - run: >
-          ls -Ra /__e/
       - uses: actions/checkout@v4
       - name: Instance information
         shell: bash
