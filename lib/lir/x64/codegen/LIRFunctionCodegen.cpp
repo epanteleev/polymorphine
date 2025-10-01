@@ -24,6 +24,7 @@
 #include "lir/x64/asm/emitters/LeaGPEmit.h"
 
 #include "lir/x64/asm/cc/CallConv.h"
+#include "lir/x64/asm/emitters/CopyFloatEmit.h"
 
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
@@ -76,6 +77,21 @@ static aasm::BindAttribute cvt_bind_attribute(const FunctionBind bind) noexcept 
 GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
     if (const auto vreg = val.as_vreg(); vreg.has_value()) {
         return vreg.value().assigned_reg().to_gp_op().value();
+    }
+    if (const auto cst = val.as_cst(); cst.has_value()) {
+        return cst.value().value();
+    }
+    if (const auto slot = val.as_slot(); slot.has_value()) {
+        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
+        return aasm::Address(symbol);
+    }
+
+    die("Invalid LIROperand");
+}
+
+XOp LIRFunctionCodegen::convert_to_x_op(const LIROperand &val) const {
+    if (const auto vreg = val.as_vreg(); vreg.has_value()) {
+        return vreg.value().assigned_reg().to_xmm_op().value();
     }
     if (const auto cst = val.as_cst(); cst.has_value()) {
         return cst.value().value();
@@ -337,6 +353,12 @@ void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, st
 void LIRFunctionCodegen::vcall(const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
     m_as.call(symbol);
+}
+
+void LIRFunctionCodegen::copy_f(const LIRVal &out, const LIROperand &in) {
+    const auto out_reg = out.assigned_reg().to_xmm_op().value();
+    CopyFloatEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
+    emitter.apply(out_reg, convert_to_x_op(in));
 }
 
 void LIRFunctionCodegen::ret(const std::span<LIRVal const> ret_values) {

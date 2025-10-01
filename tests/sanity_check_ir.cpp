@@ -45,22 +45,30 @@ TEST(SanityCheck, ret_i64) {
     }
 }
 
-static Module ret_f32(const float value) {
+static Module ret_f32(const FloatingPointType* fp, const Value& value) {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(FloatingPointType::f32(), {}, "ret_one", FunctionBind::DEFAULT);
+    const auto prototype = builder.add_function_prototype(fp, {}, "ret_one", FunctionBind::DEFAULT);
 
     const auto fn_builder = builder.make_function_builder(prototype);
     const auto data = fn_builder.value();
 
-    data.ret(Value::f32(value));
+    data.ret(value);
     return builder.build();
 }
 
 TEST(SanityCheck, ret_f32) {
-    GTEST_SKIP();
-    for (const long i: {0L, 1L, -1L, 42L, -42L, 1000000L, -1000000L, INT64_MAX, INT64_MIN}) {
-        const auto buffer = jit_compile_and_assembly(ret_f32(static_cast<float>(i)), true);
-        const auto fn = buffer.code_start_as<std::int64_t()>("ret_one").value();
+    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT64_MAX), static_cast<double>(INT64_MIN), static_cast<double>(FLT_MAX), static_cast<double>(FLT_MIN)}) {
+        const auto buffer = jit_compile_and_assembly(ret_f32(FloatingPointType::f32(), Value::f32(i)), true);
+        const auto fn = buffer.code_start_as<float()>("ret_one").value();
+        const auto res = fn();
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
+
+TEST(SanityCheck, ret_f64) {
+    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT64_MAX), static_cast<double>(INT64_MIN), DBL_MAX, DBL_MIN}) {
+        const auto buffer = jit_compile_and_assembly(ret_f32(FloatingPointType::f64(), Value::f64(i)), true);
+        const auto fn = buffer.code_start_as<double()>("ret_one").value();
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
     }
@@ -100,7 +108,7 @@ static Module ret_i32_arg() {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "ret_i32", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
-    auto data = fn_builder.value();
+    const auto data = fn_builder.value();
     const auto arg0 = data.arg(0);
     data.ret(arg0);
 

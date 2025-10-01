@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lir/x64/asm/GPOp.h"
-#include "lir/x64/asm/GPVReg.h"
+#include "lir/x64/asm/operand/GPOp.h"
+#include "lir/x64/asm/operand/GPVReg.h"
 
 class GPUnaryOutVisitor {
 public:

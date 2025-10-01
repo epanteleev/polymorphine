@@ -3,6 +3,7 @@
 #include "GPVReg.h"
 #include "asm/x64/asm.h"
 
+
 template<typename T>
 concept GPOpVariant = std::is_same_v<T, aasm::GPReg> ||
     std::is_same_v<T, aasm::Address> ||
@@ -37,20 +38,3 @@ public:
 private:
     std::variant<aasm::GPReg, aasm::Address, std::int64_t> m_reg;
 };
-
-inline std::ostream & operator<<(std::ostream &os, const GPOp &reg) noexcept {
-    const auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, aasm::GPReg>) {
-            os << val.name(8);
-        } else if constexpr (std::is_same_v<T, aasm::Address>) {
-            os << val;
-        } else if constexpr (std::is_integral_v<T>) {
-            os << "0x" << std::hex << val;
-        } else {
-            static_assert(false, "Unsupported type in GPOp variant");
-        }
-    };
-
-    std::visit(visitor, reg.m_reg);
-    return os;
-}

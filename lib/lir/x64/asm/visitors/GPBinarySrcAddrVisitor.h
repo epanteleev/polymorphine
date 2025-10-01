@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asm/x64/address/Address.h"
-#include "lir/x64/asm/GPOp.h"
+#include "../operand/GPOp.h"
 
 class GPBinarySrcAddrVisitor {
 public:

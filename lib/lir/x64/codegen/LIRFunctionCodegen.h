@@ -3,6 +3,7 @@
 #include "asm/x64/asm.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/MasmEmitter.h"
+#include "lir/x64/asm/operand/XOp.h"
 #include "lir/x64/module/LIRFuncData.h"
 
 
@@ -106,14 +107,15 @@ private:
         unimplemented();
     }
 
-    void copy_f(const LIRVal &out, const LIROperand &in) override {
-        unimplemented();
-    }
+    void copy_f(const LIRVal &out, const LIROperand &in) override;
 
     void ret(std::span<LIRVal const> ret_values) override;
 
     [[nodiscard]]
     GPOp convert_to_gp_op(const LIROperand &val) const;
+
+    [[nodiscard]]
+    XOp convert_to_x_op(const LIROperand &val) const;
 
     const LIRFuncData& m_data;
     const Ordering<LIRBlock>& m_preorder;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <concepts>
 #include <cstring>
 #include <utility>
@@ -15,7 +16,14 @@ constexpr T align_up(const T value, const U alignment) noexcept {
     return (value + alignment - 1) / alignment * alignment;
 }
 
-template<std::integral To, std::integral From >
+template<std::unsigned_integral To, std::integral From >
+constexpr To checked_cast(const From & from) {
+    To result = To( from );
+    assertion(from == static_cast<From>(result), "Checked cast failed: {} cannot be safely converted. Result is {}", from, result);
+    return result;
+}
+
+template<std::signed_integral To, std::integral From >
 constexpr To checked_cast(const From & from) {
     To result = To( from );
 #ifndef NDEBUG
@@ -25,3 +33,11 @@ constexpr To checked_cast(const From & from) {
 #endif
     return result;
 }
+
+template<std::floating_point T>
+constexpr std::int64_t bitcast(const T value) noexcept {
+    std::int64_t result{};
+    std::memcpy(&result, &value, sizeof(T));
+    return result;
+}
+

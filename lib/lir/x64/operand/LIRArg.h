@@ -6,7 +6,8 @@
 
 #include "base/Attribute.h"
 #include "lir/x64/lir_frwd.h"
-#include "lir/x64/asm/GPVReg.h"
+#include "../asm/operand/AssignedVReg.h"
+#include "../asm/operand/GPVReg.h"
 #include "lir/x64/instruction/LIRUse.h"
 #include "utility/Error.h"
 
@@ -26,13 +27,13 @@ public:
     [[nodiscard]]
     AttributeSet attributes() const noexcept { return m_attributes; }
 
-    void assign_reg(const OptionalGPVReg& reg) noexcept {
+    void assign_reg(const AssignedVReg& reg) noexcept {
         assertion(m_assigned_reg.empty(), "should be");
         m_assigned_reg = reg;
     }
 
     [[nodiscard]]
-    const OptionalGPVReg& assigned_reg() const noexcept {
+    const AssignedVReg& assigned_reg() const noexcept {
         return m_assigned_reg;
     }
 
@@ -41,7 +42,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const LIRArg& op) noexcept;
 
 private:
-    OptionalGPVReg m_assigned_reg;
+    AssignedVReg m_assigned_reg;
     const std::uint32_t m_index;
     AttributeSet m_attributes;
 };

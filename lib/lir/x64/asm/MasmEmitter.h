@@ -175,6 +175,16 @@ public:
         m_asm.div(size, r);
     }
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::XmmRegister> || std::is_same_v<Op, aasm::Address>
+    constexpr void movfp(const std::uint8_t size, const Op& src, const aasm::XmmRegister dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.movss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.movsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     constexpr void cdq(const std::uint8_t size) {
         m_asm.cdq(size);
     }

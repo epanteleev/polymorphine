@@ -107,10 +107,10 @@ public:
     void add_user(LIRInstructionBase *inst) const noexcept;
     void kill_user(LIRInstructionBase *inst) const noexcept;
 
-    void assign_reg(const OptionalGPVReg& reg) const noexcept;
+    void assign_reg(const AssignedVReg& reg) const noexcept;
 
     [[nodiscard]]
-    const OptionalGPVReg& assigned_reg() const noexcept;
+    const AssignedVReg& assigned_reg() const noexcept;
 
     [[nodiscard]]
     std::span<LIRInstructionBase* const> users() const noexcept;

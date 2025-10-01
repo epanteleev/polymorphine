@@ -7,7 +7,7 @@
 #include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
 
 #include "lir/x64/asm/EmptyEmitter.h"
-#include "lir/x64/asm/GPOp.h"
+#include "../../asm/operand/GPOp.h"
 #include "lir/x64/asm/emitters/CMovGPEmit.h"
 #include "lir/x64/asm/emitters/CmpGPEmit.h"
 #include "lir/x64/asm/emitters/DivIntEmit.h"

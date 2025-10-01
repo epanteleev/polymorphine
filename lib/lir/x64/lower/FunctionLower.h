@@ -54,14 +54,6 @@ private:
 
     void finalize_parallel_copies() const noexcept;
 
-    LIROperand lower_global_cst(const GlobalValue &global);
-
-    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);
-
-    LIROperand get_lir_operand(const Value& val);
-
-    LIRVal get_lir_val(const Value& val);
-
     void accept(Binary *inst) override;
 
     void accept(Unary *inst) override;
@@ -113,6 +105,12 @@ private:
     void try_schedule_late(const Value& cond);
     void try_schedule_late(ValueInstruction *inst);
     void schedule_late(ValueInstruction *inst);
+
+    LIROperand lower_global_cst(const GlobalValue &global);
+    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);
+    LIROperand make_fp_constant(const Type &type, double val);
+    LIROperand get_lir_operand(const Value& val);
+    LIRVal get_lir_val(const Value& val);
 
     template <IsLocalValueType T>
     void memorize(const T* val, const LIROperand& lir_val) {

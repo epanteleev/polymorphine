@@ -16,14 +16,14 @@ public:
         return m_defs.at(idx);
     }
 
-    void assign_reg(const std::size_t idx, const OptionalGPVReg& reg) {
+    void assign_reg(const std::size_t idx, const AssignedVReg& reg) {
         assertion(idx < m_assigned_regs.size(), "Index out of bounds");
         assertion(m_assigned_regs[idx].empty(), "Register already assigned");
         m_assigned_regs[idx] = reg;
     }
 
     [[nodiscard]]
-    const OptionalGPVReg& assigned_reg(const std::size_t idx) const {
+    const AssignedVReg& assigned_reg(const std::size_t idx) const {
         assertion(idx < m_assigned_regs.size(), "Index out of bounds");
         return m_assigned_regs.at(idx);
     }
@@ -36,5 +36,5 @@ protected:
 
 private:
     std::vector<LIRVal> m_defs;
-    std::vector<OptionalGPVReg> m_assigned_regs;
+    std::vector<AssignedVReg> m_assigned_regs;
 };

@@ -22,7 +22,7 @@ void LIRVal::kill_user(LIRInstructionBase *inst) const noexcept {
     visit(vis);
 }
 
-void LIRVal::assign_reg(const OptionalGPVReg &reg) const noexcept {
+void LIRVal::assign_reg(const AssignedVReg &reg) const noexcept {
     const auto vis = [&]<typename T>(T& val) {
         if constexpr (std::is_same_v<T, LIRArg>) {
             val.assign_reg(reg);
@@ -36,8 +36,8 @@ void LIRVal::assign_reg(const OptionalGPVReg &reg) const noexcept {
     visit(vis);
 }
 
-const OptionalGPVReg& LIRVal::assigned_reg() const noexcept {
-    const auto vis = [&]<typename T>(const T& val) -> const OptionalGPVReg& {
+const AssignedVReg& LIRVal::assigned_reg() const noexcept {
+    const auto vis = [&]<typename T>(const T& val) -> const AssignedVReg& {
         if constexpr (std::is_same_v<T, LIRArg>) {
             return val.assigned_reg();
         } else if constexpr (std::is_base_of_v<LIRProducerInstructionBase, T> || std::is_same_v<T, LIRCall>) {

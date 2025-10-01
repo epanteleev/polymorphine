@@ -22,7 +22,7 @@
  * @return A LirCst representing the constant.
  */
 template<std::integral T>
-static LirCst make_constant(const Type& type, const T integer) noexcept {
+static LirCst make_int_constant(const Type& type, const T integer) noexcept {
     if (type.isa(i8())) {
         return LirCst::imm8(checked_cast<std::int8_t>(integer));
     }
@@ -330,20 +330,44 @@ LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
     }
 }
 
-static std::string create_anon_constant_label(std::size_t id, std::size_t idx) {
+static std::string create_anon_constant_label(const std::size_t id, const std::size_t idx) {
     std::string str(".LCP");
     return str + std::to_string(id) + "_" + std::to_string(idx);
+}
+
+LIROperand FunctionLower::make_fp_constant(const Type& type, const double val) {
+    const auto fp_type = dynamic_cast<const FloatingPointType*>(&type);
+    assertion(fp_type != nullptr, "Expected FloatingPointType for constant");
+
+    SlotType slot_type;
+    std::int64_t bitmask;
+    switch (fp_type->size_of()) {
+        case cst::QWORD_SIZE: {
+            slot_type = SlotType::QWord;
+            bitmask = bitcast(val);
+            break;
+        }
+        case cst::DWORD_SIZE: {
+            slot_type = SlotType::DWord;
+            bitmask = bitcast(static_cast<float>(val));
+            break;
+        }
+        default: std::unreachable();
+    }
+
+    auto& global = m_obj_function.global_data();
+    auto label = create_anon_constant_label(0, 0);
+    const auto slot = global.add_slot(label, LIRNamedSlot(std::move(label), LIRSlot(Constant(slot_type, bitmask))));
+    return slot.value();
 }
 
 LIROperand FunctionLower::get_lir_operand(const Value &val) {
     const auto visitor = [&]<typename T>(const T &v) -> LIROperand {
         if constexpr (std::is_same_v<T, double>) {
-            auto& global = m_obj_function.global_data();
-            auto label = create_anon_constant_label(1, 1);
-            return global.add_slot(label, LIRNamedSlot(std::move(label), LIRSlot(Constant(SlotType::QWord, v)))).value();
+            return make_fp_constant(*val.type(), v);
 
         } else if constexpr (std::is_same_v<T, std::int64_t>) {
-            return make_constant(*val.type(), v);
+            return make_int_constant(*val.type(), v);
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *>) {
             return m_value_mapping.at(UsedValue::from(v));
