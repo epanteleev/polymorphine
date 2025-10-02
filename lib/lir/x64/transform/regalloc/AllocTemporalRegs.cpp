@@ -19,21 +19,6 @@
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 
 namespace details {
-    GPOp AllocTemporalRegs::convert_to_gp_op(const LIROperand &val) const {
-        if (const auto vreg = val.as_vreg(); vreg.has_value()) {
-            return vreg.value().assigned_reg().to_gp_op().value();
-        }
-        if (const auto cst = val.as_cst(); cst.has_value()) {
-            return cst.value().value();
-        }
-        if (const auto slot = val.as_slot(); slot.has_value()) {
-            const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
-            return aasm::Address(symbol);
-        }
-
-        die("Invalid LIROperand");
-    }
-
     void AllocTemporalRegs::div_i(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) {
         const auto out_reg = outs[0].assigned_reg().to_gp_op().value();
         const auto in1_reg = convert_to_gp_op(in1);

@@ -5,6 +5,7 @@
 #include "GPVReg.h"
 #include "XVReg.h"
 #include "asm/x64/asm.h"
+#include "asm/x64/reg/Reg.h"
 
 
 class AssignedVReg final {
@@ -23,6 +24,19 @@ public:
     [[nodiscard]]
     bool empty() const noexcept {
         return std::holds_alternative<std::monostate>(m_reg);
+    }
+
+    [[nodiscard]]
+    std::optional<aasm::Reg> to_reg() const noexcept {
+        const auto visitor = [&]<typename T>(T &val) -> std::optional<aasm::Reg> {
+            if constexpr (std::is_same_v<T, aasm::Reg> || std::is_same_v<T, aasm::XmmReg>) {
+                return val;
+            }
+
+            return std::nullopt;
+        };
+
+        return std::visit(visitor, m_reg);
     }
 
     [[nodiscard]]

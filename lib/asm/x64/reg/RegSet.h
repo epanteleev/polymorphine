@@ -3,7 +3,7 @@
 #include <bitset>
 
 #include "asm/asm_frwd.h"
-#include "Register.h"
+#include "GPReg.h"
 #include "utility/BitUtils.h"
 
 namespace aasm {

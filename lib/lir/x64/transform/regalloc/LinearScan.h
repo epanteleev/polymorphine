@@ -34,9 +34,13 @@ private:
 
     [[nodiscard]]
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const;
-    void select_virtual_reg(const LIRVal& lir_val, const IntervalHint hint);
+    void select_virtual_reg(const LIRVal& lir_val, IntervalHint hint);
+
     void allocate_register(const LIRVal& lir_val, const GPVReg& reg);
-    void allocate_register(const LIRVal& lir_val, const aasm::GPReg reg);
+    void allocate_register(const LIRVal &lir_val, const aasm::Reg &reg);
+    void allocate_register(const LIRVal& lir_val, aasm::GPReg reg);
+    void allocate_register(const LIRVal& lir_val, aasm::XmmReg reg);
+
     void allocate_temporal_register(LIRInstructionBase* inst) noexcept;
     void do_stack_alloc(const LIRVal& lir_val);
     void instruction_ordering();

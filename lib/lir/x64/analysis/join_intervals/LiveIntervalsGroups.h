@@ -1,10 +1,11 @@
 #pragma once
+#include "asm/x64/reg/Reg.h"
 #include "lir/x64/analysis/intervals/LiveInterval.h"
 #include "lir/x64/operand/LIRValMap.h"
 
 class Group final {
 public:
-    explicit Group(LiveInterval&& interval, std::vector<LIRVal>&& values, const std::optional<GPVReg> &fixed_register) noexcept:
+    explicit Group(LiveInterval&& interval, std::vector<LIRVal>&& values, const std::optional<aasm::Reg> &fixed_register) noexcept:
         m_interval(std::move(interval)),
         m_values(std::move(values)),
         m_fixed_register(fixed_register) {}
@@ -20,7 +21,7 @@ public:
     }
 
     [[nodiscard]]
-    const std::optional<GPVReg>& fixed_register() const noexcept {
+    const std::optional<aasm::Reg>& fixed_register() const noexcept {
         return m_fixed_register;
     }
 
@@ -36,7 +37,7 @@ public:
 
     LiveInterval m_interval;
     std::vector<LIRVal> m_values;
-    std::optional<GPVReg> m_fixed_register;
+    std::optional<aasm::Reg> m_fixed_register;
 };
 
 class LiveIntervalsGroups final: public AnalysisPassResult {

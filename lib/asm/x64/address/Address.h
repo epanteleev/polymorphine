@@ -8,7 +8,7 @@
 #include "asm/symbol/Symbol.h"
 #include "asm/x64/Common.h"
 #include "asm/x64/Relocation.h"
-#include "asm/x64/reg/Register.h"
+#include "asm/x64/reg/GPReg.h"
 
 #include "AddressBaseDisp.h"
 #include "AddressIndexScale.h"

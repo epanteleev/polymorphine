@@ -29,6 +29,7 @@ namespace details {
 
                 if (type->isa(float_type())) {
                     assign_xmm_reg(lir_val_arg);
+                    continue;
                 }
 
                 die("unknown type");

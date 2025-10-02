@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "asm/x64/reg/Register.h"
+#include "asm/x64/reg/GPReg.h"
 #include "asm/x64/reg/XmmReg.h"
 
 

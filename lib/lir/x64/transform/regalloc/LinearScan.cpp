@@ -197,7 +197,7 @@ const LiveInterval *LinearScan::get_real_interval(const IntervalEntry &entry) co
 }
 
 void LinearScan::select_virtual_reg(const LIRVal &lir_val, const IntervalHint hint) {
-    if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+    if (!lir_val.assigned_reg().empty()) {
         return;
     }
 
@@ -215,16 +215,28 @@ void LinearScan::select_virtual_reg(const LIRVal &lir_val, const IntervalHint hi
 }
 
 void LinearScan::allocate_register(const LIRVal &lir_val, const GPVReg &reg) {
+    if (!lir_val.assigned_reg().empty()) {
+        return;
+    }
+
     if (const auto gp_reg= reg.as_gp_reg(); gp_reg.has_value()) {
         allocate_register(lir_val, gp_reg.value());
         return;
     }
 
-    if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+    lir_val.assign_reg(reg);
+}
+
+void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::Reg &reg) {
+    if (!lir_val.assigned_reg().empty()) {
         return;
     }
 
-    lir_val.assign_reg(reg);
+    const auto vis = [&]<typename T>(const T& r) {
+        allocate_register(lir_val, r);
+    };
+
+    reg.visit(vis);
 }
 
 void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::GPReg reg) {
@@ -243,6 +255,14 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::GPReg reg)
     }
 
     m_used_callee_saved_regs.emplace(reg);
+}
+
+void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::XmmReg reg) {
+    if (!lir_val.assigned_reg().empty()) {
+        return;
+    }
+
+    lir_val.assign_reg(reg);
 }
 
 void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) noexcept {
@@ -271,7 +291,7 @@ void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) noexcept {
 }
 
 void LinearScan::do_stack_alloc(const LIRVal &lir_val) {
-    if (const auto vreg = lir_val.assigned_reg().to_gp_op(); vreg.has_value()) {
+    if (!lir_val.assigned_reg().empty()) {
         return;
     }
 

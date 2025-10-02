@@ -2,7 +2,7 @@
 #include <optional>
 
 #include "asm/x64/Relocation.h"
-#include "asm/x64/reg/Register.h"
+#include "asm/x64/reg/GPReg.h"
 #include "asm/x64/Common.h"
 
 #include "AddressIndexScale.h"

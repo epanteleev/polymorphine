@@ -1,4 +1,4 @@
-#include "Register.h"
+#include "GPReg.h"
 
 #include "utility/Error.h"
 

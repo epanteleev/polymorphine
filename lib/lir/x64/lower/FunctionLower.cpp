@@ -318,7 +318,7 @@ LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
 }
 
 static std::string create_anon_constant_label(const std::size_t id, const std::size_t idx) {
-    std::string str(".LCP");
+    const std::string str(".LCP");
     return str + std::to_string(id) + "_" + std::to_string(idx);
 }
 

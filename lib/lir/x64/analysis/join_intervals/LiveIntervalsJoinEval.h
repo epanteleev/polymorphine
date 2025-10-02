@@ -44,16 +44,35 @@ private:
         collect_fixed_regs_for_instructions();
     }
 
+    void collect_gp_argument(const LIRVal& arg, const GPVReg& vreg) {
+        const auto as_gp_reg = vreg.as_gp_reg();
+        if (!as_gp_reg.has_value()) {
+            return;
+        }
+
+        auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+        vec->second.push_back(arg);
+    }
+
+    void collect_xmm_argument(const LIRVal& arg, const XVReg& vreg) {
+        const auto as_gp_reg = vreg.as_xmm_reg();
+        if (!as_gp_reg.has_value()) {
+            return;
+        }
+
+        auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+        vec->second.push_back(arg);
+    }
+
     void collect_argument_regs() {
         for (const auto& arg: m_data.args()) {
-            const auto fixed_reg = arg.assigned_reg().to_gp_op();
-            const auto as_gp_reg = fixed_reg.value().as_gp_reg();
-            if (!as_gp_reg.has_value()) {
-                continue;
+            if (const auto fixed_reg = arg.assigned_reg().to_gp_op(); fixed_reg.has_value()) {
+                collect_gp_argument(arg, fixed_reg.value());
             }
 
-            auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
-            vec->second.push_back(arg);
+            if (const auto fixed_reg = arg.assigned_reg().to_xmm_op(); fixed_reg.has_value()) {
+                collect_xmm_argument(arg, fixed_reg.value());
+            }
         }
     }
 
@@ -67,17 +86,16 @@ private:
 
     void collect_fixed_regs_for_instruction(const LIRInstructionBase& inst) {
         for (const auto& def: LIRVal::defs(&inst)) {
-            const auto fixed_reg = def.assigned_reg().to_gp_op();
-            if (!fixed_reg.has_value()) {
-                continue;
-            }
-            const auto as_gp_reg = fixed_reg.value().as_gp_reg();
-            if (!as_gp_reg.has_value()) {
-                continue;
+            if (const auto fixed_reg = def.assigned_reg().to_gp_op(); fixed_reg.has_value()) {
+                const auto as_gp_reg = fixed_reg.value().as_gp_reg();
+                if (!as_gp_reg.has_value()) {
+                    continue;
+                }
+
+                auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+                vec->second.push_back(def);
             }
 
-            auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
-            vec->second.push_back(def);
         }
     }
 
@@ -121,11 +139,6 @@ private:
                 worklist.pop_back();
 
                 for (auto group = m_groups.begin(); group != m_groups.end(); ++group) {
-                    if (contains_fixed_mem_slot(*group)) {
-                        // The group has a fixed vreg on stack slot. Do not join it.
-                        continue;
-                    }
-
                     const auto& interval = m_intervals.intervals(current);
                     if (!interval.follows(group->m_interval)) {
                         // No way to join intervals. Skip it
@@ -168,7 +181,7 @@ private:
     }
 
     /** Adds new member to the groups with its merged live interval. */
-    void add_group(LiveInterval&& live_interval, std::vector<LIRVal>&& members, const std::optional<GPVReg> &fixed_register) {
+    void add_group(LiveInterval&& live_interval, std::vector<LIRVal>&& members, const std::optional<aasm::Reg> &fixed_register) {
         m_groups.emplace_back(std::move(live_interval), std::move(members), fixed_register);
         for (const auto lir_val: m_groups.back().members()) {
             m_group_mapping.emplace(lir_val, std::prev(m_groups.end()));
@@ -215,24 +228,10 @@ private:
         return new_lir_vals;
     }
 
-    /**
-     * Returns true if the group contains a fixed virtual register that is a memory slot.
-     * This means that the group cannot be joined with other groups.
-     */
-    static bool contains_fixed_mem_slot(const Group& group) noexcept {
-        const auto& reg = group.fixed_register();
-        if (!reg.has_value()) {
-            return false;
-        }
-
-        const auto& mem = reg.value().as_address();
-        return mem.has_value();
-    }
-
     const LiveIntervals& m_intervals;
     const LIRFuncData& m_data;
 
-    aasm::GPRegMap<std::vector<LIRVal>> m_reg_to_lir_val{};
+    std::unordered_map<aasm::Reg, std::vector<LIRVal>, aasm::RegHash, aasm::RegEqual> m_reg_to_lir_val{};
     std::deque<Group> m_groups;
     LIRValMap<LiveIntervalsGroups::group_iterator> m_group_mapping{};
 };

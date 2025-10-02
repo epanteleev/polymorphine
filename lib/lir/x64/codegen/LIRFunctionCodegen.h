@@ -3,15 +3,16 @@
 #include "asm/x64/asm.h"
 #include "lir/x64/analysis/Analysis.h"
 #include "lir/x64/asm/MasmEmitter.h"
+#include "lir/x64/asm/LIROperandMapping.h"
 #include "lir/x64/asm/operand/XOp.h"
 #include "lir/x64/module/LIRFuncData.h"
 
 
-class LIRFunctionCodegen final: public LIRVisitor {
+class LIRFunctionCodegen final: public LIRVisitor, public details::LIROperandMapping {
     explicit LIRFunctionCodegen(const LIRFuncData &data, const Ordering<LIRBlock>& preorder, aasm::SymbolTable& symbol_table) noexcept:
+        LIROperandMapping(symbol_table),
         m_data(data),
-        m_preorder(preorder),
-        m_symbol_tab(symbol_table) {}
+        m_preorder(preorder) {}
 
 public:
     void run() {
@@ -111,15 +112,8 @@ private:
 
     void ret(std::span<LIRVal const> ret_values) override;
 
-    [[nodiscard]]
-    GPOp convert_to_gp_op(const LIROperand &val) const;
-
-    [[nodiscard]]
-    XOp convert_to_x_op(const LIROperand &val) const;
-
     const LIRFuncData& m_data;
     const Ordering<LIRBlock>& m_preorder;
-    aasm::SymbolTable& m_symbol_tab;
 
     std::unordered_map<const LIRBlock*, aasm::Label> m_bb_labels{};
     MasmEmitter m_as{};

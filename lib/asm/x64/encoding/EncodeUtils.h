@@ -3,7 +3,7 @@
 #include "Prefix.h"
 #include "asm/x64/Common.h"
 #include "asm/x64/address/Address.h"
-#include "asm/x64/reg/Register.h"
+#include "asm/x64/reg/GPReg.h"
 
 namespace aasm::details {
     class EncodeUtils final {

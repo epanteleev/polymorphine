@@ -74,36 +74,6 @@ static aasm::BindAttribute cvt_bind_attribute(const FunctionBind bind) noexcept 
     }
 }
 
-GPOp LIRFunctionCodegen::convert_to_gp_op(const LIROperand &val) const {
-    if (const auto vreg = val.as_vreg(); vreg.has_value()) {
-        return vreg.value().assigned_reg().to_gp_op().value();
-    }
-    if (const auto cst = val.as_cst(); cst.has_value()) {
-        return cst.value().value();
-    }
-    if (const auto slot = val.as_slot(); slot.has_value()) {
-        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
-        return aasm::Address(symbol);
-    }
-
-    die("Invalid LIROperand");
-}
-
-XOp LIRFunctionCodegen::convert_to_x_op(const LIROperand &val) const {
-    if (const auto vreg = val.as_vreg(); vreg.has_value()) {
-        return vreg.value().assigned_reg().to_xmm_op().value();
-    }
-    if (const auto cst = val.as_cst(); cst.has_value()) {
-        return cst.value().value();
-    }
-    if (const auto slot = val.as_slot(); slot.has_value()) {
-        const auto [symbol, _] = m_symbol_tab.add(slot.value()->name(), aasm::BindAttribute::INTERNAL);
-        return aasm::Address(symbol);
-    }
-
-    die("Invalid LIROperand");
-}
-
 void LIRFunctionCodegen::add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
     const auto out_reg = out.assigned_reg().to_gp_op().value();
     const auto in1_reg = convert_to_gp_op(in1);
