@@ -28,8 +28,8 @@ public:
 
     [[nodiscard]]
     std::optional<aasm::Reg> to_reg() const noexcept {
-        const auto visitor = [&]<typename T>(T &val) -> std::optional<aasm::Reg> {
-            if constexpr (std::is_same_v<T, aasm::Reg> || std::is_same_v<T, aasm::XmmReg>) {
+        const auto visitor = [&]<typename T>(const T &val) -> std::optional<aasm::Reg> {
+            if constexpr (std::is_same_v<T, aasm::GPReg> || std::is_same_v<T, aasm::XmmReg>) {
                 return val;
             }
 

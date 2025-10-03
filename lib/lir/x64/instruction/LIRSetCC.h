@@ -6,7 +6,7 @@
 class LIRSetCC final: public LIRProducerInstructionBase {
 public:
     explicit LIRSetCC(const aasm::CondType cond_type) noexcept:
-        LIRProducerInstructionBase({}),
+        LIRProducerInstructionBase(LIRValType::GP, {}),
         m_cond_type(cond_type) {}
 
     void visit(LIRVisitor &visitor) override {

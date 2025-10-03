@@ -55,6 +55,16 @@ namespace call_conv {
         }
 
         [[nodiscard]]
+        constexpr std::span<aasm::XmmReg const> XMM_CALLER_SAVE_REGISTERS() const noexcept {
+            return m_xmm_caller_save_registers;
+        }
+
+        [[nodiscard]]
+        constexpr aasm::XmmReg XMM_CALLER_SAVE_REGISTERS(const std::size_t idx) const noexcept {
+            return m_xmm_caller_save_registers[idx];
+        }
+
+        [[nodiscard]]
         constexpr std::span<aasm::GPReg const> GP_CALLEE_SAVE_REGISTERS() const noexcept {
             return m_gp_callee_save_registers;
         }

@@ -86,16 +86,10 @@ private:
 
     void collect_fixed_regs_for_instruction(const LIRInstructionBase& inst) {
         for (const auto& def: LIRVal::defs(&inst)) {
-            if (const auto fixed_reg = def.assigned_reg().to_gp_op(); fixed_reg.has_value()) {
-                const auto as_gp_reg = fixed_reg.value().as_gp_reg();
-                if (!as_gp_reg.has_value()) {
-                    continue;
-                }
-
-                auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+            if (const auto fixed_reg = def.assigned_reg().to_reg(); fixed_reg.has_value()) {
+                auto [vec, _] = m_reg_to_lir_val.try_emplace(fixed_reg.value(), std::vector<LIRVal>{});
                 vec->second.push_back(def);
             }
-
         }
     }
 

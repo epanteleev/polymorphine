@@ -6,7 +6,7 @@
 class LIRCMove final: public LIRProducerInstructionBase {
 public:
     explicit LIRCMove(const aasm::CondType cond_type, std::vector<LIROperand> &&uses) noexcept:
-        LIRProducerInstructionBase(std::move(uses)),
+        LIRProducerInstructionBase(LIRValType::GP, std::move(uses)),
         m_cond_type(cond_type) {}
 
     void visit(LIRVisitor &visitor) override {

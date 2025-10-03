@@ -200,7 +200,8 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
 
     for (auto [idx, varg]: std::ranges::views::enumerate(function.args())) {
         const auto non_trivial_type = dynamic_cast<const NonTrivialType*>(varg.type());
-        const auto& inserted = args.emplace_back(idx, varg.attributes());
+
+        const auto& inserted = args.emplace_back(idx, LIRValType::GP, varg.attributes());
         lir_args.push_back(LIRVal::from(&inserted, non_trivial_type->size_of(), non_trivial_type->align_of()));
     }
 
@@ -514,8 +515,8 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
     if (ret_type->isa(float_type())) {
         const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(ret_type->size_of(), get_lir_operand(val), aasm::xmm0));
         return copy->def(0);
-
     }
+
     unimplemented();
 }
 

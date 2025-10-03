@@ -90,11 +90,9 @@ void LinearScan::do_register_allocation()  {
 
         const auto active_eraser = [&](const IntervalEntry& entry) {
             const auto real_interval = get_real_interval(entry);
-            const auto reg = entry.lir_val.assigned_reg().to_gp_op().value();
+            const auto reg = entry.lir_val.assigned_reg();
             if (real_interval->start() > unhandled_interval->finish()) {
-                if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                    m_reg_set.push(reg_opt.value());
-                }
+                m_reg_set.try_push(reg);
                 return true;
             }
 
@@ -102,10 +100,7 @@ void LinearScan::do_register_allocation()  {
                 return false;
             }
             m_inactive_intervals.emplace_back(entry);
-            if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                m_reg_set.push(reg_opt.value());
-            }
-
+            m_reg_set.try_push(reg);
             return true;
         };
 
@@ -122,11 +117,7 @@ void LinearScan::do_register_allocation()  {
             }
             // This interval is still active, we need to keep it.
             m_active_intervals.emplace_back(entry);
-            const auto reg = entry.lir_val.assigned_reg().to_gp_op().value();
-            if (const auto reg_opt = reg.as_gp_reg(); reg_opt.has_value()) {
-                m_reg_set.remove(reg_opt.value());
-            }
-
+            m_reg_set.try_remove(entry.lir_val.assigned_reg());
             return true;
         };
 
@@ -203,14 +194,14 @@ void LinearScan::select_virtual_reg(const LIRVal &lir_val, const IntervalHint hi
 
     if (const auto group = m_groups.try_get_group(lir_val); group.has_value()) {
         assertion(!group.value()->fixed_register().has_value(), "Group with fixed register should not be allocated here");
-        const auto reg = m_reg_set.top(group.value()->hint());
+        const auto reg = m_reg_set.top(group.value()->hint(), lir_val.type());
         for (const auto& group_vreg: group.value()->m_values) {
             allocate_register(group_vreg, reg);
         }
         return;
     }
 
-    const auto reg = m_reg_set.top(hint);
+    const auto reg = m_reg_set.top(hint, lir_val.type());
     allocate_register(lir_val, reg);
 }
 
@@ -273,17 +264,17 @@ void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) noexcept {
     switch (const auto temp_num = details::AllocTemporalRegs::allocate(m_symbol_tab, inst)) {
         case 0: break;
         case 1: {
-            const auto reg = m_reg_set.top(IntervalHint::NOTHING);
+            const auto reg = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
             m_reg_set.push(reg);
-            inst->init_temporal_regs(TemporalRegs(reg));
+            inst->init_temporal_regs(TemporalRegs(reg.as_gp_reg().value()));
             break;
         }
         case 2: {
-            const auto reg1 = m_reg_set.top(IntervalHint::NOTHING);
-            const auto reg2 = m_reg_set.top(IntervalHint::NOTHING);
+            const auto reg1 = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
+            const auto reg2 = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
             m_reg_set.push(reg2);
             m_reg_set.push(reg1);
-            inst->init_temporal_regs(TemporalRegs(reg1, reg2));
+            inst->init_temporal_regs(TemporalRegs(reg1.as_gp_reg().value(), reg2.as_gp_reg().value()));
             break;
         }
         default: die("Unexpected number of temporal registers allocated: {}", temp_num);

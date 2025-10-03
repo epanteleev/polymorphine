@@ -6,6 +6,14 @@
 
 class LIRDef {
 public:
+    explicit LIRDef(const LIRValType type) noexcept:
+        m_type(type) {}
+
+    [[nodiscard]]
+    LIRValType type() const noexcept {
+        return m_type;
+    }
+
     [[nodiscard]]
     std::span<LIRVal const> defs() const noexcept {
         return m_defs;
@@ -37,4 +45,5 @@ protected:
 private:
     std::vector<LIRVal> m_defs;
     std::vector<AssignedVReg> m_assigned_regs;
+    LIRValType m_type;
 };

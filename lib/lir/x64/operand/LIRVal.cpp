@@ -8,6 +8,14 @@
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRCall.h"
 
+LIRValType LIRVal::type() const noexcept {
+    const auto vis = [&]<typename T>(const T& val) -> LIRValType {
+        return val.type();
+    };
+
+    return visit(vis);
+}
+
 void LIRVal::add_user(LIRInstructionBase *inst) const noexcept {
     const auto vis = [&]<typename T>(T& val) {
         val.add_user(inst);

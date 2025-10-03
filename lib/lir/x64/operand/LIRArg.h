@@ -4,6 +4,7 @@
 #include <expected>
 #include <iosfwd>
 
+#include "LIRValType.h"
 #include "base/Attribute.h"
 #include "lir/x64/lir_frwd.h"
 #include "../asm/operand/AssignedVReg.h"
@@ -17,12 +18,16 @@
  */
 class LIRArg final: public LIRUse {
 public:
-    explicit LIRArg(const std::uint32_t index, const AttributeSet attributes) noexcept:
+    explicit LIRArg(const std::uint32_t index, const LIRValType type, const AttributeSet attributes) noexcept:
         m_index(index),
+        m_type(type),
         m_attributes(attributes) {}
 
     [[nodiscard]]
     std::uint32_t index() const noexcept { return m_index; }
+
+    [[nodiscard]]
+    LIRValType type() const noexcept { return m_type; }
 
     [[nodiscard]]
     AttributeSet attributes() const noexcept { return m_attributes; }
@@ -44,6 +49,7 @@ public:
 private:
     AssignedVReg m_assigned_reg;
     const std::uint32_t m_index;
+    LIRValType m_type;
     AttributeSet m_attributes;
 };
 

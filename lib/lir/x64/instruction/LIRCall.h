@@ -20,6 +20,7 @@ public:
     explicit LIRCall(std::string&& name, const LIRCallKind kind, std::vector<LIROperand>&& operands,
                        LIRBlock *cont, const FunctionBind bind) noexcept:
         LIRControlInstruction(std::move(operands), {cont}),
+        LIRDef(LIRValType::GP),
         m_name(std::move(name)),
         m_kind(kind),
         m_bind(bind) {}

@@ -175,9 +175,16 @@ public:
         m_asm.div(size, r);
     }
 
-    template<typename Op>
-    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
-    constexpr void movfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+    constexpr void movfp(const std::uint8_t size, const aasm::Address& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.movss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.movsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
+    constexpr void copyfp(const std::uint8_t size, const aasm::XmmReg src, const aasm::XmmReg dst) {
+        if (src == dst) return;
         switch (size) {
             case cst::DWORD_SIZE: m_asm.movss(src, dst); break;
             case cst::QWORD_SIZE: m_asm.movsd(src, dst); break;

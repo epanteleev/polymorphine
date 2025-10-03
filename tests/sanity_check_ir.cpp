@@ -136,12 +136,11 @@ static Module ret_f32_arg() {
 }
 
 TEST(SanityCheck, ret_f32_arg) {
-    GTEST_SKIP();
     const auto buffer = jit_compile_and_assembly(ret_f32_arg(), true);
     const auto fn = buffer.code_start_as<float(float)>("ret_f32").value();
     for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
         const auto res = fn(i);
-        ASSERT_EQ(res, i) << "Failed for value: " << i;
+        ASSERT_EQ(res, static_cast<float>(i)) << "Failed for value: " << i;
     }
 }
 

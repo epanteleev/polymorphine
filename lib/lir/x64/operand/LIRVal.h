@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "LIRArg.h"
+#include "LIRValType.h"
 #include "lir/x64/lir_frwd.h"
 #include "utility/Error.h"
 
@@ -61,6 +62,9 @@ public:
         return std::nullopt;
     }
 
+    [[nodiscard]]
+    LIRValType type() const noexcept;
+
     template<typename Matcher>
     [[nodiscard]]
     bool isa(Matcher&& matcher) const noexcept {
@@ -68,6 +72,7 @@ public:
     }
 
     template<typename T>
+    [[nodiscard]]
     decltype(auto) visit(const T& visitor) const {
         switch (m_type) {
             case Op::Arg:  return visitor(*m_variant.m_arg);

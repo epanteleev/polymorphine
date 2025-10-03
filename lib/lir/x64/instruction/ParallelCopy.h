@@ -6,7 +6,7 @@
 class ParallelCopy final: public LIRProducerInstructionBase {
 public:
     explicit ParallelCopy(std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) noexcept:
-        LIRProducerInstructionBase(std::move(uses)),
+        LIRProducerInstructionBase(LIRValType::GP, std::move(uses)),
         m_blocks(std::move(blocks)) {}
 
     void visit(LIRVisitor &visitor) override;
