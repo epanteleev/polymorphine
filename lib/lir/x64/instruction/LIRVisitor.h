@@ -49,6 +49,8 @@ public:
     virtual void copy_f(const LIRVal& out, const LIROperand& in) = 0;
     virtual void load_f(const LIRVal& out, const LIRVal& pointer) = 0;
 
+    virtual void add_f(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
+
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 

@@ -3,7 +3,14 @@
 void LIRProducerInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRProdInstKind::Gen: visitor.gen(def(0)); break;
-        case LIRProdInstKind::Add: visitor.add_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::Add: {
+            switch (type()) {
+                case LIRValType::GP: visitor.add_i(def(0), in(0), in(1)); break;
+                case LIRValType::FP: visitor.add_f(def(0), in(0), in(1)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
         case LIRProdInstKind::Sub: visitor.sub_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Mul: visitor.mul_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::DivI: visitor.div_i(defs(), in(0), in(1)); break;
@@ -15,18 +22,22 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
         case LIRProdInstKind::Not: visitor.not_i(def(0), in(0)); break;
-        case LIRProdInstKind::CopyI: visitor.copy_i(def(0), in(0)); break;
+        case LIRProdInstKind::CopyI: {
+            switch (type()) {
+                case LIRValType::GP: visitor.copy_i(def(0), in(0)); break;
+                case LIRValType::FP: visitor.copy_f(def(0), in(0)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
         case LIRProdInstKind::LoadI: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");
-            visitor.load_i(def(0), in0.value());
-            break;
-        }
-        case LIRProdInstKind::CopyF: visitor.copy_f(def(0), in(0)); break;
-        case LIRProdInstKind::LoadF: {
-            const auto in0 = LIRVal::try_from(in(0));
-            assertion(in0.has_value(), "invariant");
-            visitor.load_f(def(0), in0.value());
+            switch (type()) {
+                case LIRValType::GP: visitor.load_i(def(0), in0.value()); break;
+                case LIRValType::FP: visitor.load_f(def(0), in0.value()); break;
+                default: std::unreachable();
+            }
             break;
         }
         case LIRProdInstKind::LoadByIdx: visitor.load_by_idx_i(def(0), in(0), in(1)); break;

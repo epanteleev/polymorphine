@@ -55,12 +55,12 @@ private:
     }
 
     void collect_xmm_argument(const LIRVal& arg, const XVReg& vreg) {
-        const auto as_gp_reg = vreg.as_xmm_reg();
-        if (!as_gp_reg.has_value()) {
+        const auto xmm_reg = vreg.as_xmm_reg();
+        if (!xmm_reg.has_value()) {
             return;
         }
 
-        auto [vec, _] = m_reg_to_lir_val.try_emplace(as_gp_reg.value(), std::vector<LIRVal>{});
+        auto [vec, _] = m_reg_to_lir_val.try_emplace(xmm_reg.value(), std::vector<LIRVal>{});
         vec->second.push_back(arg);
     }
 

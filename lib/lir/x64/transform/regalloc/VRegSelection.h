@@ -1,7 +1,10 @@
 #pragma once
 
+#include "asm/x64/reg/Reg.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/asm/cc/LinuxX64.h"
+#include "lir/x64/asm/operand/AssignedVReg.h"
+#include "lir/x64/operand/LIRValType.h"
 #include "utility/ArithmeticUtils.h"
 
 namespace details {
@@ -19,7 +22,7 @@ namespace details {
         [[nodiscard]]
         aasm::Reg top(const IntervalHint hint, const LIRValType type) {
             switch (type) {
-                case LIRValType::GP: return top(hint);
+                case LIRValType::GP: return top_gp(hint);
                 case LIRValType::FP: return top_xmm(hint);
                 default: std::unreachable();
             }
@@ -49,19 +52,7 @@ namespace details {
             remove(reg_opt.value());
         }
 
-        void remove(const aasm::Reg reg) noexcept {
-            const auto vis = [&]<typename T>(const T& val) {
-                if constexpr (std::is_same_v<T, aasm::GPReg>) {
-                    std::erase(m_free_gp_regs, reg);
-                } else if constexpr (std::is_same_v<T, aasm::XmmReg>) {
-                    std::erase(m_free_xmm_regs, reg);
-                } else {
-                    static_assert(false);
-                    std::unreachable();
-                }
-            };
-            reg.visit(vis);
-        }
+        void remove(aasm::Reg reg) noexcept;
 
         [[nodiscard]]
         bool empty() const noexcept {
@@ -91,53 +82,9 @@ namespace details {
 
     private:
         [[nodiscard]]
-        aasm::GPReg top(const IntervalHint hint) noexcept {
-            switch (hint) {
-                case IntervalHint::NOTHING: {
-                    for (const auto reg: std::ranges::reverse_view(m_free_gp_regs)) {
-                        if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
-                            continue;
-                        }
+        aasm::GPReg top_gp(IntervalHint hint) noexcept;
 
-                        remove(reg);
-                        return reg;
-                    }
-
-                    [[fallthrough]];
-                }
-                case IntervalHint::CALL_LIVE_OUT: {
-                    assertion(!m_free_gp_regs.empty(), "Attempted to access top of an empty register set");
-                    const auto reg = m_free_gp_regs.back();
-                    m_free_gp_regs.pop_back();
-                    return reg;
-                }
-                default: std::unreachable();
-            }
-        }
-
-        aasm::XmmReg top_xmm(const IntervalHint hint) {
-            switch (hint) {
-                case IntervalHint::NOTHING: {
-                    for (const auto reg: std::ranges::reverse_view(m_free_xmm_regs)) {
-                        if (!std::ranges::contains(m_call_conv->XMM_CALLER_SAVE_REGISTERS(), reg)) {
-                            continue;
-                        }
-
-                        remove(reg);
-                        return reg;
-                    }
-
-                    [[fallthrough]];
-                }
-                case IntervalHint::CALL_LIVE_OUT: {
-                    assertion(!m_free_xmm_regs.empty(), "Attempted to access top of an empty register set");
-                    const auto reg = m_free_xmm_regs.back();
-                    m_free_xmm_regs.pop_back();
-                    return reg;
-                }
-                default: std::unreachable();
-            }
-        }
+        aasm::XmmReg top_xmm(IntervalHint hint) noexcept;
 
         void push(const aasm::GPReg reg) noexcept {
             if (std::ranges::contains(m_free_gp_regs, reg)) {

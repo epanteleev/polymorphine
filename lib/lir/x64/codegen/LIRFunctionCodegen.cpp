@@ -8,6 +8,7 @@
 #include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
 #include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
 #include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/XBinaryVisitor.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/CmpGPEmit.h"
@@ -22,6 +23,7 @@
 #include "lir/x64/asm/emitters/MovzxIntEmit.h"
 #include "lir/x64/asm/emitters/TruncIntEmit.h"
 #include "lir/x64/asm/emitters/LeaGPEmit.h"
+#include "lir/x64/asm/emitters/AddFloatEmit.h"
 
 #include "lir/x64/asm/cc/CallConv.h"
 #include "lir/x64/asm/emitters/CopyFloatEmit.h"
@@ -323,6 +325,14 @@ void LIRFunctionCodegen::call(const LIRVal &out, const std::string_view name, st
 void LIRFunctionCodegen::vcall(const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) {
     const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
     m_as.call(symbol);
+}
+
+void LIRFunctionCodegen::add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+    const auto out_reg = out.assigned_reg().to_xmm_op().value();
+    const auto in1_reg = convert_to_x_op(in1);
+    const auto in2_reg = convert_to_x_op(in2);
+    AddFloatEmit emitter(m_current_inst->temporal_regs(), m_as, out.size());
+    emitter.apply(out_reg, in1_reg, in2_reg);
 }
 
 void LIRFunctionCodegen::copy_f(const LIRVal &out, const LIROperand &in) {

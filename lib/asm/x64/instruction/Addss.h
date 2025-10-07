@@ -1,8 +1,8 @@
 #pragma once
 
 namespace aasm::details {
-    static constexpr std::array<std::uint8_t, 1> ADDSS_PREFIX = {0xF2};
-    static constexpr std::array<std::uint8_t, 1> ADDSD_PREFIX = {0xF3};
+    static constexpr std::array<std::uint8_t, 1> ADDSS_PREFIX = {0xF3};
+    static constexpr std::array<std::uint8_t, 1> ADDSD_PREFIX = {0xF2};
     static constexpr std::array<std::uint8_t, 2> ADDSD = {0x0F, 0x58};
 
     template<typename SRC, std::array<std::uint8_t, 1> PREFIX>

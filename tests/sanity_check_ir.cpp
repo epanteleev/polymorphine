@@ -144,7 +144,7 @@ TEST(SanityCheck, ret_f32_arg) {
     }
 }
 
-static Module add_i32_args(const NonTrivialType* ty) {
+static Module add_primitive_args(const PrimitiveType* ty) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "add", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
@@ -158,7 +158,7 @@ static Module add_i32_args(const NonTrivialType* ty) {
 }
 
 TEST(SanityCheck, add_i32_args) {
-    const auto buffer = jit_compile_and_assembly(add_i32_args(SignedIntegerType::i32()), true);
+    const auto buffer = jit_compile_and_assembly(add_primitive_args(SignedIntegerType::i32()), true);
     const auto fn = buffer.code_start_as<int(int, int)>("add").value();
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
@@ -171,7 +171,7 @@ TEST(SanityCheck, add_i32_args) {
 }
 
 TEST(SanityCheck, add_i64_args) {
-    const auto buffer = jit_compile_and_assembly(add_i32_args(SignedIntegerType::i64()));
+    const auto buffer = jit_compile_and_assembly(add_primitive_args(SignedIntegerType::i64()));
     const auto fn = buffer.code_start_as<long(long, long)>("add").value();
 
     std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
@@ -179,6 +179,18 @@ TEST(SanityCheck, add_i64_args) {
         for (const auto j: values) {
             const auto res = fn(i, j);
             ASSERT_EQ(res, add_overflow(i, j)) << "Failed for values: " << i << ", " << j;
+        }
+    }
+}
+
+TEST(SanityCheck, add_f32_args) {
+    const auto buffer = jit_compile_and_assembly(add_primitive_args(FloatingPointType::f32()), true);
+    const auto fn = buffer.code_start_as<float(float, float)>("add").value();
+
+    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
+        for (const double j: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
+            const auto res = fn(static_cast<float>(i), static_cast<float>(j));
+            ASSERT_EQ(res, static_cast<float>(i) + static_cast<float>(j)) << "Failed for values: " << i << ", " << j;
         }
     }
 }

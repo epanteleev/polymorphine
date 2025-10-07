@@ -391,17 +391,30 @@ LIRVal FunctionLower::get_lir_val(const Value &val) {
     die("Expected LIRVal for Value");
 }
 
+static LIRValType convert_type_to_lir_val_type(const Type& type) {
+    if (type.isa(gp_type())) {
+        return LIRValType::GP;
+    }
+    if (type.isa(float_type())) {
+        return LIRValType::FP;
+    }
+
+    die("Unsupported type for LIRValType");
+}
+
 void FunctionLower::accept(Binary *inst) {
     const auto lhs = get_lir_operand(inst->lhs());
     const auto rhs = get_lir_operand(inst->rhs());
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto add = m_bb->ins(LIRProducerInstruction::add(lhs, rhs));
+            const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
+            const auto add = m_bb->ins(LIRProducerInstruction::add(lir_ty, lhs, rhs));
             memorize(inst, add->def(0));
             break;
         }
         case BinaryOp::Subtract: {
-            const auto sub = m_bb->ins(LIRProducerInstruction::sub(lhs, rhs));
+            const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
+            const auto sub = m_bb->ins(LIRProducerInstruction::sub(lir_ty, lhs, rhs));
             memorize(inst, sub->def(0));
             break;
         }
@@ -761,7 +774,8 @@ void FunctionLower::lower_load(const Unary *inst) {
 
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load(type->size_of(), pointer_vreg));
+        const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load(lir_ty, type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
         return;
     }

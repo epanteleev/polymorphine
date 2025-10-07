@@ -38,7 +38,7 @@ public:
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
     void add(const std::uint8_t, const Op&, const aasm::GPReg) {}
 
-    void add(const std::uint8_t size, const std::int32_t, const aasm::GPReg) {}
+    void add(const std::uint8_t, const std::int32_t, const aasm::GPReg) {}
 
     void sub(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
 
@@ -94,6 +94,10 @@ public:
     template<typename Op>
     requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
     constexpr void movfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void addfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }

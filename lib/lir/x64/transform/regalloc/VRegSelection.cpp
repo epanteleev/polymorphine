@@ -1,0 +1,70 @@
+#include <algorithm>
+#include <utility>
+#include <ranges>
+
+#include "VRegSelection.h"
+#include "asm/x64/reg/Reg.h"
+
+namespace details {
+    aasm::GPReg VRegSelection::top_gp(const IntervalHint hint) noexcept {
+        switch (hint) {
+            case IntervalHint::NOTHING: {
+                for (const auto reg: std::ranges::reverse_view(m_free_gp_regs)) {
+                    if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
+                        continue;
+                    }
+
+                    remove(reg);
+                    return reg;
+                }
+
+                [[fallthrough]];
+            }
+            case IntervalHint::CALL_LIVE_OUT: {
+                assertion(!m_free_gp_regs.empty(), "Attempted to access top of an empty register set");
+                const auto reg = m_free_gp_regs.back();
+                m_free_gp_regs.pop_back();
+                return reg;
+            }
+            default: std::unreachable();
+        }
+    }
+
+    aasm::XmmReg VRegSelection::top_xmm(const IntervalHint hint) noexcept {
+        switch (hint) {
+            case IntervalHint::NOTHING: {
+                for (const auto reg: std::ranges::reverse_view(m_free_xmm_regs)) {
+                    if (!std::ranges::contains(m_call_conv->XMM_CALLER_SAVE_REGISTERS(), reg)) {
+                        continue;
+                    }
+
+                    remove(reg);
+                    return reg;
+                }
+
+                [[fallthrough]];
+            }
+            case IntervalHint::CALL_LIVE_OUT: {
+                assertion(!m_free_xmm_regs.empty(), "Attempted to access top of an empty register set");
+                const auto reg = m_free_xmm_regs.back();
+                m_free_xmm_regs.pop_back();
+                return reg;
+            }
+            default: std::unreachable();
+        }
+    }
+
+    void VRegSelection::remove(const aasm::Reg reg) noexcept {
+        const auto vis = [&]<typename T>(const T& val) {
+            if constexpr (std::is_same_v<T, aasm::GPReg>) {
+                std::erase(m_free_gp_regs, reg);
+            } else if constexpr (std::is_same_v<T, aasm::XmmReg>) {
+                std::erase(m_free_xmm_regs, reg);
+            } else {
+                static_assert(false);
+                std::unreachable();
+            }
+        };
+        reg.visit(vis);
+    }
+}

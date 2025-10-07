@@ -21,8 +21,6 @@ enum class LIRProdInstKind: std::uint8_t {
     Not,
     CopyI,
     LoadI,
-    CopyF,
-    LoadF,
     LoadByIdx,
     ReadByOffset,
     Lea,
@@ -44,7 +42,7 @@ public:
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op)  {
-        return create_f(LIRProdInstKind::CopyF, size, size, op);
+        return create_f(LIRProdInstKind::CopyI, size, size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op, const aasm::GPReg fixed_reg)  {
@@ -55,18 +53,18 @@ public:
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyF, LIRValType::FP, std::vector{op});
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyI, LIRValType::FP, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);
         return prod;
     }
 
-    static std::unique_ptr<LIRProducerInstruction> add(const LIROperand &lhs, const LIROperand &rhs) {
-        return create_i(LIRProdInstKind::Add, lhs.size(), lhs.size(), lhs, rhs);
+    static std::unique_ptr<LIRProducerInstruction> add(const LIRValType type, const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Add, type, lhs.size(), lhs.size(), lhs, rhs);
     }
 
-    static std::unique_ptr<LIRProducerInstruction> sub(const LIROperand &lhs, const LIROperand &rhs) {
-        return create_i(LIRProdInstKind::Sub, lhs.size(), lhs.size(), lhs, rhs);
+    static std::unique_ptr<LIRProducerInstruction> sub(const LIRValType type, const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Sub, type, lhs.size(), lhs.size(), lhs, rhs);
     }
 
     static std::unique_ptr<LIRProducerInstruction> xxor(const LIROperand &lhs, const LIROperand &rhs) {
@@ -93,12 +91,8 @@ public:
         return gen;
     }
 
-    static std::unique_ptr<LIRProducerInstruction> load(const std::uint8_t loaded_ty_size, const LIROperand &op) {
-        return create_i(LIRProdInstKind::LoadI, loaded_ty_size, loaded_ty_size, op);
-    }
-
-    static std::unique_ptr<LIRProducerInstruction> load_f(const std::uint8_t loaded_ty_size, const LIROperand &op) {
-        return create_f(LIRProdInstKind::LoadF, loaded_ty_size, loaded_ty_size, op);
+    static std::unique_ptr<LIRProducerInstruction> load(const LIRValType type, const std::uint8_t loaded_ty_size, const LIROperand &op) {
+        return create(LIRProdInstKind::LoadI, type, loaded_ty_size, loaded_ty_size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> load_by_idx(const std::uint8_t loaded_ty_size, const LIROperand &pointer, const LIROperand &index) {
@@ -140,6 +134,13 @@ public:
     }
 
 private:
+    template<typename ... Args>
+    static std::unique_ptr<LIRProducerInstruction> create(LIRProdInstKind kind, const LIRValType type, const std::uint8_t size, const std::uint8_t align, Args&&... args) {
+        auto prod = std::make_unique<LIRProducerInstruction>(kind, type, std::vector{std::forward<Args>(args)...});
+        prod->add_def(LIRVal::reg(size, align, 0, prod.get()));
+        return prod;
+    }
+
     template<typename ... Args>
     static std::unique_ptr<LIRProducerInstruction> create_i(LIRProdInstKind kind, const std::uint8_t size, const std::uint8_t align, Args&&... args) {
         auto prod = std::make_unique<LIRProducerInstruction>(kind, LIRValType::GP, std::vector{std::forward<Args>(args)...});

@@ -192,6 +192,16 @@ public:
         }
     }
 
+    template<typename Op>
+    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
+    constexpr void addfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.addss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.addsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     constexpr void cdq(const std::uint8_t size) {
         m_asm.cdq(size);
     }

@@ -108,6 +108,8 @@ private:
         unimplemented();
     }
 
+    void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
+
     void copy_f(const LIRVal &out, const LIROperand &in) override;
 
     void ret(std::span<LIRVal const> ret_values) override;
