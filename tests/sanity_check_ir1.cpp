@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <climits>
 
 #include "helpers/Jit.h"
 #include "mir/mir.h"

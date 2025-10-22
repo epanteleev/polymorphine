@@ -1,7 +1,6 @@
 #pragma once
 
 #include "LiveIntervalsGroups.h"
-#include "asm/x64/reg/RegMap.h"
 #include "base/analysis/AnalysisPass.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/analysis/intervals/LiveIntervals.h"

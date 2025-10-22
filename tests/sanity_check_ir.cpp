@@ -104,9 +104,9 @@ TEST(SanityCheck, ret_i8_u8) {
     }
 }
 
-static Module ret_i32_arg() {
+static Module ret_prim_arg(const PrimitiveType* ty) {
     ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {SignedIntegerType::i32()}, "ret_i32", FunctionBind::DEFAULT);
+    const auto prototype = builder.add_function_prototype(ty, {ty}, "ret_i32", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
     const auto data = fn_builder.value();
     const auto arg0 = data.arg(0);
@@ -116,7 +116,7 @@ static Module ret_i32_arg() {
 }
 
 TEST(SanityCheck, ret_i32_arg) {
-    const auto buffer = jit_compile_and_assembly(ret_i32_arg());
+    const auto buffer = jit_compile_and_assembly(ret_prim_arg(SignedIntegerType::i32()));
     const auto fn = buffer.code_start_as<int(int)>("ret_i32").value();
     for (const auto i: {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN}) {
         const auto res = fn(i);
@@ -124,27 +124,25 @@ TEST(SanityCheck, ret_i32_arg) {
     }
 }
 
-static Module ret_f32_arg() {
-    ModuleBuilder builder;
-    const auto prototype = builder.add_function_prototype(FloatingPointType::f32(), {FloatingPointType::f32()}, "ret_f32", FunctionBind::DEFAULT);
-    const auto fn_builder = builder.make_function_builder(prototype);
-    const auto data = fn_builder.value();
-    const auto arg0 = data.arg(0);
-    data.ret(arg0);
-
-    return builder.build();
-}
-
 TEST(SanityCheck, ret_f32_arg) {
-    const auto buffer = jit_compile_and_assembly(ret_f32_arg(), true);
-    const auto fn = buffer.code_start_as<float(float)>("ret_f32").value();
+    const auto buffer = jit_compile_and_assembly(ret_prim_arg(FloatingPointType::f32()));
+    const auto fn = buffer.code_start_as<float(float)>("ret_i32").value();
     for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
         const auto res = fn(i);
         ASSERT_EQ(res, static_cast<float>(i)) << "Failed for value: " << i;
     }
 }
 
-static Module add_primitive_args(const PrimitiveType* ty) {
+TEST(SanityCheck, ret_f64_arg) {
+    const auto buffer = jit_compile_and_assembly(ret_prim_arg(FloatingPointType::f64()));
+    const auto fn = buffer.code_start_as<double(double)>("ret_i32").value();
+    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, i) << "Failed for value: " << i;
+    }
+}
+
+static Module add_prim_args(const NonTrivialType* ty) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "add", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
@@ -158,7 +156,7 @@ static Module add_primitive_args(const PrimitiveType* ty) {
 }
 
 TEST(SanityCheck, add_i32_args) {
-    const auto buffer = jit_compile_and_assembly(add_primitive_args(SignedIntegerType::i32()), true);
+    const auto buffer = jit_compile_and_assembly(add_prim_args(SignedIntegerType::i32()));
     const auto fn = buffer.code_start_as<int(int, int)>("add").value();
 
     std::vector values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN};
@@ -170,8 +168,34 @@ TEST(SanityCheck, add_i32_args) {
     }
 }
 
+TEST(SanityCheck, add_f32_args) {
+    const auto buffer = jit_compile_and_assembly(add_prim_args(FloatingPointType::f32()), true);
+    const auto fn = buffer.code_start_as<float(float, float)>("add").value();
+
+    std::vector values = {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)};
+    for (const auto i: values) {
+        for (const auto j: values) {
+            const auto res = fn(i, j);
+            ASSERT_EQ(res, static_cast<float>(i) + static_cast<float>(j)) << "Failed for values: " << i << ", " << j;
+        }
+    }
+}
+
+TEST(SanityCheck, add_f64_args) {
+    const auto buffer = jit_compile_and_assembly(add_prim_args(FloatingPointType::f64()), true);
+    const auto fn = buffer.code_start_as<double(double, double)>("add").value();
+
+    std::vector values = {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)};
+    for (const auto i: values) {
+        for (const auto j: values) {
+            const auto res = fn(i, j);
+            ASSERT_EQ(res, i + j) << "Failed for values: " << i << ", " << j;
+        }
+    }
+}
+
 TEST(SanityCheck, add_i64_args) {
-    const auto buffer = jit_compile_and_assembly(add_primitive_args(SignedIntegerType::i64()));
+    const auto buffer = jit_compile_and_assembly(add_prim_args(SignedIntegerType::i64()));
     const auto fn = buffer.code_start_as<long(long, long)>("add").value();
 
     std::vector<long> values = {0, 1, -1, 42, -42, 1000000, -1000000, INT32_MAX, INT32_MIN, LONG_MAX, LONG_MIN};
@@ -179,18 +203,6 @@ TEST(SanityCheck, add_i64_args) {
         for (const auto j: values) {
             const auto res = fn(i, j);
             ASSERT_EQ(res, add_overflow(i, j)) << "Failed for values: " << i << ", " << j;
-        }
-    }
-}
-
-TEST(SanityCheck, add_f32_args) {
-    const auto buffer = jit_compile_and_assembly(add_primitive_args(FloatingPointType::f32()), true);
-    const auto fn = buffer.code_start_as<float(float, float)>("add").value();
-
-    for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
-        for (const double j: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)}) {
-            const auto res = fn(static_cast<float>(i), static_cast<float>(j));
-            ASSERT_EQ(res, static_cast<float>(i) + static_cast<float>(j)) << "Failed for values: " << i << ", " << j;
         }
     }
 }

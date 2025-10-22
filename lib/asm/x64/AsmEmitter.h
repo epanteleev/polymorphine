@@ -257,11 +257,11 @@ namespace aasm {
 
         // Add Scalar Double Precision Floating-Point Values
         constexpr void addsd(const XmmReg src, const XmmReg dst) {
-            m_instructions.emplace_back(details::AddssRR(src, dst));
+            m_instructions.emplace_back(details::AddsdRR(src, dst));
         }
 
         constexpr void addsd(const Address& src, const XmmReg dst) {
-            m_instructions.emplace_back(details::AddssRM(src, dst));
+            m_instructions.emplace_back(details::AddsdRM(src, dst));
         }
 
         // Subtract Scalar Single Precision Floating-Point Value
