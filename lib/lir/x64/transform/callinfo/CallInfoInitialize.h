@@ -4,6 +4,7 @@
 #include "lir/x64/analysis/liveness/LiveInfo.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
 #include "lir/x64/module/LIRFuncData.h"
+#include "lir/x64/operand/OperandMatcher.h"
 
 
 class CallInfoInitialize final {

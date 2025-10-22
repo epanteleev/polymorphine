@@ -168,8 +168,12 @@ TEST(SanityCheck, add_i32_args) {
     }
 }
 
+static const std::unordered_map<std::string, std::size_t> asm_size = {
+    {"add", 2},
+};
+
 TEST(SanityCheck, add_f32_args) {
-    const auto buffer = jit_compile_and_assembly(add_prim_args(FloatingPointType::f32()), true);
+    const auto buffer = jit_compile_and_assembly({}, add_prim_args(FloatingPointType::f32()), asm_size, true);
     const auto fn = buffer.code_start_as<float(float, float)>("add").value();
 
     std::vector values = {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)};
@@ -182,7 +186,7 @@ TEST(SanityCheck, add_f32_args) {
 }
 
 TEST(SanityCheck, add_f64_args) {
-    const auto buffer = jit_compile_and_assembly(add_prim_args(FloatingPointType::f64()), true);
+    const auto buffer = jit_compile_and_assembly({}, add_prim_args(FloatingPointType::f64()), asm_size, true);
     const auto fn = buffer.code_start_as<double(double, double)>("add").value();
 
     std::vector values = {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT32_MAX), static_cast<double>(INT32_MIN)};

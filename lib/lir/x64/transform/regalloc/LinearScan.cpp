@@ -2,8 +2,11 @@
 #include <ranges>
 
 #include "AllocTemporalRegs.h"
+
 #include "lir/x64/transform/regalloc/LinearScan.h"
 #include "lir/x64/instruction/LIRAdjustStack.h"
+#include "lir/x64/operand/OperandMatcher.h"
+#include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
 
 
 template<std::ranges::range Range>
@@ -88,72 +91,9 @@ void LinearScan::do_register_allocation()  {
         }
         range_begin = unhandled_interval->start();
 
-        const auto active_eraser = [&](const IntervalEntry& entry) {
-            const auto real_interval = get_real_interval(entry);
-            const auto reg = entry.lir_val.assigned_reg();
-            if (real_interval->start() > unhandled_interval->finish()) {
-                m_reg_set.try_push(reg);
-                return true;
-            }
-
-            if (real_interval->intersects(*unhandled_interval)) {
-                return false;
-            }
-            m_inactive_intervals.emplace_back(entry);
-            m_reg_set.try_push(reg);
-            return true;
-        };
-
-        remove_if_fast(m_active_intervals, active_eraser);
-
-        const auto unactive_eraser = [&](const IntervalEntry& entry) {
-            const auto real_interval = get_real_interval(entry);
-            if (real_interval->start() > unhandled_interval->finish()) {
-                return true;
-            }
-
-            if (!real_interval->intersects(*unhandled_interval)) {
-                return false;
-            }
-            // This interval is still active, we need to keep it.
-            m_active_intervals.emplace_back(entry);
-            m_reg_set.try_remove(entry.lir_val.assigned_reg());
-            return true;
-        };
-
-        remove_if_fast(m_inactive_intervals, unactive_eraser);
-
-        for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
-            const auto group = m_groups.try_get_group(unhandled.lir_val);
-            if (!group.has_value()) {
-                // No group for this vreg, we can skip it.
-                continue;
-            }
-
-            const auto real_interval = &group.value()->m_interval;
-            if (real_interval->start() > unhandled_interval->finish()) {
-                // No need to check further, the intervals are sorted.
-                break;
-            }
-
-            const auto fixed_reg_groups = group.value()->fixed_register();
-            if (!fixed_reg_groups.has_value()) {
-                // This group does not have a fixed register, we can skip it too.
-                continue;
-            }
-            const auto fixed_gp_reg = fixed_reg_groups.value().as_gp_reg();
-            if (!fixed_gp_reg.has_value()) {
-                continue;
-            }
-
-            if (!real_interval->intersects(*unhandled_interval)) {
-                // This interval does not intersect with the unhandled interval, skip it.
-                continue;
-            }
-
-            m_active_intervals.emplace_back(unhandled);
-            m_reg_set.remove(fixed_gp_reg.value());
-        }
+        erase_active(*unhandled_interval);
+        erase_unactive(*unhandled_interval);
+        activate_unhandled_fixed_regs(*unhandled_interval);
 
         select_virtual_reg(lir_val, unhandled_interval->hint());
         m_active_intervals.emplace_back(unhandled_interval, lir_val);
@@ -177,6 +117,79 @@ void LinearScan::finalize_prologue_epilogue() const {
     }
     epilogue->increase_local_area_size(m_reg_set.local_area_size());
     prologue->increase_local_area_size(m_reg_set.local_area_size());
+}
+
+void LinearScan::erase_active(const LiveInterval& unhandled_interval) {
+    const auto active_eraser = [&](const IntervalEntry& entry) {
+        const auto real_interval = get_real_interval(entry);
+        const auto reg = entry.lir_val.assigned_reg();
+        if (real_interval->start() > unhandled_interval.finish()) {
+            m_reg_set.try_push(reg);
+            return true;
+        }
+
+        if (real_interval->intersects(unhandled_interval)) {
+            return false;
+        }
+        m_inactive_intervals.emplace_back(entry);
+        m_reg_set.try_push(reg);
+        return true;
+    };
+
+    remove_if_fast(m_active_intervals, active_eraser);
+}
+
+void LinearScan::erase_unactive(const LiveInterval &unhandled_interval) {
+    const auto unactive_eraser = [&](const IntervalEntry& entry) {
+        const auto real_interval = get_real_interval(entry);
+        if (real_interval->start() > unhandled_interval.finish()) {
+            return true;
+        }
+
+        if (!real_interval->intersects(unhandled_interval)) {
+            return false;
+        }
+        // This interval is still active, we need to keep it.
+        m_active_intervals.emplace_back(entry);
+        m_reg_set.try_remove(entry.lir_val.assigned_reg());
+        return true;
+    };
+
+    remove_if_fast(m_inactive_intervals, unactive_eraser);
+}
+
+void LinearScan::activate_unhandled_fixed_regs(const LiveInterval &unhandled_interval) {
+    for (const auto& unhandled: std::ranges::reverse_view(m_unhandled_intervals)) {
+        const auto group = m_groups.try_get_group(unhandled.lir_val);
+        if (!group.has_value()) {
+            // No group for this vreg, we can skip it.
+            continue;
+        }
+
+        const auto real_interval = &group.value()->m_interval;
+        if (real_interval->start() > unhandled_interval.finish()) {
+            // No need to check further, the intervals are sorted.
+            break;
+        }
+
+        const auto fixed_reg_groups = group.value()->fixed_register();
+        if (!fixed_reg_groups.has_value()) {
+            // This group does not have a fixed register, we can skip it too.
+            continue;
+        }
+        const auto fixed_gp_reg = fixed_reg_groups.value().as_gp_reg();
+        if (!fixed_gp_reg.has_value()) {
+            continue;
+        }
+
+        if (!real_interval->intersects(unhandled_interval)) {
+            // This interval does not intersect with the unhandled interval, skip it.
+            continue;
+        }
+
+        m_active_intervals.emplace_back(unhandled);
+        m_reg_set.remove(fixed_gp_reg.value());
+    }
 }
 
 const LiveInterval *LinearScan::get_real_interval(const IntervalEntry &entry) const {

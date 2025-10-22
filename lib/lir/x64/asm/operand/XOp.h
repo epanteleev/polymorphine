@@ -17,7 +17,7 @@ public:
     XOp(const T& reg) noexcept:
         m_reg(reg) {}
 
-    XOp(const XVReg& vreg) noexcept: m_reg(aasm::xmm0) {
+    XOp(const XVReg& vreg) noexcept: m_reg(-1) {
         vreg.visit([&](const auto& reg) { m_reg = reg; });
     }
 

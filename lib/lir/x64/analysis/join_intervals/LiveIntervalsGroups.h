@@ -1,7 +1,9 @@
 #pragma once
+
 #include "asm/x64/reg/Reg.h"
 #include "lir/x64/analysis/intervals/LiveInterval.h"
 #include "lir/x64/operand/LIRValMap.h"
+#include "base/analysis/AnalysisPass.h"
 
 class Group final {
 public:

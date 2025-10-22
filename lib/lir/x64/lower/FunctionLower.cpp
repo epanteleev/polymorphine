@@ -526,8 +526,17 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         return copy->def(0);
     }
     if (ret_type->isa(float_type())) {
-        const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(ret_type->size_of(), get_lir_operand(val), aasm::xmm0));
-        return copy->def(0);
+        const auto lir_op = get_lir_operand(val);
+        const auto lir_val_opt = LIRVal::try_from(lir_op);
+        if (!lir_val_opt.has_value() || lir_val_opt.value().isa(gen_v())) {
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(ret_type->size_of(), lir_op, aasm::xmm0));
+            return copy->def(0);
+        }
+
+        // Directly assign to xmm0. Not need to emit copy instruction, because fixed-regs intervals never intercept.
+        auto lir_val = lir_val_opt.value();
+        lir_val.assign_reg(aasm::xmm0);
+        return lir_val;
     }
 
     unimplemented();

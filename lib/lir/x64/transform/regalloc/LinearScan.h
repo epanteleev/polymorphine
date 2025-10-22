@@ -5,7 +5,7 @@
 
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
-#include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
+#include "lir/x64/analysis/join_intervals/LiveIntervalsGroups.h"
 #include "lir/x64/asm/cc/CallConv.h"
 
 
@@ -31,6 +31,10 @@ private:
     void setup_unhandled_intervals();
     void do_register_allocation();
     void finalize_prologue_epilogue() const;
+
+    void erase_active(const LiveInterval& unhandled_interval);
+    void erase_unactive(const LiveInterval& unhandled_interval);
+    void activate_unhandled_fixed_regs(const LiveInterval& unhandled_interval);
 
     [[nodiscard]]
     const LiveInterval* get_real_interval(const IntervalEntry& entry) const;
