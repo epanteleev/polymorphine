@@ -6,7 +6,6 @@
 
 namespace aasm::details {
     template<std::size_t N, std::size_t M, CodeBuffer Buffer>
-    requires (N > 0 && M > 0)
     class SSEEncoder final {
     public:
         explicit constexpr SSEEncoder(Buffer& buffer, const std::array<std::uint8_t, M>& prefixes, const std::array<std::uint8_t, N>& opcodes) noexcept:

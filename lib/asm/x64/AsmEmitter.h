@@ -282,6 +282,24 @@ namespace aasm {
             m_instructions.emplace_back(details::SubsdRM(src, dst));
         }
 
+        // Unordered Compare Scalar Single Precision Floating-Point Values and Set EFLAGS
+        constexpr void ucomiss(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::UcomissRR(src, dst));
+        }
+
+        constexpr void ucomiss(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::UcomissRM(src, dst));
+        }
+
+        // Unordered Compare Scalar Double Precision Floating-Point Values and Set EFLAGS
+        constexpr void ucomisd(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::UcomisdRR(src, dst));
+        }
+
+        constexpr void ucomisd(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::UcomisdRM(src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

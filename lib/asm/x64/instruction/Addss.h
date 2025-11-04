@@ -9,7 +9,7 @@ namespace aasm::details {
     class AddssR_RM {
     public:
         template<typename S = SRC>
-        explicit constexpr AddssR_RM(S&& src, XmmReg dst) noexcept:
+        explicit constexpr AddssR_RM(S&& src, const XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
@@ -55,7 +55,7 @@ namespace aasm::details {
         }
     };
 
-    class AddsdRM final: public AddssR_RM<Address, ADDSS_PREFIX> {
+    class AddsdRM final: public AddssR_RM<Address, ADDSD_PREFIX> {
     public:
         explicit constexpr AddsdRM(const Address& src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
