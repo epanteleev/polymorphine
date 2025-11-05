@@ -12,7 +12,7 @@
 
 namespace aasm {
     template<typename R>
-    concept AnyReg = std::same_as<R, GPReg> || std::same_as<R, XmmReg>;
+    concept RegVariant = std::same_as<R, GPReg> || std::same_as<R, XmmReg>;
 
     class Reg final {
     public:

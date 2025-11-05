@@ -5,8 +5,6 @@
 #include "GPVReg.h"
 #include "XVReg.h"
 #include "asm/x64/asm.h"
-#include "asm/x64/reg/Reg.h"
-
 
 class AssignedVReg final {
 public:

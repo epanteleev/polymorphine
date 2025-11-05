@@ -4,9 +4,10 @@
 #include "mir/module/FunctionData.h"
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Binary.h"
-#include "mir/instruction/Compare.h"
+#include "mir/instruction/Fcmp.h"
 #include "mir/instruction/GetElementPtr.h"
 #include "mir/instruction/GetFieldPtr.h"
+#include "mir/instruction/Icmp.h"
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Select.h"
 #include "mir/instruction/Store.h"
@@ -66,6 +67,11 @@ public:
     [[nodiscard]]
     Value icmp(const IcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
         return m_bb->ins(IcmpInstruction::icmp(predicate, lhs, rhs));
+    }
+
+    [[nodiscard]]
+    Value fcmp(const FcmpPredicate predicate, const Value& lhs, const Value& rhs) const {
+        return m_bb->ins(FcmpInstruction::fcmp(predicate, lhs, rhs));
     }
 
     [[nodiscard]]

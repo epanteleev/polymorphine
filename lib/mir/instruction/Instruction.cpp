@@ -3,6 +3,8 @@
 #include <ostream>
 #include <ranges>
 
+#include "Fcmp.h"
+#include "Icmp.h"
 #include "IntDiv.h"
 #include "Projection.h"
 #include "mir/module/BasicBlock.h"
@@ -153,23 +155,18 @@ namespace {
             os << *alloc->type();
         }
 
-        static std::string_view icmpOpToString(const IcmpPredicate op) noexcept {
-            switch (op) {
-                case IcmpPredicate::Eq: return "eq";
-                case IcmpPredicate::Ne: return "ne";
-                case IcmpPredicate::Gt: return "gt";
-                case IcmpPredicate::Ge: return "ge";
-                case IcmpPredicate::Lt: return "lt";
-                case IcmpPredicate::Le: return "le";
-                default: die("wrong type");
-            }
-        }
-
         void accept(IcmpInstruction *icmp) override {
             print_val(icmp);
             os << "icmp " << *icmp->type();
-            os << ' ' << icmpOpToString(icmp->predicate()) << ' ';
+            os << ' ' << to_string(icmp->predicate()) << ' ';
             os << icmp->lhs() << ", " << icmp->rhs();
+        }
+
+        void accept(FcmpInstruction *fcmp) override {
+            print_val(fcmp);
+            os << "fcmp " << *fcmp->type();
+            os << ' ' << to_string(fcmp->predicate()) << ' ';
+            os << fcmp->lhs() << ", " << fcmp->rhs();
         }
 
         void accept(GetElementPtr *gep) override {

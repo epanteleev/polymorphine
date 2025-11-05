@@ -25,7 +25,9 @@ namespace {
             m_os << "sub_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
-        void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void mul_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            unimplemented();
+        }
 
         void div_i(const std::span<LIRVal const> out, const LIROperand &in1, const LIROperand &in2) override {
             m_os << "div_i out(";
@@ -57,7 +59,9 @@ namespace {
             unimplemented();
         }
 
-        void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
+        void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            unimplemented();
+        }
 
         void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
             m_os << "xor_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
@@ -181,6 +185,14 @@ namespace {
 
         void load_f(const LIRVal &out, const LIRVal &pointer) override {
             m_os << "load_f out(" << out << ") pointer(" << pointer << ')';
+        }
+
+        void mov_f(const LIROperand &in0, const LIROperand &in1) override {
+            m_os << "mov_f in(" << in0 << ") in(" << in1 << ')';
+        }
+
+        void cmp_f(const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "cmp_f in(" << in1 << ") in(" << in2 << ')';
         }
 
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {

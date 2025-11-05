@@ -108,6 +108,12 @@ private:
         unimplemented();
     }
 
+    void mov_f(const LIROperand &in1, const LIROperand &in2) override {
+        unimplemented();
+    }
+
+    void cmp_f(const LIROperand &in1, const LIROperand &in2) override;
+
     void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override;
 
     void copy_f(const LIRVal &out, const LIROperand &in) override;

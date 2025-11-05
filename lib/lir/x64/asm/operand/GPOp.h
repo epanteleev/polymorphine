@@ -1,13 +1,8 @@
 #pragma once
 
 #include "GPVReg.h"
+#include "Constrains.h"
 #include "asm/x64/asm.h"
-
-
-template<typename T>
-concept GPOpVariant = std::is_same_v<T, aasm::GPReg> ||
-    std::is_same_v<T, aasm::Address> ||
-    std::is_integral_v<T>;
 
 class GPOp final {
 public:

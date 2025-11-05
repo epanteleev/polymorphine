@@ -17,6 +17,7 @@ class IVCall;
 class Store;
 class Alloc;
 class IcmpInstruction;
+class FcmpInstruction;
 class GetElementPtr;
 class GetFieldPtr;
 class Call;

@@ -349,6 +349,85 @@ TEST(SanityCheck, is_u32_predicate) {
     }
 }
 
+
+static void is_float_predicate_impl(const FunctionBuilder& data, const FcmpPredicate pred, const Value& threshold) {
+    const auto arg0 = data.arg(0);
+    const auto is_neg = data.fcmp(pred, arg0, threshold);
+    const auto res = data.flag2int(SignedIntegerType::i8(), is_neg);
+    data.ret(res);
+}
+
+static Module is_float_predicate(const FloatingPointType* ty, const Value& threshold) {
+    ModuleBuilder builder;
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_neg", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Ult,  threshold);
+    }
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_le", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Ule, threshold);
+    }
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_gt", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Ugt, threshold);
+    }
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_eq", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Ueq, threshold);
+    }
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_ne", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Une, threshold);
+    }
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "is_ge", FunctionBind::DEFAULT);
+        auto fn_builder = builder.make_function_builder(prototype);
+        is_float_predicate_impl(fn_builder.value(), FcmpPredicate::Uge, threshold);
+    }
+
+    return builder.build();
+}
+
+TEST(SanityCheck, is_f32_predicate) {
+    GTEST_SKIP();
+    const std::vector<float> values = {0., 1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
+
+    for (const auto j: values) {
+        const auto buffer0 = jit_compile_and_assembly(is_float_predicate(FloatingPointType::f32(), Value::f32(j)), true);
+        const auto is_neg = buffer0.code_start_as<std::int8_t(float)>("is_neg").value();
+        const auto is_le = buffer0.code_start_as<std::int8_t(float)>("is_le").value();
+        const auto is_gt = buffer0.code_start_as<std::int8_t(float)>("is_gt").value();
+        const auto is_eq = buffer0.code_start_as<std::int8_t(float)>("is_eq").value();
+        const auto is_ne = buffer0.code_start_as<std::int8_t(float)>("is_ne").value();
+        const auto is_ge = buffer0.code_start_as<std::int8_t(float)>("is_ge").value();
+
+        for (const auto i: values) {
+            const auto res = is_neg(i);
+            ASSERT_EQ(res, i < j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_le = is_le(i);
+            ASSERT_EQ(res_le, i <= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_gt = is_gt(i);
+            ASSERT_EQ(res_gt, i > j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_eq = is_eq(i);
+            ASSERT_EQ(res_eq, i == j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ne = is_ne(i);
+            ASSERT_EQ(res_ne, i != j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ge = is_ge(i);
+            ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+        }
+    }
+}
+
 static Module stack_alloc(const Value& val) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(val.type(), {}, "stackalloc", FunctionBind::DEFAULT);

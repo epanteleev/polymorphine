@@ -33,6 +33,15 @@ namespace impls {
         return false;
     }
 
+    inline bool fcmp(const Value& inst) noexcept {
+        if (!inst.is<ValueInstruction*>()) {
+            return false;
+        }
+
+        const auto val = inst.get<ValueInstruction*>();
+        return dynamic_cast<const FcmpInstruction*>(val) != nullptr;
+    }
+
     template<typename T>
     bool value_inst(const Value& value) noexcept {
         if (!value.is<ValueInstruction*>()) {
@@ -143,6 +152,10 @@ consteval auto icmp(LHS&& l, RHS&& r) noexcept {
     return [=](const Value& inst) {
         return impls::icmp(inst, l, r);
     };
+}
+
+consteval auto fcmp() noexcept {
+    return impls::fcmp;
 }
 
 consteval auto alloc() noexcept {

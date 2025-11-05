@@ -88,6 +88,8 @@ private:
 
     void accept(IcmpInstruction *icmp) override;
 
+    void accept(FcmpInstruction *fcmp) override;
+
     void accept(GetElementPtr *gep) override;
 
     void accept(GetFieldPtr *gfp) override;

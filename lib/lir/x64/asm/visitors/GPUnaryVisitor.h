@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../operand/GPOp.h"
+#include "lir/x64/asm/operand/GPOp.h"
 
 class GPUnaryVisitor {
 public:

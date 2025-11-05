@@ -48,6 +48,8 @@ public:
     // Floating point instructions
     virtual void copy_f(const LIRVal& out, const LIROperand& in) = 0;
     virtual void load_f(const LIRVal& out, const LIRVal& pointer) = 0;
+    virtual void mov_f(const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void cmp_f(const LIROperand& in1, const LIROperand& in2) = 0;
 
     virtual void add_f(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
 

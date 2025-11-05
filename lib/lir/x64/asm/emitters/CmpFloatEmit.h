@@ -1,26 +1,27 @@
 #pragma once
 
+
 template<typename TemporalRegStorage, typename AsmEmit>
-class CopyFloatEmit final: public XUnaryOutVisitor {
+class CmpFloatEmit final: public XUnaryVisitor {
 public:
-    explicit CopyFloatEmit(const TemporalRegStorage& temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
+    explicit CmpFloatEmit(const TemporalRegStorage& temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
         m_as(as),
         m_temporal_regs(temporal_regs) {}
 
-    void apply(const XVReg& out, const XOp& in) {
+    void apply(const XOp& out, const XOp& in) {
         dispatch(*this, out, in);
     }
 
 private:
-    friend class XUnaryOutVisitor;
+    friend class XUnaryVisitor;
 
     void emit(aasm::XmmReg out, aasm::XmmReg in) override {
-        m_as.copyfp(m_size, in, out);
+        unimplemented();
     }
 
     void emit(aasm::XmmReg out, const aasm::Address &in) override {
-        m_as.movfp(m_size, in, out);
+        unimplemented();
     }
 
     void emit(const aasm::Address &out, aasm::XmmReg in) override {
@@ -36,6 +37,18 @@ private:
     }
 
     void emit(const aasm::Address &out, std::int64_t in) override {
+        unimplemented();
+    }
+
+    void emit(std::int64_t out, std::int64_t in) override {
+        unimplemented();
+    }
+
+    void emit(std::int64_t out, const aasm::Address& in) override {
+        unimplemented();
+    }
+
+    void emit(std::int64_t out, const aasm::XmmReg& in) override {
         unimplemented();
     }
 

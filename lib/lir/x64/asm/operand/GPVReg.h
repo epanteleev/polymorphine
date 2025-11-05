@@ -3,11 +3,7 @@
 #include <variant>
 #include <expected>
 
-#include "asm/x64/asm.h"
-
-template<typename T>
-concept GPVRegVariant = std::is_same_v<T, aasm::GPReg> ||
-    std::is_same_v<T, aasm::Address>;
+#include "Constrains.h"
 
 class GPVReg final {
 public:

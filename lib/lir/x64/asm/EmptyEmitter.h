@@ -99,6 +99,9 @@ public:
     requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
     constexpr void addfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
+    template<XVRegVariant Op>
+    constexpr void ucomics(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }
 

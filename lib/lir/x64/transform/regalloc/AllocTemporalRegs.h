@@ -106,6 +106,8 @@ namespace details {
 
         void copy_f(const LIRVal &out, const LIROperand &in) override {}
         void load_f(const LIRVal &out, const LIRVal &pointer) override {}
+        void cmp_f(const LIROperand &in1, const LIROperand &in2) override {}
+        void mov_f(const LIROperand &in1, const LIROperand &in2) override {}
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
         void jmp(const LIRBlock *bb) override {}

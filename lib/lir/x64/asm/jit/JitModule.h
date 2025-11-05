@@ -16,7 +16,7 @@ template<typename T>
 requires std::is_function_v<T>
 class JitFunctionFunctor {
 public:
-    explicit JitFunctionFunctor(T* fn) noexcept:
+    explicit JitFunctionFunctor(const T* fn) noexcept:
         m_fn(fn) {}
 
     template<typename... Args>
@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    T* m_fn;
+    const T* m_fn;
 };
 
 

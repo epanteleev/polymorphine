@@ -19,6 +19,7 @@ public:
     virtual void accept(Store* store) = 0;
     virtual void accept(Alloc* alloc) = 0;
     virtual void accept(IcmpInstruction *icmp) = 0;
+    virtual void accept(FcmpInstruction* fcmp) = 0;
     virtual void accept(GetElementPtr* gep) = 0;
     virtual void accept(GetFieldPtr* gfp) = 0;
     virtual void accept(Select* select) = 0;

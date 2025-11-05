@@ -59,8 +59,7 @@ public:
         m_asm.add(size, src, dst);
     }
 
-    template<typename Op>
-    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    template<GPVRegVariant Op>
     void add(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
         m_asm.add(size, src, dst);
     }
@@ -77,8 +76,7 @@ public:
         m_asm.sub(size, src, dst);
     }
 
-    template<typename Op>
-    requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
+    template<GPVRegVariant Op>
     void sub(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
         m_asm.sub(size, src, dst);
     }
@@ -192,12 +190,20 @@ public:
         }
     }
 
-    template<typename Op>
-    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
+    template<XVRegVariant Op>
     constexpr void addfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (size) {
             case cst::DWORD_SIZE: m_asm.addss(src, dst); break;
             case cst::QWORD_SIZE: m_asm.addsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
+    template<XVRegVariant Op>
+    constexpr void ucomis(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.ucomisd(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.ucomiss(src, dst); break;
             default: std::unreachable();
         }
     }

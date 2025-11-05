@@ -1,9 +1,15 @@
 #include "LIRInstruction.h"
 
-
 void LIRInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
-        case LIRInstKind::Mov: visitor.mov_i(in(0), in(1)); break;
+        case LIRInstKind::Mov: {
+            switch (m_val_type) {
+                case LIRValType::GP: visitor.mov_i(in(0), in(1)); break;
+                case LIRValType::FP: visitor.mov_f(in(0), in(1)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
         case LIRInstKind::MovByIdx: {
             const auto inout = LIRVal::try_from(in(0));
             assertion(inout.has_value(), "invariant");
@@ -17,7 +23,14 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.store_i(pointer.value(), in(1));
             break;
         }
-        case LIRInstKind::Cmp: visitor.cmp_i(in(0), in(1)); break;
-        default: die("Unsupported LIR instruction kind: {}", static_cast<int>(m_kind));
+        case LIRInstKind::Cmp: {
+            switch (m_val_type) {
+                case LIRValType::GP: visitor.cmp_i(in(0), in(1)); break;
+                case LIRValType::FP: visitor.cmp_f(in(0), in(1)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
+        default: std::unreachable();
     }
 }

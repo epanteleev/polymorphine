@@ -65,7 +65,7 @@ static aasm::CondType signed_cond_type(const IcmpPredicate predicate) noexcept {
         case IcmpPredicate::Ge: return aasm::CondType::GE;
         case IcmpPredicate::Lt: return aasm::CondType::NGE;
         case IcmpPredicate::Le: return aasm::CondType::NG;
-        default: die("Unsupported signed condition type in flag2int");
+        default: std::unreachable();
     }
 }
 
@@ -82,7 +82,25 @@ static aasm::CondType unsigned_cond_type(const IcmpPredicate predicate) noexcept
         case IcmpPredicate::Ge: return aasm::CondType::AE;
         case IcmpPredicate::Lt: return aasm::CondType::NAE;
         case IcmpPredicate::Le: return aasm::CondType::NA;
-        default: die("Unsupported unsigned condition type in flag2int");
+        default: std::unreachable();
+    }
+}
+
+static aasm::CondType fcmp_cond_type(const FcmpPredicate predicate) noexcept {
+    switch (predicate) {
+        case FcmpPredicate::Ueq: [[fallthrough]];
+        case FcmpPredicate::Oeq: return aasm::CondType::E;
+        case FcmpPredicate::Une: [[fallthrough]];
+        case FcmpPredicate::One: return aasm::CondType::NE;
+        case FcmpPredicate::Ugt: [[fallthrough]];
+        case FcmpPredicate::Ogt: return aasm::CondType::A;
+        case FcmpPredicate::Uge: [[fallthrough]];
+        case FcmpPredicate::Oge: return aasm::CondType::AE;
+        case FcmpPredicate::Ult: [[fallthrough]];
+        case FcmpPredicate::Olt: return aasm::CondType::NAE;
+        case FcmpPredicate::Ule: [[fallthrough]];
+        case FcmpPredicate::Ole: return aasm::CondType::NA;
+        default: std::unreachable();
     }
 }
 
@@ -100,6 +118,12 @@ static aasm::CondType cond_type(const Value& cond) noexcept {
         const auto icmp = dynamic_cast<const IcmpInstruction*>(cond.get<ValueInstruction*>());
         assertion(icmp != nullptr, "Expected IcmpInstruction for signed comparison");
         return unsigned_cond_type(icmp->predicate());
+    }
+
+    if (cond.isa(fcmp())) {
+        const auto fcmp = dynamic_cast<const FcmpInstruction*>(cond.get<ValueInstruction*>());
+        assertion(fcmp != nullptr, "Expected IcmpInstruction for signed comparison");
+        return fcmp_cond_type(fcmp->predicate());
     }
 
     die("Unsupported condition type");
@@ -492,7 +516,7 @@ std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span
         const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of(), allocated_type->align_of()));
         for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) { //FIXME handle <8 bytes
             const auto load = m_bb->ins(LIRProducerInstruction::read_by_offset(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
-            m_bb->ins(LIRInstruction::store_by_offset(gen->def(0), LirCst::imm64(offset/8), load->def(0)));
+            m_bb->ins(LIRInstruction::store_by_offset(LIRValType::GP, gen->def(0), LirCst::imm64(offset/8), load->def(0)));
         }
 
         args.emplace_back(gen->def(0));
@@ -598,7 +622,7 @@ void FunctionLower::accept(Store *store) {
     const auto value_vreg = get_lir_operand(value);
     if (pointer.isa(value_semantic())) {
         const auto pointer_vreg = get_lir_operand(pointer);
-        m_bb->ins(LIRInstruction::mov(pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::mov(LIRValType::GP, pointer_vreg, value_vreg));
         return;
     }
 
@@ -608,16 +632,16 @@ void FunctionLower::accept(Store *store) {
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
         if (src.isa(value_semantic())) {
-            m_bb->ins(LIRInstruction::store_by_offset(src_vreg, idx_lir_op, value_vreg));
+            m_bb->ins(LIRInstruction::store_by_offset(LIRValType::GP, src_vreg, idx_lir_op, value_vreg));
             return;
         }
-        m_bb->ins(LIRInstruction::mov_by_idx(src_vreg.as_vreg().value(), idx_lir_op, value_vreg));
+        m_bb->ins(LIRInstruction::mov_by_idx(LIRValType::GP, src_vreg.as_vreg().value(), idx_lir_op, value_vreg));
         return;
     }
 
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
-        m_bb->ins(LIRInstruction::store(pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::store(LIRValType::GP, pointer_vreg, value_vreg));
         return;
     }
 
@@ -633,7 +657,13 @@ void FunctionLower::accept(Alloc *alloc) {
 void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
-    m_bb->ins(LIRInstruction::cmp(lhs, rhs));
+    m_bb->ins(LIRInstruction::cmp(LIRValType::GP, lhs, rhs));
+}
+
+void FunctionLower::accept(FcmpInstruction *fcmp) {
+    const auto lhs = get_lir_operand(fcmp->lhs());
+    const auto rhs = get_lir_operand(fcmp->rhs());
+    m_bb->ins(LIRInstruction::cmp(LIRValType::FP, lhs, rhs));
 }
 
 void FunctionLower::accept(GetElementPtr *gep) {

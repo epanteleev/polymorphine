@@ -3,13 +3,7 @@
 #include <expected>
 
 #include "XVReg.h"
-#include "asm/x64/asm.h"
-
-
-template<typename T>
-concept XOpVariant = std::is_same_v<T, aasm::XmmReg> ||
-    std::is_same_v<T, aasm::Address> ||
-    std::is_integral_v<T>;
+#include "Constrains.h"
 
 class XOp final {
 public:
