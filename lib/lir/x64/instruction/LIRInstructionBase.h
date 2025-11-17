@@ -7,7 +7,7 @@
 #include "lir/x64/operand/LIROperand.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 
-class LIRInstructionBase : public CommonInstruction<LIRBlock> {
+class LIRInstructionBase: public CommonInstruction<LIRBlock> {
     static constexpr auto NO_ID = std::numeric_limits<std::size_t>::max();
 
 public:

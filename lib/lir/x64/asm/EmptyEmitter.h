@@ -50,7 +50,7 @@ public:
 
     void setcc(const aasm::CondType, const aasm::GPReg) {}
 
-    void lea(const aasm::GPReg, const aasm::Address&) {}
+    void lea(const aasm::Address&, const aasm::GPReg) {}
 
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
@@ -90,6 +90,8 @@ public:
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, aasm::Address>
     constexpr void div(std::uint8_t, const Op&) {}
+
+    constexpr void copyfp(const std::uint8_t, const aasm::XmmReg, const aasm::XmmReg) {}
 
     template<typename Op>
     requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>

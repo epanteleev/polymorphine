@@ -1,10 +1,12 @@
 #pragma once
 
+template<typename TemporalRegStorage, typename AsmEmit>
 class XorIntEmit final: public GPBinaryVisitor {
 public:
-    explicit XorIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
+    explicit XorIntEmit(const TemporalRegStorage& temporal_regs, AsmEmit& as, const std::uint8_t size) noexcept:
         m_size(size),
-        m_as(as) {}
+        m_as(as),
+        m_temporal_regs(temporal_regs) {}
 
     void apply(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
         dispatch(*this, out, in1, in2);
@@ -95,5 +97,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TemporalRegStorage& m_temporal_regs;
 };

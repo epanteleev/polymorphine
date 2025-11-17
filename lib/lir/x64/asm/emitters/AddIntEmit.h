@@ -1,17 +1,19 @@
 #pragma once
 
+template<typename TemporalRegStorage, typename AsmEmit>
 class AddIntEmit final: public GPBinaryVisitor {
 public:
-    static void apply(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in1, const GPOp& in2) {
-        AddIntEmit emitter(as, size);
-        dispatch(emitter, out, in1, in2);
+    explicit AddIntEmit(const TemporalRegStorage& reg_storage, AsmEmit& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as),
+        m_temporal_regs(reg_storage) {}
+
+    void apply(const GPVReg& out, const GPOp& in1, const GPOp& in2) {
+        dispatch(*this, out, in1, in2);
     }
 
 private:
     friend class GPBinaryVisitor;
-
-    explicit AddIntEmit(MasmEmitter& as, const std::uint8_t size) noexcept
-        : m_size(size), m_as(as) {}
 
     void emit(const aasm::GPReg out, const aasm::GPReg in1, const aasm::GPReg in2) override {
         if (in1 == out) {
@@ -108,5 +110,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TemporalRegStorage& m_temporal_regs;
 };

@@ -1,19 +1,19 @@
 #pragma once
 
-
+template<typename TemporalRegStorage, typename AsmEmit>
 class CopyGPEmit final: public GPUnaryOutVisitor {
 public:
-    static void apply(MasmEmitter& as, const std::uint8_t size, const GPVReg& out, const GPOp& in) {
-        CopyGPEmit emitter(as, size);
-        dispatch(emitter, out, in);
+    explicit CopyGPEmit(const TemporalRegStorage& reg_storage, AsmEmit& as, const std::uint8_t size) noexcept:
+        m_size(size),
+        m_as(as),
+        m_temporal_regs(reg_storage) {}
+
+    void apply(const GPVReg& out, const GPOp& in) {
+        dispatch(*this, out, in);
     }
 
 private:
     friend class GPUnaryOutVisitor;
-
-    explicit CopyGPEmit(MasmEmitter& as, const std::uint8_t size) noexcept:
-        m_size(size),
-        m_as(as) {}
 
     void emit(const aasm::GPReg out, const aasm::GPReg in) override  {
         m_as.copy(m_size, in, out);
@@ -43,5 +43,6 @@ private:
     }
 
     std::uint8_t m_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TemporalRegStorage& m_temporal_regs;
 };

@@ -14,11 +14,13 @@ public:
 
     [[nodiscard]]
     aasm::GPReg gp_temp1() const noexcept {
+        assertion(m_gp_temp1.has_value(), "Must be");
         return m_gp_temp1.value();
     }
 
     [[nodiscard]]
     aasm::GPReg gp_temp2() const noexcept {
+        assertion(m_gp_temp2.has_value(), "Must be");
         return m_gp_temp2.value();
     }
 

@@ -1,11 +1,13 @@
 #pragma once
 
+template<typename TemporalRegStorage, typename AsmEmit>
 class TruncGPEmit final: public GPUnaryOutVisitor {
 public:
-    explicit TruncGPEmit(MasmEmitter &as, const std::uint8_t to_size, const std::uint8_t from_size) noexcept:
+    explicit TruncGPEmit(const TemporalRegStorage& temporal_regs, AsmEmit &as, const std::uint8_t to_size, const std::uint8_t from_size) noexcept:
         m_to_size(to_size),
         m_from_size(from_size),
-        m_as(as) {}
+        m_as(as),
+        m_temporal_regs(temporal_regs) {}
 
     void emit(const GPVReg& out, const GPOp& in) {
         dispatch(*this, out, in);
@@ -41,5 +43,6 @@ private:
     std::uint8_t m_to_size;
     [[maybe_unused]]
     std::uint8_t m_from_size;
-    MasmEmitter& m_as;
+    AsmEmit& m_as;
+    const TemporalRegStorage& m_temporal_regs;
 };
