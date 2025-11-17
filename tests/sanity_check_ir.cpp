@@ -357,7 +357,7 @@ static void is_float_predicate_impl(const FunctionBuilder& data, const FcmpPredi
     data.ret(res);
 }
 
-static Module is_float_predicate(const FloatingPointType* ty, const Value& threshold) {
+static Module is_unord_float_predicate(const FloatingPointType* ty, const Value& threshold) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "is_neg", FunctionBind::DEFAULT);
@@ -393,18 +393,60 @@ static Module is_float_predicate(const FloatingPointType* ty, const Value& thres
     return builder.build();
 }
 
+static const std::unordered_map<std::string, std::size_t> fp_predicate_asm_size = {
+    {"is_neg", 3},
+    {"is_le", 3},
+    {"is_gt", 3},
+    {"is_eq", 3},
+    {"is_ne", 3},
+    {"is_ge", 3}
+};
+
 TEST(SanityCheck, is_f32_predicate) {
-    GTEST_SKIP();
     const std::vector<float> values = {0., 1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
 
     for (const auto j: values) {
-        const auto buffer0 = jit_compile_and_assembly(is_float_predicate(FloatingPointType::f32(), Value::f32(j)), true);
+        const auto buffer0 = jit_compile_and_assembly({}, is_unord_float_predicate(FloatingPointType::f32(), Value::f32(j)), fp_predicate_asm_size, true);
         const auto is_neg = buffer0.code_start_as<std::int8_t(float)>("is_neg").value();
         const auto is_le = buffer0.code_start_as<std::int8_t(float)>("is_le").value();
         const auto is_gt = buffer0.code_start_as<std::int8_t(float)>("is_gt").value();
         const auto is_eq = buffer0.code_start_as<std::int8_t(float)>("is_eq").value();
         const auto is_ne = buffer0.code_start_as<std::int8_t(float)>("is_ne").value();
         const auto is_ge = buffer0.code_start_as<std::int8_t(float)>("is_ge").value();
+
+        for (const auto i: values) {
+            const auto res = is_neg(i);
+            ASSERT_EQ(res, i < j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_le = is_le(i);
+            ASSERT_EQ(res_le, i <= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_gt = is_gt(i);
+            ASSERT_EQ(res_gt, i > j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_eq = is_eq(i);
+            ASSERT_EQ(res_eq, i == j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ne = is_ne(i);
+            ASSERT_EQ(res_ne, i != j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+
+            const auto res_ge = is_ge(i);
+            ASSERT_EQ(res_ge, i >= j ? 1 : 0) << "Failed for value: " << i << " with threshold: " << j;
+        }
+    }
+}
+
+TEST(SanityCheck, is_f64_predicate) {
+    const std::vector values = {0., 1., 2., 42., 100., 1000., static_cast<double>(UINT32_MAX)};
+
+    for (const auto j: values) {
+        const auto buffer0 = jit_compile_and_assembly({}, is_unord_float_predicate(FloatingPointType::f64(), Value::f64(j)), fp_predicate_asm_size, true);
+        const auto is_neg = buffer0.code_start_as<std::int8_t(double)>("is_neg").value();
+        const auto is_le = buffer0.code_start_as<std::int8_t(double)>("is_le").value();
+        const auto is_gt = buffer0.code_start_as<std::int8_t(double)>("is_gt").value();
+        const auto is_eq = buffer0.code_start_as<std::int8_t(double)>("is_eq").value();
+        const auto is_ne = buffer0.code_start_as<std::int8_t(double)>("is_ne").value();
+        const auto is_ge = buffer0.code_start_as<std::int8_t(double)>("is_ge").value();
 
         for (const auto i: values) {
             const auto res = is_neg(i);

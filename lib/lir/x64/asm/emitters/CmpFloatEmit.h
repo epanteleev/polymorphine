@@ -21,7 +21,7 @@ private:
     }
 
     void emit(aasm::XmmReg out, const aasm::Address &in) override {
-        unimplemented();
+        m_as.ucmpfp(m_size, in, out);
     }
 
     void emit(const aasm::Address &out, aasm::XmmReg in) override {

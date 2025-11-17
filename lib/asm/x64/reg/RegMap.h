@@ -89,7 +89,7 @@ namespace aasm {
         }
 
         void clear() noexcept {
-            for (std::size_t i{}; i < GPReg::NUMBER_OF_GP_REGS; ++i) {
+            for (std::size_t i{}; i < GPReg::NUMBER_OF_REGISTERS; ++i) {
                 if (m_has_values.test(i)) get(i)->~pair();
             }
 
@@ -130,7 +130,7 @@ namespace aasm {
 
         [[nodiscard]]
         iterator end() noexcept {
-            return RegMapIterator(this, GPReg::NUMBER_OF_GP_REGS);
+            return RegMapIterator(this, GPReg::NUMBER_OF_REGISTERS);
         }
 
         [[nodiscard]]
@@ -140,7 +140,7 @@ namespace aasm {
 
         [[nodiscard]]
         const_iterator end() const noexcept {
-            return RegMapIterator(this, GPReg::NUMBER_OF_GP_REGS);
+            return RegMapIterator(this, GPReg::NUMBER_OF_REGISTERS);
         }
 
     private:
@@ -154,8 +154,8 @@ namespace aasm {
             return *get(idx);
         }
 
-        std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
-        char m_regs[sizeof(std::pair<GPReg, V>) * GPReg::NUMBER_OF_GP_REGS];
+        std::bitset<GPReg::NUMBER_OF_REGISTERS> m_has_values{};
+        char m_regs[sizeof(std::pair<GPReg, V>) * GPReg::NUMBER_OF_REGISTERS];
     };
 
     template<typename V>

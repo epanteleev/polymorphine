@@ -67,4 +67,27 @@ namespace details {
         };
         reg.visit(vis);
     }
+
+    template<typename Reg, typename RegSet>
+    static std::vector<Reg> collect_used_argument_regs(const std::span<Reg const> all_registers, const RegSet &gp_arg_regs) {
+        std::vector<Reg> regs{};
+        regs.reserve(all_registers.size());
+
+        for (const auto reg: all_registers) {
+            if (std::ranges::contains(gp_arg_regs, reg)) {
+                continue;
+            }
+
+            regs.push_back(reg);
+        }
+
+        return regs;
+    }
+
+    VRegSelection VRegSelection::create(const call_conv::CallConvProvider *call_conv, const aasm::GPRegSet &gp_arg_regs, const aasm::XmmRegSet &xmm_reg_set) {
+        auto gp_regs = collect_used_argument_regs(call_conv->ALL_GP_REGISTERS(), gp_arg_regs);
+        auto xmm_regs = collect_used_argument_regs(call_conv->ALL_XMM_REGISTERS(), xmm_reg_set);
+
+        return VRegSelection(std::move(gp_regs), std::move(xmm_regs), call_conv);
+    }
 }

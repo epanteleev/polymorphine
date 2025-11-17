@@ -84,6 +84,16 @@ namespace call_conv {
             return m_all_gp_registers[idx];
         }
 
+        [[nodiscard]]
+        constexpr std::span<aasm::XmmReg const> ALL_XMM_REGISTERS() const noexcept {
+            return m_all_xmm_registers;
+        }
+
+        [[nodiscard]]
+        constexpr aasm::XmmReg ALL_XMM_REGISTERS(const std::size_t idx) const noexcept {
+            return m_all_xmm_registers[idx];
+        }
+
     private:
         std::span<aasm::GPReg const> m_gp_argument_registers;
         std::span<aasm::GPReg const> m_gp_caller_save_registers;

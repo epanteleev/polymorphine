@@ -200,10 +200,10 @@ public:
     }
 
     template<XVRegVariant Op>
-    constexpr void ucomis(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+    constexpr void ucmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (size) {
-            case cst::DWORD_SIZE: m_asm.ucomisd(src, dst); break;
-            case cst::QWORD_SIZE: m_asm.ucomiss(src, dst); break;
+            case cst::DWORD_SIZE: m_asm.ucomiss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.ucomisd(src, dst); break;
             default: std::unreachable();
         }
     }

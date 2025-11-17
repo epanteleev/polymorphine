@@ -4,19 +4,25 @@
 
 #include "asm/asm_frwd.h"
 #include "GPReg.h"
+#include "XmmReg.h"
 #include "utility/BitUtils.h"
 
 namespace aasm {
+    template<typename Reg, std::size_t MAX_NOF_REGS>
+    class RegSet;
+
+    template<typename Reg, std::size_t MAX_NOF_REGS>
     class RegSetIterator final {
-        explicit RegSetIterator(const GPRegSet* reg_map, const std::size_t idx) noexcept:
+        template<typename R, std::size_t M>
+        friend class RegSet;
+
+        explicit RegSetIterator(const RegSet<Reg, MAX_NOF_REGS> * reg_map, const std::size_t idx) noexcept:
             m_reg_set(reg_map),
             m_idx(idx) {}
 
-        friend class GPRegSet;
-
     public:
-        using value_type      = GPReg;
-        using reference       = const GPReg;
+        using value_type      = Reg;
+        using reference       = const Reg;
         using difference_type = std::ptrdiff_t;
         using const_reference = reference;
 
@@ -51,20 +57,33 @@ namespace aasm {
         }
 
     private:
-        const GPRegSet* m_reg_set{};
+        template<typename R>
+        static constexpr R from_index(const std::size_t idx) noexcept {
+            if constexpr (std::same_as<R, XmmReg>) {
+                return Reg(idx+xmm0.code());
+            } else if constexpr (std::same_as<R, GPReg>) {
+                return Reg(idx);
+            } else {
+                static_assert(false, "unexpected type");
+                std::unreachable();
+            }
+        }
+
+        const RegSet<Reg, MAX_NOF_REGS>* m_reg_set{};
         std::size_t m_idx{};
     };
 
-    class GPRegSet final {
+    template<typename Reg, std::size_t MAX_NOF_REGS>
+    class RegSet {
     public:
-        using value_type = GPReg;
-        using iterator   = RegSetIterator;
-        using reference  = GPReg&;
+        using value_type = Reg;
+        using iterator   = RegSetIterator<Reg, MAX_NOF_REGS>;
+        using reference  = Reg&;
 
-        GPRegSet() noexcept = default;
-        constexpr GPRegSet(const std::initializer_list<GPReg> list) noexcept {
+        RegSet() noexcept = default;
+        constexpr RegSet(const std::initializer_list<Reg> list) noexcept {
             for (const auto& reg : list) {
-                m_has_values.set(reg.code());
+                m_has_values.set(to_index(reg));
             }
         }
 
@@ -78,23 +97,23 @@ namespace aasm {
             return m_has_values.none();
         }
 
-        GPReg emplace(const GPReg& reg) noexcept {
-            m_has_values.set(reg.code());
+        Reg emplace(const Reg& reg) noexcept {
+            m_has_values.set(to_index(reg));
             return reg;
         }
 
         [[nodiscard]]
-        bool contains(const GPReg reg) const noexcept {
-            return m_has_values.test(reg.code());
+        bool contains(const Reg reg) const noexcept {
+            return m_has_values.test(to_index(reg));
         }
 
         [[nodiscard]]
-        iterator find(const GPReg reg) const noexcept {
+        iterator find(const Reg reg) const noexcept {
             if (!contains(reg)) {
                 return end();
             }
 
-            return RegSetIterator(this, reg.code());
+            return RegSetIterator<Reg, MAX_NOF_REGS>(this, to_index(reg));
         }
 
         [[nodiscard]]
@@ -104,29 +123,49 @@ namespace aasm {
 
         [[nodiscard]]
         iterator end() const noexcept {
-            return RegSetIterator(this, GPReg::NUMBER_OF_GP_REGS);
+            return RegSetIterator(this, MAX_NOF_REGS);
         }
 
     private:
+        template<typename R, std::size_t M>
         friend class RegSetIterator;
-        std::bitset<GPReg::NUMBER_OF_GP_REGS> m_has_values{};
+
+        template<typename R>
+        static constexpr std::size_t to_index(const R& reg) noexcept {
+            if constexpr (std::same_as<R, XmmReg>) {
+                return reg.code()-xmm0.code();
+            } else if constexpr (std::same_as<R, GPReg>) {
+                return reg.code();
+            } else {
+                static_assert(false, "unexpected type");
+                std::unreachable();
+            }
+        }
+
+        std::bitset<MAX_NOF_REGS> m_has_values{};
     };
 
-    inline RegSetIterator::reference RegSetIterator::operator*() const noexcept {
-        return GPReg(m_idx);
+    template<typename Reg, std::size_t MAX_NOF_REGS>
+    RegSetIterator<Reg, MAX_NOF_REGS>::reference RegSetIterator<Reg, MAX_NOF_REGS>::operator*() const noexcept {
+        return from_index<Reg>(m_idx);
     }
 
-    inline RegSetIterator &RegSetIterator::operator++() noexcept {
+    template<typename Reg, std::size_t MAX_NOF_REGS>
+    RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator++() noexcept {
         m_idx++;
         m_idx = bitutils::find_next_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;
     }
 
-    inline RegSetIterator &RegSetIterator::operator--() noexcept {
+    template<typename Reg, std::size_t MAX_NOF_REGS>
+    RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator--() noexcept {
         m_idx--;
         m_idx = bitutils::find_prev_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;
     }
+
+    class GPRegSet final: public RegSet<GPReg, GPReg::NUMBER_OF_REGISTERS> {};
+    class XmmRegSet final: public RegSet<XmmReg, XmmReg::NUMBER_OF_REGISTERS> {};
 }
 
 static_assert(std::ranges::range<aasm::GPRegSet>, "should be");

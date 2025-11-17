@@ -6,7 +6,7 @@
 namespace aasm {
     class XmmReg final {
     public:
-        static constexpr auto NUM_REGISTERS = 16;
+        static constexpr auto NUMBER_OF_REGISTERS = 16;
 
         constexpr XmmReg() noexcept = default;
 

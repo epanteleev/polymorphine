@@ -6,7 +6,7 @@
 namespace aasm {
     class GPReg final {
     public:
-        static constexpr auto NUMBER_OF_GP_REGS = 16;
+        static constexpr auto NUMBER_OF_REGISTERS = 16;
 
         constexpr explicit GPReg(const std::uint8_t code) noexcept: m_code(code) {}
         constexpr GPReg() = default;

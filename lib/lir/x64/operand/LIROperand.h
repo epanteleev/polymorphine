@@ -66,6 +66,3 @@ public:
 private:
     std::variant<LirCst, LIRVal, const LIRNamedSlot*> m_operand;
 };
-
-
-std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;

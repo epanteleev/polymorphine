@@ -56,12 +56,25 @@ namespace details {
             return aasm::rax;
         }
 
+        [[nodiscard]]
+        aasm::XmmReg xmm_temp1() const noexcept {
+            m_used_xmm_regs |= 1 << 0;
+            return aasm::xmm0;
+        }
+
+        [[nodiscard]]
         std::uint8_t used_gp_regs() const noexcept {
             return std::popcount(m_used_gp_regs);
         }
 
+        [[nodiscard]]
+        std::uint8_t used_xmm_regs() const noexcept {
+            return std::popcount(m_used_xmm_regs);
+        }
+
     private:
         mutable std::uint8_t m_used_gp_regs{};
+        mutable std::uint8_t m_used_xmm_regs{};
     };
 
     class AllocTemporalRegsForInstruction final: public LIRInstructionMapping<TemporalRegsCounter, EmptyEmitter> {
@@ -116,11 +129,11 @@ namespace details {
         void mov_f(const LIROperand &in1, const LIROperand &in2) override {}
     };
 
-    std::uint8_t AllocTemporalRegs::allocate(aasm::SymbolTable &symbol_tab, const LIRInstructionBase *inst) {
+    std::pair<std::uint8_t, std::uint8_t> AllocTemporalRegs::allocate(aasm::SymbolTable &symbol_tab, const LIRInstructionBase *inst) {
         constexpr TemporalRegsCounter temp_counter{};
-        EmptyEmitter as{};
+        static constinit EmptyEmitter as{};
         AllocTemporalRegsForInstruction emitter(temp_counter, as, symbol_tab);
         const_cast<LIRInstructionBase*>(inst)->visit(emitter);
-        return temp_counter.used_gp_regs();
+        return std::make_pair(temp_counter.used_gp_regs(), temp_counter.used_xmm_regs());
     }
 }
