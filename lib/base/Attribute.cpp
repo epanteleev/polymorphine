@@ -10,7 +10,7 @@ std::ostream& operator<<(std::ostream& os, const Attribute& attr) {
     }
 }
 
-static std::array attributes = {
+static constexpr std::array attributes = {
     Attribute::ByValue,
 };
 

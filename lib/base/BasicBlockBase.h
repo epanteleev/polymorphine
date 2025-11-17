@@ -63,6 +63,7 @@ public:
     /**
      * Get instruction by index.
      */
+    [[nodiscard]]
     Inst& at(std::size_t idx) {
         return m_instructions.at(idx);
     }

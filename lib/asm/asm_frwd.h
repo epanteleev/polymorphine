@@ -14,4 +14,5 @@ namespace aasm {
 
     class Slot;
     class Directive;
+    class SymbolTable;
 }

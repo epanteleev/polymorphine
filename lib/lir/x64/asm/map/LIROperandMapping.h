@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lir/x64/operand/LIROperand.h"
-#include "operand/GPOp.h"
-#include "operand/XOp.h"
+#include "lir/x64/asm/operand/GPOp.h"
+#include "lir/x64/asm/operand/XOp.h"
 
 
 namespace details {

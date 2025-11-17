@@ -41,5 +41,3 @@ private:
 
     unsigned char m_bits{};
 };
-
-std::ostream& operator<<(std::ostream& os, const AttributeSet& attr);

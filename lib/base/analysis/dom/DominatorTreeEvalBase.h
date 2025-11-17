@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <memory>
 #include <unordered_map>
 #include <ranges>
@@ -14,7 +15,7 @@
 template<Function FD>
 class DominatorTreeEvalBase final {
 public:
-    using basic_block = typename FD::code_block_type;
+    using basic_block = FD::code_block_type;
     using order_type = Ordering<basic_block>;
     using dom_node = DominatorTreeNode<basic_block>;
     using result_type = DominatorTree<basic_block>;
