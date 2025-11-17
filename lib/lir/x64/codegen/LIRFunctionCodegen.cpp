@@ -3,6 +3,7 @@
 #include "asm/x64/reg/RegSet.h"
 #include "lir/x64/asm/operand/XOp.h"
 #include "lir/x64/asm/MasmEmitter.h"
+#include "lir/x64/asm/cc/CallConv.h"
 #include "lir/x64/asm/visitors/GPBinarySrcAddrVisitor.h"
 #include "lir/x64/asm/visitors/GPBinaryVisitor.h"
 #include "lir/x64/asm/visitors/GPUnaryVisitor.h"
@@ -27,9 +28,7 @@
 #include "lir/x64/asm/emitters/TruncIntEmit.h"
 #include "lir/x64/asm/emitters/LeaGPEmit.h"
 #include "lir/x64/asm/emitters/AddFloatEmit.h"
-#include  "lir/x64/asm/emitters/CmpFloatEmit.h"
-
-#include "lir/x64/asm/cc/CallConv.h"
+#include "lir/x64/asm/emitters/CmpFloatEmit.h"
 #include "lir/x64/asm/emitters/CopyFloatEmit.h"
 
 #include "lir/x64/instruction/LIRCall.h"

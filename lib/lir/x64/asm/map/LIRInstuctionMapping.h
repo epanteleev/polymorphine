@@ -135,8 +135,8 @@ namespace details {
         void load_i(const LIRVal &out, const LIRVal &pointer) final {
             const auto out_reg = out.assigned_reg().to_gp_op().value();
             const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
-            LoadGPEmit emittter(m_temp_regs, m_as, out.size());
-            emittter.apply(out_reg, pointer_reg);
+            LoadGPEmit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, pointer_reg);
         }
 
         void load_by_idx_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) final {
