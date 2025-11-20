@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FcmpOrdering.h"
 #include "asm/x64/asm.h"
 
 class EmptyEmitter final {
@@ -102,7 +103,7 @@ public:
     constexpr void addfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     template<XVRegVariant Op>
-    constexpr void ucmpfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+    constexpr void cmpfp(const FcmpOrdering, const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }

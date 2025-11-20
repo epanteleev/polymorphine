@@ -6,6 +6,8 @@
 #include "lir/x64/instruction/LIRBranch.h"
 #include "lir/x64/instruction/LIRCMove.h"
 #include "lir/x64/instruction/LIRCondBranch.h"
+#include "lir/x64/instruction/LIRFCmp.h"
+#include "lir/x64/instruction/LIRICmp.h"
 #include "lir/x64/instruction/LIRInstruction.h"
 #include "lir/x64/instruction/LIRProducerInstruction.h"
 #include "lir/x64/instruction/LIRReturn.h"
@@ -100,6 +102,25 @@ static aasm::CondType fcmp_cond_type(const FcmpPredicate predicate) noexcept {
         case FcmpPredicate::Olt: return aasm::CondType::NAE;
         case FcmpPredicate::Ule: [[fallthrough]];
         case FcmpPredicate::Ole: return aasm::CondType::NA;
+        default: std::unreachable();
+    }
+}
+
+[[nodiscard]]
+static FcmpOrdering fp_comparison_type(const FcmpPredicate predicate) noexcept {
+    switch (predicate) {
+        case FcmpPredicate::Oeq:
+        case FcmpPredicate::One: [[fallthrough]];
+        case FcmpPredicate::Ogt: [[fallthrough]];
+        case FcmpPredicate::Oge: [[fallthrough]];
+        case FcmpPredicate::Olt: [[fallthrough]];
+        case FcmpPredicate::Ole: return FcmpOrdering::ORDERED;
+        case FcmpPredicate::Une: [[fallthrough]];
+        case FcmpPredicate::Ugt: [[fallthrough]];
+        case FcmpPredicate::Uge: [[fallthrough]];
+        case FcmpPredicate::Ult: [[fallthrough]];
+        case FcmpPredicate::Ule: [[fallthrough]];
+        case FcmpPredicate::Ueq: return FcmpOrdering::UNORDERED;
         default: std::unreachable();
     }
 }
@@ -657,13 +678,13 @@ void FunctionLower::accept(Alloc *alloc) {
 void FunctionLower::accept(IcmpInstruction *icmp) {
     const auto lhs = get_lir_operand(icmp->lhs());
     const auto rhs = get_lir_operand(icmp->rhs());
-    m_bb->ins(LIRInstruction::cmp(LIRValType::GP, lhs, rhs));
+    m_bb->ins(LIRICmp::cmp(lhs, rhs));
 }
 
 void FunctionLower::accept(FcmpInstruction *fcmp) {
     const auto lhs = get_lir_operand(fcmp->lhs());
     const auto rhs = get_lir_operand(fcmp->rhs());
-    m_bb->ins(LIRInstruction::cmp(LIRValType::FP, lhs, rhs));
+    m_bb->ins(LIRFCmp::cmp(fp_comparison_type(fcmp->predicate()), lhs, rhs));
 }
 
 void FunctionLower::accept(GetElementPtr *gep) {

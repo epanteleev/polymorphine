@@ -9,7 +9,6 @@ enum class LIRInstKind: std::uint8_t {
     MovByIdx,
     StoreByOffset,
     Store,
-    Cmp,
 };
 
 class LIRInstruction final: public LIRInstructionBase {
@@ -31,10 +30,6 @@ public:
 
     static std::unique_ptr<LIRInstruction> store(const LIRValType val_type, const LIRVal& dst, const LIROperand& src) {
         return std::make_unique<LIRInstruction>(LIRInstKind::Store, val_type, std::vector<LIROperand>{dst, src});
-    }
-
-    static std::unique_ptr<LIRInstruction> cmp(const LIRValType val_type, const LIROperand &lhs, const LIROperand &rhs) {
-        return std::make_unique<LIRInstruction>(LIRInstKind::Cmp, val_type, std::vector{lhs, rhs});
     }
 
     static std::unique_ptr<LIRInstruction> store_by_offset(const LIRValType val_type, const LIROperand& pointer, const LIROperand& index, const LIROperand& value) {

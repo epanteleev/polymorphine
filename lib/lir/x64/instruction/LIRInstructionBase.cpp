@@ -6,6 +6,7 @@
 
 #include "asm/x64/instruction/CondType.h"
 #include "asm/x64/reg/RegSet.h"
+#include "lir/x64/asm/FcmpOrdering.h"
 
 namespace {
     class LIRInstructionPrinter final: public LIRVisitor {
@@ -191,8 +192,8 @@ namespace {
             m_os << "mov_f in(" << in0 << ") in(" << in1 << ')';
         }
 
-        void cmp_f(const LIROperand &in1, const LIROperand &in2) override {
-            m_os << "cmp_f in(" << in1 << ") in(" << in2 << ')';
+        void cmp_f(const FcmpOrdering ord, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "cmp_f " << to_string(ord) << " in(" << in1 << ") in(" << in2 << ')';
         }
 
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {

@@ -23,14 +23,6 @@ void LIRInstruction::visit(LIRVisitor &visitor) {
             visitor.store_i(pointer.value(), in(1));
             break;
         }
-        case LIRInstKind::Cmp: {
-            switch (m_val_type) {
-                case LIRValType::GP: visitor.cmp_i(in(0), in(1)); break;
-                case LIRValType::FP: visitor.cmp_f(in(0), in(1)); break;
-                default: std::unreachable();
-            }
-            break;
-        }
         default: std::unreachable();
     }
 }

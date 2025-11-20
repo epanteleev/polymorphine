@@ -12,6 +12,7 @@ class LIRCall;
 class LIRAdjustStack;
 
 enum class FunctionBind: std::uint8_t;
+enum class FcmpOrdering : std::uint8_t;
 
 class LIROperand;
 class LIRVal;

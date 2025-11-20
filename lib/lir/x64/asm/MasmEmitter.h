@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FcmpOrdering.h"
 #include "asm/x64/asm.h"
 
 class MasmEmitter final {
@@ -200,10 +201,10 @@ public:
     }
 
     template<XVRegVariant Op>
-    constexpr void ucmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
-        switch (size) {
-            case cst::DWORD_SIZE: m_asm.ucomiss(src, dst); break;
-            case cst::QWORD_SIZE: m_asm.ucomisd(src, dst); break;
+    constexpr void cmpfp(const FcmpOrdering ord, const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (ord) {
+            case FcmpOrdering::ORDERED: std::unreachable();
+            case FcmpOrdering::UNORDERED: ucmpfp(size, src, dst); break;
             default: std::unreachable();
         }
     }
@@ -241,5 +242,14 @@ public:
     }
 
 private:
+    template<XVRegVariant Op>
+    constexpr void ucmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.ucomiss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.ucomisd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     aasm::AsmEmitter m_asm{};
 };

@@ -174,10 +174,10 @@ namespace details {
             emitter.apply(out_reg, convert_to_x_op(in));
         }
 
-        void cmp_f(const LIROperand &in1, const LIROperand &in2) final {
+        void cmp_f(const FcmpOrdering ord, const LIROperand &in1, const LIROperand &in2) final {
             const auto in1_reg = convert_to_x_op(in1);
             const auto in2_reg = convert_to_x_op(in2);
-            CmpFloatEmit emitter(m_temp_regs, m_as, in1.size());
+            CmpFloatEmit emitter(ord, m_temp_regs, m_as, in1.size());
             emitter.apply(in1_reg, in2_reg);
         }
 
