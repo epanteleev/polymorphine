@@ -113,7 +113,4 @@ public:
     void jcc(const aasm::CondType, const aasm::Label&) {}
 
     void set_label(const aasm::Label&) {}
-
-private:
-    aasm::AsmEmitter m_asm{};
 };

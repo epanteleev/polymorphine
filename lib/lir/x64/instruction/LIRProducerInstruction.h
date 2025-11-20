@@ -19,7 +19,7 @@ enum class LIRProdInstKind: std::uint8_t {
     Shr,
     Neg,
     Not,
-    CopyI,
+    Copy,
     LoadI,
     LoadByIdx,
     ReadByOffset,
@@ -38,22 +38,22 @@ public:
     void visit(LIRVisitor &visitor) override;
 
     static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op)  {
-        return create_i(LIRProdInstKind::CopyI, size, size, op);
+        return create_i(LIRProdInstKind::Copy, size, size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op)  {
-        return create_f(LIRProdInstKind::CopyI, size, size, op);
+        return create_f(LIRProdInstKind::Copy, size, size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op, const aasm::GPReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyI, LIRValType::GP, std::vector{op});
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, LIRValType::GP, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);
         return prod;
     }
 
     static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::CopyI, LIRValType::FP, std::vector{op});
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, LIRValType::FP, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);
         return prod;

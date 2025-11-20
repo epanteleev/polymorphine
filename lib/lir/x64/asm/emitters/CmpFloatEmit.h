@@ -30,7 +30,8 @@ private:
     }
 
     void emit(const aasm::Address &out, const aasm::Address &in) override {
-        unimplemented();
+        m_as.movfp(m_size, out, m_temporal_regs.xmm_temp1());
+        m_as.cmpfp(m_ord, m_size, in, m_temporal_regs.xmm_temp1());
     }
 
     void emit(aasm::XmmReg out, std::int64_t in) override {

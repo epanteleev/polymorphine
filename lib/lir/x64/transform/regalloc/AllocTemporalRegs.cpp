@@ -46,7 +46,7 @@ namespace details {
     public:
         [[nodiscard]]
         aasm::GPReg gp_temp1() const noexcept {
-            m_used_gp_regs |= 1 << 0;
+            m_used_gp_regs |= 1;
             return aasm::rax;
         }
 
@@ -58,7 +58,7 @@ namespace details {
 
         [[nodiscard]]
         aasm::XmmReg xmm_temp1() const noexcept {
-            m_used_xmm_regs |= 1 << 0;
+            m_used_xmm_regs |= 1;
             return aasm::xmm0;
         }
 
@@ -131,7 +131,7 @@ namespace details {
 
     std::pair<std::uint8_t, std::uint8_t> AllocTemporalRegs::allocate(aasm::SymbolTable &symbol_tab, const LIRInstructionBase *inst) {
         constexpr TemporalRegsCounter temp_counter{};
-        static constinit EmptyEmitter as{};
+        EmptyEmitter as{};
         AllocTemporalRegsForInstruction emitter(temp_counter, as, symbol_tab);
         const_cast<LIRInstructionBase*>(inst)->visit(emitter);
         return std::make_pair(temp_counter.used_gp_regs(), temp_counter.used_xmm_regs());

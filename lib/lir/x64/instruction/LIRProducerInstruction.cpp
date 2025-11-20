@@ -22,7 +22,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
         case LIRProdInstKind::Not: visitor.not_i(def(0), in(0)); break;
-        case LIRProdInstKind::CopyI: {
+        case LIRProdInstKind::Copy: {
             switch (type()) {
                 case LIRValType::GP: visitor.copy_i(def(0), in(0)); break;
                 case LIRValType::FP: visitor.copy_f(def(0), in(0)); break;

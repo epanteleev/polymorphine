@@ -7,7 +7,7 @@ static Module create_array() {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "create_array", FunctionBind::DEFAULT);
-        auto data = builder.make_function_builder(std::move(prototype)).value();
+        auto data = builder.make_function_builder(prototype).value();
         const auto arr_type = builder.add_array_type(SignedIntegerType::i64(), 5);
         const auto alloca = data.alloc(arr_type);
         for (std::int64_t i = 0; i < 5; ++i) {
@@ -47,7 +47,7 @@ static Module create_array_of_structs() {
         const auto arr_type = builder.add_array_type(point_type, 3);
 
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "create_array_of_points", FunctionBind::DEFAULT);
-        auto data = builder.make_function_builder(std::move(prototype)).value();
+        auto data = builder.make_function_builder(prototype).value();
 
         const auto alloca = data.alloc(arr_type);
         for (std::int32_t i{}; i < 3; ++i) {
