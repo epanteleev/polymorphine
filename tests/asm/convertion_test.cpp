@@ -2,7 +2,7 @@
 #include <climits>
 
 #include <mir/mir.h>
-#include "helpers/Jit.h"
+#include "../helpers/Jit.h"
 
 static Module sext_cvt(const SignedIntegerType* from, const SignedIntegerType* to) {
     ModuleBuilder builder;

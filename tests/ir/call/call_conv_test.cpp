@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <climits>
 
-#include "helpers/Jit.h"
+#include "../../helpers/Jit.h"
 #include "mir/mir.h"
 
 static Module struct_arg_size1() {

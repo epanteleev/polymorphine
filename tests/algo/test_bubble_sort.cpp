@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mir/mir.h"
-#include "helpers/Jit.h"
+#include "../helpers/Jit.h"
 
 template<typename Fn>
 static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type, Fn&& inc_creator) {

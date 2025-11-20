@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "helpers/Jit.h"
-#include "helpers/Utils.h"
+#include "../helpers/Jit.h"
+#include "../helpers/Utils.h"
 #include "mir/mir.h"
 #include "lir/x64/lir.h"
 

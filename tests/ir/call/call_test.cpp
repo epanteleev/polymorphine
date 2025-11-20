@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "helpers/Jit.h"
+#include "../../helpers/Jit.h"
 #include "mir/mir.h"
 
 static void call_test(ModuleBuilder& builder, const IntegerType* ty) {

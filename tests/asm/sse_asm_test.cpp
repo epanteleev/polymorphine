@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "helpers/Utils.h"
+#include "../helpers/Utils.h"
 #include "asm/x64/asm.h"
 
 
@@ -63,12 +63,28 @@ TEST(SSE_Asm, movsd_addr_reg_high) {
     check_coding(std::move(a), codes, "movsd 3(%rbp), %xmm9");
 }
 
-TEST(SSE_Asm, cmpsd_reg_reg) {
+TEST(SSE_Asm, ucomisd_reg_reg) {
     const std::vector<std::uint8_t> codes = {0x66,0x0f,0x2e,0xd1};
 
     aasm::AsmEmitter a;
     a.ucomisd(aasm::xmm1, aasm::xmm2);
     check_coding(std::move(a), codes, "ucomisd %xmm1, %xmm2");
+}
+
+TEST(SSE_Asm, comisd_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0x66,0x0f,0x2f,0xd1};
+
+    aasm::AsmEmitter a;
+    a.comisd(aasm::xmm1, aasm::xmm2);
+    check_coding(std::move(a), codes, "comisd %xmm1, %xmm2");
+}
+
+TEST(SSE_Asm, comiss_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0x0f,0x2f,0xd1};
+
+    aasm::AsmEmitter a;
+    a.comiss(aasm::xmm1, aasm::xmm2);
+    check_coding(std::move(a), codes, "comiss %xmm1, %xmm2");
 }
 
 int main(int argc, char **argv) {

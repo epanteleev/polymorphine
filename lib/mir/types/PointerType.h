@@ -1,12 +1,13 @@
 #pragma once
 
 #include "PrimitiveType.h"
+#include "base/Constant.h"
 
 class PointerType final : public PrimitiveType {
 public:
     [[nodiscard]]
     std::size_t size_of() const override {
-        return 8;
+        return cst::POINTER_SIZE;
     }
 
     void visit(type::Visitor &visitor) override { visitor.accept(this); }

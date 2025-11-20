@@ -2,7 +2,7 @@
 
 #include "utility/Error.h"
 
-#include "helpers/Jit.h"
+#include "../../helpers/Jit.h"
 #include "mir/mir.h"
 
 static Module call_external() {

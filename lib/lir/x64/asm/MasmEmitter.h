@@ -203,8 +203,8 @@ public:
     template<XVRegVariant Op>
     constexpr void cmpfp(const FcmpOrdering ord, const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (ord) {
-            case FcmpOrdering::ORDERED: std::unreachable();
-            case FcmpOrdering::UNORDERED: ucmpfp(size, src, dst); break;
+            case FcmpOrdering::ORDERED:   ord_cmpfp(size, src, dst); break;
+            case FcmpOrdering::UNORDERED: unord_cmpfp(size, src, dst); break;
             default: std::unreachable();
         }
     }
@@ -243,10 +243,19 @@ public:
 
 private:
     template<XVRegVariant Op>
-    constexpr void ucmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+    constexpr void unord_cmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (size) {
             case cst::DWORD_SIZE: m_asm.ucomiss(src, dst); break;
             case cst::QWORD_SIZE: m_asm.ucomisd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
+    template<XVRegVariant Op>
+    constexpr void ord_cmpfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.comiss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.comisd(src, dst); break;
             default: std::unreachable();
         }
     }
