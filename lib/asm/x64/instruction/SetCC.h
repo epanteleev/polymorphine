@@ -7,9 +7,7 @@ namespace aasm::details {
             m_cond(cond),
             m_reg(reg) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SetCCR& set) {
-            return os << "set" << set.m_cond << " %" << set.m_reg.name(1);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SetCCR& set);
 
         template<CodeBuffer Buffer>
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {

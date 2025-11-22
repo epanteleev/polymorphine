@@ -1,13 +1,13 @@
 #pragma once
 
-#include <ostream>
+#include <iosfwd>
 #include <variant>
 
 #include "asm/x64/Common.h"
 #include "asm/symbol/Symbol.h"
 #include "asm/x64/encoding/Encoding.h"
 #include "asm/x64/encoding/SSEEncoding.h"
-#include "Label.h"
+#include "../../Label.h"
 #include "asm/x64/reg/XmmReg.h"
 #include "Pop.h"
 #include "Push.h"
@@ -17,7 +17,7 @@
 #include "Sub.h"
 #include "Jmp.h"
 #include "Cmp.h"
-#include "CondType.h"
+#include "../CondType.h"
 #include "Jcc.h"
 #include "SetCC.h"
 #include "Leave.h"
@@ -76,12 +76,5 @@ namespace aasm {
         details::ComisdRR, details::ComisdRM
     >;
 
-    inline std::ostream &operator<<(std::ostream &os, const X64Instruction &inst) {
-        const auto visitor = [&](const auto &var) {
-            os << var;
-        };
-
-        std::visit(visitor, inst);
-        return os;
-    }
+    std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
 }

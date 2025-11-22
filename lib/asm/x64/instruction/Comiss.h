@@ -29,9 +29,7 @@ namespace aasm::details {
         explicit constexpr ComissRR(const XmmReg src, const XmmReg dst) noexcept:
             ComissR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const ComissRR& rr) {
-            return os << "comiss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const ComissRR& rr);
     };
 
     class ComissRM final: public ComissR_RM<Address> {
@@ -39,8 +37,6 @@ namespace aasm::details {
         explicit constexpr ComissRM(const Address& src, const XmmReg dst) noexcept:
             ComissR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const ComissRM& rr) {
-            return os << "comiss " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const ComissRM& rr);
     };
 }

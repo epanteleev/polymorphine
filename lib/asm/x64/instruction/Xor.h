@@ -30,9 +30,7 @@ namespace aasm::details {
         constexpr XorRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
             XorRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const XorRR& xorrr) {
-            return os << "xor" << prefix_size(xorrr.m_size) << " %" << xorrr.m_src.name(xorrr.m_size) << ", %" << xorrr.m_dst.name(xorrr.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const XorRR& xorrr);
     };
 
     class XorMR final: public XorRM_R<Address> {
@@ -40,9 +38,7 @@ namespace aasm::details {
         constexpr explicit XorMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
             XorRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const XorMR& xormr) {
-            return os << "xor" << prefix_size(xormr.m_size) << " %" << xormr.m_src.name(xormr.m_size) << ", " << xormr.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const XorMR& xormr);
     };
 
     template<typename DST>
@@ -74,9 +70,7 @@ namespace aasm::details {
         explicit XorRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
             XorRM_I(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const XorRI& xorri) {
-            return os << "xor" << prefix_size(xorri.m_size) << " $" << xorri.m_src << ", %" << xorri.m_dst.name(xorri.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const XorRI& xorri);
     };
 
     class XorMI final: public XorRM_I<Address> {
@@ -84,9 +78,7 @@ namespace aasm::details {
         constexpr explicit XorMI(const std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
             XorRM_I(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const XorMI& xormi) {
-            return os << "xor" << prefix_size(xormi.m_size) << " $" << xormi.m_src << ", " << xormi.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const XorMI& xormi);
     };
 
     class XorRM final {
@@ -96,9 +88,7 @@ namespace aasm::details {
             m_dst(dst),
             m_src(src) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const XorRM& xorrm) {
-            return os << "xor" << prefix_size(xorrm.m_size) << ' ' << xorrm.m_src << ", %" << xorrm.m_dst.name(xorrm.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const XorRM& xorrm);
 
         template<CodeBuffer Buffer>
         [[nodiscard]]

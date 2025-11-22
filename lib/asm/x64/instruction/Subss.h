@@ -30,9 +30,7 @@ namespace aasm::details {
         explicit constexpr SubssRR(const XmmReg src, const XmmReg dst) noexcept:
             SubssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SubssRR& rr) {
-            return os << "subss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SubssRR& rr);
     };
 
     class SubssRM final: public SubssR_RM<Address, SUBSS_PREFIX> {
@@ -40,9 +38,7 @@ namespace aasm::details {
         explicit constexpr SubssRM(const Address& src, const XmmReg dst) noexcept:
             SubssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SubssRM& rr) {
-            return os << "subss " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SubssRM& rr);
     };
 
     class SubsdRR final: public SubssR_RM<XmmReg, SUBSD_PREFIX> {
@@ -50,9 +46,7 @@ namespace aasm::details {
         explicit constexpr SubsdRR(const XmmReg src, const XmmReg dst) noexcept:
             SubssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SubsdRR& rr) {
-            return os << "subsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SubsdRR& rr);
     };
 
     class SubsdRM final: public SubssR_RM<Address, SUBSS_PREFIX> {
@@ -60,8 +54,6 @@ namespace aasm::details {
         explicit constexpr SubsdRM(const Address& src, const XmmReg dst) noexcept:
             SubssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SubsdRM& rr) {
-            return os << "subsd " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SubsdRM& rr);
     };
 }

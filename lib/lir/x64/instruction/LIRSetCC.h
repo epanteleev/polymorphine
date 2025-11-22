@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LIRProducerInstructionBase.h"
-#include "asm/x64/instruction/CondType.h"
+#include "../../../asm/x64/CondType.h"
 
 class LIRSetCC final: public LIRProducerInstructionBase {
 public:

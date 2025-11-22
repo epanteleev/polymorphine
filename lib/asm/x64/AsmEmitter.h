@@ -5,7 +5,7 @@
 #include "reg/GPReg.h"
 #include "address/Address.h"
 #include "AsmBuffer.h"
-#include "instruction/CPUInstruction.h"
+#include "instruction/X64Instruction.h"
 #include "asm/symbol/Symbol.h"
 
 namespace aasm {

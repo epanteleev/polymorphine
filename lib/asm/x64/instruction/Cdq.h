@@ -26,13 +26,4 @@ namespace aasm::details {
     private:
         const std::uint8_t m_size;
     };
-
-    inline std::ostream & operator<<(std::ostream &out, const Cdq &cdq) {
-        switch (cdq.m_size) {
-            case 2: return out << "cwtd";
-            case 4: return out << "cdtq";
-            case 8: return out << "cqto";
-            default: die("Invalid operand size for cdq instruction: {}", static_cast<unsigned>(cdq.m_size));
-        }
-    }
 }

@@ -29,9 +29,7 @@ namespace aasm::details {
         constexpr explicit UDivR(const std::uint8_t size, const GPReg divisor) noexcept:
             Div(size, divisor) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const UDivR& idiv) {
-            return os << "div" << prefix_size(idiv.m_size) << " %" << idiv.m_divisor.name(idiv.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const UDivR& idiv);
     };
 
     class UDivM final: public Div<6, Address> {
@@ -39,9 +37,7 @@ namespace aasm::details {
         constexpr explicit UDivM(const std::uint8_t size, const Address& divisor) noexcept:
             Div(size, divisor) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const UDivM &idiv) {
-            return os << "div" << prefix_size(idiv.m_size) << ' ' << idiv.m_divisor;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const UDivM &idiv);
     };
 
     class IdivR final: public Div<7, GPReg> {
@@ -49,10 +45,7 @@ namespace aasm::details {
         constexpr explicit IdivR(const std::uint8_t size, const GPReg divisor) noexcept:
             Div(size, divisor) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const IdivR& idiv) {
-            return os << "idiv" << prefix_size(idiv.m_size) << " %"
-                   << idiv.m_divisor.name(idiv.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const IdivR& idiv);
     };
 
     class IdivM final: public Div<7, Address> {
@@ -60,8 +53,6 @@ namespace aasm::details {
         constexpr explicit IdivM(const std::uint8_t size, const Address& divisor) noexcept:
             Div(size, divisor) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const IdivM &idiv) {
-            return os << "idiv" << prefix_size(idiv.m_size) << ' ' << idiv.m_divisor;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const IdivM &idiv);
     };
 }

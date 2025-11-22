@@ -3,7 +3,7 @@
 #include <vector>
 #include <ranges>
 
-#include "instruction/CPUInstruction.h"
+#include "instruction/X64Instruction.h"
 
 namespace aasm::details {
     class Assembler final {

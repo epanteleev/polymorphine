@@ -11,6 +11,7 @@ namespace aasm::details {
             m_dst(std::forward<D>(dst)) {}
 
         template<CodeBuffer Buffer>
+        [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
             static constexpr std::array<std::uint8_t, 1> CMP_RR = {0x39};
             static constexpr std::array<std::uint8_t, 1> CMP_RR_8 = {0x38};
@@ -29,11 +30,7 @@ namespace aasm::details {
         constexpr CmpRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
             CmpRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const CmpRR& cmp) {
-            return os << "cmp" << prefix_size(cmp.m_size) << " %"
-                  << cmp.m_src.name(cmp.m_size) << ", %"
-                  << cmp.m_dst.name(cmp.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const CmpRR& cmp);
     };
 
     class CmpMR final: public CmpRM_R<Address> {
@@ -41,9 +38,7 @@ namespace aasm::details {
         constexpr CmpMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
             CmpRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const CmpMR& cmp) {
-            return os << "cmp" << prefix_size(cmp.m_size) << " %" << cmp.m_src.name(cmp.m_size) << ", " << cmp.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const CmpMR& cmp);
     };
 
     template<typename DST>
@@ -74,9 +69,7 @@ namespace aasm::details {
         constexpr CmpRI(const std::uint8_t size, const std::int32_t imm, const GPReg dst) noexcept:
             CmpRM_I(size, imm, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const CmpRI& cmp) {
-            return os << "cmp" << prefix_size(cmp.m_size) << " $" << cmp.m_imm << ", %" << cmp.m_dst.name(cmp.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const CmpRI& cmp);
     };
 
     class CmpMI final: public CmpRM_I<Address> {
@@ -84,10 +77,7 @@ namespace aasm::details {
         constexpr CmpMI(const std::uint8_t size, const std::int32_t imm, const Address& second) noexcept:
             CmpRM_I(size, imm, second) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const CmpMI& cmp) {
-            return os << "cmp" << prefix_size(cmp.m_size)
-                << " $" << cmp.m_imm << ", " << cmp.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const CmpMI& cmp);
     };
 
     class CmpRM final {
@@ -97,9 +87,7 @@ namespace aasm::details {
             m_dst(dst),
             m_src(src) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const CmpRM& cmp) {
-            return os << "cmp" << prefix_size(cmp.m_size) << ' ' << cmp.m_src << ", %" << cmp.m_dst.name(cmp.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const CmpRM& cmp);
 
         template<CodeBuffer Buffer>
         [[nodiscard]]

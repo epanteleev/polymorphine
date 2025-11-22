@@ -43,8 +43,4 @@ namespace aasm::details {
         CondType m_type;
         Label m_label;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Jcc &jcc) {
-        return os << "j" << jcc.m_type << ' ' << jcc.m_label;
-    }
 }

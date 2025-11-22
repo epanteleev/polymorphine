@@ -6,9 +6,7 @@ namespace aasm::details {
         constexpr explicit Jmp(const Label& label) noexcept:
             m_label(label) {}
 
-        friend std::ostream &operator<<(std::ostream &os, const Jmp &jmp) {
-            return os << "jmp " << jmp.m_label;
-        }
+        friend std::ostream &operator<<(std::ostream &os, const Jmp &jmp);
 
         static constexpr std::uint8_t JMP = 0xE9;
         static constexpr std::uint8_t JMP_8 = 0xEB;

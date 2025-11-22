@@ -24,10 +24,6 @@ namespace aasm::details {
         GPReg m_reg;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const PushR &pushr) {
-        return os << "push" << prefix_size(pushr.m_size) << " %" << pushr.m_reg.name(pushr.m_size);
-    }
-
     class PushM final {
     public:
         explicit constexpr PushM(const std::uint8_t size, const Address& addr) noexcept:
@@ -53,10 +49,6 @@ namespace aasm::details {
         std::uint8_t m_size;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const PushM &pushm) {
-        return os << "push" << prefix_size(pushm.m_size) << ' ' << pushm.m_addr;
-    }
-
     class PushI final {
     public:
         constexpr PushI(const std::int64_t imm, const std::uint8_t size) noexcept:
@@ -81,8 +73,4 @@ namespace aasm::details {
         std::int64_t m_imm;
         std::uint8_t m_size;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const PushI &pushi) {
-        return os << "push" << prefix_size(pushi.m_size) << " $" << pushi.m_imm;
-    }
 }

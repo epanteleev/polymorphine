@@ -20,8 +20,4 @@ namespace aasm::details {
         GPReg m_dst;
         Address m_src;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Lea &lea) {
-        return os << "leaq " << lea.m_src << ", %" << lea.m_dst.name(8);
-    }
 }

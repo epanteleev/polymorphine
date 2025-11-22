@@ -36,12 +36,7 @@ namespace aasm::details {
         explicit constexpr MovzxRR(const std::uint8_t from_size, const std::uint8_t to_size, const GPReg& src, const GPReg& dest) noexcept:
             Movzx(from_size, to_size, src, dest) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const MovzxRR& movzxrr) {
-            return os << "movz" << prefix_size(movzxrr.m_from_size)
-                << prefix_size(movzxrr.m_to_size)
-                << " %" << movzxrr.m_src.name(movzxrr.m_from_size)
-                << ", %" << movzxrr.m_dest.name(movzxrr.m_to_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const MovzxRR& movzxrr);
     };
 
     class MovzxRM final: public Movzx<Address> {
@@ -49,11 +44,6 @@ namespace aasm::details {
         explicit constexpr MovzxRM(const std::uint8_t from_size, const std::uint8_t to_size, const Address& src, const GPReg& dest) noexcept:
             Movzx(from_size, to_size, src, dest) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const MovzxRM& movzxrm) {
-            return os << "movz" << prefix_size(movzxrm.m_from_size)
-                << prefix_size(movzxrm.m_to_size)
-                << " " << movzxrm.m_src
-                << ", %" << movzxrm.m_dest.name(movzxrm.m_to_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const MovzxRM& movzxrm);
     };
 }

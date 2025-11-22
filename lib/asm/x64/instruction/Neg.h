@@ -35,9 +35,7 @@ namespace aasm::details {
         explicit constexpr NegR(const std::uint8_t size, const GPReg reg) noexcept:
             Neg(size, reg) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const NegR& negr) {
-            return os << "neg" << prefix_size(negr.m_size) << " %" << negr.m_src.name(negr.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const NegR& negr);
     };
 
     class NegM final: public Neg<Address> {
@@ -45,8 +43,6 @@ namespace aasm::details {
         explicit constexpr NegM(const std::uint8_t size, const Address& addr) noexcept:
             Neg(size, addr) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const NegM &negm) {
-            return os << "neg" << prefix_size(negm.m_size) << ' ' << negm.m_src;
-        }
+        friend std::ostream& operator<<(std::ostream& os, const NegM &negm);
     };
 }

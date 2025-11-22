@@ -30,11 +30,7 @@ namespace aasm::details {
         constexpr explicit SubRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
             SubRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const SubRR& subrr) {
-            return os << "sub" << prefix_size(subrr.m_size) << " %"
-                   << subrr.m_src.name(subrr.m_size) << ", %"
-                   << subrr.m_dst.name(subrr.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const SubRR& subrr);
     };
 
     class SubMR final: public SubRM_R<Address> {
@@ -42,10 +38,7 @@ namespace aasm::details {
         constexpr explicit SubMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
             SubRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const SubMR &submr) {
-            return os << "sub" << prefix_size(submr.m_size) << " %"
-                   << submr.m_src.name(submr.m_size) << ", " << submr.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const SubMR &submr);
     };
 
     template<typename DST>
@@ -76,10 +69,7 @@ namespace aasm::details {
         constexpr explicit SubRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
             SubRM_I(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const SubRI &subrr) {
-            return os << "sub" << prefix_size(subrr.m_size) << " $"
-                   << subrr.m_src << ", %" << subrr.m_dst.name(subrr.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const SubRI &subrr);
     };
 
     class SubMI final: public SubRM_I<Address> {
@@ -87,10 +77,7 @@ namespace aasm::details {
         constexpr explicit SubMI(std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
             SubRM_I(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const SubMI &submi) {
-            return os << "sub" << prefix_size(submi.m_size) << " $"
-                   << submi.m_src << ", " << submi.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const SubMI &submi);
     };
 
     class SubRM final {
@@ -100,9 +87,7 @@ namespace aasm::details {
             m_dst(dst),
             m_src(src) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const SubRM &subrm) {
-            return os << "sub" << prefix_size(subrm.m_size) << " " << subrm.m_src << ", %" << subrm.m_dst.name(subrm.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const SubRM &subrm);
 
         template<CodeBuffer Buffer>
         [[nodiscard]]

@@ -30,11 +30,7 @@ namespace aasm::details {
         constexpr AddRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
             AddRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const AddRR& add) {
-            return os << "add" << prefix_size(add.m_size) << " %"
-                  << add.m_src.name(add.m_size) << ", %"
-                  << add.m_dst.name(add.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const AddRR& add);
     };
 
     class AddMR final: public AddRM_R<Address> {
@@ -42,9 +38,7 @@ namespace aasm::details {
         constexpr explicit AddMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
             AddRM_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const AddMR& add) {
-            return os << "add" << prefix_size(add.m_size) << " %" << add.m_src.name(add.m_size) << ", " << add.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const AddMR& add);
     };
 
     template<typename DST>
@@ -76,9 +70,7 @@ namespace aasm::details {
         explicit AddRI(const std::uint8_t size, const std::int32_t src, const GPReg dst) noexcept:
             AddRI_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const AddRI& add) {
-            return os << "add" << prefix_size(add.m_size) << " $" << add.m_src << ", %" << add.m_dst.name(add.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const AddRI& add);
     };
 
     class AddMI final: public AddRI_R<Address> {
@@ -86,9 +78,7 @@ namespace aasm::details {
         constexpr explicit AddMI(const std::uint8_t size, const std::int32_t src, const Address& dst) noexcept:
             AddRI_R(size, src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const AddMI& add) {
-            return os << "add" << prefix_size(add.m_size) << " $" << add.m_src << ", " << add.m_dst;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const AddMI& add);
     };
 
     class AddRM final {
@@ -98,9 +88,7 @@ namespace aasm::details {
             m_dst(dst),
             m_src(src) {}
 
-        friend std::ostream& operator<<(std::ostream &os, const AddRM& add) {
-            return os << "add" << prefix_size(add.m_size) << " " << add.m_src << ", %" << add.m_dst.name(add.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream &os, const AddRM& add);
 
         template<CodeBuffer Buffer>
         [[nodiscard]]

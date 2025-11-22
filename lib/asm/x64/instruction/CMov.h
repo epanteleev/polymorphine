@@ -48,9 +48,7 @@ namespace aasm::details {
         constexpr explicit CMovRR(const std::uint8_t size, const GPReg src, const GPReg dst, const CondType cond) noexcept:
             CMov(size, src, dst, cond) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const CMovRR& inst) {
-            return os << "cmov" << inst.m_cond << " %" << inst.m_src.name(inst.m_size) << ", %" << inst.m_dst.name(inst.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const CMovRR& inst);
     };
 
     class CMovRM final: public CMov<Address> {
@@ -58,8 +56,6 @@ namespace aasm::details {
         constexpr explicit CMovRM(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) noexcept:
             CMov(size, src, dst, cond) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst) {
-            return os << "cmov" << inst.m_cond << " " << inst.m_src << ", %" << inst.m_dst.name(inst.m_size);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst);
     };
 }

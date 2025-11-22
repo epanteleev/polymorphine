@@ -25,10 +25,6 @@ namespace aasm::details {
         GPReg m_reg;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const PopR &popr) {
-        return os << "pop" << prefix_size(popr.m_size) << " %" << popr.m_reg.name(popr.m_size);
-    }
-
     class PopM final {
     public:
         constexpr PopM(const std::uint8_t size, const Address& addr) noexcept:
@@ -53,8 +49,4 @@ namespace aasm::details {
         std::uint8_t m_size;
         Address m_addr;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const PopM &popm) {
-        return os << "pop" << prefix_size(popm.m_size) << ' ' << popm.m_addr;
-    }
 }

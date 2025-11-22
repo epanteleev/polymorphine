@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <iosfwd>
+
 namespace aasm {
     class Label final {
     public:
@@ -14,8 +17,4 @@ namespace aasm {
     private:
         std::uint32_t m_id;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Label &label) {
-        return os << 'L' << label.id()+1;
-    }
 }

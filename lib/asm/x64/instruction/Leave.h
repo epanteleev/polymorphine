@@ -5,9 +5,7 @@ namespace aasm::details {
     public:
         constexpr Leave() noexcept = default;
 
-        friend std::ostream &operator<<(std::ostream &os, const Leave &leave) {
-            return os << "leave";
-        }
+        friend std::ostream &operator<<(std::ostream &os, const Leave &leave);
 
         template<CodeBuffer Buffer>
         [[nodiscard]]

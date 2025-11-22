@@ -30,9 +30,7 @@ namespace aasm::details {
         explicit constexpr UcomissRR(const XmmReg src, const XmmReg dst) noexcept:
             UcomissR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const UcomissRR& rr) {
-            return os << "ucomiss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const UcomissRR& rr);
     };
 
     class UcomissRM final: public UcomissR_RM<Address> {
@@ -40,8 +38,6 @@ namespace aasm::details {
         explicit constexpr UcomissRM(const Address& src, const XmmReg dst) noexcept:
             UcomissR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const UcomissRM& rr) {
-            return os << "ucomiss " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const UcomissRM& rr);
     };
 }

@@ -23,10 +23,6 @@ namespace aasm::details {
         GPReg m_dest;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const MovRR &movrr) {
-        return os << "mov" << prefix_size(movrr.m_size) << " %" << movrr.m_src.name(movrr.m_size) << ", %" << movrr.m_dest.name(movrr.m_size);
-    }
-
     class MovRI final {
     public:
         constexpr MovRI(const std::uint8_t size, const std::int64_t src, const GPReg& dest) noexcept:
@@ -47,16 +43,6 @@ namespace aasm::details {
         std::int64_t m_src;
         GPReg m_dest;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const MovRI &movri) {
-        if (movri.m_size == 8) {
-            os << "movabs";
-        } else {
-            os << "mov";
-        }
-
-        return os << prefix_size(movri.m_size) << " $" << movri.m_src << ", %" << movri.m_dest.name(movri.m_size);
-    }
 
     class MovMR final {
     public:
@@ -81,10 +67,6 @@ namespace aasm::details {
         const Address m_dest;
     };
 
-    inline std::ostream & operator<<(std::ostream &os, const MovMR &movmr) {
-        return os << "mov" << prefix_size(movmr.m_size) << " %" << movmr.m_src.name(movmr.m_size) << ", " << movmr.m_dest;
-    }
-
     class MovRM final {
     public:
         constexpr MovRM(const std::uint8_t size, const Address& src, const GPReg dst) noexcept:
@@ -107,10 +89,6 @@ namespace aasm::details {
         std::uint8_t m_size;
         const GPReg m_dest;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const MovRM &movrm) {
-        return os << "mov" << prefix_size(movrm.m_size) << " " << movrm.m_src << ", %" << movrm.m_dest.name(movrm.m_size);
-    }
 
     class MovMI final {
     public:
@@ -135,8 +113,4 @@ namespace aasm::details {
         std::uint8_t m_size;
         const Address m_dest;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const MovMI &movrm) {
-        return os << "mov" << prefix_size(movrm.m_size) << " $" << movrm.m_src << ", " << movrm.m_dest;
-    }
 }

@@ -30,9 +30,7 @@ namespace aasm::details {
         explicit constexpr AddssRR(const XmmReg src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const AddssRR& rr) {
-            return os << "addss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const AddssRR& rr);
     };
 
     class AddssRM final: public AddssR_RM<Address, ADDSS_PREFIX> {
@@ -40,9 +38,7 @@ namespace aasm::details {
         explicit constexpr AddssRM(const Address& src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const AddssRM& rr) {
-            return os << "addss " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const AddssRM& rr);
     };
 
     class AddsdRR final: public AddssR_RM<XmmReg, ADDSD_PREFIX> {
@@ -50,9 +46,7 @@ namespace aasm::details {
         explicit constexpr AddsdRR(const XmmReg src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const AddsdRR& rr) {
-            return os << "addsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const AddsdRR& rr);
     };
 
     class AddsdRM final: public AddssR_RM<Address, ADDSD_PREFIX> {
@@ -60,8 +54,6 @@ namespace aasm::details {
         explicit constexpr AddsdRM(const Address& src, const XmmReg dst) noexcept:
             AddssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const AddsdRM& rr) {
-            return os << "addsd " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const AddsdRM& rr);
     };
 }

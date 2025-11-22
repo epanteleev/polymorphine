@@ -1,6 +1,7 @@
 #include "GPOp.h"
 
 #include "base/Constant.h"
+#include <ostream>
 
 std::ostream & operator<<(std::ostream &os, const GPOp &reg) noexcept {
     const auto visitor = [&]<typename T>(const T &val) {

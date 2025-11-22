@@ -7,5 +7,5 @@
 #include "AsmBuffer.h"
 #include "asm/x64/AsmEmitter.h"
 
-#include "instruction/CPUInstruction.h"
+#include "instruction/X64Instruction.h"
 #include "asm/symbol/SymbolTable.h"

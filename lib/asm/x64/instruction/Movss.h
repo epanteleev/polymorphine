@@ -29,9 +29,7 @@ namespace aasm::details {
         explicit constexpr MovssRR(const XmmReg src, const XmmReg dst) noexcept:
             MovssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const MovssRR& rr) {
-            return os << "movss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const MovssRR& rr);
     };
 
     class MovssRM final: public MovssR_RM<Address> {
@@ -39,8 +37,6 @@ namespace aasm::details {
         explicit constexpr MovssRM(const Address& src, const XmmReg dst) noexcept:
             MovssR_RM(src, dst) {}
 
-        friend std::ostream& operator<<(std::ostream& os, const MovssRM& rr) {
-            return os << "movss " << rr.m_src << ", %" << rr.m_dst.name(16);
-        }
+        friend std::ostream& operator<<(std::ostream& os, const MovssRM& rr);
     };
 }

@@ -37,10 +37,6 @@ namespace aasm::details {
         const Symbol* m_name;
     };
 
-    inline std::ostream &operator<<(std::ostream &os, const Call &call) {
-        return os << "call " << call.m_name->name();
-    }
-
     class CallM final {
     public:
         explicit constexpr CallM(const Address& addr) noexcept:
@@ -59,8 +55,4 @@ namespace aasm::details {
     private:
         Address m_addr;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const CallM &call) {
-        return os << "call " << call.m_addr;
-    }
 }
