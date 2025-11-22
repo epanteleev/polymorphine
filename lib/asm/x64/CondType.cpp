@@ -1,6 +1,7 @@
 #include "CondType.h"
 
 #include <ostream>
+#include <utility>
 
 namespace aasm {
     std::ostream& operator<<(std::ostream &os, const CondType &cond) {

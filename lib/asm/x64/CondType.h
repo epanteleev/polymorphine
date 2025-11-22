@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <iosfwd>
-#include <utility>
 
 namespace aasm {
     enum class CondType: std::uint8_t {

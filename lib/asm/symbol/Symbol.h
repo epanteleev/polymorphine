@@ -29,8 +29,4 @@ namespace aasm {
         std::string m_name;
         BindAttribute m_bind;
     };
-
-    inline std::ostream & operator<<(std::ostream &os, const Symbol &symbol) {
-        return os << symbol.m_name;
-    }
 }
