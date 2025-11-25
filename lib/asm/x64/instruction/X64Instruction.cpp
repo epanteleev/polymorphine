@@ -262,12 +262,20 @@ namespace aasm::details {
         return os << "movss " << rr.m_src << ", %" << rr.m_dst.name(16);
     }
 
+    std::ostream& operator<<(std::ostream& os, const MovssMR& rr) {
+        return os << "movss %" << rr.m_src.name(16) << ", " << rr.m_dst;
+    }
+
     std::ostream& operator<<(std::ostream& os, const MovsdRR& rr) {
         return os << "movsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovsdRM& rr) {
         return os << "movsd " << rr.m_src << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const MovsdMR& rr) {
+        return os << "movsd %" << rr.m_src.name(16) << ", " << rr.m_dst;
     }
 
     std::ostream& operator<<(std::ostream& os, const AddssRR& rr) {

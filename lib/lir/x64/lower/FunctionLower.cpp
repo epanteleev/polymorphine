@@ -107,7 +107,7 @@ static aasm::CondType fcmp_cond_type(const FcmpPredicate predicate) noexcept {
 }
 
 [[nodiscard]]
-static FcmpOrdering fp_comparison_type(const FcmpPredicate predicate) noexcept {
+static FcmpOrdering fcmp_cond_ordering(const FcmpPredicate predicate) noexcept {
     switch (predicate) {
         case FcmpPredicate::Oeq:
         case FcmpPredicate::One: [[fallthrough]];
@@ -123,6 +123,17 @@ static FcmpOrdering fp_comparison_type(const FcmpPredicate predicate) noexcept {
         case FcmpPredicate::Ueq: return FcmpOrdering::UNORDERED;
         default: std::unreachable();
     }
+}
+
+static LIRValType convert_type_to_lir_val_type(const Type* type) {
+    if (type->isa(gp_type())) {
+        return LIRValType::GP;
+    }
+    if (type->isa(float_type())) {
+        return LIRValType::FP;
+    }
+
+    die("Unsupported type for LIRValType");
 }
 
 /**
@@ -436,29 +447,18 @@ LIRVal FunctionLower::get_lir_val(const Value &val) {
     die("Expected LIRVal for Value");
 }
 
-static LIRValType convert_type_to_lir_val_type(const Type& type) {
-    if (type.isa(gp_type())) {
-        return LIRValType::GP;
-    }
-    if (type.isa(float_type())) {
-        return LIRValType::FP;
-    }
-
-    die("Unsupported type for LIRValType");
-}
-
 void FunctionLower::accept(Binary *inst) {
     const auto lhs = get_lir_operand(inst->lhs());
     const auto rhs = get_lir_operand(inst->rhs());
     switch (inst->op()) {
         case BinaryOp::Add: {
-            const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
+            const auto lir_ty = convert_type_to_lir_val_type(inst->type());
             const auto add = m_bb->ins(LIRProducerInstruction::add(lir_ty, lhs, rhs));
             memorize(inst, add->def(0));
             break;
         }
         case BinaryOp::Subtract: {
-            const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
+            const auto lir_ty = convert_type_to_lir_val_type(inst->type());
             const auto sub = m_bb->ins(LIRProducerInstruction::sub(lir_ty, lhs, rhs));
             memorize(inst, sub->def(0));
             break;
@@ -536,7 +536,7 @@ std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span
 
         const auto gen = m_bb->ins(LIRProducerInstruction::gen(allocated_type->size_of(), allocated_type->align_of()));
         for (std::size_t offset{}; offset < allocated_type->size_of(); offset += 8) { //FIXME handle <8 bytes
-            const auto load = m_bb->ins(LIRProducerInstruction::read_by_offset(8, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
+            const auto load = m_bb->ins(LIRProducerInstruction::read_by_offset(LIRValType::GP, cst::POINTER_SIZE, arg_vreg.as_vreg().value(), LirCst::imm64(offset/8)));
             m_bb->ins(LIRInstruction::store_by_offset(LIRValType::GP, gen->def(0), LirCst::imm64(offset/8), load->def(0)));
         }
 
@@ -641,9 +641,10 @@ void FunctionLower::accept(Store *store) {
     const auto value = store->value();
 
     const auto value_vreg = get_lir_operand(value);
+    const auto lir_val_type = convert_type_to_lir_val_type(value.type());
     if (pointer.isa(value_semantic())) {
         const auto pointer_vreg = get_lir_operand(pointer);
-        m_bb->ins(LIRInstruction::mov(LIRValType::GP, pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::mov(lir_val_type, pointer_vreg, value_vreg));
         return;
     }
 
@@ -653,16 +654,16 @@ void FunctionLower::accept(Store *store) {
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
         if (src.isa(value_semantic())) {
-            m_bb->ins(LIRInstruction::store_by_offset(LIRValType::GP, src_vreg, idx_lir_op, value_vreg));
+            m_bb->ins(LIRInstruction::store_by_offset(lir_val_type, src_vreg, idx_lir_op, value_vreg));
             return;
         }
-        m_bb->ins(LIRInstruction::mov_by_idx(LIRValType::GP, src_vreg.as_vreg().value(), idx_lir_op, value_vreg));
+        m_bb->ins(LIRInstruction::mov_by_idx(lir_val_type, src_vreg.as_vreg().value(), idx_lir_op, value_vreg));
         return;
     }
 
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
-        m_bb->ins(LIRInstruction::store(LIRValType::GP, pointer_vreg, value_vreg));
+        m_bb->ins(LIRInstruction::store(lir_val_type, pointer_vreg, value_vreg));
         return;
     }
 
@@ -684,7 +685,7 @@ void FunctionLower::accept(IcmpInstruction *icmp) {
 void FunctionLower::accept(FcmpInstruction *fcmp) {
     const auto lhs = get_lir_operand(fcmp->lhs());
     const auto rhs = get_lir_operand(fcmp->rhs());
-    m_bb->ins(LIRFCmp::cmp(fp_comparison_type(fcmp->predicate()), lhs, rhs));
+    m_bb->ins(LIRFCmp::cmp(fcmp_cond_ordering(fcmp->predicate()), lhs, rhs));
 }
 
 void FunctionLower::accept(GetElementPtr *gep) {
@@ -815,6 +816,7 @@ void FunctionLower::lower_load(const Unary *inst) {
         return;
     }
 
+    const auto lir_val_type = convert_type_to_lir_val_type(inst->type());
     if (pointer.isa(field_access())) {
         const auto gep = dynamic_cast<FieldAccess*>(pointer.get<ValueInstruction*>());
         const auto [src, idx] = try_fold_field_access(gep);
@@ -822,20 +824,19 @@ void FunctionLower::lower_load(const Unary *inst) {
         const auto idx_lir_op = get_lir_operand(idx);
 
         if (src.isa(value_semantic())) {
-            const auto load_inst = m_bb->ins(LIRProducerInstruction::read_by_offset(gep->access_type()->size_of(), src_vreg, idx_lir_op));
+            const auto load_inst = m_bb->ins(LIRProducerInstruction::read_by_offset(lir_val_type, gep->access_type()->size_of(), src_vreg, idx_lir_op));
             memorize(inst, load_inst->def(0));
             return;
         }
 
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(gep->access_type()->size_of(), src_vreg, idx_lir_op));
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load_by_idx(lir_val_type, gep->access_type()->size_of(), src_vreg, idx_lir_op));
         memorize(inst, load_inst->def(0));
         return;
     }
 
     if (pointer.isa(argument())) {
         const auto pointer_vreg = get_lir_val(pointer);
-        const auto lir_ty = convert_type_to_lir_val_type(*inst->type());
-        const auto load_inst = m_bb->ins(LIRProducerInstruction::load(lir_ty, type->size_of(), pointer_vreg));
+        const auto load_inst = m_bb->ins(LIRProducerInstruction::load(lir_val_type, type->size_of(), pointer_vreg));
         memorize(inst, load_inst->def(0));
         return;
     }

@@ -24,13 +24,13 @@ private:
     }
 
     void emit(const aasm::GPReg out, const aasm::Address &in1, const aasm::GPReg in2) override {
-        m_as.mov(8, in1, m_temporal_regs.gp_temp1());
+        m_as.mov(cst::POINTER_SIZE, in1, m_temporal_regs.gp_temp1());
         m_as.mov(m_size, aasm::Address(m_temporal_regs.gp_temp1(), in2, m_size, 0), out);
     }
 
     void emit(const aasm::GPReg out, const aasm::Address &in1, const aasm::Address &in2) override {
-        m_as.mov(8, in2, m_temporal_regs.gp_temp1());
-        m_as.mov(8, in1, m_temporal_regs.gp_temp2());
+        m_as.mov(cst::POINTER_SIZE, in2, m_temporal_regs.gp_temp1());
+        m_as.mov(cst::POINTER_SIZE, in1, m_temporal_regs.gp_temp2());
         m_as.mov(m_size, aasm::Address(m_temporal_regs.gp_temp2(), m_temporal_regs.gp_temp1(), m_size, 0), out);
     }
 

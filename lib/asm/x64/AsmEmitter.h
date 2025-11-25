@@ -237,6 +237,10 @@ namespace aasm {
             m_instructions.emplace_back(details::MovssRM(src, dst));
         }
 
+        constexpr void movss(const XmmReg src, const Address& dst) {
+            m_instructions.emplace_back(details::MovssMR(src, dst));
+        }
+
         // Move or Merge Scalar Double Precision Floating-Point Value
         constexpr void movsd(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovsdRR(src, dst));
@@ -244,6 +248,10 @@ namespace aasm {
 
         constexpr void movsd(const Address& src, const XmmReg dst) {
             m_instructions.emplace_back(details::MovsdRM(src, dst));
+        }
+
+        constexpr void movsd(const XmmReg src, const Address& dst) {
+            m_instructions.emplace_back(details::MovsdMR(src, dst));
         }
 
         // Add Scalar Single Precision Floating-Point Values

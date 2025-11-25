@@ -293,7 +293,7 @@ static Module bubble_sort_fp(const PrimitiveType* ty, const PrimitiveType* inc_t
 TEST(BubbleSort, bubble_sort_f32) {
     GTEST_SKIP();
     const auto module = bubble_sort_fp(FloatingPointType::f32(), SignedIntegerType::i32(), Value::i32);
-    const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
+    const auto code = jit_compile_and_assembly(module, true);
     const auto fn = code.code_start_as<void(float*, int)>("bubble_sort").value();
 
     float arr[] = {5, 9, 0};

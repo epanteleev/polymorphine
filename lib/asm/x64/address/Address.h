@@ -70,7 +70,7 @@ namespace aasm {
 
         [[nodiscard]]
         Address add_offset(const std::int32_t offset) const noexcept {
-            const auto visit = [&](const auto& addr)-> Address {
+            const auto visit = [&](const auto &addr) -> Address {
                 return addr.add_offset(offset);
             };
 
@@ -100,8 +100,6 @@ namespace aasm {
 
         std::variant<AddressBaseDisp, AddressIndexScale, AddressLiteral> m_address;
     };
-
-    std::ostream& operator<<(std::ostream & os, const Address & addr);
 
     [[nodiscard]]
     constexpr std::uint8_t X(const Address& arg) {

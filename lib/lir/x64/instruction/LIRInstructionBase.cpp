@@ -4,7 +4,7 @@
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/module/LIRBlock.h"
 
-#include "../../../asm/x64/CondType.h"
+#include "asm/x64/CondType.h"
 #include "asm/x64/reg/RegSet.h"
 #include "lir/x64/asm/FcmpOrdering.h"
 
@@ -194,6 +194,22 @@ namespace {
 
         void cmp_f(const FcmpOrdering ord, const LIROperand &in1, const LIROperand &in2) override {
             m_os << "cmp_f " << to_string(ord) << " in(" << in1 << ") in(" << in2 << ')';
+        }
+
+        void mov_by_idx_f(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override {
+            m_os << "mov_by_idx_f pointer(" << pointer << ") index(" << index << ") in(" << in << ')';
+        }
+
+        void load_by_idx_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+            m_os << "load_by_idx_f out(" << out << ") index(" << index << ") pointer(" << pointer << ')';
+        }
+
+        void store_by_offset_f(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) override {
+            m_os << "store_on_stack_f pointer(" << pointer << ") index(" << index << ") value(" << value << ')';
+        }
+
+        void store_f(const LIRVal &pointer, const LIROperand &value) override {
+            m_os << "store_f pointer(" << pointer << ") value(" << value << ')';
         }
 
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {

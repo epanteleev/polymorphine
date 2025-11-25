@@ -94,9 +94,8 @@ public:
 
     constexpr void copyfp(const std::uint8_t, const aasm::XmmReg, const aasm::XmmReg) {}
 
-    template<typename Op>
-    requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>
-    constexpr void movfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+    constexpr void movfp(const std::uint8_t, const aasm::Address&, const aasm::XmmReg) {}
+    constexpr void movfp(const std::uint8_t, const aasm::XmmReg&, const aasm::Address&) {}
 
     template<typename Op>
     requires std::is_same_v<Op, aasm::XmmReg> || std::is_same_v<Op, aasm::Address>

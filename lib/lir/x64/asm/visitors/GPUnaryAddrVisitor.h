@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../operand/GPOp.h"
-
 class GPUnaryAddrVisitor {
 public:
     virtual ~GPUnaryAddrVisitor() = default;

@@ -44,4 +44,3 @@ private:
     AsmEmit& m_as;
     const TempRegStorage& m_temporal_regs;
 };
-

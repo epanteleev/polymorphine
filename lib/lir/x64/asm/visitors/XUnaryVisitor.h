@@ -1,8 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/operand/XOp.h"
-
-
 class XUnaryVisitor {
 public:
     virtual ~XUnaryVisitor() = default;

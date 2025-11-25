@@ -50,7 +50,10 @@ public:
     virtual void load_f(const LIRVal& out, const LIRVal& pointer) = 0;
     virtual void mov_f(const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void cmp_f(FcmpOrdering ord, const LIROperand& in1, const LIROperand& in2) = 0;
-
+    virtual void mov_by_idx_f(const LIRVal& pointer, const LIROperand& index, const LIROperand& in) = 0;
+    virtual void load_by_idx_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) = 0;
+    virtual void store_by_offset_f(const LIROperand& pointer, const LIROperand& index, const LIROperand& value) = 0;
+    virtual void store_f(const LIRVal& pointer, const LIROperand& value) = 0;
     virtual void add_f(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;

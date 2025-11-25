@@ -13,6 +13,10 @@
 #include "lir/x64/asm/visitors/XBinaryVisitor.h"
 #include "lir/x64/asm/visitors/XUnaryVisitor.h"
 #include "lir/x64/asm/visitors/XUnaryOutVisitor.h"
+#include "lir/x64/asm/visitors/XBinaryVisitorWithGP.h"
+#include "lir/x64/asm/visitors/XBinaryVisitorXOut.h"
+#include "lir/x64/asm/visitors/XBinaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/XUnaryGpOutVisitor.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/CmpGPEmit.h"
@@ -30,6 +34,9 @@
 #include "lir/x64/asm/emitters/AddFloatEmit.h"
 #include "lir/x64/asm/emitters/CmpFloatEmit.h"
 #include "lir/x64/asm/emitters/CopyFloatEmit.h"
+#include "lir/x64/asm/emitters/MovByIdxFloatEmit.h"
+#include "lir/x64/asm/emitters/LoadByIdxFloatEmit.h"
+#include "lir/x64/asm/emitters/StoreXmmEmit.h"
 
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
@@ -39,6 +46,7 @@
 #include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
 #include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
 #include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
+#include "lir/x64/asm/emitters/StoreOnStackXmmEmit.h"
 #include "lir/x64/asm/map/LIRInstuctionMapping.h"
 #include "lir/x64/asm/map/LIROperandMapping.h"
 #include "lir/x64/operand/LIRVal.h"
