@@ -30,7 +30,7 @@ register_static_library(asm_x64 ${ASM_X64_SOURCES})
 file(GLOB_RECURSE LIR_X64_SOURCES lir/x64/*.cpp lir/x64/*.h)
 register_static_library(lir_x64 ${LIR_X64_SOURCES})
 
-add_library(ckoof SHARED
+add_library(polymorphine SHARED
         $<TARGET_OBJECTS:base>
         $<TARGET_OBJECTS:mir>
         $<TARGET_OBJECTS:utils>
@@ -38,9 +38,9 @@ add_library(ckoof SHARED
         $<TARGET_OBJECTS:lir_x64>
 )
 
-try_setup_coverage_options(ckoof)
-target_link_libraries(ckoof PRIVATE stdc++exp)
-target_include_directories(ckoof PUBLIC
+try_setup_coverage_options(polymorphine)
+target_link_libraries(polymorphine PRIVATE stdc++exp)
+target_include_directories(polymorphine PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>
 )

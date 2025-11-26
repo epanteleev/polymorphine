@@ -135,7 +135,7 @@ public:
 
 private:
     template<typename ... Args>
-    static std::unique_ptr<LIRProducerInstruction> create(LIRProdInstKind kind, const LIRValType type, const std::uint8_t size, const std::uint8_t align, Args&&... args) {
+    static std::unique_ptr<LIRProducerInstruction> create(LIRProdInstKind kind, const LIRValType type, const std::size_t size, const std::size_t align, Args&&... args) {
         auto prod = std::make_unique<LIRProducerInstruction>(kind, type, std::vector{std::forward<Args>(args)...});
         prod->add_def(LIRVal::reg(size, align, 0, prod.get()));
         return prod;

@@ -128,7 +128,7 @@ public:
 
     template<typename T>
     requires std::derived_from<T, LIRProducerInstructionBase> || std::derived_from<T, LIRCall>
-    static LIRVal reg(std::size_t size, std::uint8_t align, std::uint8_t index, T* def) noexcept {
+    static LIRVal reg(std::size_t size, std::size_t align, std::uint8_t index, T* def) noexcept {
         return {size, align, index, def};
     }
 

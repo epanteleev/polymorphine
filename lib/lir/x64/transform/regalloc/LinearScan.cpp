@@ -92,7 +92,7 @@ void LinearScan::do_register_allocation()  {
         for (std::int64_t i = range_begin; i < unhandled_interval->start()-1; ++i) {
             allocate_temporal_register(m_instruction_ordering[i]);
         }
-        range_begin = unhandled_interval->start();
+        range_begin = unhandled_interval->start()-1;
 
         erase_active(*unhandled_interval);
         erase_unactive(*unhandled_interval);
@@ -102,7 +102,7 @@ void LinearScan::do_register_allocation()  {
         m_active_intervals.emplace_back(unhandled_interval, lir_val);
 
         // Allocate temporals for current instruction.
-        allocate_temporal_register(m_instruction_ordering[range_begin-1]);
+        allocate_temporal_register(m_instruction_ordering[range_begin]);
     }
 
     // Process the remaining instructions.
