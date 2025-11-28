@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asm/x64/reg/Reg.h"
-#include "asm/x64/reg/RegSet.h"
+#include "asm/x64/reg/AnyRegSet.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
 #include "lir/x64/asm/cc/CallConv.h"
 #include "lir/x64/asm/operand/AssignedVReg.h"
@@ -22,7 +22,7 @@ namespace details {
         }
 
         [[nodiscard]]
-        aasm::Reg top(const IntervalHint hint, const LIRValType type) {
+        aasm::Reg top(const IntervalHint hint, const LIRValType type) noexcept {
             switch (type) {
                 case LIRValType::GP: return top_gp(hint);
                 case LIRValType::FP: return top_xmm(hint);
@@ -34,7 +34,13 @@ namespace details {
         aasm::GPReg top_gp(IntervalHint hint) noexcept;
 
         [[nodiscard]]
+        aasm::GPReg alloc_gp_temp(const aasm::RegSet& exclude) noexcept;
+
+        [[nodiscard]]
         aasm::XmmReg top_xmm(IntervalHint hint) noexcept;
+
+        [[nodiscard]]
+        aasm::XmmReg alloc_xmm_temp(const aasm::RegSet& exclude) noexcept;
 
         void try_push(const AssignedVReg& vreg) {
             const auto reg_opt = vreg.to_reg();
@@ -72,7 +78,7 @@ namespace details {
             return m_local_area_size;
         }
 
-        static VRegSelection create(const call_conv::CallConvProvider* call_conv, const aasm::GPRegSet& gp_arg_regs, const aasm::XmmRegSet& xmm_reg_set);
+        static VRegSelection create(const call_conv::CallConvProvider* call_conv, const aasm::RegSet &arg_regs);
 
     private:
         void push_impl(const aasm::GPReg reg) noexcept {

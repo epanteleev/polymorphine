@@ -5,7 +5,7 @@
 #include "lir/x64/module/LIRBlock.h"
 
 #include "asm/x64/CondType.h"
-#include "asm/x64/reg/RegSet.h"
+#include "asm/x64/reg/AnyRegSet.h"
 #include "lir/x64/asm/FcmpOrdering.h"
 
 namespace {

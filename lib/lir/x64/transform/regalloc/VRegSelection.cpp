@@ -30,6 +30,22 @@ namespace details {
         }
     }
 
+    aasm::GPReg VRegSelection::alloc_gp_temp(const aasm::RegSet& exclude) noexcept {
+        for (const auto reg: std::ranges::reverse_view(m_free_gp_regs)) {
+            if (exclude.contains(reg)) {
+                continue;
+            }
+            if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
+                continue;
+            }
+
+            remove(reg);
+            return reg;
+        }
+
+        die("Cannot find a free register");
+    }
+
     aasm::XmmReg VRegSelection::top_xmm(const IntervalHint hint) noexcept {
         switch (hint) {
             case IntervalHint::NOTHING: {
@@ -54,12 +70,28 @@ namespace details {
         }
     }
 
+    aasm::XmmReg VRegSelection::alloc_xmm_temp(const aasm::RegSet& exclude) noexcept {
+        for (const auto reg: std::ranges::reverse_view(m_free_xmm_regs)) {
+            if (exclude.contains(reg)) {
+                continue;
+            }
+            if (!std::ranges::contains(m_call_conv->XMM_CALLER_SAVE_REGISTERS(), reg)) {
+                continue;
+            }
+
+            remove(reg);
+            return reg;
+        }
+
+        die("Cannot find a free register");
+    }
+
     void VRegSelection::remove(const aasm::Reg reg) noexcept {
         const auto vis = [&]<typename T>(const T& val) {
             if constexpr (std::is_same_v<T, aasm::GPReg>) {
-                std::erase(m_free_gp_regs, reg);
+                std::erase(m_free_gp_regs, val);
             } else if constexpr (std::is_same_v<T, aasm::XmmReg>) {
-                std::erase(m_free_xmm_regs, reg);
+                std::erase(m_free_xmm_regs, val);
             } else {
                 static_assert(false);
                 std::unreachable();
@@ -68,13 +100,13 @@ namespace details {
         reg.visit(vis);
     }
 
-    template<typename Reg, typename RegSet>
-    static std::vector<Reg> collect_used_argument_regs(const std::span<Reg const> all_registers, const RegSet &gp_arg_regs) {
+    template<typename Reg>
+    static std::vector<Reg> collect_used_argument_regs(const std::span<Reg const> all_registers, const aasm::RegSet &gp_arg_regs) {
         std::vector<Reg> regs{};
         regs.reserve(all_registers.size());
 
         for (const auto reg: all_registers) {
-            if (std::ranges::contains(gp_arg_regs, reg)) {
+            if (gp_arg_regs.contains(reg)) {
                 continue;
             }
 
@@ -84,9 +116,9 @@ namespace details {
         return regs;
     }
 
-    VRegSelection VRegSelection::create(const call_conv::CallConvProvider *call_conv, const aasm::GPRegSet &gp_arg_regs, const aasm::XmmRegSet &xmm_reg_set) {
-        auto gp_regs = collect_used_argument_regs(call_conv->ALL_GP_REGISTERS(), gp_arg_regs);
-        auto xmm_regs = collect_used_argument_regs(call_conv->ALL_XMM_REGISTERS(), xmm_reg_set);
+    VRegSelection VRegSelection::create(const call_conv::CallConvProvider *call_conv, const aasm::RegSet &arg_regs) {
+        auto gp_regs = collect_used_argument_regs(call_conv->ALL_GP_REGISTERS(), arg_regs);
+        auto xmm_regs = collect_used_argument_regs(call_conv->ALL_XMM_REGISTERS(), arg_regs);
 
         return VRegSelection(std::move(gp_regs), std::move(xmm_regs), call_conv);
     }

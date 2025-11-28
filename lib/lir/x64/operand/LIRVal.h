@@ -122,18 +122,22 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const LIRVal& op) noexcept;
 
+    [[nodiscard]]
     static LIRVal from(const LIRArg* def, const std::size_t size, const std::size_t align) noexcept {
         return {size, align, static_cast<std::uint8_t>(def->index()), const_cast<LIRArg *>(def)};
     }
 
     template<typename T>
     requires std::derived_from<T, LIRProducerInstructionBase> || std::derived_from<T, LIRCall>
+    [[nodiscard]]
     static LIRVal reg(std::size_t size, std::size_t align, std::uint8_t index, T* def) noexcept {
         return {size, align, index, def};
     }
 
+    [[nodiscard]]
     static std::expected<LIRVal, Error> try_from(const LIROperand& op);
 
+    [[nodiscard]]
     static std::span<LIRVal const> defs(const LIRInstructionBase* inst) noexcept;
 
 private:
@@ -157,7 +161,7 @@ namespace details {
     struct LIRValHash final {
         [[nodiscard]]
         std::size_t operator()(const LIRVal& val) const noexcept {
-            return static_cast<std::uint64_t>(val.size()) << 8 | static_cast<std::uint64_t>(val.index());
+            return val.size() << 8 | static_cast<std::uint64_t>(val.index());
         }
     };
 
