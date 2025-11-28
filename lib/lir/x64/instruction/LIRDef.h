@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <span>
 #include "lir/x64/operand/LIRVal.h"
+#include "utility/InplaceVec.h"
 
 class LIRDef {
 public:
@@ -16,12 +16,12 @@ public:
 
     [[nodiscard]]
     std::span<LIRVal const> defs() const noexcept {
-        return m_defs;
+        return m_defs.span();
     }
 
     [[nodiscard]]
     const LIRVal& def(const std::size_t idx) const {
-        return m_defs.at(idx);
+        return m_defs[idx];
     }
 
     void assign_reg(const std::size_t idx, const AssignedVReg& reg) {
@@ -33,7 +33,7 @@ public:
     [[nodiscard]]
     const AssignedVReg& assigned_reg(const std::size_t idx) const {
         assertion(idx < m_assigned_regs.size(), "Index out of bounds");
-        return m_assigned_regs.at(idx);
+        return m_assigned_regs[idx];
     }
 
 protected:
@@ -43,7 +43,7 @@ protected:
     }
 
 private:
-    std::vector<LIRVal> m_defs;
-    std::vector<AssignedVReg> m_assigned_regs;
+    InplaceVec<LIRVal, 2> m_defs;
+    InplaceVec<AssignedVReg, 2> m_assigned_regs;
     LIRValType m_type;
 };
