@@ -10,7 +10,7 @@ namespace details {
         switch (hint) {
             case IntervalHint::NOTHING: {
                 for (const auto reg: std::ranges::reverse_view(m_free_gp_regs)) {
-                    if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
+                    if (!m_call_conv->GP_CALLER_SAVE_REGISTERS().contains(reg)) {
                         continue;
                     }
 
@@ -35,7 +35,7 @@ namespace details {
             if (exclude.contains(reg)) {
                 continue;
             }
-            if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), reg)) {
+            if (!m_call_conv->GP_CALLER_SAVE_REGISTERS().contains(reg)) {
                 continue;
             }
 
@@ -50,7 +50,7 @@ namespace details {
         switch (hint) {
             case IntervalHint::NOTHING: {
                 for (const auto reg: std::ranges::reverse_view(m_free_xmm_regs)) {
-                    if (!std::ranges::contains(m_call_conv->XMM_CALLER_SAVE_REGISTERS(), reg)) {
+                    if (!m_call_conv->XMM_CALLER_SAVE_REGISTERS().contains(reg)) {
                         continue;
                     }
 
@@ -75,7 +75,7 @@ namespace details {
             if (exclude.contains(reg)) {
                 continue;
             }
-            if (!std::ranges::contains(m_call_conv->XMM_CALLER_SAVE_REGISTERS(), reg)) {
+            if (!m_call_conv->XMM_CALLER_SAVE_REGISTERS().contains(reg)) {
                 continue;
             }
 
@@ -100,11 +100,10 @@ namespace details {
         reg.visit(vis);
     }
 
-    template<typename Reg>
-    static std::vector<Reg> collect_used_argument_regs(const std::span<Reg const> all_registers, const aasm::RegSet &gp_arg_regs) {
+    template<typename Reg, std::size_t RS>
+    static std::vector<Reg> collect_used_argument_regs(const aasm::AnyRegSet<Reg, RS>& all_registers, const aasm::RegSet &gp_arg_regs) {
         std::vector<Reg> regs{};
         regs.reserve(all_registers.size());
-
         for (const auto reg: all_registers) {
             if (gp_arg_regs.contains(reg)) {
                 continue;

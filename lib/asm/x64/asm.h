@@ -3,6 +3,7 @@
 #include "address/Address.h"
 #include "reg/GPReg.h"
 #include "reg/Reg.h"
+#include "reg/AnyRegSet.h"
 
 #include "AsmBuffer.h"
 #include "asm/x64/AsmEmitter.h"

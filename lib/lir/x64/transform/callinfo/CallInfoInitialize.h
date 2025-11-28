@@ -66,7 +66,7 @@ private:
                 continue;
             }
 
-            if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), gp_reg)) {
+            if (!m_call_conv->GP_CALLER_SAVE_REGISTERS().contains(gp_reg.value())) {
                 // If the register is a caller-saved register, we need to add it to the adjust stack.
                 return;
             }
