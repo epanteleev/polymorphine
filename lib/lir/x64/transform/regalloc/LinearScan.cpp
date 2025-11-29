@@ -269,45 +269,6 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::XmmReg reg
     lir_val.assign_reg(reg);
 }
 
-InplaceVec<aasm::XmmReg, TemporalRegs::MAX_NOF_XMM_TEMPORAL_REGS> LinearScan::allocate_xmm_temp(const aasm::RegSet& operand_regs, const std::size_t xmm_num) noexcept {
-    InplaceVec<aasm::XmmReg, TemporalRegs::MAX_NOF_XMM_TEMPORAL_REGS> temporals;
-    switch (xmm_num) {
-        case 0: break;
-        case 1: {
-            const auto reg = m_reg_set.alloc_xmm_temp(operand_regs);
-            m_reg_set.push(reg);
-            temporals.emplace_back(reg);
-            break;
-        }
-        default: std::unreachable();
-    }
-    return temporals;
-}
-
-InplaceVec<aasm::GPReg, TemporalRegs::MAX_NOF_GP_TEMPORAL_REGS> LinearScan::allocate_gp_temp(const aasm::RegSet &operand_regs, std::size_t gp_num) noexcept {
-    InplaceVec<aasm::GPReg, TemporalRegs::MAX_NOF_GP_TEMPORAL_REGS> temporals;
-    switch (gp_num) {
-        case 0: break;
-        case 1: {
-            const auto reg = m_reg_set.alloc_gp_temp(operand_regs);
-            m_reg_set.push(reg);
-            temporals.push_back(reg);
-            break;
-        }
-        case 2: {
-            const auto reg1 = m_reg_set.alloc_gp_temp(operand_regs);
-            const auto reg2 = m_reg_set.alloc_gp_temp(operand_regs);
-            m_reg_set.push(reg2);
-            m_reg_set.push(reg1);
-            temporals.push_back(reg1);
-            temporals.push_back(reg2);
-            break;
-        }
-        default: die("Unexpected number of temporal registers allocated: {}", gp_num);
-    }
-    return temporals;
-}
-
 static aasm::RegSet collect_operand_registers(const std::span<LIROperand const> operands) {
     aasm::RegSet regs;
     for (const auto& op: operands) {
@@ -327,15 +288,15 @@ static aasm::RegSet collect_operand_registers(const std::span<LIROperand const> 
     return regs;
 }
 
-void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) noexcept {
+void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) const noexcept {
     if (!inst->temporal_regs().empty()) {
         return;
     }
     const auto operand_regs = collect_operand_registers(inst->inputs());
 
     const auto [gp_num, xmm_num] = details::AllocTemporalRegs::allocate(m_symbol_tab, inst);
-    const auto xmm_reg = allocate_xmm_temp(operand_regs, xmm_num);
-    const auto gp_reg = allocate_gp_temp(operand_regs, gp_num);
+    const auto xmm_reg = m_reg_set.alloc_xmm_temp(operand_regs, xmm_num);
+    const auto gp_reg = m_reg_set.alloc_gp_temp(operand_regs, gp_num);
     inst->init_temporal_regs(TemporalRegs(gp_reg, xmm_reg));
 }
 

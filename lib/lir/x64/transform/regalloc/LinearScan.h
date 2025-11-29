@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VRegSelection.h"
-#include "asm/x64/reg/AnyRegSet.h"
 
 #include "lir/x64/analysis/intervals/LiveIntervals.h"
 #include "lir/x64/analysis/intervals/LiveIntervalsEval.h"
@@ -45,10 +44,7 @@ private:
     void allocate_register(const LIRVal& lir_val, aasm::GPReg reg);
     void allocate_register(const LIRVal& lir_val, aasm::XmmReg reg);
 
-    void allocate_temporal_register(LIRInstructionBase* inst) noexcept;
-
-    InplaceVec<aasm::XmmReg, TemporalRegs::MAX_NOF_XMM_TEMPORAL_REGS> allocate_xmm_temp(const aasm::RegSet& operand_regs, std::size_t xmm_num) noexcept;
-    InplaceVec<aasm::GPReg, TemporalRegs::MAX_NOF_GP_TEMPORAL_REGS> allocate_gp_temp(const aasm::RegSet& operand_regs, std::size_t gp_num) noexcept;
+    void allocate_temporal_register(LIRInstructionBase* inst) const noexcept;
 
     void do_stack_alloc(const LIRVal& lir_val);
     void instruction_ordering();

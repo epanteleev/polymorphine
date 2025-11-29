@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include "Error.h"
 
@@ -7,14 +8,15 @@
 template<typename T, std::size_t N>
 class InplaceVec final {
 public:
-    using value_type = T;
-    using pointer    = T*;
-    using iterator   = T*;
-    using reference  = T&;
+    using value_type     = T;
+    using pointer        = T*;
+    using iterator       = T*;
+    using const_iterator = const T*;
+    using reference      = T&;
     using const_reference = const T&;
     using size_type  = std::size_t;
 
-    explicit InplaceVec() = default;
+    InplaceVec() = default;
 
     template<typename U = T>
     void push_back(U&& elem) {
@@ -45,6 +47,17 @@ public:
         return *at(idx);
     }
 
+    void remove(const_reference val) {
+        const auto removed = std::remove(begin(), end(), val);
+        if (removed != end()) {
+            m_size--;
+        }
+    }
+
+    const_reference back() const noexcept {
+        return *at(size() - 1);
+    }
+
     pointer data() const noexcept {
         return at(0);
     }
@@ -68,6 +81,14 @@ public:
     }
 
     iterator end() noexcept {
+        return at(m_size);
+    }
+
+    const_iterator begin() const noexcept {
+        return at(0);
+    }
+
+    const_iterator end() const noexcept {
         return at(m_size);
     }
 

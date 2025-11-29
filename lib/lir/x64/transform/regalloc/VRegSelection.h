@@ -1,17 +1,17 @@
 #pragma once
 
 #include "asm/x64/reg/Reg.h"
-#include "asm/x64/reg/AnyRegSet.h"
 #include "lir/x64/analysis/intervals/IntervalHint.h"
+#include "lir/x64/asm/TemporalRegs.h"
 #include "lir/x64/asm/cc/CallConv.h"
 #include "lir/x64/asm/operand/AssignedVReg.h"
 #include "lir/x64/operand/LIRValType.h"
-#include "utility/ArithmeticUtils.h"
 
 namespace details {
     class VRegSelection final {
     public:
-        explicit VRegSelection(std::vector<aasm::GPReg>&& free_gp_regs, std::vector<aasm::XmmReg>&& free_xmm_regs, const call_conv::CallConvProvider* call_conv) noexcept:
+        explicit VRegSelection(InplaceVec<aasm::GPReg, aasm::GPReg::NUMBER_OF_REGISTERS>&& free_gp_regs,
+            InplaceVec<aasm::XmmReg, aasm::XmmReg::NUMBER_OF_REGISTERS>&& free_xmm_regs, const call_conv::CallConvProvider* call_conv) noexcept:
             m_free_gp_regs(std::move(free_gp_regs)),
             m_free_xmm_regs(std::move(free_xmm_regs)),
             m_call_conv(call_conv) {}
@@ -34,13 +34,13 @@ namespace details {
         aasm::GPReg top_gp(IntervalHint hint) noexcept;
 
         [[nodiscard]]
-        aasm::GPReg alloc_gp_temp(const aasm::RegSet& exclude) noexcept;
-
-        [[nodiscard]]
         aasm::XmmReg top_xmm(IntervalHint hint) noexcept;
 
         [[nodiscard]]
-        aasm::XmmReg alloc_xmm_temp(const aasm::RegSet& exclude) noexcept;
+        InplaceVec<aasm::GPReg, TemporalRegs::MAX_NOF_GP_TEMPORAL_REGS> alloc_gp_temp(const aasm::RegSet& exclude, std::size_t nof_temps) const noexcept;
+
+        [[nodiscard]]
+        InplaceVec<aasm::XmmReg, TemporalRegs::MAX_NOF_XMM_TEMPORAL_REGS> alloc_xmm_temp(const aasm::RegSet& exclude, std::size_t nof_temps) const noexcept;
 
         void try_push(const AssignedVReg& vreg) {
             const auto reg_opt = vreg.to_reg();
@@ -81,24 +81,11 @@ namespace details {
         static VRegSelection create(const call_conv::CallConvProvider* call_conv, const aasm::RegSet &arg_regs);
 
     private:
-        void push_impl(const aasm::GPReg reg) noexcept {
-            if (std::ranges::contains(m_free_gp_regs, reg)) {
-                return;
-            }
+        void push_impl(aasm::GPReg reg) noexcept;
+        void push_impl(aasm::XmmReg reg) noexcept;
 
-            m_free_gp_regs.push_back(reg);
-        }
-
-        void push_impl(const aasm::XmmReg reg) noexcept {
-            if (std::ranges::contains(m_free_xmm_regs, reg)) {
-                return;
-            }
-
-            m_free_xmm_regs.push_back(reg);
-        }
-
-        std::vector<aasm::GPReg> m_free_gp_regs;
-        std::vector<aasm::XmmReg> m_free_xmm_regs;
+        InplaceVec<aasm::GPReg, aasm::GPReg::NUMBER_OF_REGISTERS> m_free_gp_regs;
+        InplaceVec<aasm::XmmReg, aasm::XmmReg::NUMBER_OF_REGISTERS> m_free_xmm_regs;
         std::int32_t m_local_area_size{};
         const call_conv::CallConvProvider* m_call_conv;
     };

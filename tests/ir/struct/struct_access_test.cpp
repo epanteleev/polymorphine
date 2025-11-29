@@ -315,7 +315,7 @@ static std::int64_t deref_ptr(const T* p) {
 
 TEST(StructAlloc, escaped_struct_field_stack_alloc_i64) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"make_point", 18},
+        {"make_point", 16},
     };
 
     const std::unordered_map<std::string, std::size_t> externs {
@@ -330,7 +330,7 @@ TEST(StructAlloc, escaped_struct_field_stack_alloc_i64) {
 
 TEST(StructAlloc, escaped_struct_field_stack_alloc_u64) {
     const std::unordered_map<std::string, std::size_t> asm_size {
-        {"make_point", 18},
+        {"make_point", 16},
     };
 
     const std::unordered_map<std::string, std::size_t> externs {
