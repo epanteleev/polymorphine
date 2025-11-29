@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lir/x64/asm/operand/GPOp.h"
-
 class GPUnaryVisitor {
 public:
     virtual ~GPUnaryVisitor() = default;

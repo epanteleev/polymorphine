@@ -1,44 +1,11 @@
 #include "LIRFunctionCodegen.h"
 
-#include "asm/x64/reg/RegSet.h"
-#include "lir/x64/asm/operand/XOp.h"
+#include "asm/x64/reg/AnyRegSet.h"
 #include "lir/x64/asm/MasmEmitter.h"
 #include "lir/x64/asm/cc/CallConv.h"
-#include "lir/x64/asm/visitors/GPBinarySrcAddrVisitor.h"
-#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
-#include "lir/x64/asm/visitors/GPUnaryVisitor.h"
-#include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
-#include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
-#include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
-#include "lir/x64/asm/visitors/XBinaryVisitor.h"
-#include "lir/x64/asm/visitors/XUnaryVisitor.h"
-#include "lir/x64/asm/visitors/XUnaryOutVisitor.h"
-
-#include "lir/x64/asm/emitters/AddIntEmit.h"
-#include "lir/x64/asm/emitters/CmpGPEmit.h"
-#include "lir/x64/asm/emitters/CopyGPEmit.h"
-#include "lir/x64/asm/emitters/LoadGPEmit.h"
-#include "lir/x64/asm/emitters/MovGPEmit.h"
-#include "lir/x64/asm/emitters/StoreGPEmit.h"
-#include "lir/x64/asm/emitters/SubIntEmit.h"
-#include "lir/x64/asm/emitters/CMovGPEmit.h"
-#include "lir/x64/asm/emitters/XorIntEmit.h"
-#include "lir/x64/asm/emitters/MovsxIntEmit.h"
-#include "lir/x64/asm/emitters/MovzxIntEmit.h"
-#include "lir/x64/asm/emitters/TruncIntEmit.h"
-#include "lir/x64/asm/emitters/LeaGPEmit.h"
-#include "lir/x64/asm/emitters/AddFloatEmit.h"
-#include "lir/x64/asm/emitters/CmpFloatEmit.h"
-#include "lir/x64/asm/emitters/CopyFloatEmit.h"
 
 #include "lir/x64/instruction/LIRCall.h"
 #include "lir/x64/instruction/LIRInstructionBase.h"
-#include "lir/x64/asm/emitters/DivIntEmit.h"
-#include "lir/x64/asm/emitters/DivUIntEmit.h"
-#include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
-#include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
-#include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
-#include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
 #include "lir/x64/asm/map/LIRInstuctionMapping.h"
 #include "lir/x64/asm/map/LIROperandMapping.h"
 #include "lir/x64/operand/LIRVal.h"
@@ -155,8 +122,6 @@ namespace {
         }
 
         void load_f(const LIRVal &out, const LIRVal &pointer) override {}
-
-        void mov_f(const LIROperand &in1, const LIROperand &in2) override {}
 
         void jmp(const LIRBlock *bb) override {
             if (m_next == bb) {

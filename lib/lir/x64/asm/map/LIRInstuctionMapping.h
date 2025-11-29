@@ -2,6 +2,58 @@
 #include "LIROperandMapping.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 
+#include "lir/x64/asm/operand/GPOp.h"
+#include "lir/x64/asm/operand/XOp.h"
+#include "lir/x64/asm/operand/XVReg.h"
+
+#include "asm/x64/reg/AnyRegSet.h"
+#include "lir/x64/asm/operand/XOp.h"
+#include "lir/x64/asm/MasmEmitter.h"
+#include "lir/x64/asm/cc/CallConv.h"
+#include "lir/x64/asm/visitors/GPBinarySrcAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPBinaryVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryOutVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPBinaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/XBinaryVisitor.h"
+#include "lir/x64/asm/visitors/XUnaryVisitor.h"
+#include "lir/x64/asm/visitors/XUnaryOutVisitor.h"
+#include "lir/x64/asm/visitors/XBinaryVisitorWithGP.h"
+#include "lir/x64/asm/visitors/XBinaryVisitorXOut.h"
+#include "lir/x64/asm/visitors/XBinaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/XUnaryGpOutVisitor.h"
+#include "lir/x64/asm/visitors/XUnaryAddrVisitor.h"
+
+#include "lir/x64/asm/EmptyEmitter.h"
+#include "lir/x64/asm/emitters/AddIntEmit.h"
+#include "lir/x64/asm/emitters/AddFloatEmit.h"
+#include "lir/x64/asm/emitters/SubIntEmit.h"
+#include "lir/x64/asm/emitters/XorIntEmit.h"
+#include "lir/x64/asm/emitters/CMovGPEmit.h"
+#include "lir/x64/asm/emitters/CmpGPEmit.h"
+#include "lir/x64/asm/emitters/DivIntEmit.h"
+#include "lir/x64/asm/emitters/DivUIntEmit.h"
+#include "lir/x64/asm/emitters/TruncIntEmit.h"
+#include "lir/x64/asm/emitters/CopyGPEmit.h"
+#include "lir/x64/asm/emitters/LoadGPEmit.h"
+#include "lir/x64/asm/emitters/LoadByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/MovByIdxIntEmit.h"
+#include "lir/x64/asm/emitters/MovGPEmit.h"
+#include "lir/x64/asm/emitters/MovsxIntEmit.h"
+#include "lir/x64/asm/emitters/MovzxIntEmit.h"
+#include "lir/x64/asm/emitters/StoreGPEmit.h"
+#include "lir/x64/asm/emitters/StoreOnStackGPEmit.h"
+#include "lir/x64/asm/emitters/LoadFromStackGPEmit.h"
+#include "lir/x64/asm/emitters/LeaGPEmit.h"
+#include "lir/x64/asm/emitters/CopyFloatEmit.h"
+#include "lir/x64/asm/emitters/MovByIdxFloatEmit.h"
+#include "lir/x64/asm/emitters/CmpFloatEmit.h"
+#include "lir/x64/asm/emitters/LoadByIdxFloatEmit.h"
+#include "lir/x64/asm/emitters/StoreOnStackXmmEmit.h"
+#include "lir/x64/asm/emitters/StoreXmmEmit.h"
+#include "lir/x64/asm/emitters/MovFloatEmit.h"
+
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
     class LIRInstructionMapping: public LIRVisitor, public LIROperandMapping {
@@ -187,6 +239,52 @@ namespace details {
             const auto in2_reg = convert_to_x_op(in2);
             AddFloatEmit emitter(m_temp_regs, m_as, out.size());
             emitter.apply(out_reg, in1_reg, in2_reg);
+        }
+
+        void mov_f(const LIROperand &in1, const LIROperand &in2) final {
+            const auto in1_reg = convert_to_gp_op(in1);
+            const auto add_opt = in1_reg.as_address();
+            assertion(add_opt.has_value(), "Invalid LIRVal for mov_i");
+
+            const auto in2_op = convert_to_x_op(in2);
+            MovFloatEmit emitter(m_temp_regs, m_as, in1.size());
+            emitter.apply(add_opt.value(), in2_op);
+        }
+
+        void mov_by_idx_f(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override {
+            const auto out_reg = pointer.assigned_reg().to_gp_op().value();
+            const auto index_op = convert_to_gp_op(index);
+            const auto in2_op = convert_to_x_op(in);
+
+            MovByIdxFloatEmit emitter(m_temp_regs, m_as, in.size());
+            emitter.apply(out_reg, index_op, in2_op);
+        }
+
+        void load_by_idx_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+            const auto out_reg = out.assigned_reg().to_xmm_op().value();
+            const auto index_op = convert_to_gp_op(index);
+            const auto pointer_op = convert_to_gp_op(pointer);
+
+            LoadByIdxFloatEmit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, pointer_op, index_op);
+        }
+
+        void store_by_offset_f(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) override {
+            const auto out_vreg = convert_to_gp_op(pointer);
+            const auto out_addr = out_vreg.as_address();
+            assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
+
+            const auto index_op = convert_to_gp_op(index);
+            const auto value_op = convert_to_x_op(value);
+            StoreOnStackXmmEmit emitter(m_temp_regs, m_as, value.size());
+            emitter.apply(out_addr.value(), index_op, value_op);
+        }
+
+        void store_f(const LIRVal &pointer, const LIROperand &value) final {
+            const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
+            const auto value_op = convert_to_x_op(value);
+            StoreXmmEmit emitter(m_temp_regs, m_as, value.size());
+            emitter.apply(pointer_reg, value_op);
         }
 
     protected:

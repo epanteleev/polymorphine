@@ -8,25 +8,24 @@
 #include "lir/x64/operand/OperandMatcher.h"
 #include "lir/x64/analysis/join_intervals/LiveIntervalsJoinEval.h"
 
-static std::pair<aasm::GPRegSet, aasm::XmmRegSet> collect_used_argument_regs(const std::span<LIRVal const>& args) {
-    aasm::GPRegSet used_gp_argument_regs;
-    aasm::XmmRegSet used_xmm_argument_regs;
+static aasm::RegSet collect_used_argument_regs(const std::span<LIRVal const>& args) {
+    aasm::RegSet reg_set;
     for (const auto& arg: args) {
         const auto reg = arg.assigned_reg().to_reg();
         if (!reg.has_value()) {
             continue;
         }
         if (const auto gp_reg = reg->as_gp_reg(); gp_reg.has_value()) {
-            used_gp_argument_regs.emplace(gp_reg.value());
+            reg_set.emplace(gp_reg.value());
             continue;
         }
 
         if (const auto xmm_reg = reg->as_xmm_reg(); xmm_reg.has_value()) {
-            used_xmm_argument_regs.emplace(xmm_reg.value());
+            reg_set.emplace(xmm_reg.value());
         }
     }
 
-    return std::make_pair(used_gp_argument_regs, used_xmm_argument_regs);
+    return reg_set;
 }
 
 void LinearScan::run() {
@@ -41,9 +40,9 @@ LinearScan LinearScan::create(AnalysisPassManagerBase<LIRFuncData> *cache, const
     const auto intervals = cache->analyze<LiveIntervalsEval>(data);
     const auto joins = cache->analyze<LiveIntervalsJoinEval>(data);
     const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-    const auto [gp_regs, xmm_regs] = collect_used_argument_regs(data->args());
+    const auto reg_set = collect_used_argument_regs(data->args());
 
-    auto vreg_selection = details::VRegSelection::create(call_conv, gp_regs, xmm_regs);
+    auto vreg_selection = details::VRegSelection::create(call_conv, reg_set);
     return LinearScan(*data, std::move(vreg_selection), *intervals, *joins, *preorder, symbol_tab, call_conv);
 }
 
@@ -92,7 +91,7 @@ void LinearScan::do_register_allocation()  {
         for (std::int64_t i = range_begin; i < unhandled_interval->start()-1; ++i) {
             allocate_temporal_register(m_instruction_ordering[i]);
         }
-        range_begin = unhandled_interval->start();
+        range_begin = unhandled_interval->start()-1;
 
         erase_active(*unhandled_interval);
         erase_unactive(*unhandled_interval);
@@ -102,7 +101,7 @@ void LinearScan::do_register_allocation()  {
         m_active_intervals.emplace_back(unhandled_interval, lir_val);
 
         // Allocate temporals for current instruction.
-        allocate_temporal_register(m_instruction_ordering[range_begin-1]);
+        allocate_temporal_register(m_instruction_ordering[range_begin]);
     }
 
     // Process the remaining instructions.
@@ -114,10 +113,8 @@ void LinearScan::do_register_allocation()  {
 void LinearScan::finalize_prologue_epilogue() const {
     const auto prologue = m_obj_func_data.prologue();
     const auto epilogue = m_obj_func_data.epilogue();
-    for (const auto reg: m_used_callee_saved_regs) {
-        epilogue->add_reg(reg);
-        prologue->add_reg(reg);
-    }
+    epilogue->add_regs(m_used_callee_saved_regs);
+    prologue->add_regs(m_used_callee_saved_regs);
     epilogue->increase_local_area_size(m_reg_set.local_area_size());
     prologue->increase_local_area_size(m_reg_set.local_area_size());
 }
@@ -169,8 +166,8 @@ void LinearScan::activate_unhandled_fixed_regs(const LiveInterval &unhandled_int
             continue;
         }
 
-        const auto real_interval = &group.value()->m_interval;
-        if (real_interval->start() > unhandled_interval.finish()) {
+        const auto& real_interval = group.value()->m_interval;
+        if (real_interval.start() > unhandled_interval.finish()) {
             // No need to check further, the intervals are sorted.
             break;
         }
@@ -185,7 +182,7 @@ void LinearScan::activate_unhandled_fixed_regs(const LiveInterval &unhandled_int
             continue;
         }
 
-        if (!real_interval->intersects(unhandled_interval)) {
+        if (!real_interval.intersects(unhandled_interval)) {
             // This interval does not intersect with the unhandled interval, skip it.
             continue;
         }
@@ -272,40 +269,62 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::XmmReg reg
     lir_val.assign_reg(reg);
 }
 
+std::optional<aasm::XmmReg> LinearScan::allocate_xmm_temp(const aasm::RegSet& operand_regs, const std::size_t xmm_num) noexcept {
+    switch (xmm_num) {
+        case 0: return std::nullopt;
+        case 1: {
+            const auto reg = m_reg_set.alloc_xmm_temp(operand_regs);
+            m_reg_set.push(reg);
+            return reg;
+        }
+        default: std::unreachable();
+    }
+}
+
+static aasm::RegSet collect_operand_registers(std::span<LIROperand const> operands) {
+    aasm::RegSet regs;
+    for (const auto& op: operands) {
+        const auto vreg = op.as_vreg();
+        if (!vreg.has_value()) {
+            continue;
+        }
+
+        const auto assigned_reg = vreg->assigned_reg().to_reg();
+        if (!assigned_reg.has_value()) {
+            continue;
+        }
+
+        regs.emplace(assigned_reg.value());
+    }
+
+    return regs;
+}
+
 void LinearScan::allocate_temporal_register(LIRInstructionBase *inst) noexcept {
     if (!inst->temporal_regs().empty()) {
         return;
     }
-    const auto [gp_num, xmm_num] = details::AllocTemporalRegs::allocate(m_symbol_tab, inst);
-    std::optional<aasm::XmmReg> xmm_reg;
-    switch (xmm_num) {
-        case 0: break;
-        case 1: {
-            const auto reg = m_reg_set.top_xmm(IntervalHint::NOTHING);
-            m_reg_set.push(reg);
-            xmm_reg = reg;
-            break;
-        }
-        default: std::unreachable();
-    }
+    const auto operand_regs = collect_operand_registers(inst->inputs());
 
+    const auto [gp_num, xmm_num] = details::AllocTemporalRegs::allocate(m_symbol_tab, inst);
+    const auto xmm_reg = allocate_xmm_temp(operand_regs, xmm_num);
     switch (gp_num) {
         case 0: {
             inst->init_temporal_regs(TemporalRegs(xmm_reg));
             break;
         }
         case 1: {
-            const auto reg = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
+            const auto reg = m_reg_set.alloc_gp_temp(operand_regs);
             m_reg_set.push(reg);
-            inst->init_temporal_regs(TemporalRegs(reg.as_gp_reg().value(), xmm_reg));
+            inst->init_temporal_regs(TemporalRegs(reg, xmm_reg));
             break;
         }
         case 2: {
-            const auto reg1 = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
-            const auto reg2 = m_reg_set.top(IntervalHint::NOTHING, LIRValType::GP);
+            const auto reg1 = m_reg_set.alloc_gp_temp(operand_regs);
+            const auto reg2 = m_reg_set.alloc_gp_temp(operand_regs);
             m_reg_set.push(reg2);
             m_reg_set.push(reg1);
-            inst->init_temporal_regs(TemporalRegs(reg1.as_gp_reg().value(), reg2.as_gp_reg().value(), xmm_reg));
+            inst->init_temporal_regs(TemporalRegs(reg1, reg2, xmm_reg));
             break;
         }
         default: die("Unexpected number of temporal registers allocated: {}", gp_num);

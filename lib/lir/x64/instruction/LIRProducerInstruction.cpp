@@ -30,7 +30,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             }
             break;
         }
-        case LIRProdInstKind::LoadI: {
+        case LIRProdInstKind::Load: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");
             switch (type()) {
@@ -40,12 +40,19 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             }
             break;
         }
-        case LIRProdInstKind::LoadByIdx: visitor.load_by_idx_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::LoadByIdx: {
+            switch (type()) {
+                case LIRValType::GP: visitor.load_by_idx_i(def(0), in(0), in(1)); break;
+                case LIRValType::FP: visitor.load_by_idx_f(def(0), in(0), in(1)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
         case LIRProdInstKind::ReadByOffset: visitor.read_by_offset_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Lea: visitor.lea_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Movz: visitor.movzx_i(def(0), in(0)); break;
         case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;
         case LIRProdInstKind::Trunc: visitor.trunc_i(def(0), in(0)); break;
-        default: die("Unsupported LIRProducerInstruction kind: {}", static_cast<int>(m_kind));
+        default: std::unreachable();
     }
 }

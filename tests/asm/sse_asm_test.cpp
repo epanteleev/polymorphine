@@ -29,6 +29,15 @@ TEST(SSE_Asm, movss_addr_reg) {
     check_coding(std::move(a), codes, "movss 3(%rbp), %xmm1");
 }
 
+TEST(SSE_Asm, movss_reg_addr) {
+    const std::vector<std::uint8_t> codes = {0xf3,0x0f,0x11,0x4d,0x03};
+
+    aasm::AsmEmitter a;
+    constexpr aasm::Address addr(aasm::rbp, 3);
+    a.movss(aasm::xmm1, addr);
+    check_coding(std::move(a), codes, "movss %xmm1, 3(%rbp)");
+}
+
 TEST(SSE_Asm, movsd_reg_reg) {
     const std::vector<std::uint8_t> codes = {0xf2,0x0f,0x10,0xd1};
 
@@ -52,6 +61,15 @@ TEST(SSE_Asm, movsd_addr_reg) {
     constexpr aasm::Address addr(aasm::rbp, 3);
     a.movsd(addr, aasm::xmm1);
     check_coding(std::move(a), codes, "movsd 3(%rbp), %xmm1");
+}
+
+TEST(SSE_Asm, movsd_reg_addr) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x0f,0x11,0x4d,0x03};
+
+    aasm::AsmEmitter a;
+    constexpr aasm::Address addr(aasm::rbp, 3);
+    a.movsd(aasm::xmm1, addr);
+    check_coding(std::move(a), codes, "movsd %xmm1, 3(%rbp)");
 }
 
 TEST(SSE_Asm, movsd_addr_reg_high) {

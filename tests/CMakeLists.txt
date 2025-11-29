@@ -8,7 +8,7 @@ function(add_test_executable target path)
     )
 
     target_compile_features(${target} PUBLIC cxx_std_23)
-    target_link_libraries(${target} PRIVATE ckoof GTest::gtest GTest::gtest_main)
+    target_link_libraries(${target} PRIVATE polymorphine GTest::gtest GTest::gtest_main)
     target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/lib> .)
 
     gtest_discover_tests(${target})

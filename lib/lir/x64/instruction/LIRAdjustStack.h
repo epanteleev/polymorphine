@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "LIRInstructionBase.h"
-#include "asm/x64/reg/RegSet.h"
+#include "asm/x64/reg/AnyRegSet.h"
 
 enum class LIRAdjustKind: std::uint8_t {
     UpStack,
@@ -22,8 +22,9 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    void add_reg(const aasm::GPReg reg) noexcept {
-        m_caller_saved_regs.emplace(reg);
+    void add_regs(const aasm::GPRegSet& regs) noexcept {
+        assertion(m_caller_saved_regs.empty(), "invariant");
+        m_caller_saved_regs = regs;
     }
 
     void increase_overflow_area_size(const std::size_t size) {

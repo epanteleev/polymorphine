@@ -7,8 +7,9 @@
 #include "asm/symbol/Symbol.h"
 #include "asm/x64/encoding/Encoding.h"
 #include "asm/x64/encoding/SSEEncoding.h"
-#include "../../Label.h"
+#include "asm/Label.h"
 #include "asm/x64/reg/XmmReg.h"
+#include "asm/x64/CondType.h"
 #include "Pop.h"
 #include "Push.h"
 #include "Mov.h"
@@ -17,7 +18,6 @@
 #include "Sub.h"
 #include "Jmp.h"
 #include "Cmp.h"
-#include "../CondType.h"
 #include "Jcc.h"
 #include "SetCC.h"
 #include "Leave.h"
@@ -64,8 +64,8 @@ namespace aasm {
         details::Call, details::CallM,
         details::Leave,
         // SSE Instructions
-        details::MovssRR, details::MovssRM,
-        details::MovsdRR, details::MovsdRM,
+        details::MovssRR, details::MovssRM, details::MovssMR,
+        details::MovsdRR, details::MovsdRM, details::MovsdMR,
         details::AddssRR, details::AddssRM,
         details::AddsdRR, details::AddsdRM,
         details::SubsdRR, details::SubsdRM,

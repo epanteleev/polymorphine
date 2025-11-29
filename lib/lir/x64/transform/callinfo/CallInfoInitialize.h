@@ -54,6 +54,8 @@ private:
     void initialize_data(LIRAdjustStack* adjust_inst, const LIRBlock* call_holder_bb, const LIRValSet& live_set) {
         const auto call = find_call_instruction(call_holder_bb);
         const auto no_return_val = call->defs().empty();
+
+        aasm::GPRegSet reg_set;
         for (const auto& lir_val: live_set) {
             const auto reg = lir_val.assigned_reg().to_gp_op().value();
             const auto gp_reg = reg.as_gp_reg();
@@ -64,8 +66,14 @@ private:
                 continue;
             }
 
-            try_add_register(adjust_inst, gp_reg.value());
+            if (!m_call_conv->GP_CALLER_SAVE_REGISTERS().contains(gp_reg.value())) {
+                // If the register is a caller-saved register, we need to add it to the adjust stack.
+                return;
+            }
+
+            reg_set.emplace(gp_reg.value());
         }
+        adjust_inst->add_regs(reg_set);
         adjust_inst->increase_overflow_area_size(evaluate_overflow_area_size(call));
     }
 
@@ -74,15 +82,6 @@ private:
         m_func_data.prologue()->increase_overflow_area_size(m_max_caller_overflow_area_size);
     }
 
-    void try_add_register(LIRAdjustStack* adjust_inst, aasm::GPReg gp_reg) const noexcept {
-        if (!std::ranges::contains(m_call_conv->GP_CALLER_SAVE_REGISTERS(), gp_reg)) {
-            // If the register is a caller-saved register, we need to add it to the adjust stack.
-            return;
-        }
-
-        // Add the register to the adjust stack instruction.
-        adjust_inst->add_reg(gp_reg);
-    }
 
     std::size_t evaluate_overflow_area_size(const LIRCall* call) noexcept {
         std::size_t overflow_args{};

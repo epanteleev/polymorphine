@@ -2,20 +2,19 @@
 
 namespace aasm::details {
     static constexpr std::array<std::uint8_t, 1> MOVSD_RM_PREFIX = {0xF2};
-    static constexpr std::array<std::uint8_t, 2> MOVSD_RR = {0x0F, 0x10};
 
     template<typename SRC>
     class MovsdR_RM {
     public:
         template<typename S = SRC>
-        explicit constexpr MovsdR_RM(S&& src, XmmReg dst) noexcept:
+        explicit constexpr MovsdR_RM(S&& src, const XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            SSEEncoder encoder(buffer, MOVSD_RM_PREFIX, MOVSD_RR);
+            SSEEncoder encoder(buffer, MOVSD_RM_PREFIX, MOVSS_RR);
             return encoder.encode_A(m_src, m_dst);
         }
 
@@ -38,5 +37,25 @@ namespace aasm::details {
             MovsdR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const MovsdRM& rr);
+    };
+
+    class MovsdMR final {
+    public:
+        explicit constexpr MovsdMR(const XmmReg src, const Address& dst) noexcept:
+            m_src(src),
+            m_dst(dst) {}
+
+        template<CodeBuffer Buffer>
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
+            SSEEncoder encoder(buffer, MOVSD_RM_PREFIX, MOVSS_MR);
+            return encoder.encode_C(m_src, m_dst);
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const MovsdMR& rr);
+
+    protected:
+        XmmReg m_src;
+        Address m_dst;
     };
 }

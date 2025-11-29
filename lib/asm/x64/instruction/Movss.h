@@ -3,6 +3,7 @@
 namespace aasm::details {
     static constexpr std::array<std::uint8_t, 1> MOVSS_RM_PREFIX = {0xF3};
     static constexpr std::array<std::uint8_t, 2> MOVSS_RR = {0x0F, 0x10};
+    static constexpr std::array<std::uint8_t, 2> MOVSS_MR = {0x0F, 0x11};
 
     template<typename SRC>
     class MovssR_RM {
@@ -38,5 +39,25 @@ namespace aasm::details {
             MovssR_RM(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const MovssRM& rr);
+    };
+
+    class MovssMR final {
+    public:
+        explicit constexpr MovssMR(const XmmReg src, const Address& dst) noexcept:
+            m_src(src),
+            m_dst(dst) {}
+
+        template<CodeBuffer Buffer>
+        [[nodiscard]]
+        constexpr std::optional<Relocation> emit(Buffer& buffer) const {
+            SSEEncoder encoder(buffer, MOVSS_RM_PREFIX, MOVSS_MR);
+            return encoder.encode_C(m_src, m_dst);
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const MovssMR& rr);
+
+    protected:
+        XmmReg m_src;
+        Address m_dst;
     };
 }

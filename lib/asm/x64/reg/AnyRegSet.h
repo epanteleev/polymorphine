@@ -1,50 +1,48 @@
 #pragma once
 
 #include <bitset>
-
 #include "asm/asm_frwd.h"
-#include "GPReg.h"
-#include "XmmReg.h"
+#include "Reg.h"
 #include "utility/BitUtils.h"
 
 namespace aasm {
     template<typename Reg, std::size_t MAX_NOF_REGS>
-    class RegSet;
+    class AnyRegSet;
 
-    template<typename Reg, std::size_t MAX_NOF_REGS>
+    template<typename RegT, std::size_t MAX_NOF_REGS>
     class RegSetIterator final {
         template<typename R, std::size_t M>
-        friend class RegSet;
+        friend class AnyRegSet;
 
-        explicit RegSetIterator(const RegSet<Reg, MAX_NOF_REGS> * reg_map, const std::size_t idx) noexcept:
+        explicit constexpr RegSetIterator(const AnyRegSet<RegT, MAX_NOF_REGS>* reg_map, const std::size_t idx) noexcept:
             m_reg_set(reg_map),
             m_idx(idx) {}
 
     public:
-        using value_type      = Reg;
-        using reference       = const Reg;
+        using value_type      = RegT;
+        using reference       = const RegT;
         using difference_type = std::ptrdiff_t;
         using const_reference = reference;
 
-        RegSetIterator() noexcept = default;
+        constexpr RegSetIterator() noexcept = default;
 
-        reference operator*() const noexcept;
+        constexpr reference operator*() const noexcept;
 
-        RegSetIterator& operator++() noexcept;
-        RegSetIterator operator++(int) noexcept {
+        constexpr RegSetIterator& operator++() noexcept;
+        constexpr RegSetIterator operator++(int) noexcept {
             const RegSetIterator temp = *this;
             ++*this;
             return temp;
         }
 
-        RegSetIterator& operator--() noexcept;
-        RegSetIterator operator--(int) noexcept {
+        constexpr RegSetIterator& operator--() noexcept;
+        constexpr RegSetIterator operator--(int) noexcept {
             const RegSetIterator temp = *this;
             --*this;
             return temp;
         }
 
-        bool operator==(const RegSetIterator& other) const noexcept {
+        constexpr bool operator==(const RegSetIterator& other) const noexcept {
             if (this == &other) {
                 return true;
             }
@@ -52,7 +50,7 @@ namespace aasm {
             return m_reg_set == other.m_reg_set && m_idx == other.m_idx;
         }
 
-        bool operator!=(const RegSetIterator& other) const noexcept {
+        constexpr bool operator!=(const RegSetIterator& other) const noexcept {
             return !(*this == other);
         }
 
@@ -60,69 +58,69 @@ namespace aasm {
         template<typename R>
         static constexpr R from_index(const std::size_t idx) noexcept {
             if constexpr (std::same_as<R, XmmReg>) {
-                return Reg(idx+xmm0.code());
-            } else if constexpr (std::same_as<R, GPReg>) {
-                return Reg(idx);
+                return RegT(idx+xmm0.code());
+            } else if constexpr (std::same_as<R, GPReg> || std::same_as<R, Reg>) {
+                return RegT(idx);
             } else {
                 static_assert(false, "unexpected type");
                 std::unreachable();
             }
         }
 
-        const RegSet<Reg, MAX_NOF_REGS>* m_reg_set{};
+        const AnyRegSet<RegT, MAX_NOF_REGS>* m_reg_set{};
         std::size_t m_idx{};
     };
 
-    template<typename Reg, std::size_t MAX_NOF_REGS>
-    class RegSet {
+    template<typename RegT, std::size_t MAX_NOF_REGS>
+    class AnyRegSet {
     public:
-        using value_type = Reg;
-        using iterator   = RegSetIterator<Reg, MAX_NOF_REGS>;
-        using reference  = Reg&;
+        using value_type = RegT;
+        using iterator   = RegSetIterator<RegT, MAX_NOF_REGS>;
+        using reference  = RegT&;
 
-        RegSet() noexcept = default;
-        constexpr RegSet(const std::initializer_list<Reg> list) noexcept {
+        constexpr AnyRegSet() noexcept = default;
+        constexpr AnyRegSet(const std::initializer_list<RegT>& list) noexcept {
             for (const auto& reg : list) {
                 m_has_values.set(to_index(reg));
             }
         }
 
         [[nodiscard]]
-        std::size_t size() const noexcept {
+        constexpr std::size_t size() const noexcept {
             return m_has_values.count();
         };
 
         [[nodiscard]]
-        bool empty() const noexcept {
+        constexpr bool empty() const noexcept {
             return m_has_values.none();
         }
 
-        Reg emplace(const Reg& reg) noexcept {
+        constexpr RegT emplace(const RegT& reg) noexcept {
             m_has_values.set(to_index(reg));
             return reg;
         }
 
         [[nodiscard]]
-        bool contains(const Reg reg) const noexcept {
+        constexpr bool contains(const RegT reg) const noexcept {
             return m_has_values.test(to_index(reg));
         }
 
         [[nodiscard]]
-        iterator find(const Reg reg) const noexcept {
+        constexpr iterator find(const RegT reg) const noexcept {
             if (!contains(reg)) {
                 return end();
             }
 
-            return RegSetIterator<Reg, MAX_NOF_REGS>(this, to_index(reg));
+            return RegSetIterator<RegT, MAX_NOF_REGS>(this, to_index(reg));
         }
 
         [[nodiscard]]
-        iterator begin() const noexcept {
+        constexpr iterator begin() const noexcept {
             return RegSetIterator(this, bitutils::find_next_set_bit(m_has_values, 0));
         }
 
         [[nodiscard]]
-        iterator end() const noexcept {
+        constexpr iterator end() const noexcept {
             return RegSetIterator(this, MAX_NOF_REGS);
         }
 
@@ -134,7 +132,7 @@ namespace aasm {
         static constexpr std::size_t to_index(const R& reg) noexcept {
             if constexpr (std::same_as<R, XmmReg>) {
                 return reg.code()-xmm0.code();
-            } else if constexpr (std::same_as<R, GPReg>) {
+            } else if constexpr (std::same_as<R, GPReg> || std::same_as<R, Reg>) {
                 return reg.code();
             } else {
                 static_assert(false, "unexpected type");
@@ -146,26 +144,28 @@ namespace aasm {
     };
 
     template<typename Reg, std::size_t MAX_NOF_REGS>
-    RegSetIterator<Reg, MAX_NOF_REGS>::reference RegSetIterator<Reg, MAX_NOF_REGS>::operator*() const noexcept {
+    constexpr RegSetIterator<Reg, MAX_NOF_REGS>::reference RegSetIterator<Reg, MAX_NOF_REGS>::operator*() const noexcept {
         return from_index<Reg>(m_idx);
     }
 
     template<typename Reg, std::size_t MAX_NOF_REGS>
-    RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator++() noexcept {
+    constexpr RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator++() noexcept {
         m_idx++;
         m_idx = bitutils::find_next_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;
     }
 
     template<typename Reg, std::size_t MAX_NOF_REGS>
-    RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator--() noexcept {
+    constexpr RegSetIterator<Reg, MAX_NOF_REGS> &RegSetIterator<Reg, MAX_NOF_REGS>::operator--() noexcept {
         m_idx--;
         m_idx = bitutils::find_prev_set_bit(m_reg_set->m_has_values, m_idx);
         return *this;
     }
 
-    class GPRegSet final: public RegSet<GPReg, GPReg::NUMBER_OF_REGISTERS> {};
-    class XmmRegSet final: public RegSet<XmmReg, XmmReg::NUMBER_OF_REGISTERS> {};
+    class GPRegSet final: public AnyRegSet<GPReg, GPReg::NUMBER_OF_REGISTERS> {};
+    class XmmRegSet final: public AnyRegSet<XmmReg, XmmReg::NUMBER_OF_REGISTERS> {};
+    class RegSet final: public AnyRegSet<Reg, GPReg::NUMBER_OF_REGISTERS+XmmReg::NUMBER_OF_REGISTERS> {};
+
 }
 
 static_assert(std::ranges::range<aasm::GPRegSet>, "should be");

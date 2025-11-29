@@ -182,6 +182,14 @@ public:
         }
     }
 
+    constexpr void movfp(const std::uint8_t size, const aasm::XmmReg& src, const aasm::Address& dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.movss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.movsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     constexpr void copyfp(const std::uint8_t size, const aasm::XmmReg src, const aasm::XmmReg dst) {
         if (src == dst) return;
         switch (size) {

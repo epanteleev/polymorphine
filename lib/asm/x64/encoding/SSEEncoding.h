@@ -26,6 +26,17 @@ namespace aasm::details {
             return EncodeUtils::emit_operands(m_buffer, dest, src);
         }
 
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_C(const XmmReg& src, const Address& dest) {
+            emit_opcodes(m_prefixes);
+            if (const auto prefix = EncodeUtils::prefix(dest, src); prefix.has_value()) {
+                m_buffer.emit8(prefix.value());
+            }
+
+            emit_opcodes(m_opcodes);
+            return EncodeUtils::emit_operands(m_buffer, src, dest);
+        }
+
     private:
         constexpr void emit_opcodes(const std::span<std::uint8_t const>& ops) const {
             for (const auto opcode : ops) m_buffer.emit8(opcode);

@@ -18,7 +18,7 @@ private:
     friend class XUnaryVisitor;
 
     void emit(aasm::XmmReg out, aasm::XmmReg in) override {
-        unimplemented();
+        m_as.cmpfp(m_ord, m_size, in, out);
     }
 
     void emit(aasm::XmmReg out, const aasm::Address &in) override {
