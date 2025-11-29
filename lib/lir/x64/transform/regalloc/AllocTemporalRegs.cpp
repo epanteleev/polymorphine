@@ -1,5 +1,6 @@
 #include "AllocTemporalRegs.h"
 
+#include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/map/LIROperandMapping.h"
 #include "lir/x64/module/LIRBlock.h"
 #include "lir/x64/asm/map/LIRInstuctionMapping.h"
@@ -86,8 +87,6 @@ namespace details {
         void neg_i(const LIRVal &out, const LIROperand &in) override {}
 
         void not_i(const LIRVal &out, const LIROperand &in) override {}
-
-        void load_f(const LIRVal &out, const LIRVal &pointer) override {}
     };
 
     std::pair<std::uint8_t, std::uint8_t> AllocTemporalRegs::allocate(aasm::SymbolTable &symbol_tab, const LIRInstructionBase *inst) {

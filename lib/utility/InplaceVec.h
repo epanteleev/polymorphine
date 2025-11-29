@@ -58,6 +58,11 @@ public:
         return m_size;
     }
 
+    [[nodiscard]]
+    bool empty() const noexcept {
+        return m_size == 0;
+    }
+
     iterator begin() noexcept {
         return at(0);
     }

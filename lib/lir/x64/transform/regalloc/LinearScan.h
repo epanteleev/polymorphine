@@ -46,7 +46,9 @@ private:
     void allocate_register(const LIRVal& lir_val, aasm::XmmReg reg);
 
     void allocate_temporal_register(LIRInstructionBase* inst) noexcept;
-    std::optional<aasm::XmmReg> allocate_xmm_temp(const aasm::RegSet& operand_regs, std::size_t xmm_num) noexcept;
+
+    InplaceVec<aasm::XmmReg, TemporalRegs::MAX_NOF_XMM_TEMPORAL_REGS> allocate_xmm_temp(const aasm::RegSet& operand_regs, std::size_t xmm_num) noexcept;
+    InplaceVec<aasm::GPReg, TemporalRegs::MAX_NOF_GP_TEMPORAL_REGS> allocate_gp_temp(const aasm::RegSet& operand_regs, std::size_t gp_num) noexcept;
 
     void do_stack_alloc(const LIRVal& lir_val);
     void instruction_ordering();

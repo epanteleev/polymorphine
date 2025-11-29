@@ -121,8 +121,6 @@ namespace {
             m_as.leave();
         }
 
-        void load_f(const LIRVal &out, const LIRVal &pointer) override {}
-
         void jmp(const LIRBlock *bb) override {
             if (m_next == bb) {
                 return;

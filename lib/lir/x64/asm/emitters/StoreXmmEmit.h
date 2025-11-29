@@ -15,8 +15,8 @@ public:
 private:
     friend class XUnaryGpOutVisitor;
 
-    void emit(aasm::GPReg out, aasm::XmmReg in) override {
-        unimplemented();
+    void emit(const aasm::GPReg out, aasm::XmmReg in) override {
+        m_as.movfp(m_size, in, aasm::Address(out));
     }
 
     void emit(aasm::GPReg out, const aasm::Address &in) override {

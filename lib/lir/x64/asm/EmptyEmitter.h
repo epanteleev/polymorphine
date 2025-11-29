@@ -1,6 +1,7 @@
 #pragma once
 
-#include "FcmpOrdering.h"
+#include "lir/x64/asm/FcmpOrdering.h"
+#include "lir/x64/asm/operand/XVReg.h"
 #include "asm/x64/asm.h"
 
 class EmptyEmitter final {

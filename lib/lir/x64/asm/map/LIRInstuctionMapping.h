@@ -24,8 +24,8 @@
 #include "lir/x64/asm/visitors/XBinaryAddrVisitor.h"
 #include "lir/x64/asm/visitors/XUnaryGpOutVisitor.h"
 #include "lir/x64/asm/visitors/XUnaryAddrVisitor.h"
+#include "lir/x64/asm/visitors/GPUnaryXmmOutVisitor.h"
 
-#include "lir/x64/asm/EmptyEmitter.h"
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/AddFloatEmit.h"
 #include "lir/x64/asm/emitters/SubIntEmit.h"
@@ -53,6 +53,7 @@
 #include "lir/x64/asm/emitters/StoreOnStackXmmEmit.h"
 #include "lir/x64/asm/emitters/StoreXmmEmit.h"
 #include "lir/x64/asm/emitters/MovFloatEmit.h"
+#include "lir/x64/asm/emitters/LoadFloatEmit.h"
 
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
@@ -285,6 +286,13 @@ namespace details {
             const auto value_op = convert_to_x_op(value);
             StoreXmmEmit emitter(m_temp_regs, m_as, value.size());
             emitter.apply(pointer_reg, value_op);
+        }
+
+        void load_f(const LIRVal &out, const LIRVal &pointer) final {
+            const auto out_reg = out.assigned_reg().to_xmm_op().value();
+            const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
+            LoadFloatEmit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, pointer_reg);
         }
 
     protected:
