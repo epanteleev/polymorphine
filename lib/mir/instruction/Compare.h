@@ -10,11 +10,11 @@ public:
 
     [[nodiscard]]
     const Value& lhs() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]
     const Value& rhs() const {
-        return m_values.at(1);
+        return m_values[1];
     }
 };

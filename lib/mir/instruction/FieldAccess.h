@@ -11,7 +11,7 @@ public:
 
     [[nodiscard]]
     const Value &pointer() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]

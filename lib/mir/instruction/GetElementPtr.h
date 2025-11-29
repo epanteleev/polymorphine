@@ -10,7 +10,7 @@ public:
 
     [[nodiscard]]
     const Value &index() const {
-        return m_values.at(1);
+        return m_values[1];
     }
 
     [[nodiscard]]

@@ -50,5 +50,3 @@ private:
     std::unordered_map<const aasm::Symbol*, JitDataChunk> m_offset_table;
     std::span<std::uint8_t> m_code_buffer;
 };
-
-std::ostream & operator<<(std::ostream &os, const JitDataBlob &blob);

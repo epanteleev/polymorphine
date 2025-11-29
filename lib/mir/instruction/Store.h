@@ -11,12 +11,12 @@ public:
 
     [[nodiscard]]
     const Value& pointer() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]
     const Value& value() const {
-        return m_values.at(1);
+        return m_values[1];
     }
 
     static std::unique_ptr<Store> store(const Value& ptr, const Value& value) {

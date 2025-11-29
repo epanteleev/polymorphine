@@ -46,17 +46,17 @@ public:
 
     [[nodiscard]]
     BasicBlock *on_true() const {
-        return m_successors.at(0);
+        return m_successors[0];
     }
 
     [[nodiscard]]
     BasicBlock* on_false() const {
-        return m_successors.at(1);
+        return m_successors[1];
     }
 
     [[nodiscard]]
     const Value &condition() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     static std::unique_ptr<CondBranch> br_cond(const Value& condition, BasicBlock *true_target, BasicBlock *false_target) {
@@ -85,7 +85,7 @@ class Switch final: public TerminateInstruction {
 public:
     Switch(Value condition, std::vector<Value> &&cases, std::vector<BasicBlock*>&& targets) noexcept:
         TerminateInstruction({condition}, std::move(targets)),
-        m_cases(cases) {}
+        m_cases(std::move(cases)) {}
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
@@ -107,7 +107,7 @@ public:
 
     [[nodiscard]]
     const Value& first() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]

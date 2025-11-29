@@ -61,7 +61,7 @@ public:
         return m_global_data;
     }
 
-    void print(std::ostream &os) const;
+    friend std::ostream &operator<<(std::ostream &os, const LIRFuncData &fd);
 
 private:
     std::string m_name;

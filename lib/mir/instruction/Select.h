@@ -9,17 +9,17 @@ public:
 
     [[nodiscard]]
     const Value& condition() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]
     const Value& on_true() const {
-        return m_values.at(1);
+        return m_values[1];
     }
 
     [[nodiscard]]
     const Value& on_false() const {
-        return m_values.at(2);
+        return m_values[2];
     }
 
     void visit(Visitor &visitor) {

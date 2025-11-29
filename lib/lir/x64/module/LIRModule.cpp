@@ -11,7 +11,7 @@ std::ostream & operator<<(std::ostream &os, const LIRModule &module) {
     }
 
     for (const auto &f: module.m_functions | std::views::values) {
-        f.print(os);
+        os << f;
     }
 
     return os;

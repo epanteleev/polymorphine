@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <list>
+#include "Error.h"
 
 template<typename iterator, typename T>
 class Iterator final {
@@ -128,11 +129,13 @@ public:
     }
 
     const_reference at(std::size_t index) const {
-        return *m_list.at(index)->get();
+        assertion(index < size(), "invariant");
+        return *m_list[index]->get();
     }
 
     reference at(std::size_t index) {
-        return *m_list.at(index)->get();
+        assertion(index < size(), "invariant");
+        return *m_list[index]->get();
     }
 
     iterator begin() noexcept {

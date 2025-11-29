@@ -4,19 +4,19 @@
 #include "mir/types/TupleType.h"
 
 
-class IntDiv final : public ValueInstruction {
+class IntDiv final: public ValueInstruction {
 public:
     IntDiv(const Value &lhs, const Value &rhs) noexcept:
         ValueInstruction(make_ty(lhs, rhs), {lhs, rhs}) {}
 
     [[nodiscard]]
     const Value& lhs() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]
     const Value& rhs() const {
-        return m_values.at(1);
+        return m_values[1];
     }
 
     [[nodiscard]]

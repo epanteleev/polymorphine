@@ -15,6 +15,7 @@ public:
         m_functions(std::move(functions)),
         m_global_data(std::move(global_data)) {}
 
+    [[nodiscard]]
     std::expected<LIRFuncData*, Error> find_function_data(const std::string& name) {
         const auto& it = m_functions.find(name);
         if (it == m_functions.end()) {
@@ -51,5 +52,3 @@ private:
     std::unordered_map<std::string, LIRFuncData> m_functions;
     GlobalData m_global_data;
 };
-
-std::ostream & operator<<(std::ostream &os, const LIRModule &module);

@@ -44,7 +44,7 @@ public:
      */
     const Derived* pred(const std::size_t idx) const {
         assertion(idx < m_predecessors.size(), "Index {} is out of range for predecessors", idx);
-        return m_predecessors.at(idx);
+        return m_predecessors[idx];
     }
 
     /**

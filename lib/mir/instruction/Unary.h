@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]]
     Value operand() const {
-        return m_values.at(0);
+        return m_values[0];
     }
 
     [[nodiscard]]

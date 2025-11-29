@@ -23,7 +23,8 @@ public:
 
     [[nodiscard]]
     const LIROperand& in(const std::size_t idx) const {
-        return m_inputs.at(idx);
+        assertion(idx < m_inputs.size(), "invariant");
+        return m_inputs[idx];
     }
 
     void in(const std::size_t idx, const LIROperand& new_op) {

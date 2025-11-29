@@ -26,9 +26,18 @@ LIRAdjustStack * LIRFuncData::epilogue() const {
     return epilogue;
 }
 
-void LIRFuncData::print(std::ostream &os) const {
-    os << m_name << '(';
-    for (auto [idx, arg] : std::ranges::enumerate_view(m_args)) {
+static std::ostream& print_blocks(std::ostream &os, const OrderedSet<LIRBlock> &blocks) {
+    os << '{' << std::endl;
+    for (const auto &bb : blocks) {
+        bb.print(os);
+    }
+    os << '}' << std::endl;
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const LIRFuncData &fd) {
+    os << fd.m_name << '(';
+    for (auto [idx, arg] : std::ranges::enumerate_view(fd.m_args)) {
         if (idx > 0) {
             os << ", ";
         }
@@ -36,9 +45,9 @@ void LIRFuncData::print(std::ostream &os) const {
         os << arg;
     }
     os << ") ";
-    if (!m_global_data.empty()) {
+    if (!fd.m_global_data.empty()) {
         os << std::endl << "constants: [" << std::endl;
-        for (const auto& [idx, data] : std::ranges::enumerate_view(m_global_data)) {
+        for (const auto& [idx, data] : std::ranges::enumerate_view(fd.m_global_data)) {
             if (idx != 0) {
                 os << std::endl;
             }
@@ -47,5 +56,6 @@ void LIRFuncData::print(std::ostream &os) const {
         }
         os << "]" << std::endl;
     }
-    print_blocks(os);
+    print_blocks(os, fd.m_basic_blocks);
+    return os;
 }

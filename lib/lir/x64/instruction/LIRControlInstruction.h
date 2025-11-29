@@ -20,7 +20,8 @@ public:
 
     [[nodiscard]]
     const LIRBlock* succ(const std::size_t idx) const {
-        return m_successors.at(idx);
+        assertion(idx < m_successors.size(), "invariant");
+        return m_successors[idx];
     }
 
 protected:

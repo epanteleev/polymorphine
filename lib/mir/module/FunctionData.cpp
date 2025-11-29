@@ -6,10 +6,19 @@ FunctionData::FunctionData(const FunctionPrototype* prototype, std::vector<Argum
     create_basic_block();
 }
 
+static std::ostream& print_blocks(std::ostream &os, const OrderedSet<BasicBlock> &blocks) {
+    os << '{' << std::endl;
+    for (const auto &bb : blocks) {
+        bb.print(os);
+    }
+    os << '}' << std::endl;
+    return os;
+}
+
 std::ostream & operator<<(std::ostream &os, const FunctionData &fd) {
     os << "define ";
     fd.m_prototype->print(os, fd.m_args);
     os << ' ';
-    fd.print_blocks(os);
+    print_blocks(os, fd.m_basic_blocks);
     return os;
 }

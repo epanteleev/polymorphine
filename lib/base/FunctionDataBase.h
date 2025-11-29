@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ostream>
-
 #include "Constrains.h"
 #include "utility/OrderedSet.h"
 
@@ -53,15 +51,6 @@ public:
     }
 
 protected:
-    std::ostream& print_blocks(std::ostream &os) const {
-        os << '{' << std::endl;
-        for (const auto &bb : m_basic_blocks) {
-            bb.print(os);
-        }
-        os << '}' << std::endl;
-        return os;
-    }
-
     std::vector<arg_type> m_args;
     OrderedSet<code_block_type> m_basic_blocks;
 };

@@ -48,5 +48,5 @@ public:
 
 private:
     std::span<std::uint8_t> m_buffer;
-    std::size_t m_size{0};
+    std::size_t m_size{};
 };

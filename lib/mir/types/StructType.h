@@ -25,7 +25,8 @@ public:
 
     [[nodiscard]]
     std::size_t offset_of(const std::size_t index) const {
-        return m_offsets.at(index);
+        assertion(index < m_offsets.size(), "invariant");
+        return m_offsets[index];
     }
 
     [[nodiscard]]
@@ -55,7 +56,8 @@ public:
 
     [[nodiscard]]
     const NonTrivialType* field_type_of(const std::size_t index) const override {
-        return m_field_types.at(index);
+        assertion(index < m_field_types.size(), "invariant");
+        return m_field_types[index];
     }
 
     void print_declaration(std::ostream &os) const;

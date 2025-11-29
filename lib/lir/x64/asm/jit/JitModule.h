@@ -83,5 +83,3 @@ private:
     std::span<std::uint8_t> m_total_mem;
     JitDataBlob m_code_blob;
 };
-
-std::ostream & operator<<(std::ostream &os, const JitModule &blob);
