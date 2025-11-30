@@ -56,6 +56,7 @@ public:
     virtual void store_f(const LIRVal& pointer, const LIROperand& value) = 0;
     virtual void add_f(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void read_by_offset_f(const LIRVal& out, const LIROperand& pointer, const LIROperand& index) = 0;
+    virtual void cvtfp2int(const LIRVal& out, const LIROperand& in) = 0;
 
     virtual void jmp(const LIRBlock* bb) = 0;
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;

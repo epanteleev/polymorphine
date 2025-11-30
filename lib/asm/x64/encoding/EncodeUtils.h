@@ -3,7 +3,7 @@
 #include "Prefix.h"
 #include "asm/x64/Common.h"
 #include "asm/x64/address/Address.h"
-#include "asm/x64/reg/GPReg.h"
+#include "asm/x64/reg/Reg.h"
 
 namespace aasm::details {
     class EncodeUtils final {
@@ -32,10 +32,10 @@ namespace aasm::details {
             return std::nullopt;
         }
 
-        template<typename Op>
+        template<typename Op, RegVariant Reg>
         requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmReg>
         [[nodiscard]]
-        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const XmmReg dest) noexcept {
+        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const Reg dest) noexcept {
             auto code = constants::REX | R(dest);
             if constexpr (std::is_same_v<Op, Address>) {
                 code |= X(src);

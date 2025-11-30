@@ -129,6 +129,16 @@ public:
     }
 
     [[nodiscard]]
+    Value fp2int(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::fp2int(to_type, value));
+    }
+
+    [[nodiscard]]
+    Value int2fp(const FloatingPointType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::int2fp(to_type, value));
+    }
+
+    [[nodiscard]]
     BasicBlock* create_basic_block() const {
         return m_fd->create_basic_block();
     }

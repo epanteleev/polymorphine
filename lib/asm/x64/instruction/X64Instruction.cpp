@@ -357,6 +357,22 @@ namespace aasm::details {
     std::ostream& operator<<(std::ostream& os, const XorpdRM& rr) {
         return os << "xorpd " << rr.m_src << ", %" << rr.m_dst.name(16);
     }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtss2siRR& rr) {
+        return os << "cvttss2si %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtss2siRM& rr) {
+        return os << "cvttss2si %" << rr.m_src << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsd2siRR& rr) {
+        return os << "cvttsd2si %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsd2siRM& rr) {
+        return os << "cvttsd2si %" << rr.m_src << ", %" << rr.m_dst.name(16);
+    }
 }
 
 namespace aasm {

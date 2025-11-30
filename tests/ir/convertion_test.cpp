@@ -2,7 +2,7 @@
 #include <climits>
 
 #include <mir/mir.h>
-#include "../helpers/Jit.h"
+#include "helpers/Jit.h"
 
 static Module sext_cvt(const SignedIntegerType* from, const SignedIntegerType* to) {
     ModuleBuilder builder;
@@ -261,6 +261,31 @@ TEST(BitcastConvertion, bitcast_u64_to_i64) {
     const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
     const auto fn = code.code_start_as<long(unsigned long)>("cvt").value();
     ASSERT_EQ(fn(1UL), 1L);
+    ASSERT_EQ(fn(18446744073709551615UL), -1L);
+    ASSERT_EQ(fn(127UL), 127L);
+    ASSERT_EQ(fn(18446744073709551488UL), -128L);
+}
+
+static Module fp2int_cvt(const FloatingPointType* from, const IntegerType* to) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(to, {from}, "cvt", FunctionBind::DEFAULT);
+
+    const auto fn_builder = builder.make_function_builder(prototype);
+    const auto data = fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.fp2int(to, arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(Float2Int, fp2int_i64_to_f64) {
+    GTEST_SKIP();
+    const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<long(double)>("cvt").value();
+    ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(18446744073709551615UL), -1L);
     ASSERT_EQ(fn(127UL), 127L);
     ASSERT_EQ(fn(18446744073709551488UL), -128L);

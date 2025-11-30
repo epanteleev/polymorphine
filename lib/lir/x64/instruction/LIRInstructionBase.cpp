@@ -212,6 +212,10 @@ namespace {
             m_os << "read_by_offset_f out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
+        void cvtfp2int(const LIRVal &out, const LIROperand &in) override {
+            m_os << "cvtfp2int out(" << out << ") in(" << in << ')';
+        }
+
         void store_f(const LIRVal &pointer, const LIROperand &value) override {
             m_os << "store_f pointer(" << pointer << ") value(" << value << ')';
         }

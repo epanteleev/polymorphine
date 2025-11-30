@@ -108,6 +108,9 @@ public:
     template<XVRegVariant Op>
     constexpr void xorfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
+    template<XVRegVariant Op>
+    constexpr void cvtfp2si(const std::uint8_t, const Op, const aasm::GPReg) {}
+
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }
 

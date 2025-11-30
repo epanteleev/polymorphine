@@ -36,6 +36,8 @@ add_library(polymorphine SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
+        asm/x64/instruction/Cvttss2si.h
+        asm/x64/instruction/Cvttsd2si.h
 )
 
 try_setup_coverage_options(polymorphine)

@@ -294,6 +294,10 @@ namespace details {
             emitter.apply(out_reg, index_op, pointer_addr.value());
         }
 
+        void cvtfp2int(const LIRVal &out, const LIROperand &in) override {
+            unimplemented();
+        }
+
         void store_f(const LIRVal &pointer, const LIROperand &value) final {
             const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
             const auto value_op = convert_to_x_op(value);

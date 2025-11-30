@@ -27,6 +27,7 @@ enum class LIRProdInstKind: std::uint8_t {
     Movz,
     Movs,
     Trunc,
+    CvtFp2Int
 };
 
 class LIRProducerInstruction final: public LIRProducerInstructionBase {
@@ -128,13 +129,17 @@ public:
         return create(LIRProdInstKind::Trunc, LIRValType::GP, to_size, to_size, op);
     }
 
+    static std::unique_ptr<LIRProducerInstruction> cvtfp2int(const std::uint8_t to_size, const LIROperand &op) {
+        return create(LIRProdInstKind::CvtFp2Int, LIRValType::FP, to_size, to_size, op);
+    }
+
     [[nodiscard]]
     LIRProdInstKind op() const noexcept {
         return m_kind;
     }
 
 private:
-    template<typename ... Args>
+    template<typename... Args>
     static std::unique_ptr<LIRProducerInstruction> create(LIRProdInstKind kind, const LIRValType type, const std::size_t size, const std::size_t align, Args&&... args) {
         auto prod = std::make_unique<LIRProducerInstruction>(kind, type, std::vector{std::forward<Args>(args)...});
         prod->add_def(LIRVal::reg(size, align, 0, prod.get()));

@@ -810,6 +810,15 @@ void FunctionLower::accept(Unary *inst) {
             memorize(inst, copy->def(0));
             break;
         }
+        case UnaryOp::Float2Int: {
+            const auto operand = get_lir_operand(inst->operand());
+            const auto type = dynamic_cast<const IntegerType*>(inst->type());
+            assertion(type != nullptr, "Expected PrimitiveType for Float2Int operation");
+
+            const auto copy = m_bb->ins(LIRProducerInstruction::cvtfp2int(type->size_of(), operand));
+            memorize(inst, copy->def(0));
+            break;
+        }
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
     }
 }

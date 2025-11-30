@@ -61,27 +61,27 @@ namespace {
             os << ' ' << inst->lhs() << ", " << inst->rhs();
         }
 
-        static std::string_view unaryOpToString(const UnaryOp op) {
+        static std::string_view unary_to_string(const UnaryOp op) {
             switch (op) {
-                case UnaryOp::Negate: return "neg";
+                case UnaryOp::Negate:     return "neg";
                 case UnaryOp::LogicalNot: return "not";
-                case UnaryOp::Trunk: return "trunk";
+                case UnaryOp::Trunk:      return "trunk";
                 case UnaryOp::SignExtend: return "sext";
                 case UnaryOp::ZeroExtend: return "zext";
-                case UnaryOp::Ptr2Int: return "ptr2int";
-                case UnaryOp::Flag2Int: return "flag2int";
-                case UnaryOp::Int2Ptr: return "int2ptr";
-                case UnaryOp::Int2Float: return "int2fp";
-                case UnaryOp::Float2Int: return "fp2int";
-                case UnaryOp::Load: return "load";
-                case UnaryOp::Bitcast: return "bitcast";
-                default: die("wrong type");
+                case UnaryOp::Ptr2Int:    return "ptr2int";
+                case UnaryOp::Flag2Int:   return "flag2int";
+                case UnaryOp::Int2Ptr:    return "int2ptr";
+                case UnaryOp::Int2Float:  return "int2fp";
+                case UnaryOp::Float2Int:  return "fp2int";
+                case UnaryOp::Load:       return "load";
+                case UnaryOp::Bitcast:    return "bitcast";
+                default: std::unreachable();
             }
         }
 
         void accept(Unary *inst) override {
             print_val(inst);
-            os << unaryOpToString(inst->op());
+            os << unary_to_string(inst->op());
             os << ' ' << *inst->type();
             os << ' ' << inst->operand();
         }

@@ -61,10 +61,11 @@ TEST(ArrayAccess, basic_f64) {
     ASSERT_EQ(result, 0 + 10 + 20 + 30 + 40);
 }
 
-static Module create_array_of_structs() {
+template<typename V>
+static Module create_array_of_structs(const PrimitiveType* ty_f1, V&& val_fn) {
     ModuleBuilder builder;
     {
-        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), UnsignedIntegerType::u64()});
+        auto point_type = builder.add_struct_type("Point", {SignedIntegerType::i32(), ty_f1});
         const auto arr_type = builder.add_array_type(point_type, 3);
 
         const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "create_array_of_points", FunctionBind::DEFAULT);
@@ -76,7 +77,7 @@ static Module create_array_of_structs() {
             auto field0 = data.gfp(point_type, gep, 0);
             auto field1 = data.gfp(point_type, gep, 1);
             data.store(field0, Value::i32(i * 10));
-            data.store(field1, Value::u64(i * 100));
+            data.store(field1, val_fn(i * 100));
         }
         auto sum = data.alloc(SignedIntegerType::i64());
         data.store(sum, Value::i64(0));
@@ -105,7 +106,7 @@ TEST(ArrayAccess, array_of_structs) {
         {"create_array_of_points",  18},
     };
 
-    const auto buffer = jit_compile_and_assembly(create_array_of_structs(), true);
+    const auto buffer = jit_compile_and_assembly(create_array_of_structs(UnsignedIntegerType::u64(), Value::u64));
     const auto create_array_fn = buffer.code_start_as<std::int64_t()>("create_array_of_points").value();
     const auto result = create_array_fn();
     ASSERT_EQ(result, (0 + 0) + (10 + 100) + (20 + 200));

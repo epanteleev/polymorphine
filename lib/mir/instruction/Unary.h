@@ -3,7 +3,7 @@
 #include <memory>
 #include "ValueInstruction.h"
 
-enum class UnaryOp {
+enum class UnaryOp: std::uint8_t {
     Negate,
     LogicalNot,
     Trunk,
@@ -42,6 +42,16 @@ public:
     [[nodiscard]]
     static std::unique_ptr<Unary> flag2int(const IntegerType* ty, const Value &value) {
         return std::make_unique<Unary>(ty, UnaryOp::Flag2Int, value);
+    }
+
+    [[nodiscard]]
+    static std::unique_ptr<Unary> int2fp(const FloatingPointType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::Int2Float, value);
+    }
+
+    [[nodiscard]]
+    static std::unique_ptr<Unary> fp2int(const IntegerType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::Float2Int, value);
     }
 
     [[nodiscard]]

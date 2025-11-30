@@ -41,6 +41,8 @@
 #include "Comisd.h"
 #include "Xorps.h"
 #include "Xorpd.h"
+#include "Cvttss2si.h"
+#include "Cvttsd2si.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -77,7 +79,9 @@ namespace aasm {
         details::ComissRR, details::ComissRM,
         details::ComisdRR, details::ComisdRM,
         details::XorpsRR, details::XorpsRM,
-        details::XorpdRR, details::XorpdRM
+        details::XorpdRR, details::XorpdRM,
+        details::Cvtss2siRR, details::Cvtss2siRM,
+        details::Cvtsd2siRR, details::Cvtsd2siRM
     >;
 
     std::ostream &operator<<(std::ostream &os, const X64Instruction &inst);
