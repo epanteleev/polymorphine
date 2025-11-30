@@ -12,7 +12,7 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            SSEEncoder encoder(buffer, UCOMISD_PREFIX, UCOMISD);
+            SSEEncoder encoder(buffer, DB_PREFIX, UCOMISD);
             return encoder.encode_A(m_src, m_dst);
         }
 

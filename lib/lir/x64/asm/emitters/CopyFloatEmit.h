@@ -31,8 +31,9 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::XmmReg out, std::int64_t in) override {
-        unimplemented();
+    void emit(const aasm::XmmReg out, const std::int64_t in) override {
+        assertion(in == 0, "invariant");
+        m_as.xorfp(m_size, out, out);
     }
 
     void emit(const aasm::Address &out, std::int64_t in) override {

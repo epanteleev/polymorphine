@@ -38,6 +38,4 @@ namespace aasm {
         std::vector<std::uint32_t> m_label_table; // HashMap from 'label' to instruction index
         std::vector<X64Instruction> m_instructions;
     };
-
-    std::ostream & operator<<(std::ostream &os, const AsmBuffer &asm_buff);
 }

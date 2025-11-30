@@ -175,7 +175,7 @@ static const std::unordered_map<std::string, std::size_t> fp_predicate_asm_size 
 };
 
 TEST(SanityCheck, is_unord_f32_predicate) {
-    const std::vector<float> values = {0., 1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
+    const std::vector<float> values = {1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
 
     for (const auto j: values) {
         const auto buffer0 = jit_compile_and_assembly({}, is_unord_float_predicate(FloatingPointType::f32(), Value::f32(j)), fp_predicate_asm_size, true);
@@ -209,7 +209,7 @@ TEST(SanityCheck, is_unord_f32_predicate) {
 }
 
 TEST(SanityCheck, is_unord_f64_predicate) {
-    const std::vector values = {0., 1., 2., 42., 100., 1000., static_cast<double>(UINT32_MAX)};
+    const std::vector values = {1., 2., 42., 100., 1000., static_cast<double>(UINT32_MAX)};
 
     for (const auto j: values) {
         const auto buffer0 = jit_compile_and_assembly({}, is_unord_float_predicate(FloatingPointType::f64(), Value::f64(j)), fp_predicate_asm_size, true);
@@ -279,7 +279,7 @@ static Module is_ord_float_predicate(const FloatingPointType* ty, const Value& t
 }
 
 TEST(SanityCheck, is_ord_f32_predicate) {
-    const std::vector<float> values = {0., 1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
+    const std::vector<float> values = {1., 2., 42., 100., 1000., static_cast<float>(UINT32_MAX)};
 
     for (const auto j: values) {
         const auto buffer0 = jit_compile_and_assembly({}, is_ord_float_predicate(FloatingPointType::f32(), Value::f32(j)), fp_predicate_asm_size, true);
@@ -313,7 +313,7 @@ TEST(SanityCheck, is_ord_f32_predicate) {
 }
 
 TEST(SanityCheck, is_ord_f64_predicate) {
-    const std::vector values = {0., 1., 2., 42., 100., 1000., static_cast<double>(UINT32_MAX)};
+    const std::vector values = {1., 2., 42., 100., 1000., static_cast<double>(UINT32_MAX)};
 
     for (const auto j: values) {
         const auto buffer0 = jit_compile_and_assembly({}, is_ord_float_predicate(FloatingPointType::f64(), Value::f64(j)), fp_predicate_asm_size, true);

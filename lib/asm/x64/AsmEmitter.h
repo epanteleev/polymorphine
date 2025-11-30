@@ -326,6 +326,24 @@ namespace aasm {
             m_instructions.emplace_back(details::ComisdRM(src, dst));
         }
 
+        // Bitwise Logical XOR of Packed Single Precision Floating-Point Values
+        constexpr void xorps(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::XorpsRR(src, dst));
+        }
+
+        constexpr void xorps(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::XorpsRM(src, dst));
+        }
+
+        // Bitwise Logical XOR of Packed Double Precision Floating-Point Values
+        constexpr void xorpd(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::XorpdRR(src, dst));
+        }
+
+        constexpr void xorpd(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::XorpdRM(src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

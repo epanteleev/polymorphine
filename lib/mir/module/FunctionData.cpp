@@ -1,7 +1,7 @@
 #include "FunctionData.h"
 
-FunctionData::FunctionData(const FunctionPrototype* prototype, std::vector<ArgumentValue> &&args) noexcept:
-    FunctionDataBase(std::move(args)),
+FunctionData::FunctionData(const std::size_t uid, const FunctionPrototype* prototype, std::vector<ArgumentValue> &&args) noexcept:
+    FunctionDataBase(uid, std::move(args)),
     m_prototype(prototype) {
     create_basic_block();
 }

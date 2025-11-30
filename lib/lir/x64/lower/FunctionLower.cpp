@@ -261,7 +261,7 @@ LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
         lir_args.push_back(LIRVal::from(&inserted, non_trivial_type->size_of(), non_trivial_type->align_of()));
     }
 
-    return {function.name(), std::move(args), std::move(lir_args)};
+    return {function.uid(), function.name(), std::move(args), std::move(lir_args)};
 }
 
 void FunctionLower::allocate_fixed_regs_for_arguments() const {
@@ -370,7 +370,7 @@ LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
             return lowering.lower();
         }
         case GValueKind::VARIABLE: return m_global_data.lookup(std::string(global.name())).value();
-        default: die("Unsupported global value kind");
+        default: std::unreachable();
     }
 }
 
@@ -382,6 +382,14 @@ static std::string create_anon_constant_label(const std::size_t id, const std::s
 LIROperand FunctionLower::make_fp_constant(const Type& type, const double val) {
     const auto fp_type = dynamic_cast<const FloatingPointType*>(&type);
     assertion(fp_type != nullptr, "Expected FloatingPointType for constant");
+
+    if (val == 0.0) {
+        switch (fp_type->size_of()) {
+            case cst::QWORD_SIZE: return LirCst::imm64(0UL);
+            case cst::DWORD_SIZE: return LirCst::imm32(0UL);
+            default: std::unreachable();
+        }
+    }
 
     SlotType slot_type;
     std::int64_t bitmask;
@@ -400,8 +408,9 @@ LIROperand FunctionLower::make_fp_constant(const Type& type, const double val) {
     }
 
     auto& global = m_obj_function.global_data();
-    auto label = create_anon_constant_label(0, 0);
-    const auto slot = global.add_slot(label, LIRNamedSlot(std::move(label), LIRSlot(Constant(slot_type, bitmask))));
+    auto label = create_anon_constant_label(m_obj_function.uid(), m_cst_index++);
+    const auto name = label;
+    const auto slot = global.add_slot(name, LIRNamedSlot(std::move(label), LIRSlot(Constant(slot_type, bitmask))));
     return slot.value();
 }
 

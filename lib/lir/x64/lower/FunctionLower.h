@@ -121,6 +121,7 @@ private:
         m_value_mapping.emplace(UsedValue::from(val), lir_val);
     }
 
+    std::size_t m_cst_index{};
     LIRFuncData m_obj_function;
     const FunctionData& m_function;
     const Ordering<BasicBlock>& m_dom_ordering;

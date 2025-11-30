@@ -8,7 +8,7 @@
 static Module call_external() {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "call_external", FunctionBind::DEFAULT);
-    auto fn_builder = builder.make_function_builder(prototype);
+    const auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();
     const auto cont = data.create_basic_block();
     const auto proto = builder.add_function_prototype(SignedIntegerType::i32(), {}, "return_constant", FunctionBind::EXTERN);

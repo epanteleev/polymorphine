@@ -1,8 +1,6 @@
 #pragma once
 
 namespace aasm::details {
-    static constexpr std::array<std::uint8_t, 0> UCOMISS_PREFIX;
-    static constexpr std::array<std::uint8_t, 1> UCOMISD_PREFIX = {0x66};
     static constexpr std::array<std::uint8_t, 2> UCOMISD = {0x0F, 0x2E};
 
     template<typename SRC>
@@ -16,7 +14,7 @@ namespace aasm::details {
         template<CodeBuffer Buffer>
         [[nodiscard]]
         constexpr std::optional<Relocation> emit(Buffer& buffer) const {
-            SSEEncoder encoder(buffer, UCOMISS_PREFIX, UCOMISD);
+            SSEEncoder encoder(buffer, SP_PREFIX, UCOMISD);
             return encoder.encode_A(m_src, m_dst);
         }
 

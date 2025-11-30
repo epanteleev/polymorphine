@@ -217,6 +217,15 @@ public:
         }
     }
 
+    template<XVRegVariant Op>
+    constexpr void xorfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.xorps(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.xorpd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     constexpr void cdq(const std::uint8_t size) {
         m_asm.cdq(size);
     }

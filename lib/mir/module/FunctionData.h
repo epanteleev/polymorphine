@@ -14,12 +14,13 @@
 
 class FunctionData final: public FunctionDataBase<BasicBlock, ArgumentValue> {
 public:
-    explicit FunctionData(const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
+    explicit FunctionData(std::size_t uid, const FunctionPrototype* prototype, std::vector<ArgumentValue>&& args) noexcept;
 
     FunctionData(FunctionData&& other) noexcept = default;
 
     [[nodiscard]]
     const ArgumentValue& arg(const std::size_t index) const {
+        assertion(index < m_args.size(), "invariant");
         return m_args[index];
     }
 

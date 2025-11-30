@@ -22,7 +22,8 @@ std::expected<FunctionBuilder, Error> ModuleBuilder::make_function_builder(const
         args.emplace_back(idx, tp, prototype->attribute(idx));
     }
 
-    auto [b, inserted] = m_functions.emplace(std::move(str), FunctionData(prototype, std::move(args)));
+    const auto uid = m_functions.size();
+    auto [b, inserted] = m_functions.emplace(std::move(str), FunctionData(uid, prototype, std::move(args)));
     if (!inserted) {
         return std::unexpected(Error::CastError);
     }

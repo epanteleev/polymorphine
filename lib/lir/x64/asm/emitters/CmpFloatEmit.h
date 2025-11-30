@@ -34,8 +34,10 @@ private:
         m_as.cmpfp(m_ord, m_size, in, m_temporal_regs.xmm_temp1());
     }
 
-    void emit(aasm::XmmReg out, std::int64_t in) override {
-        unimplemented();
+    void emit(aasm::XmmReg out, const std::int64_t in) override {
+        assertion(in == 0, "invariant");
+        m_as.xorfp(m_size, m_temporal_regs.xmm_temp1(), m_temporal_regs.xmm_temp1());
+        m_as.cmpfp(m_ord, m_size, m_temporal_regs.xmm_temp1(), out);
     }
 
     void emit(const aasm::Address &out, std::int64_t in) override {

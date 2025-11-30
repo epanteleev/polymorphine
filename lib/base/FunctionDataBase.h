@@ -16,10 +16,12 @@ public:
     using code_block_type = BB;
     using arg_type = Arg;
 
-    explicit FunctionDataBase(std::vector<arg_type>&& args) noexcept:
+    explicit FunctionDataBase(const std::size_t uid, std::vector<arg_type>&& args) noexcept:
+        m_uid(uid),
         m_args(std::move(args)) {}
 
     FunctionDataBase(FunctionDataBase&& other) noexcept:
+        m_uid(other.m_uid),
         m_args(std::move(other.m_args)),
         m_basic_blocks(std::move(other.m_basic_blocks)) {}
 
@@ -31,6 +33,14 @@ public:
     [[nodiscard]]
     code_block_type* first() const {
         return m_basic_blocks.begin().get();
+    }
+
+    /**
+     * Returns unique identifier of the function.
+     */
+    [[nodiscard]]
+    std::size_t uid() const noexcept {
+        return m_uid;
     }
 
     /**
@@ -51,6 +61,7 @@ public:
     }
 
 protected:
+    std::size_t m_uid;
     std::vector<arg_type> m_args;
     OrderedSet<code_block_type> m_basic_blocks;
 };

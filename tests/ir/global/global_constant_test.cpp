@@ -3,7 +3,7 @@
 #include "../../helpers/Jit.h"
 #include "mir/mir.h"
 
-static Module global_constant_test(const IntegerType* ty) {
+static Module global_constant_test(const PrimitiveType* ty) {
     ModuleBuilder builder;
     {
         const auto prototype = builder.add_function_prototype(ty, {}, "global_constant_test", FunctionBind::DEFAULT);
@@ -27,8 +27,8 @@ TEST(GlobalConstant, load_global_constant_i64) {
 
 TEST(GlobalConstant, load_global_constant_i32) {
     const std::unordered_map<std::string, std::size_t> asm_size{
-            {"global_constant_test", 2},
-        };
+        {"global_constant_test", 2},
+    };
 
     const auto buffer = jit_compile_and_assembly({}, global_constant_test(SignedIntegerType::i32()), asm_size, true);
     const auto fn = buffer.code_start_as<std::int64_t()>("global_constant_test").value();

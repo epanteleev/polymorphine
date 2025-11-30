@@ -1,29 +1,30 @@
 #include <gtest/gtest.h>
 
-#include "../../helpers/Jit.h"
+#include "helpers/Jit.h"
 #include "mir/mir.h"
 
-static Module create_array() {
+template<typename V>
+static Module create_array(const PrimitiveType* ty, V&& val_fn) {
     ModuleBuilder builder;
     {
-        const auto prototype = builder.add_function_prototype(SignedIntegerType::i64(), {}, "create_array", FunctionBind::DEFAULT);
+        const auto prototype = builder.add_function_prototype(ty, {}, "create_array", FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
-        const auto arr_type = builder.add_array_type(SignedIntegerType::i64(), 5);
+        const auto arr_type = builder.add_array_type(ty, 5);
         const auto alloca = data.alloc(arr_type);
-        for (std::int64_t i = 0; i < 5; ++i) {
-            auto gep = data.gep(SignedIntegerType::i64(), alloca, Value::i64(i));
-            data.store(gep, Value::i64(i * 10));
+        for (std::int64_t i{}; i < 5; ++i) {
+            auto gep = data.gep(ty, alloca, Value::i64(i));
+            data.store(gep, val_fn(i * 10));
         }
-        auto sum = data.alloc(SignedIntegerType::i64());
-        data.store(sum, Value::i64(0));
-        for (std::int64_t i = 0; i < 5; ++i) {
-            auto gep = data.gep(SignedIntegerType::i64(), alloca, Value::i64(i));
-            auto val = data.load(SignedIntegerType::i64(), gep);
-            auto current_sum = data.load(SignedIntegerType::i64(), sum);
+        auto sum = data.alloc(ty);
+        data.store(sum, val_fn(0));
+        for (std::int64_t i{}; i < 5; ++i) {
+            auto gep = data.gep(ty, alloca, Value::i64(i));
+            auto val = data.load(ty, gep);
+            auto current_sum = data.load(ty, sum);
             auto new_sum = data.add(current_sum, val);
             data.store(sum, new_sum);
         }
-        auto final_sum = data.load(SignedIntegerType::i64(), sum);
+        const auto final_sum = data.load(ty, sum);
         data.ret(final_sum);
     }
 
@@ -34,8 +35,28 @@ TEST(ArrayAccess, basic) {
     const std::unordered_map<std::string, std::size_t> asm_size {
         {"create_array", 27},
     };
-    const auto buffer = jit_compile_and_assembly({}, create_array(), asm_size, true);
+    const auto buffer = jit_compile_and_assembly({}, create_array(SignedIntegerType::i64(), Value::i64), asm_size, true);
     const auto create_array_fn = buffer.code_start_as<std::int64_t()>("create_array").value();
+    const auto result = create_array_fn();
+    ASSERT_EQ(result, 0 + 10 + 20 + 30 + 40);
+}
+
+TEST(ArrayAccess, basic_f32) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"create_array", 33},
+    };
+    const auto buffer = jit_compile_and_assembly({}, create_array(FloatingPointType::f32(), Value::f32), asm_size, true);
+    const auto create_array_fn = buffer.code_start_as<float()>("create_array").value();
+    const auto result = create_array_fn();
+    ASSERT_EQ(result, 0 + 10 + 20 + 30 + 40);
+}
+
+TEST(ArrayAccess, basic_f64) {
+    const std::unordered_map<std::string, std::size_t> asm_size {
+        {"create_array", 33},
+    };
+    const auto buffer = jit_compile_and_assembly({}, create_array(FloatingPointType::f64(), Value::f64), asm_size, true);
+    const auto create_array_fn = buffer.code_start_as<double()>("create_array").value();
     const auto result = create_array_fn();
     ASSERT_EQ(result, 0 + 10 + 20 + 30 + 40);
 }

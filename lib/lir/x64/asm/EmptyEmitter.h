@@ -105,6 +105,9 @@ public:
     template<XVRegVariant Op>
     constexpr void cmpfp(const FcmpOrdering, const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
+    template<XVRegVariant Op>
+    constexpr void xorfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }
 

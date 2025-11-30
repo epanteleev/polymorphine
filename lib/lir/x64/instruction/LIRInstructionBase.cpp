@@ -173,7 +173,7 @@ namespace {
         }
 
         void read_by_offset_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
-            m_os << "load_from_stack_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
+            m_os << "read_by_offset_i out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
         void lea_i(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
@@ -206,6 +206,10 @@ namespace {
 
         void store_by_offset_f(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) override {
             m_os << "store_on_stack_f pointer(" << pointer << ") index(" << index << ") value(" << value << ')';
+        }
+
+        void read_by_offset_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+            m_os << "read_by_offset_f out(" << out << ") pointer(" << pointer << ") index(" << index << ')';
         }
 
         void store_f(const LIRVal &pointer, const LIROperand &value) override {

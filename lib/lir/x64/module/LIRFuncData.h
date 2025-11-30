@@ -9,8 +9,8 @@
 
 class LIRFuncData final: public FunctionDataBase<LIRBlock, LIRArg> {
 public:
-    LIRFuncData(const std::string_view name, std::vector<LIRArg> &&args, std::vector<LIRVal>&& lir_args) noexcept:
-        FunctionDataBase(std::move(args)),
+    LIRFuncData(const std::size_t uid, const std::string_view name, std::vector<LIRArg> &&args, std::vector<LIRVal>&& lir_args) noexcept:
+        FunctionDataBase(uid, std::move(args)),
         m_name(name),
         m_lir_args(std::move(lir_args)) {
         create_mach_block();
@@ -29,6 +29,7 @@ public:
 
     [[nodiscard]]
     LIRVal arg(const std::size_t index) const noexcept {
+        assertion(index < m_lir_args.size(), "invariant");
         return m_lir_args[index];
     }
 

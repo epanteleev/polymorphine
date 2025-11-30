@@ -48,7 +48,14 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             }
             break;
         }
-        case LIRProdInstKind::ReadByOffset: visitor.read_by_offset_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::ReadByOffset: {
+            switch (type()) {
+                case LIRValType::GP: visitor.read_by_offset_i(def(0), in(0), in(1)); break;
+                case LIRValType::FP: visitor.read_by_offset_f(def(0), in(0), in(1)); break;
+                default: std::unreachable();
+            }
+            break;
+        }
         case LIRProdInstKind::Lea: visitor.lea_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Movz: visitor.movzx_i(def(0), in(0)); break;
         case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;

@@ -5,6 +5,9 @@
 #include "asm/x64/reg/XmmReg.h"
 
 namespace aasm::details {
+    static constexpr std::array<std::uint8_t, 0> SP_PREFIX;
+    static constexpr std::array<std::uint8_t, 1> DB_PREFIX = {0x66};
+
     template<std::size_t N, std::size_t M, CodeBuffer Buffer>
     class SSEEncoder final {
     public:

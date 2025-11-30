@@ -48,8 +48,14 @@ private:
         unimplemented();
     }
 
-    void emit(aasm::XmmReg out, const aasm::Address &in1, aasm::XmmReg in2) override {
-        unimplemented();
+    void emit(const aasm::XmmReg out, const aasm::Address &in1, const aasm::XmmReg in2) override {
+        if (out == in2) {
+            m_as.addfp(m_size, in1, out);
+
+        } else {
+            m_as.movfp(m_size, in1, out);
+            m_as.addfp(m_size, in2, out);
+        }
     }
 
     void emit(aasm::XmmReg out, const aasm::Address &in1, const aasm::Address &in2) override {

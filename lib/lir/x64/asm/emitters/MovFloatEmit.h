@@ -29,7 +29,10 @@ private:
     }
 
     void emit(const aasm::Address &out, const std::int64_t in) override {
-        unimplemented();
+        assertion(in == 0, "invariant");
+        const auto temp = m_temporal_regs.xmm_temp1();
+        m_as.xorfp(m_size, temp, temp);
+        m_as.movfp(m_size, temp, out);
     }
 
     std::uint8_t m_size;

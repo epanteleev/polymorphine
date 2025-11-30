@@ -54,10 +54,12 @@ public:
         }
     }
 
+    [[nodiscard]]
     const_reference back() const noexcept {
         return *at(size() - 1);
     }
 
+    [[nodiscard]]
     pointer data() const noexcept {
         return at(0);
     }

@@ -25,6 +25,7 @@
 #include "lir/x64/asm/visitors/XUnaryGpOutVisitor.h"
 #include "lir/x64/asm/visitors/XUnaryAddrVisitor.h"
 #include "lir/x64/asm/visitors/GPUnaryXmmOutVisitor.h"
+#include "lir/x64/asm/visitors/XBinarySrcAddrVisitor.h"
 
 #include "lir/x64/asm/emitters/AddIntEmit.h"
 #include "lir/x64/asm/emitters/AddFloatEmit.h"
@@ -54,6 +55,7 @@
 #include "lir/x64/asm/emitters/StoreXmmEmit.h"
 #include "lir/x64/asm/emitters/MovFloatEmit.h"
 #include "lir/x64/asm/emitters/LoadFloatEmit.h"
+#include "lir/x64/asm/emitters/LoadFromStackFloatEmit.h"
 
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
@@ -279,6 +281,17 @@ namespace details {
             const auto value_op = convert_to_x_op(value);
             StoreOnStackXmmEmit emitter(m_temp_regs, m_as, value.size());
             emitter.apply(out_addr.value(), index_op, value_op);
+        }
+
+        void read_by_offset_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+            const auto out_reg = out.assigned_reg().to_xmm_op().value();
+            const auto index_op = convert_to_gp_op(index);
+            const auto pointer_op = convert_to_gp_op(pointer);
+            const auto pointer_addr = pointer_op.as_address();
+            assertion(pointer_addr.has_value(), "Invalid LIRVal for load_from_stack_i");
+
+            LoadFromStackFloatEmit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, index_op, pointer_addr.value());
         }
 
         void store_f(const LIRVal &pointer, const LIROperand &value) final {
