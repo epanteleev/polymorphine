@@ -227,10 +227,10 @@ public:
     }
 
     template<XVRegVariant Op>
-    constexpr void cvtfp2si(const std::uint8_t size, const Op src, const aasm::GPReg dst) {
-        switch (size) {
-            case cst::DWORD_SIZE: m_asm.cvtss2si(src, dst); break;
-            case cst::QWORD_SIZE: m_asm.cvtsd2si(src, dst); break;
+    constexpr void cvtfp2si(const std::uint8_t from_size, const std::uint8_t to_size, const Op src, const aasm::GPReg dst) {
+        switch (from_size) {
+            case cst::DWORD_SIZE: m_asm.cvtss2si(to_size, src, dst); break;
+            case cst::QWORD_SIZE: m_asm.cvtsd2si(to_size, src, dst); break;
             default: std::unreachable();
         }
     }

@@ -56,6 +56,7 @@
 #include "lir/x64/asm/emitters/MovFloatEmit.h"
 #include "lir/x64/asm/emitters/LoadFloatEmit.h"
 #include "lir/x64/asm/emitters/LoadFromStackFloatEmit.h"
+#include "lir/x64/asm/emitters/CvtFp2IntEmit.h"
 
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
@@ -295,7 +296,10 @@ namespace details {
         }
 
         void cvtfp2int(const LIRVal &out, const LIROperand &in) override {
-            unimplemented();
+            const auto out_reg = out.assigned_reg().to_gp_op().value();
+            const auto in_reg = convert_to_x_op(in);
+            CvtFp2IntEmit emitter(m_temp_regs, m_as, in.size(), out.size());
+            emitter.apply(out_reg, in_reg);
         }
 
         void store_f(const LIRVal &pointer, const LIROperand &value) final {

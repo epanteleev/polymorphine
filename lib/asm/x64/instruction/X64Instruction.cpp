@@ -359,19 +359,19 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtss2siRR& rr) {
-        return os << "cvttss2si %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return os << "cvttss2si" << prefix_size(rr.m_size) << " %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(rr.m_size);
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtss2siRM& rr) {
-        return os << "cvttss2si %" << rr.m_src << ", %" << rr.m_dst.name(16);
+        return os << "cvttss2si" << prefix_size(rr.m_size) << " %" << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtsd2siRR& rr) {
-        return os << "cvttsd2si %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return os << "cvttsd2si" << prefix_size(rr.m_size) << " %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(rr.m_size);
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtsd2siRM& rr) {
-        return os << "cvttsd2si %" << rr.m_src << ", %" << rr.m_dst.name(16);
+        return os << "cvttsd2si" << prefix_size(rr.m_size) << " %" << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
     }
 }
 

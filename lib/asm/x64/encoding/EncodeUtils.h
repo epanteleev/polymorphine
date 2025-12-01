@@ -32,10 +32,10 @@ namespace aasm::details {
             return std::nullopt;
         }
 
-        template<typename Op, RegVariant Reg>
+        template<typename Op>
         requires std::is_same_v<Op, Address> || std::is_same_v<Op, XmmReg>
         [[nodiscard]]
-        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const Reg dest) noexcept {
+        static constexpr std::optional<std::uint8_t> prefix(const Op& src, const XmmReg dest) noexcept {
             auto code = constants::REX | R(dest);
             if constexpr (std::is_same_v<Op, Address>) {
                 code |= X(src);
@@ -89,6 +89,34 @@ namespace aasm::details {
                 return code;
             }
 
+            return std::nullopt;
+        }
+
+        [[nodiscard]]
+        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const XmmReg src, const GPReg dest) noexcept {
+            auto code = R(src) | B(dest);
+            if (size == 8) {
+                code |= constants::REX_W;
+            } else {
+                code |= constants::REX;
+            }
+
+            if (code != constants::REX || (size == 1 && is_special_byte_reg(dest))) {
+                return code;
+            }
+
+            return std::nullopt;
+        }
+
+        [[nodiscard]]
+        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t, const Address& src, const GPReg dest) noexcept {
+            auto code = constants::REX | R(dest) | X(src);
+            if (const auto base = src.base(); base.has_value()) {
+                code |= B(base.value());
+            }
+            if (code != constants::REX) {
+                return code;
+            }
             return std::nullopt;
         }
 

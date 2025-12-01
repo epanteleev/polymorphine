@@ -345,21 +345,21 @@ namespace aasm {
         }
 
         // Convert With Truncation Scalar Single Precision Floating-Point Value to Integer
-        constexpr void cvtss2si(const XmmReg src, const GPReg dst) {
-            m_instructions.emplace_back(details::Cvtss2siRR(src, dst));
+        constexpr void cvtss2si(const std::uint8_t to_size, const XmmReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::Cvtss2siRR(to_size, src, dst));
         }
 
-        constexpr void cvtss2si(const Address& src, const GPReg dst) {
-            m_instructions.emplace_back(details::Cvtss2siRM(src, dst));
+        constexpr void cvtss2si(const std::uint8_t to_size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::Cvtss2siRM(to_size, src, dst));
         }
 
         // Convert With Truncation Scalar Double Precision Floating-Point Value to SignedInteger
-        constexpr void cvtsd2si(const XmmReg src, const GPReg dst) {
-            m_instructions.emplace_back(details::Cvtsd2siRR(src, dst));
+        constexpr void cvtsd2si(const std::uint8_t to_size, const XmmReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::Cvtsd2siRR(to_size, src, dst));
         }
 
-        constexpr void cvtsd2si(const Address& src, const GPReg dst) {
-            m_instructions.emplace_back(details::Cvtsd2siRM(src, dst));
+        constexpr void cvtsd2si(const std::uint8_t to_size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::Cvtsd2siRM(to_size, src, dst));
         }
 
         constexpr Label create_label() {

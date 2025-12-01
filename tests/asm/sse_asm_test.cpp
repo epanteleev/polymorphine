@@ -105,6 +105,22 @@ TEST(SSE_Asm, comiss_reg_reg) {
     check_coding(std::move(a), codes, "comiss %xmm1, %xmm2");
 }
 
+TEST(SSE_Asm, cvttss2siq_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf3,0x48,0x0f,0x2c,0xc1};
+
+    aasm::AsmEmitter a;
+    a.cvtss2si(8, aasm::xmm1, aasm::rax);
+    check_coding(std::move(a), codes, "cvttss2siq %xmm1, %rax");
+}
+
+TEST(SSE_Asm, cvttss2sil_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf3,0x0f,0x2c,0xc1};
+
+    aasm::AsmEmitter a;
+    a.cvtss2si(4, aasm::xmm1, aasm::rax);
+    check_coding(std::move(a), codes, "cvttss2sil %xmm1, %eax");
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
