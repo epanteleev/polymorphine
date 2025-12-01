@@ -813,10 +813,29 @@ void FunctionLower::accept(Unary *inst) {
         case UnaryOp::Float2Int: {
             const auto operand = get_lir_operand(inst->operand());
             const auto type = dynamic_cast<const IntegerType*>(inst->type());
-            assertion(type != nullptr, "Expected PrimitiveType for Float2Int operation");
+            assertion(type != nullptr, "Expected IntegerType for Float2Int operation");
 
             const auto copy = m_bb->ins(LIRProducerInstruction::cvtfp2int(type->size_of(), operand));
             memorize(inst, copy->def(0));
+            break;
+        }
+        case UnaryOp::Int2Float: {
+            const auto operand = inst->operand();
+            const auto lir_operand = get_lir_operand(operand);
+            const auto type = dynamic_cast<const FloatingPointType*>(inst->type());
+            assertion(type != nullptr, "Expected FloatingPointType for Int2Float operation");
+
+            if (operand.type()->isa(signed_type())) {
+                const auto copy = m_bb->ins(LIRProducerInstruction::cvtint2fp(type->size_of(), lir_operand));
+                memorize(inst, copy->def(0));
+
+            } else if (operand.type()->isa(unsigned_type())) {
+                const auto copy = m_bb->ins(LIRProducerInstruction::cvtuint2fp(type->size_of(), lir_operand));
+                memorize(inst, copy->def(0));
+
+            } else {
+                die("Unsupported type");
+            }
             break;
         }
         default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));

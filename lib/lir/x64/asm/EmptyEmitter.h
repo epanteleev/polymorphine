@@ -3,6 +3,7 @@
 #include "lir/x64/asm/FcmpOrdering.h"
 #include "lir/x64/asm/operand/XVReg.h"
 #include "asm/x64/asm.h"
+#include "lir/x64/asm/operand/Constrains.h"
 
 class EmptyEmitter final {
 public:
@@ -110,6 +111,9 @@ public:
 
     template<XVRegVariant Op>
     constexpr void cvtfp2si(const std::uint8_t, const std::uint8_t, const Op, const aasm::GPReg) {}
+
+    template<GPVRegVariant Op>
+    constexpr void cvtsi2fp(const std::uint8_t, const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     constexpr void cdq(const std::uint8_t) {}
     void leave() { }

@@ -27,7 +27,9 @@ enum class LIRProdInstKind: std::uint8_t {
     Movz,
     Movs,
     Trunc,
-    CvtFp2Int
+    CvtFp2Int,
+    CvtInt2Fp,
+    CvtUInt2Fp,
 };
 
 class LIRProducerInstruction final: public LIRProducerInstructionBase {
@@ -131,6 +133,14 @@ public:
 
     static std::unique_ptr<LIRProducerInstruction> cvtfp2int(const std::uint8_t to_size, const LIROperand &op) {
         return create(LIRProdInstKind::CvtFp2Int, LIRValType::FP, to_size, to_size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> cvtint2fp(const std::uint8_t to_size, const LIROperand &op) {
+        return create(LIRProdInstKind::CvtInt2Fp, LIRValType::GP, to_size, to_size, op);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> cvtuint2fp(const std::uint8_t to_size, const LIROperand &op) {
+        return create(LIRProdInstKind::CvtUInt2Fp, LIRValType::FP, to_size, to_size, op);
     }
 
     [[nodiscard]]

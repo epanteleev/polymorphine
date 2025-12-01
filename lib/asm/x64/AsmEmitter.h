@@ -362,6 +362,24 @@ namespace aasm {
             m_instructions.emplace_back(details::Cvtsd2siRM(to_size, src, dst));
         }
 
+        // Convert Doubleword Integer to Scalar Single Precision Floating-Point Value
+        constexpr void cvtsi2ss(const std::uint8_t to_size, const GPReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::Cvtsi2ssRR(to_size, src, dst));
+        }
+
+        constexpr void cvtsi2ss(const std::uint8_t to_size, const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::Cvtsi2ssRM(to_size, src, dst));
+        }
+
+        // Convert Doubleword Integer to Scalar Double Precision Floating-Point Value
+        constexpr void cvtsi2sd(const std::uint8_t to_size, const GPReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::Cvtsi2sdRR(to_size, src, dst));
+        }
+
+        constexpr void cvtsi2sd(const std::uint8_t to_size, const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::Cvtsi2sdRM(to_size, src, dst));
+        }
+
         constexpr Label create_label() {
             const auto size = m_label_table.size();
             m_label_table.emplace_back(constants::NO_OFFSET);

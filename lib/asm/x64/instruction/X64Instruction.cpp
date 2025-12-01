@@ -373,6 +373,22 @@ namespace aasm::details {
     std::ostream& operator<<(std::ostream& os, const Cvtsd2siRM& rr) {
         return os << "cvttsd2si" << prefix_size(rr.m_size) << " %" << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
     }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsi2ssRR& rr) {
+        return os << "cvtsi2ss %" << rr.m_src.name(rr.m_size) << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsi2ssRM& rr) {
+        return os << "cvtsi2ss " << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsi2sdRR& rr) {
+        return os << "cvtsi2sd %" << rr.m_src.name(rr.m_size) << ", %" << rr.m_dst.name(16);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Cvtsi2sdRM& rr) {
+        return os << "cvtsi2sd " << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
+    }
 }
 
 namespace aasm {

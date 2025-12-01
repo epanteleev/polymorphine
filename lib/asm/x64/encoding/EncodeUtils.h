@@ -109,7 +109,25 @@ namespace aasm::details {
         }
 
         [[nodiscard]]
-        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t, const Address& src, const GPReg dest) noexcept {
+        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src, const XmmReg dest) noexcept {
+            auto code = R(src) | B(dest);
+            if (size == 8) {
+                code |= constants::REX_W;
+            } else {
+                code |= constants::REX;
+            }
+
+            if (code != constants::REX || (size == 1 && is_special_byte_reg(src))) {
+                return code;
+            }
+
+            return std::nullopt;
+        }
+
+        template<typename Reg>
+        requires std::same_as<Reg, GPReg> || std::same_as<Reg, XmmReg>
+        [[nodiscard]]
+        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t, const Address& src, const Reg dest) noexcept {
             auto code = constants::REX | R(dest) | X(src);
             if (const auto base = src.base(); base.has_value()) {
                 code |= B(base.value());

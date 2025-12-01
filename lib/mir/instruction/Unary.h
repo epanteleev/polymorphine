@@ -25,7 +25,7 @@ public:
         m_op(op) {}
 
     [[nodiscard]]
-    Value operand() const {
+    const Value& operand() const {
         return m_values[0];
     }
 

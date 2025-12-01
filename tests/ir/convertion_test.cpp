@@ -282,7 +282,7 @@ static Module fp2int_cvt(const FloatingPointType* from, const IntegerType* to) {
 
 TEST(Float2Int, fp2int_f64_to_u64) {
     const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i64());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<unsigned long(double)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -290,7 +290,7 @@ TEST(Float2Int, fp2int_f64_to_u64) {
 
 TEST(Float2Int, fp2int_f64_to_i64) {
     const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i64());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<long(double)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -298,7 +298,7 @@ TEST(Float2Int, fp2int_f64_to_i64) {
 
 TEST(Float2Int, fp2int_f64_to_i32) {
     const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i32());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<int(double)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -306,7 +306,7 @@ TEST(Float2Int, fp2int_f64_to_i32) {
 
 TEST(Float2Int, fp2int_f64_to_i16) {
     const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i16());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<short(double)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -314,7 +314,7 @@ TEST(Float2Int, fp2int_f64_to_i16) {
 
 TEST(Float2Int, fp2int_f64_to_i8) {
     const auto module = fp2int_cvt(FloatingPointType::f64(), SignedIntegerType::i8());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<std::int8_t(double)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -322,7 +322,7 @@ TEST(Float2Int, fp2int_f64_to_i8) {
 
 TEST(Float2Int, fp2int_f32_to_i64) {
     const auto module = fp2int_cvt(FloatingPointType::f32(), SignedIntegerType::i64());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<long(float)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -330,7 +330,7 @@ TEST(Float2Int, fp2int_f32_to_i64) {
 
 TEST(Float2Int, fp2int_f32_to_i32) {
     const auto module = fp2int_cvt(FloatingPointType::f32(), SignedIntegerType::i32());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<int(float)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -338,7 +338,7 @@ TEST(Float2Int, fp2int_f32_to_i32) {
 
 TEST(Float2Int, fp2int_f32_to_i16) {
     const auto module = fp2int_cvt(FloatingPointType::f32(), SignedIntegerType::i16());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<short(float)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
@@ -346,10 +346,74 @@ TEST(Float2Int, fp2int_f32_to_i16) {
 
 TEST(Float2Int, fp2int_f32_to_i8) {
     const auto module = fp2int_cvt(FloatingPointType::f32(), SignedIntegerType::i8());
-    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<std::int8_t(float)>("cvt").value();
     ASSERT_EQ(fn(1.0), 1L);
     ASSERT_EQ(fn(127UL), 127.0);
+}
+
+static Module int2fp_cvt(const IntegerType* from, const FloatingPointType* to) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(to, {from}, "cvt", FunctionBind::DEFAULT);
+
+    const auto fn_builder = builder.make_function_builder(prototype);
+    const auto data = fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.int2fp(to, arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(Int2Float, int2fp_i64_to_f64) {
+    const auto module = int2fp_cvt(SignedIntegerType::i64(), FloatingPointType::f64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<double(long)>("cvt").value();
+    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_DOUBLE_EQ(fn(LONG_MAX), static_cast<double>(LONG_MAX));
+}
+
+TEST(Int2Float, int2fp_i64_to_f32) {
+    const auto module = int2fp_cvt(SignedIntegerType::i64(), FloatingPointType::f32());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<float(long)>("cvt").value();
+    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_DOUBLE_EQ(fn(LONG_MAX), static_cast<float>(LONG_MAX));
+}
+
+TEST(Int2Float, int2fp_i32_to_f64) {
+    const auto module = int2fp_cvt(SignedIntegerType::i32(), FloatingPointType::f64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<double(int)>("cvt").value();
+    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_DOUBLE_EQ(fn(INT_MAX), INT_MAX);
+}
+
+TEST(Int2Float, int2fp_i32_to_f32) {
+    const auto module = int2fp_cvt(SignedIntegerType::i32(), FloatingPointType::f32());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size, true);
+    const auto fn = code.code_start_as<float(int)>("cvt").value();
+    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_DOUBLE_EQ(fn(INT_MAX), static_cast<float>(INT_MAX));
+}
+
+TEST(Int2Float, int2fp_i16_to_f64) {
+    GTEST_SKIP();
+    const auto module = int2fp_cvt(SignedIntegerType::i16(), FloatingPointType::f64());
+    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+        {"cvt", 3}
+    };
+
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0, true);
+    const auto fn = code.code_start_as<double(short)>("cvt").value();
+    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_DOUBLE_EQ(fn(SHRT_MAX), SHRT_MAX);
 }
 
 int main(int argc, char **argv) {

@@ -216,6 +216,14 @@ namespace {
             m_os << "cvtfp2int out(" << out << ") in(" << in << ')';
         }
 
+        void cvtint2fp(const LIRVal &out, const LIROperand &in) override {
+            m_os << "cvtint2fp out(" << out << ") in(" << in << ')';
+        }
+
+        void cvtuint2fp(const LIRVal &out, const LIROperand &in) override {
+            m_os << "cvtuint2fp out(" << out << ") in(" << in << ')';
+        }
+
         void store_f(const LIRVal &pointer, const LIROperand &value) override {
             m_os << "store_f pointer(" << pointer << ") value(" << value << ')';
         }

@@ -61,6 +61,8 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Movs: visitor.movsx_i(def(0), in(0)); break;
         case LIRProdInstKind::Trunc: visitor.trunc_i(def(0), in(0)); break;
         case LIRProdInstKind::CvtFp2Int: visitor.cvtfp2int(def(0), in(0)); break;
+        case LIRProdInstKind::CvtInt2Fp: visitor.cvtint2fp(def(0), in(0)); break;
+        case LIRProdInstKind::CvtUInt2Fp: visitor.cvtuint2fp(def(0), in(0)); break;
         default: std::unreachable();
     }
 }

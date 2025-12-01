@@ -121,6 +121,54 @@ TEST(SSE_Asm, cvttss2sil_reg_reg) {
     check_coding(std::move(a), codes, "cvttss2sil %xmm1, %eax");
 }
 
+TEST(SSE_Asm, cvttsd2siq_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x48,0x0f,0x2c,0xc1};
+
+    aasm::AsmEmitter a;
+    a.cvtsd2si(8, aasm::xmm1, aasm::rax);
+    check_coding(std::move(a), codes, "cvttsd2siq %xmm1, %rax");
+}
+
+TEST(SSE_Asm, cvttsd2sil_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x0f,0x2c,0xc1};
+
+    aasm::AsmEmitter a;
+    a.cvtsd2si(4, aasm::xmm1, aasm::rax);
+    check_coding(std::move(a), codes, "cvttsd2sil %xmm1, %eax");
+}
+
+TEST(SSE_Asm, cvtsi2ssq_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf3,0x48,0x0f,0x2a,0xc8};
+
+    aasm::AsmEmitter a;
+    a.cvtsi2ss(8, aasm::rax, aasm::xmm1);
+    check_coding(std::move(a), codes, "cvtsi2ss %rax, %xmm1");
+}
+
+TEST(SSE_Asm, cvtsi2ssl_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf3,0x0f,0x2a,0xc8};
+
+    aasm::AsmEmitter a;
+    a.cvtsi2ss(4, aasm::rax, aasm::xmm1);
+    check_coding(std::move(a), codes, "cvtsi2ss %eax, %xmm1");
+}
+
+TEST(SSE_Asm, cvtsi2sdq_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x48,0x0f,0x2a,0xc8};
+
+    aasm::AsmEmitter a;
+    a.cvtsi2sd(8, aasm::rax, aasm::xmm1);
+    check_coding(std::move(a), codes, "cvtsi2sd %rax, %xmm1");
+}
+
+TEST(SSE_Asm, cvtsi2sdl_reg_reg) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x0f,0x2a,0xc8};
+
+    aasm::AsmEmitter a;
+    a.cvtsi2sd(4, aasm::rax, aasm::xmm1);
+    check_coding(std::move(a), codes, "cvtsi2sd %eax, %xmm1");
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

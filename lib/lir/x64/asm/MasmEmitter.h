@@ -235,6 +235,15 @@ public:
         }
     }
 
+    template<GPVRegVariant Op>
+    constexpr void cvtsi2fp(const std::uint8_t from_size, const std::uint8_t to_size, const Op& src, const aasm::XmmReg dst) {
+        switch (to_size) {
+            case cst::DWORD_SIZE: m_asm.cvtsi2ss(from_size, src, dst); break;
+            case cst::QWORD_SIZE: m_asm.cvtsi2sd(from_size, src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
     constexpr void cdq(const std::uint8_t size) {
         m_asm.cdq(size);
     }
