@@ -387,7 +387,7 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtsi2sdRM& rr) {
-        return os << "cvtsi2sd " << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
+        return os << "cvtsi2sd " << rr.m_src << ", %" << rr.m_dst.name(16);
     }
 }
 

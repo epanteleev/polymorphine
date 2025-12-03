@@ -58,6 +58,7 @@
 #include "lir/x64/asm/emitters/LoadFromStackFloatEmit.h"
 #include "lir/x64/asm/emitters/CvtFp2IntEmit.h"
 #include "lir/x64/asm/emitters/CvtInt2FpEmit.h"
+#include "lir/x64/asm/emitters/CvtUInt2FpEmit.h"
 
 
 namespace details {
@@ -257,7 +258,7 @@ namespace details {
             emitter.apply(add_opt.value(), in2_op);
         }
 
-        void mov_by_idx_f(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) override {
+        void mov_by_idx_f(const LIRVal &pointer, const LIROperand &index, const LIROperand &in) final {
             const auto out_reg = pointer.assigned_reg().to_gp_op().value();
             const auto index_op = convert_to_gp_op(index);
             const auto in2_op = convert_to_x_op(in);
@@ -266,7 +267,7 @@ namespace details {
             emitter.apply(out_reg, index_op, in2_op);
         }
 
-        void load_by_idx_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+        void load_by_idx_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) final {
             const auto out_reg = out.assigned_reg().to_xmm_op().value();
             const auto index_op = convert_to_gp_op(index);
             const auto pointer_op = convert_to_gp_op(pointer);
@@ -275,7 +276,7 @@ namespace details {
             emitter.apply(out_reg, pointer_op, index_op);
         }
 
-        void store_by_offset_f(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) override {
+        void store_by_offset_f(const LIROperand &pointer, const LIROperand &index, const LIROperand &value) final {
             const auto out_vreg = convert_to_gp_op(pointer);
             const auto out_addr = out_vreg.as_address();
             assertion(out_addr.has_value(), "Invalid LIRVal for store_on_stack_i");
@@ -286,7 +287,7 @@ namespace details {
             emitter.apply(out_addr.value(), index_op, value_op);
         }
 
-        void read_by_offset_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) override {
+        void read_by_offset_f(const LIRVal &out, const LIROperand &pointer, const LIROperand &index) final {
             const auto out_reg = out.assigned_reg().to_xmm_op().value();
             const auto index_op = convert_to_gp_op(index);
             const auto pointer_op = convert_to_gp_op(pointer);
@@ -297,22 +298,25 @@ namespace details {
             emitter.apply(out_reg, index_op, pointer_addr.value());
         }
 
-        void cvtfp2int(const LIRVal &out, const LIROperand &in) override {
+        void cvtfp2int(const LIRVal &out, const LIROperand &in) final {
             const auto out_reg = out.assigned_reg().to_gp_op().value();
             const auto in_reg = convert_to_x_op(in);
             CvtFp2IntEmit emitter(m_temp_regs, m_as, in.size(), out.size());
             emitter.apply(out_reg, in_reg);
         }
 
-        void cvtint2fp(const LIRVal &out, const LIROperand &in) override {
+        void cvtint2fp(const LIRVal &out, const LIROperand &in) final {
             const auto out_reg = out.assigned_reg().to_xmm_op().value();
             const auto in_reg = convert_to_gp_op(in);
             CvtInt2FpEmit emitter(m_temp_regs, m_as, in.size(), out.size());
             emitter.apply(out_reg, in_reg);
         }
 
-        void cvtuint2fp(const LIRVal &out, const LIROperand &in) override {
-            unimplemented();
+        void cvtuint2fp(const LIRVal &out, const LIROperand &in) final {
+            const auto out_reg = out.assigned_reg().to_xmm_op().value();
+            const auto in_reg = convert_to_gp_op(in);
+            CvtUInt2FpEmit emitter(m_temp_regs, m_as, in.size(), out.size());
+            emitter.apply(out_reg, in_reg);
         }
 
         void store_f(const LIRVal &pointer, const LIROperand &value) final {

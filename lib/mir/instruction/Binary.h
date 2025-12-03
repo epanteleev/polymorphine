@@ -2,7 +2,7 @@
 
 #include "ValueInstruction.h"
 
-enum class BinaryOp {
+enum class BinaryOp: std::uint8_t {
     Add,
     Subtract,
     Multiply,

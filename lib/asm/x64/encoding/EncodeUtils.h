@@ -14,6 +14,25 @@ namespace aasm::details {
         }
 
         [[nodiscard]]
+        static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const XmmReg src, const Address& dest) noexcept {
+            auto code = R(src) | X(dest);
+            if (const auto base = dest.base(); base.has_value()) {
+                code |= B(base.value());
+            }
+            if (size == 8) {
+                code |= constants::REX_W;
+            } else {
+                code |= constants::REX;
+            }
+
+            if (code != constants::REX) {
+                return code;
+            }
+
+            return std::nullopt;
+        }
+
+        [[nodiscard]]
         static constexpr std::optional<std::uint8_t> prefix(const std::uint8_t size, const GPReg src, const Address& dest) noexcept {
             auto code = R(src) | X(dest);
             if (const auto base = dest.base(); base.has_value()) {

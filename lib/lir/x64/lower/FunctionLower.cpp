@@ -169,7 +169,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
     while (true) {
         if (current.isa(gfp())) {
             const auto gfp = dynamic_cast<const GetFieldPtr*>(current.get<ValueInstruction*>());
-            const auto& access_type = gfp->basic_type();
+            const auto access_type = gfp->basic_type();
             offset += static_cast<std::int64_t>(access_type->offset_of(gfp->index()));
             current = gfp->pointer();
             pointer = gfp->pointer();
@@ -178,7 +178,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 
         if (current.isa(gep(any_value(), constant()))) {
             const auto gep = dynamic_cast<const GetElementPtr*>(current.get<ValueInstruction*>());
-            const auto& access_type = gep->access_type();
+            const auto access_type = gep->access_type();
             const auto index = gep->index().get<std::int64_t>();
             offset += static_cast<std::int64_t>(access_type->size_of() * index);
             current = gep->pointer();
@@ -197,7 +197,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
 static std::pair<Value, Value> try_fold_gfp_index(const GetFieldPtr* gfp_inst) noexcept {
     auto [pointer, offset] = try_fold_field_access_iter(gfp_inst);
 
-    const auto& field_type = gfp_inst->basic_type()->field_type_of(gfp_inst->index());
+    const auto field_type = gfp_inst->basic_type()->field_type_of(gfp_inst->index());
     const auto index = offset / field_type->size_of();
     return {pointer, Value::i64(static_cast<std::int64_t>(index))};
 }
@@ -768,7 +768,7 @@ void FunctionLower::accept(IntDiv *div) {
 void FunctionLower::accept(Unary *inst) {
     switch (inst->op()) {
         case UnaryOp::Flag2Int: {
-            const auto cond = inst->operand();
+            const auto& cond = inst->operand();
             try_schedule_late(cond);
             make_setcc(inst, cond_type(cond));
             break;
@@ -820,16 +820,16 @@ void FunctionLower::accept(Unary *inst) {
             break;
         }
         case UnaryOp::Int2Float: {
-            const auto operand = inst->operand();
+            const auto& operand = inst->operand();
             const auto lir_operand = get_lir_operand(operand);
             const auto type = dynamic_cast<const FloatingPointType*>(inst->type());
             assertion(type != nullptr, "Expected FloatingPointType for Int2Float operation");
 
-            if (operand.type()->isa(signed_type())) {
+            if (const auto ty = operand.type(); ty->isa(signed_type())) {
                 const auto copy = m_bb->ins(LIRProducerInstruction::cvtint2fp(type->size_of(), lir_operand));
                 memorize(inst, copy->def(0));
 
-            } else if (operand.type()->isa(unsigned_type())) {
+            } else if (ty->isa(unsigned_type())) {
                 const auto copy = m_bb->ins(LIRProducerInstruction::cvtuint2fp(type->size_of(), lir_operand));
                 memorize(inst, copy->def(0));
 
@@ -843,7 +843,7 @@ void FunctionLower::accept(Unary *inst) {
 }
 
 void FunctionLower::lower_load(const Unary *inst) {
-    const auto pointer = inst->operand();
+    const auto& pointer = inst->operand();
     const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 

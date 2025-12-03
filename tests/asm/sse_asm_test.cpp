@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../helpers/Utils.h"
+#include "helpers/Utils.h"
 #include "asm/x64/asm.h"
 
 
@@ -167,6 +167,23 @@ TEST(SSE_Asm, cvtsi2sdl_reg_reg) {
     aasm::AsmEmitter a;
     a.cvtsi2sd(4, aasm::rax, aasm::xmm1);
     check_coding(std::move(a), codes, "cvtsi2sd %eax, %xmm1");
+}
+
+TEST(SSE_Asm, cvtsi2sdq_reg_reg1) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x41,0x0f,0x2a,0xc3};
+
+    aasm::AsmEmitter a;
+    a.cvtsi2sd(4, aasm::r11, aasm::xmm0);
+    check_coding(std::move(a), codes, "cvtsi2sd %r11d, %xmm0");
+}
+
+TEST(SSE_Asm, cvtsi2sdq_adr_reg1) {
+    const std::vector<std::uint8_t> codes = {0xf2,0x0f,0x2a,0x06};
+
+    aasm::AsmEmitter a;
+    constexpr aasm::Address adr(aasm::rsi);
+    a.cvtsi2sd(4, adr, aasm::xmm0);
+    check_coding(std::move(a), codes, "cvtsi2sd (%rsi), %xmm0");
 }
 
 int main(int argc, char **argv) {
