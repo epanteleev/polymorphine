@@ -4,10 +4,10 @@ namespace aasm::details {
     static constexpr std::array<std::uint8_t, 1> COMISD_PREFIX = {0x66};
 
     template<typename SRC>
-    class ComisdR_RM {
+    class ComisdR_Base {
     public:
         template<typename S = SRC>
-        explicit constexpr ComisdR_RM(S&& src, const XmmReg dst) noexcept:
+        explicit constexpr ComisdR_Base(S&& src, const XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
@@ -23,18 +23,18 @@ namespace aasm::details {
         XmmReg m_dst;
     };
 
-    class ComisdRR final: public ComisdR_RM<XmmReg> {
+    class ComisdRR final: public ComisdR_Base<XmmReg> {
     public:
         explicit constexpr ComisdRR(const XmmReg src, const XmmReg dst) noexcept:
-            ComisdR_RM(src, dst) {}
+            ComisdR_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const ComisdRR& rr);
     };
 
-    class ComisdRM final: public ComisdR_RM<Address> {
+    class ComisdRM final: public ComisdR_Base<Address> {
     public:
         explicit constexpr ComisdRM(const Address& src, const XmmReg dst) noexcept:
-            ComisdR_RM(src, dst) {}
+            ComisdR_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const ComisdRM& rr);
     };

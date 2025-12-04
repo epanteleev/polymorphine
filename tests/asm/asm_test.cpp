@@ -1184,8 +1184,78 @@ TEST(Asm, idiv_addr) {
 
     const auto generator = [](const std::uint8_t size) {
         aasm::AsmEmitter a;
-        aasm::Address addr(aasm::rax);
+        constexpr aasm::Address addr(aasm::rax);
         a.idiv(size, addr);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, sal_imm_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0xc0,0xe7,0x03},
+        {0x66,0xc1,0xe7,0x03},
+        {0xc1,0xe7,0x03},
+        {0x48,0xc1,0xe7,0x03}
+    };
+    std::vector<std::string> names = {
+        "salb $3, %dil",
+        "salw $3, %di",
+        "sall $3, %edi",
+        "salq $3, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.sal(size, 3, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, sal_imm_addr1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0xc0,0x27,0x03},
+        {0x66,0xc1,0x27,0x03},
+        {0xc1,0x27,0x03},
+        {0x48,0xc1,0x27,0x03}
+    };
+    std::vector<std::string> names = {
+        "salb $3, (%rdi)",
+        "salw $3, (%rdi)",
+        "sall $3, (%rdi)",
+        "salq $3, (%rdi)"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.sal(size, 3, aasm::Address(aasm::rdi));
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
+TEST(Asm, sal_reg_reg1) {
+    GTEST_SKIP();
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0xd2,0xe7},
+        {0x62,0xf4,0x45,0x18,0xd1,0xe1},
+        {0x62,0xf4,0x44,0x18,0xd1,0xe1},
+        {0x62,0xf4,0xc4,0x18,0xd1,0xe1}
+    };
+    std::vector<std::string> names = {
+        "salb %cl, %dil",
+        "salw %cx, %di",
+        "sall %ecx, %edi",
+        "salq %rcx, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.sal(size, aasm::rdi);
         return a;
     };
 

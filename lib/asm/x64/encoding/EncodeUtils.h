@@ -261,7 +261,21 @@ namespace aasm::details {
                 std::unreachable();
             }
         }
+
+        template<typename Op, CodeBuffer Buffer>
+        [[nodiscard]]
+        static constexpr std::optional<Relocation> emit_operands(Buffer& m_buffer, const Op& dest) {
+            if constexpr (std::is_same_v<Op, GPReg> || std::is_same_v<Op, XmmReg>) {
+                m_buffer.emit8(0xE0 | dest.encode());
+                return std::nullopt;
+
+            } else if constexpr (std::is_same_v<Op, Address>) {
+                return dest.encode(m_buffer, 0, 0);
+
+            } else {
+                static_assert(false, "Unsupported type for encode_MR");
+                std::unreachable();
+            }
+        }
     };
 }
-
-

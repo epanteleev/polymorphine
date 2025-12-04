@@ -164,7 +164,7 @@ static aasm::CondType cond_type(const Value& cond) noexcept {
 static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAccess* field_access) noexcept {
     Value current = field_access;
     std::size_t offset{};
-    Value pointer = field_access->pointer();
+    auto pointer = &field_access->pointer();
 
     while (true) {
         if (current.isa(gfp())) {
@@ -172,7 +172,7 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
             const auto access_type = gfp->basic_type();
             offset += static_cast<std::int64_t>(access_type->offset_of(gfp->index()));
             current = gfp->pointer();
-            pointer = gfp->pointer();
+            pointer = &gfp->pointer();
             continue;
         }
 
@@ -182,13 +182,13 @@ static std::pair<Value, std::int64_t> try_fold_field_access_iter(const FieldAcce
             const auto index = gep->index().get<std::int64_t>();
             offset += static_cast<std::int64_t>(access_type->size_of() * index);
             current = gep->pointer();
-            pointer = gep->pointer();
+            pointer = &gep->pointer();
             continue;
         }
         break;
     }
 
-    return {pointer, static_cast<std::int64_t>(offset)};
+    return {*pointer, static_cast<std::int64_t>(offset)};
 }
 
 /**

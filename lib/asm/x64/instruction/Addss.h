@@ -6,10 +6,10 @@ namespace aasm::details {
     static constexpr std::array<std::uint8_t, 2> ADDSD = {0x0F, 0x58};
 
     template<typename SRC, std::array<std::uint8_t, 1> PREFIX>
-    class AddssR_RM {
+    class AddssA_Base {
     public:
         template<typename S = SRC>
-        explicit constexpr AddssR_RM(S&& src, const XmmReg dst) noexcept:
+        explicit constexpr AddssA_Base(S&& src, const XmmReg dst) noexcept:
             m_src(std::forward<S>(src)),
             m_dst(dst) {}
 
@@ -25,34 +25,34 @@ namespace aasm::details {
         XmmReg m_dst;
     };
 
-    class AddssRR final: public AddssR_RM<XmmReg, ADDSS_PREFIX> {
+    class AddssRR final: public AddssA_Base<XmmReg, ADDSS_PREFIX> {
     public:
         explicit constexpr AddssRR(const XmmReg src, const XmmReg dst) noexcept:
-            AddssR_RM(src, dst) {}
+            AddssA_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddssRR& rr);
     };
 
-    class AddssRM final: public AddssR_RM<Address, ADDSS_PREFIX> {
+    class AddssRM final: public AddssA_Base<Address, ADDSS_PREFIX> {
     public:
         explicit constexpr AddssRM(const Address& src, const XmmReg dst) noexcept:
-            AddssR_RM(src, dst) {}
+            AddssA_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddssRM& rr);
     };
 
-    class AddsdRR final: public AddssR_RM<XmmReg, ADDSD_PREFIX> {
+    class AddsdRR final: public AddssA_Base<XmmReg, ADDSD_PREFIX> {
     public:
         explicit constexpr AddsdRR(const XmmReg src, const XmmReg dst) noexcept:
-            AddssR_RM(src, dst) {}
+            AddssA_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddsdRR& rr);
     };
 
-    class AddsdRM final: public AddssR_RM<Address, ADDSD_PREFIX> {
+    class AddsdRM final: public AddssA_Base<Address, ADDSD_PREFIX> {
     public:
         explicit constexpr AddsdRM(const Address& src, const XmmReg dst) noexcept:
-            AddssR_RM(src, dst) {}
+            AddssA_Base(src, dst) {}
 
         friend std::ostream& operator<<(std::ostream& os, const AddsdRM& rr);
     };

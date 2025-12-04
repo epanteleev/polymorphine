@@ -389,6 +389,18 @@ namespace aasm::details {
     std::ostream& operator<<(std::ostream& os, const Cvtsi2sdRM& rr) {
         return os << "cvtsi2sd " << rr.m_src << ", %" << rr.m_dst.name(16);
     }
+
+    std::ostream& operator<<(std::ostream &os, const SalRI& shl) {
+        return os << "sal" << prefix_size(shl.m_size) << " $" << static_cast<unsigned>(shl.m_src) << ", %" << shl.m_dst.name(shl.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const SalMI& shl) {
+        return os << "sal" << prefix_size(shl.m_size) << " $" << static_cast<unsigned>(shl.m_src) << ", " << shl.m_dst;
+    }
+
+    std::ostream& operator<<(std::ostream &os, const SalRR& shl) {
+        return os << "sal" << prefix_size(shl.m_size) << " %" << rcx.name(shl.m_size) << ", %" << shl.m_dst.name(shl.m_size);
+    }
 }
 
 namespace aasm {

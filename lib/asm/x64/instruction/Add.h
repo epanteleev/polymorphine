@@ -2,10 +2,10 @@
 
 namespace aasm::details {
     template<typename DST>
-    class AddRM_R {
+    class AddRM_Base {
     public:
         template<typename D = DST>
-        constexpr AddRM_R(const std::uint8_t size, const GPReg src, D&& dst) noexcept:
+        constexpr AddRM_Base(const std::uint8_t size, const GPReg src, D&& dst) noexcept:
             m_size(size),
             m_src(src),
             m_dst(std::forward<D>(dst)) {}
@@ -25,18 +25,18 @@ namespace aasm::details {
         DST m_dst;
     };
 
-    class AddRR final: public AddRM_R<GPReg> {
+    class AddRR final: public AddRM_Base<GPReg> {
     public:
         constexpr AddRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
-            AddRM_R(size, src, dst) {}
+            AddRM_Base(size, src, dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const AddRR& add);
     };
 
-    class AddMR final: public AddRM_R<Address> {
+    class AddMR final: public AddRM_Base<Address> {
     public:
         constexpr explicit AddMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
-            AddRM_R(size, src, dst) {}
+            AddRM_Base(size, src, dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const AddMR& add);
     };

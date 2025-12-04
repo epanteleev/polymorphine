@@ -90,7 +90,28 @@ namespace aasm::details {
                 static_assert(false, "Unsupported type for encode_MI32");
                 std::unreachable();
             }
+        }
 
+        template<AddressOrGPReg Op>
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_MI8(std::uint8_t modrm, const std::uint8_t size, const std::int8_t imm, const Op& dst) {
+            EncodeUtils::emit_op_prologue(m_buffer, size, dst);
+            emit_opcodes(size);
+            if constexpr (std::is_same_v<Op, GPReg>) {
+                m_buffer.emit8(0xC0 | modrm << 3 | dst.encode());
+                m_buffer.emit8(checked_cast<std::int8_t>(imm));
+                return std::nullopt;
+
+            } else if constexpr (std::is_same_v<Op, Address>) {
+                const auto imm_size = size == 8 ? 4 : size;
+                const auto reloc = dst.encode(m_buffer, modrm, imm_size);
+                m_buffer.emit8(checked_cast<std::int8_t>(imm));
+                return reloc;
+
+            } else {
+                static_assert(false, "Unsupported type for encode_MI32");
+                std::unreachable();
+            }
         }
 
         constexpr std::optional<Relocation> encode_RI64(const std::uint8_t size, const std::int64_t imm, const GPReg dst) {
@@ -128,6 +149,14 @@ namespace aasm::details {
             EncodeUtils::emit_op_prologue(m_buffer, size, src, dest);
             emit_opcodes(size);
             return EncodeUtils::emit_operands(m_buffer, src, dest);
+        }
+
+        template <AddressOrGPReg Op>
+        [[nodiscard]]
+        constexpr std::optional<Relocation> encode_MC(const std::uint8_t size, const Op& dest) {
+            EncodeUtils::emit_op_prologue(m_buffer, size, dest);
+            emit_opcodes(size);
+            return EncodeUtils::emit_operands(m_buffer, dest);
         }
 
         template <AddressOrGPReg Op>

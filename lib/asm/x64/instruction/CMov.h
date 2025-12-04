@@ -2,10 +2,10 @@
 
 namespace aasm::details {
     template<typename SRC>
-    class CMov {
+    class CMov_Base {
     public:
         template<typename S = SRC>
-        constexpr explicit CMov(const std::uint8_t size, S&& src, const GPReg dst, const CondType cond) noexcept:
+        constexpr explicit CMov_Base(const std::uint8_t size, S&& src, const GPReg dst, const CondType cond) noexcept:
             m_size(size),
             m_cond(cond),
             m_dst(dst),
@@ -43,18 +43,18 @@ namespace aasm::details {
         SRC m_src;
     };
 
-    class CMovRR final: public CMov<GPReg> {
+    class CMovRR final: public CMov_Base<GPReg> {
     public:
         constexpr explicit CMovRR(const std::uint8_t size, const GPReg src, const GPReg dst, const CondType cond) noexcept:
-            CMov(size, src, dst, cond) {}
+            CMov_Base(size, src, dst, cond) {}
 
         friend std::ostream& operator<<(std::ostream& os, const CMovRR& inst);
     };
 
-    class CMovRM final: public CMov<Address> {
+    class CMovRM final: public CMov_Base<Address> {
     public:
         constexpr explicit CMovRM(const std::uint8_t size, const Address& src, const GPReg dst, const CondType cond) noexcept:
-            CMov(size, src, dst, cond) {}
+            CMov_Base(size, src, dst, cond) {}
 
         friend std::ostream& operator<<(std::ostream& os, const CMovRM& inst);
     };

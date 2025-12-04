@@ -219,6 +219,19 @@ namespace aasm {
             m_instructions.emplace_back(details::Leave());
         }
 
+        // Shift
+        constexpr void sal(const std::uint8_t size, const std::uint8_t count, const GPReg dst) {
+            m_instructions.emplace_back(details::SalRI(size, count, dst));
+        }
+
+        constexpr void sal(const std::uint8_t size, const std::uint8_t count, const Address& dst) {
+            m_instructions.emplace_back(details::SalMI(size, count, dst));
+        }
+
+        constexpr void sal(const std::uint8_t size, const GPReg dst) {
+            m_instructions.emplace_back(details::SalRR(size, dst));
+        }
+
         constexpr void setcc(const CondType type, const GPReg reg) {
             m_instructions.emplace_back(details::SetCCR(type, reg));
         }

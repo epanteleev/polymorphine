@@ -2,10 +2,10 @@
 
 namespace aasm::details {
     template<typename DST>
-    class CmpRM_R {
+    class CmpRM_Base {
     public:
         template<typename D = DST>
-        constexpr CmpRM_R(const std::uint8_t size, const GPReg src, D&& dst) noexcept:
+        constexpr CmpRM_Base(const std::uint8_t size, const GPReg src, D&& dst) noexcept:
             m_size(size),
             m_src(src),
             m_dst(std::forward<D>(dst)) {}
@@ -25,18 +25,18 @@ namespace aasm::details {
         DST m_dst;
     };
 
-    class CmpRR final: public CmpRM_R<GPReg> {
+    class CmpRR final: public CmpRM_Base<GPReg> {
     public:
         constexpr CmpRR(const std::uint8_t size, const GPReg src, const GPReg dst) noexcept:
-            CmpRM_R(size, src, dst) {}
+            CmpRM_Base(size, src, dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const CmpRR& cmp);
     };
 
-    class CmpMR final: public CmpRM_R<Address> {
+    class CmpMR final: public CmpRM_Base<Address> {
     public:
         constexpr CmpMR(const std::uint8_t size, const GPReg src, const Address& dst) noexcept:
-            CmpRM_R(size, src, dst) {}
+            CmpRM_Base(size, src, dst) {}
 
         friend std::ostream& operator<<(std::ostream &os, const CmpMR& cmp);
     };
