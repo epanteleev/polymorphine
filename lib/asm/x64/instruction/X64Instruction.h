@@ -46,6 +46,7 @@
 #include "Cvtsi2ss.h"
 #include "Cvtsi2sd.h"
 #include "Shift.h"
+#include "Test.h"
 
 namespace aasm {
     using X64Instruction = std::variant<

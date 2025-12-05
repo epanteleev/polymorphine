@@ -80,7 +80,7 @@ TEST(RegMap, try_emplace) {
     auto [it2, inserted2] = reg_map.try_emplace(aasm::rax, 84);
     ASSERT_FALSE(inserted2);
     ASSERT_EQ(it2->first, aasm::rax);
-    ASSERT_EQ(it2->second, 42); // Should not change the value
+    ASSERT_EQ(it2->second, 42);
 
     for (auto [fst, snd]: std::ranges::reverse_view(reg_map)) {
         ASSERT_EQ(fst, aasm::rax);
