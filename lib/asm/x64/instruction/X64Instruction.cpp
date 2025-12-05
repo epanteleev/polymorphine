@@ -390,16 +390,43 @@ namespace aasm::details {
         return os << "cvtsi2sd " << rr.m_src << ", %" << rr.m_dst.name(16);
     }
 
-    std::ostream& operator<<(std::ostream &os, const SalRI& shl) {
-        return os << "sal" << prefix_size(shl.m_size) << " $" << static_cast<unsigned>(shl.m_src) << ", %" << shl.m_dst.name(shl.m_size);
+    std::ostream& operator<<(std::ostream &os, const SalRI& sal) {
+        return os << "sal" << prefix_size(sal.m_size) << " $" << static_cast<unsigned>(sal.m_src) << ", %" << sal.m_dst.name(sal.m_size);
     }
 
-    std::ostream& operator<<(std::ostream &os, const SalMI& shl) {
-        return os << "sal" << prefix_size(shl.m_size) << " $" << static_cast<unsigned>(shl.m_src) << ", " << shl.m_dst;
+    std::ostream& operator<<(std::ostream &os, const SalMI& sal) {
+        return os << "sal" << prefix_size(sal.m_size) << " $" << static_cast<unsigned>(sal.m_src) << ", " << sal.m_dst;
     }
 
-    std::ostream& operator<<(std::ostream &os, const SalRR& shl) {
-        return os << "sal" << prefix_size(shl.m_size) << " %" << rcx.name(shl.m_size) << ", %" << shl.m_dst.name(shl.m_size);
+    std::ostream& operator<<(std::ostream &os, const SalRR& sal) {
+        const auto rcx_size = sal.m_size > 2 ? 2 : sal.m_size;
+        return os << "sal" << prefix_size(sal.m_size) << " %" << rcx.name(rcx_size) << ", %" << sal.m_dst.name(sal.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const SarRI& sar) {
+        return os << "sar" << prefix_size(sar.m_size) << " $" << static_cast<unsigned>(sar.m_src) << ", %" << sar.m_dst.name(sar.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const SarMI& sar) {
+        return os << "sal" << prefix_size(sar.m_size) << " $" << static_cast<unsigned>(sar.m_src) << ", " << sar.m_dst;
+    }
+
+    std::ostream& operator<<(std::ostream &os, const ShrRI& shr) {
+        return os << "shr" << prefix_size(shr.m_size) << " $" << static_cast<unsigned>(shr.m_src) << ", %" << shr.m_dst.name(shr.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const ShrMI& shr) {
+        return os << "shr" << prefix_size(shr.m_size) << " $" << static_cast<unsigned>(shr.m_src) << ", " << shr.m_dst;
+    }
+
+    std::ostream& operator<<(std::ostream &os, const SarRR& sar) {
+        const auto rcx_size = sar.m_size > 2 ? 2 : sar.m_size;
+        return os << "sal" << prefix_size(sar.m_size) << " %" << rcx.name(rcx_size) << ", %" << sar.m_dst.name(sar.m_size);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const ShrRR& sar) {
+        const auto rcx_size = sar.m_size > 2 ? 2 : sar.m_size;
+        return os << "shr" << prefix_size(sar.m_size) << " %" << rcx.name(rcx_size) << ", %" << sar.m_dst.name(sar.m_size);
     }
 }
 

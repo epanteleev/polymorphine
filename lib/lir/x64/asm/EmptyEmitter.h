@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ShiftKind.h"
 #include "lir/x64/asm/FcmpOrdering.h"
 #include "lir/x64/asm/operand/XVReg.h"
 #include "asm/x64/asm.h"
@@ -34,6 +35,12 @@ public:
     template<typename Op>
     requires std::is_same_v<Op, aasm::GPReg> || std::is_same_v<Op, std::int32_t>
     void mov(const std::uint8_t, const Op&, const aasm::Address&) {}
+
+    template<GPVRegVariant Op>
+    void shift(const std::uint8_t, const ShiftKind, const Op&) {}
+
+    template<GPVRegVariant Op>
+    void shift(const std::uint8_t, const ShiftKind, std::size_t, const Op&) {}
 
     void add(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
 

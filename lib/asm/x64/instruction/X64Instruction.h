@@ -45,7 +45,7 @@
 #include "Cvttsd2si.h"
 #include "Cvtsi2ss.h"
 #include "Cvtsi2sd.h"
-#include "Sal.h"
+#include "Shift.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -71,6 +71,8 @@ namespace aasm {
         details::Call, details::CallM,
         details::Leave,
         details::SalRI, details::SalMI, details::SalRR,
+        details::SarRI, details::SarMI, details::SarRR,
+        details::ShrRI, details::ShrMI, details::ShrRR,
         // SSE Instructions
         details::MovssRR, details::MovssRM, details::MovssMR,
         details::MovsdRR, details::MovsdRM, details::MovsdMR,

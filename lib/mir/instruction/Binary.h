@@ -35,14 +35,27 @@ public:
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
+    [[nodiscard]]
     static std::unique_ptr<Binary> add(const Value &lhs, const Value &rhs) {
         return std::make_unique<Binary>(BinaryOp::Add, lhs, rhs);
     }
 
+    [[nodiscard]]
     static std::unique_ptr<Binary> sub(const Value &lhs, const Value &rhs) {
         return std::make_unique<Binary>(BinaryOp::Subtract, lhs, rhs);
     }
 
+    [[nodiscard]]
+    static std::unique_ptr<Binary> shl(const Value &lhs, const Value &count) {
+        return std::make_unique<Binary>(BinaryOp::ShiftLeft, lhs, count);
+    }
+
+    [[nodiscard]]
+    static std::unique_ptr<Binary> shr(const Value &lhs, const Value &count) {
+        return std::make_unique<Binary>(BinaryOp::ShiftRight, lhs, count);
+    }
+
+    [[nodiscard]]
     static std::unique_ptr<Binary> xxor(const Value &lhs, const Value &rhs) {
         return std::make_unique<Binary>(BinaryOp::BitwiseXor, lhs, rhs);
     }

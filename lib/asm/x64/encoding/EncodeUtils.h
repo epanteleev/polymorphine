@@ -264,9 +264,9 @@ namespace aasm::details {
 
         template<typename Op, CodeBuffer Buffer>
         [[nodiscard]]
-        static constexpr std::optional<Relocation> emit_operands(Buffer& m_buffer, const Op& dest) {
+        static constexpr std::optional<Relocation> emit_operands(Buffer& m_buffer, const std::uint8_t modrm, const Op& dest) {
             if constexpr (std::is_same_v<Op, GPReg> || std::is_same_v<Op, XmmReg>) {
-                m_buffer.emit8(0xE0 | dest.encode());
+                m_buffer.emit8(0xC0 | modrm<<3 | dest.encode());
                 return std::nullopt;
 
             } else if constexpr (std::is_same_v<Op, Address>) {

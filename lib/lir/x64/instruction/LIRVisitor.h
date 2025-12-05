@@ -16,7 +16,8 @@ public:
     virtual void and_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void or_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void xor_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
-    virtual void shl_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void sal_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
+    virtual void sar_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void shr_i(const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;
     virtual void setcc_i(const LIRVal& out, aasm::CondType cond_type) = 0;
     virtual void cmov_i(aasm::CondType cond_type, const LIRVal& out, const LIROperand& in1, const LIROperand& in2) = 0;

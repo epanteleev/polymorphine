@@ -56,7 +56,7 @@ static Module min_max_phi(const IntegerType* ty) {
 }
 
 TEST(SanityCheck2, min_max_phi_u8) {
-    const auto buffer = jit_compile_and_assembly(min_max_phi(UnsignedIntegerType::u8()), true);
+    const auto buffer = jit_compile_and_assembly(min_max_phi(UnsignedIntegerType::u8()));
     const auto min = buffer.code_start_as<std::uint8_t(std::uint8_t, std::uint8_t)>("min").value();
     const auto max = buffer.code_start_as<std::uint8_t(std::uint8_t, std::uint8_t)>("max").value();
 
@@ -96,13 +96,178 @@ static T xor_values(T a, T b) noexcept {
 }
 
 TEST(SanityCheck2, xor_values_i32) {
-    const auto buffer = jit_compile_and_assembly(xor_values(SignedIntegerType::i32()), true);
+    const auto buffer = jit_compile_and_assembly(xor_values(SignedIntegerType::i32()));
     const auto xor_func = buffer.code_start_as<std::int32_t(std::int32_t, std::int32_t)>("xor").value();
 
     ASSERT_EQ(xor_func(10, 10), xor_values(10, 10));
     ASSERT_EQ(xor_func(10, 20), xor_values(10, 20));
     ASSERT_EQ(xor_func(-10, -20), xor_values(-10, -20));
     ASSERT_EQ(xor_func(0, 0), xor_values(0, 0));
+}
+
+static Module shl_values(const IntegerType* ty) {
+    ModuleBuilder builder;
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty, ty}, "shl", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto arg0 = data.arg(0);
+        const auto arg1 = data.arg(1);
+        const auto res = data.shl(arg0, arg1);
+        data.ret(res);
+    }
+    return builder.build();
+}
+
+static std::unordered_map<std::string, std::size_t> asm_sizes = {
+    {"shl", 4},
+};
+
+TEST(SanityCheck2, shl_i8) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(SignedIntegerType::i8()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::int8_t(std::int8_t, std::int8_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), static_cast<std::int8_t>(1 << 1));
+    ASSERT_EQ(shl_func(2, 3), static_cast<std::int8_t>(2 << 3));
+    ASSERT_EQ(shl_func(0x1, 7), static_cast<std::int8_t>(0x1 << 7));
+    ASSERT_EQ(shl_func(0xFF, 1), static_cast<std::int8_t>(0xFF << 1));
+}
+
+TEST(SanityCheck2, shl_u8) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(UnsignedIntegerType::u8()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::uint8_t(std::uint8_t, std::uint8_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), static_cast<std::uint8_t>(1 << 1));
+    ASSERT_EQ(shl_func(2, 3), static_cast<std::uint8_t>(2 << 3));
+    ASSERT_EQ(shl_func(0x1, 7), static_cast<std::uint8_t>(0x1 << 7));
+    ASSERT_EQ(shl_func(0xFF, 1), static_cast<std::uint8_t>(0xFF << 1));
+}
+
+TEST(SanityCheck2, shl_i16) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(SignedIntegerType::i16()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::int16_t(std::int16_t, std::int16_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), static_cast<std::int16_t>(1 << 1));
+    ASSERT_EQ(shl_func(2, 3), static_cast<std::int16_t>(2 << 3));
+    ASSERT_EQ(shl_func(0x1, 15), static_cast<std::int16_t>(0x1 << 15));
+    ASSERT_EQ(shl_func(0xFFFF, 1), static_cast<std::int16_t>(0xFFFF << 1));
+}
+
+TEST(SanityCheck2, shl_u16) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(UnsignedIntegerType::u16()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::uint16_t(std::uint16_t, std::uint16_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), static_cast<std::uint16_t>(1 << 1));
+    ASSERT_EQ(shl_func(2, 3), static_cast<std::uint16_t>(2 << 3));
+    ASSERT_EQ(shl_func(0x1, 15), static_cast<std::uint16_t>(0x1 << 15));
+    ASSERT_EQ(shl_func(0xFFFF, 1), static_cast<std::uint16_t>(0xFFFF << 1));
+}
+
+TEST(SanityCheck2, shl_i32) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(SignedIntegerType::i32()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::int32_t(std::int32_t, std::int32_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), 1 << 1);
+    ASSERT_EQ(shl_func(2, 3), 2 << 3);
+    ASSERT_EQ(shl_func(0x1, 31), 0x1 << 31);
+    ASSERT_EQ(shl_func(0xFFFFFFFF, 1), static_cast<std::int32_t>(0xFFFFFFFF << 1));
+}
+
+TEST(SanityCheck2, shl_u32) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(UnsignedIntegerType::u32()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::uint32_t(std::uint32_t, std::uint32_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), 1 << 1);
+    ASSERT_EQ(shl_func(2, 3), 2 << 3);
+    ASSERT_EQ(shl_func(0x1, 31), 0x1 << 31);
+    ASSERT_EQ(shl_func(0xFFFFFFFF, 1), 0xFFFFFFFF << 1);
+}
+
+TEST(SanityCheck2, shl_i64) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(SignedIntegerType::i64()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::int64_t(std::int64_t, std::int64_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), 1 << 1);
+    ASSERT_EQ(shl_func(2, 3), 2 << 3);
+    ASSERT_EQ(shl_func(0x1, 63), 0x1LL << 63);
+    ASSERT_EQ(shl_func(0xFFFFFFFFFFFFFFFF, 1), static_cast<std::int64_t>(0xFFFFFFFFFFFFFFFFLL << 1));
+}
+
+TEST(SanityCheck2, shl_u64) {
+    const auto buffer = jit_compile_and_assembly({}, shl_values(UnsignedIntegerType::u64()), asm_sizes);
+    const auto shl_func = buffer.code_start_as<std::uint64_t(std::uint64_t, std::uint64_t)>("shl").value();
+
+    ASSERT_EQ(shl_func(1, 0), 1);
+    ASSERT_EQ(shl_func(1, 1), 1 << 1);
+    ASSERT_EQ(shl_func(2, 3), 2 << 3);
+    ASSERT_EQ(shl_func(0x1, 63), 0x1UL << 63);
+    ASSERT_EQ(shl_func(0xFFFFFFFFFFFFFFFF, 1), 0xFFFFFFFFFFFFFFFFUL << 1);
+}
+
+static Module shl_values_cst(const IntegerType* ty, const Value& count) {
+    ModuleBuilder builder;
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "shl", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto arg0 = data.arg(0);
+        const auto res = data.shl(arg0, count);
+        data.ret(res);
+    }
+    return builder.build();
+}
+
+TEST(SanityCheck2, shl_u64_cst) {
+    const std::vector<unsigned long> values = {0, 1, 3, 63};
+    for (const auto value : values) {
+        const auto buffer = jit_compile_and_assembly(shl_values_cst(UnsignedIntegerType::u64(), Value::u64(value)), true);
+        const auto shl_func = buffer.code_start_as<std::uint64_t(std::uint64_t)>("shl").value();
+        ASSERT_EQ(shl_func(1), 1UL<<value) << "value: " << value;
+    }
+}
+
+TEST(SanityCheck2, shl_i64_cst) {
+    const std::vector<long> values = {0, 1, 3, 63};
+    for (const auto value :values) {
+        const auto buffer = jit_compile_and_assembly(shl_values_cst(SignedIntegerType::i64(), Value::i64(value)), true);
+        const auto shl_func = buffer.code_start_as<std::int64_t(std::int64_t)>("shl").value();
+        ASSERT_EQ(shl_func(1), 1L<<value) << "value: " << value;
+    }
+}
+
+static Module shr_values_cst(const IntegerType* ty, const Value& count) {
+    ModuleBuilder builder;
+    {
+        const auto prototype = builder.add_function_prototype(ty, {ty}, "shr", FunctionBind::DEFAULT);
+        const auto data = builder.make_function_builder(prototype).value();
+        const auto arg0 = data.arg(0);
+        const auto res = data.shr(arg0, count);
+        data.ret(res);
+    }
+    return builder.build();
+}
+
+TEST(SanityCheck2, shr_i64_cst) {
+    const std::vector<long> values = {0, 1, 3, 63};
+    for (const auto value: values) {
+        const auto buffer = jit_compile_and_assembly(shr_values_cst(SignedIntegerType::i64(), Value::i64(value)), true);
+        const auto shr_func = buffer.code_start_as<std::int64_t(std::int64_t)>("shr").value();
+        ASSERT_EQ(shr_func(1L<<63), (1L<<63)>>value) << "value: " << value;
+    }
+}
+
+TEST(SanityCheck2, shr_u64_cst) {
+    const std::vector<unsigned long> values = {0, 1, 3, 63};
+    for (auto value : values) {
+        const auto buffer = jit_compile_and_assembly(shr_values_cst(UnsignedIntegerType::u64(), Value::u64(value)), true);
+        const auto shr_func = buffer.code_start_as<std::uint64_t(std::uint64_t)>("shr").value();
+        ASSERT_EQ(shr_func(1UL<<63), (1UL<<63)>>value) << "value: " << value;
+    }
 }
 
 int main(int argc, char **argv) {

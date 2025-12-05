@@ -35,10 +35,6 @@ namespace {
 
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
-        void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {
             const auto out_reg = out.assigned_reg().to_gp_op().value();
             const auto visitor = [&]<typename T>(const T &val) {

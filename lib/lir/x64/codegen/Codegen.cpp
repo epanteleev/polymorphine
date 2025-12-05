@@ -67,6 +67,7 @@ void Codegen::run() {
         fn_codegen.run();
 
         const auto [symbol, _] = m_symbol_table.add(func.name(), aasm::BindAttribute::INTERNAL);
+        [[maybe_unused]]
         const auto [_unused, has] = m_assemblers.emplace(symbol, fn_codegen.result().to_buffer());
         assertion(has, "Function already exists");
     }

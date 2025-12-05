@@ -68,12 +68,16 @@ namespace {
             m_os << "xor_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
-        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
-            unimplemented();
+        void sal_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "sal_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
+        }
+
+        void sar_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "sar_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
         void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
-            unimplemented();
+            m_os << "shr_i out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
         void setcc_i(const LIRVal &out, const aasm::CondType cond_type) override {

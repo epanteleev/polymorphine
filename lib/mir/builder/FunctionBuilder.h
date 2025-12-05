@@ -52,6 +52,16 @@ public:
     }
 
     [[nodiscard]]
+    Value shl(const Value& lhs, const Value& count) const {
+        return m_bb->ins(Binary::shl(lhs, count));
+    }
+
+    [[nodiscard]]
+    Value shr(const Value& lhs, const Value& count) const {
+        return m_bb->ins(Binary::shr(lhs, count));
+    }
+
+    [[nodiscard]]
     Value xxor(const Value& lhs, const Value& rhs) const {
         return m_bb->ins(Binary::xxor(lhs, rhs));
     }

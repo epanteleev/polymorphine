@@ -78,10 +78,6 @@ namespace details {
 
         void or_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
 
-        void shl_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
-        void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {}
-
         void setcc_i(const LIRVal &out, aasm::CondType cond_type) override {}
 
         void neg_i(const LIRVal &out, const LIROperand &in) override {}

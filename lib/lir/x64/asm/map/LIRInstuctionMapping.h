@@ -1,5 +1,5 @@
 #pragma once
-#include "LIROperandMapping.h"
+#include "lir/x64/asm/map/LIROperandMapping.h"
 #include "lir/x64/instruction/LIRVisitor.h"
 
 #include "lir/x64/asm/operand/GPOp.h"
@@ -59,7 +59,7 @@
 #include "lir/x64/asm/emitters/CvtFp2IntEmit.h"
 #include "lir/x64/asm/emitters/CvtInt2FpEmit.h"
 #include "lir/x64/asm/emitters/CvtUInt2FpEmit.h"
-
+#include "lir/x64/asm/emitters/ShiftIntEmit.h"
 
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
@@ -71,45 +71,35 @@ namespace details {
             m_as(asm_emit) {}
 
         void add_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = out.assigned_reg().to_gp_op().value();
-            const auto in1_reg = convert_to_gp_op(in1);
-            const auto in2_reg = convert_to_gp_op(in2);
-            AddIntEmit emitter(m_temp_regs, m_as, out.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+            binary_gp_op<AddIntEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
         }
 
         void sub_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = out.assigned_reg().to_gp_op().value();
-            const auto in1_reg = convert_to_gp_op(in1);
-            const auto in2_reg = convert_to_gp_op(in2);
-            SubIntEmit emitter(m_temp_regs, m_as, out.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+            binary_gp_op<SubIntEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
         }
 
-        void div_i(std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = outs[0].assigned_reg().to_gp_op().value();
-            const auto in1_reg = convert_to_gp_op(in1);
-            const auto in2_reg = convert_to_gp_op(in2);
-
-            DivIntEmit emitter(m_temp_regs, m_as, in1.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+        void div_i(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) final {
+            binary_gp_op<DivIntEmit<TemporalRegStorage, AsmEmit>>(outs[0], in1, in2);
         }
 
-        void div_u(std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = outs[0].assigned_reg().to_gp_op().value();
-            const auto in1_reg = convert_to_gp_op(in1);
-            const auto in2_reg = convert_to_gp_op(in2);
-
-            DivUIntEmit emitter(m_temp_regs, m_as, in1.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+        void div_u(const std::span<LIRVal const> outs, const LIROperand &in1, const LIROperand &in2) final {
+            binary_gp_op<DivUIntEmit<TemporalRegStorage, AsmEmit>>(outs[0], in1, in2);
         }
 
         void xor_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = out.assigned_reg().to_gp_op().value();
-            const auto in1_reg = convert_to_gp_op(in1);
-            const auto in2_reg = convert_to_gp_op(in2);
-            XorIntEmit emitter(m_temp_regs, m_as, out.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+            binary_gp_op<XorIntEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
+        }
+
+        void sal_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
+            shift(ShiftKind::SAL, out, in1, in2);
+        }
+
+        void sar_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
+            shift(ShiftKind::SAR, out, in1, in2);
+        }
+
+        void shr_i(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
+            shift(ShiftKind::SHR, out, in1, in2);
         }
 
         void cmov_i(aasm::CondType cond_type, const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
@@ -179,16 +169,11 @@ namespace details {
         }
 
         void store_i(const LIRVal &pointer, const LIROperand &value) final {
-            const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
-            const auto value_op = convert_to_gp_op(value);
-            StoreGPEmit emitter(m_temp_regs, m_as, value.size());
-            emitter.apply(pointer_reg, value_op);
+            unary_gp_out<StoreGPEmit<TemporalRegStorage, AsmEmit>>(pointer, value);
         }
 
         void copy_i(const LIRVal &out, const LIROperand &in) final {
-            const auto out_reg = out.assigned_reg().to_gp_op().value();
-            CopyGPEmit emitter(m_temp_regs, m_as, out.size());
-            emitter.apply(out_reg, convert_to_gp_op(in));
+            unary_gp_out<CopyGPEmit<TemporalRegStorage, AsmEmit>>(out, in);
         }
 
         void load_i(const LIRVal &out, const LIRVal &pointer) final {
@@ -241,11 +226,7 @@ namespace details {
         }
 
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
-            const auto out_reg = out.assigned_reg().to_xmm_op().value();
-            const auto in1_reg = convert_to_x_op(in1);
-            const auto in2_reg = convert_to_x_op(in2);
-            AddFloatEmit emitter(m_temp_regs, m_as, out.size());
-            emitter.apply(out_reg, in1_reg, in2_reg);
+            binary_xmm_op<AddFloatEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
         }
 
         void mov_f(const LIROperand &in1, const LIROperand &in2) final {
@@ -331,6 +312,42 @@ namespace details {
             const auto pointer_reg = pointer.assigned_reg().to_gp_op().value();
             LoadFloatEmit emitter(m_temp_regs, m_as, out.size());
             emitter.apply(out_reg, pointer_reg);
+        }
+
+    private:
+        template<typename Emit>
+        void unary_gp_out(const LIRVal &out, const LIROperand &in) {
+            const auto pointer_reg = out.assigned_reg().to_gp_op().value();
+            const auto value_op = convert_to_gp_op(in);
+            Emit emitter(m_temp_regs, m_as, in.size());
+            emitter.apply(pointer_reg, value_op);
+        }
+
+        template<typename Emit>
+        void binary_gp_op(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+            const auto out_reg = out.assigned_reg().to_gp_op().value();
+            const auto in1_reg = convert_to_gp_op(in1);
+            const auto in2_reg = convert_to_gp_op(in2);
+
+            Emit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, in1_reg, in2_reg);
+        }
+
+        template<typename Emit>
+        void binary_xmm_op(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+            const auto out_reg = out.assigned_reg().to_xmm_op().value();
+            const auto in1_reg = convert_to_x_op(in1);
+            const auto in2_reg = convert_to_x_op(in2);
+            Emit emitter(m_temp_regs, m_as, out.size());
+            emitter.apply(out_reg, in1_reg, in2_reg);
+        }
+
+        void shift(const ShiftKind kind, const LIRVal &out, const LIROperand &in1, const LIROperand &in2) {
+            const auto out_reg = out.assigned_reg().to_gp_op().value();
+            const auto in1_reg = convert_to_gp_op(in1);
+            const auto in2_reg = convert_to_gp_op(in2);
+            ShiftIntEmit emitter(m_temp_regs, m_as, kind, out.size());
+            emitter.apply(out_reg, in1_reg, in2_reg);
         }
 
     protected:

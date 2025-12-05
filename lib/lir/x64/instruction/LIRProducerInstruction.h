@@ -15,7 +15,8 @@ enum class LIRProdInstKind: std::uint8_t {
     And,
     Or,
     Xor,
-    Shl,
+    Sal,
+    Sar,
     Shr,
     Neg,
     Not,
@@ -68,6 +69,18 @@ public:
 
     static std::unique_ptr<LIRProducerInstruction> sub(const LIRValType type, const LIROperand &lhs, const LIROperand &rhs) {
         return create(LIRProdInstKind::Sub, type, lhs.size(), lhs.size(), lhs, rhs);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> sal(const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Sal, LIRValType::GP, lhs.size(), lhs.size(), lhs, rhs);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> sar(const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Sar, LIRValType::GP, lhs.size(), lhs.size(), lhs, rhs);
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> shr(const LIROperand &lhs, const LIROperand &rhs) {
+        return create(LIRProdInstKind::Shr, LIRValType::GP, lhs.size(), lhs.size(), lhs, rhs);
     }
 
     static std::unique_ptr<LIRProducerInstruction> xxor(const LIROperand &lhs, const LIROperand &rhs) {

@@ -458,7 +458,8 @@ LIRVal FunctionLower::get_lir_val(const Value &val) {
 
 void FunctionLower::accept(Binary *inst) {
     const auto lhs = get_lir_operand(inst->lhs());
-    const auto rhs = get_lir_operand(inst->rhs());
+    const auto& rhs_v = inst->rhs();
+    const auto rhs = get_lir_operand(rhs_v);
     switch (inst->op()) {
         case BinaryOp::Add: {
             const auto lir_ty = convert_type_to_lir_val_type(inst->type());
@@ -470,6 +471,31 @@ void FunctionLower::accept(Binary *inst) {
             const auto lir_ty = convert_type_to_lir_val_type(inst->type());
             const auto sub = m_bb->ins(LIRProducerInstruction::sub(lir_ty, lhs, rhs));
             memorize(inst, sub->def(0));
+            break;
+        }
+        case BinaryOp::ShiftLeft: [[fallthrough]];
+        case BinaryOp::ShiftRight: {
+            LIROperand op = rhs;
+            if (!rhs_v.isa(constant())) {
+                const auto copy = m_bb->ins(LIRProducerInstruction::copy(rhs.size(), rhs, aasm::rcx));
+                op = copy->def(0);
+            }
+
+            LIRProducerInstruction* shift;
+            switch (inst->op()) {
+                case BinaryOp::ShiftLeft: shift = m_bb->ins(LIRProducerInstruction::sal(lhs, op)); break;
+                case BinaryOp::ShiftRight: {
+                    if (const auto type = inst->type(); type->isa(signed_type())) {
+                        shift = m_bb->ins(LIRProducerInstruction::sar(lhs, op));
+                    } else {
+                        assertion(type->isa(unsigned_type()), "expected unsigned");
+                        shift = m_bb->ins(LIRProducerInstruction::shr(lhs, op));
+                    }
+                    break;
+                }
+                default: std::unreachable();
+            }
+            memorize(inst, shift->def(0));
             break;
         }
         case BinaryOp::BitwiseXor: {

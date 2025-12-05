@@ -153,10 +153,10 @@ namespace aasm::details {
 
         template <AddressOrGPReg Op>
         [[nodiscard]]
-        constexpr std::optional<Relocation> encode_MC(const std::uint8_t size, const Op& dest) {
+        constexpr std::optional<Relocation> encode_MC(const std::uint8_t modrm, const std::uint8_t size, const Op& dest) {
             EncodeUtils::emit_op_prologue(m_buffer, size, dest);
             emit_opcodes(size);
-            return EncodeUtils::emit_operands(m_buffer, dest);
+            return EncodeUtils::emit_operands(m_buffer, modrm, dest);
         }
 
         template <AddressOrGPReg Op>

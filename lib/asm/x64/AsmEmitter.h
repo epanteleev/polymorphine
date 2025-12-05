@@ -219,7 +219,7 @@ namespace aasm {
             m_instructions.emplace_back(details::Leave());
         }
 
-        // Shift
+        // Shift left
         constexpr void sal(const std::uint8_t size, const std::uint8_t count, const GPReg dst) {
             m_instructions.emplace_back(details::SalRI(size, count, dst));
         }
@@ -230,6 +230,32 @@ namespace aasm {
 
         constexpr void sal(const std::uint8_t size, const GPReg dst) {
             m_instructions.emplace_back(details::SalRR(size, dst));
+        }
+
+        // Shift right: signed divide
+        constexpr void sar(const std::uint8_t size, const std::uint8_t count, const GPReg dst) {
+            m_instructions.emplace_back(details::SarRI(size, count, dst));
+        }
+
+        constexpr void sar(const std::uint8_t size, const std::uint8_t count, const Address& dst) {
+            m_instructions.emplace_back(details::SarMI(size, count, dst));
+        }
+
+        constexpr void sar(const std::uint8_t size, const GPReg dst) {
+            m_instructions.emplace_back(details::SarRR(size, dst));
+        }
+
+        // Shift right: unsigned divide
+        constexpr void shr(const std::uint8_t size, const std::uint8_t count, const GPReg dst) {
+            m_instructions.emplace_back(details::ShrRI(size, count, dst));
+        }
+
+        constexpr void shr(const std::uint8_t size, const std::uint8_t count, const Address& dst) {
+            m_instructions.emplace_back(details::ShrMI(size, count, dst));
+        }
+
+        constexpr void shr(const std::uint8_t size, const GPReg dst) {
+            m_instructions.emplace_back(details::ShrRR(size, dst));
         }
 
         constexpr void setcc(const CondType type, const GPReg reg) {

@@ -29,5 +29,5 @@ enum class Error {
 #ifndef NDEBUG
 #define assertion(condition, ...) if (!(condition)) { error::assert0(#condition, std::source_location::current(), std::format(__VA_ARGS__)); }
 #else
-#define assertion(condition, ...) (void)(condition)
+#define assertion(condition, ...)
 #endif

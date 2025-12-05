@@ -18,7 +18,8 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::And: visitor.and_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Or:  visitor.or_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Xor: visitor.xor_i(def(0), in(0), in(1)); break;
-        case LIRProdInstKind::Shl: visitor.shl_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::Sal: visitor.sal_i(def(0), in(0), in(1)); break;
+        case LIRProdInstKind::Sar: visitor.sar_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Shr: visitor.shr_i(def(0), in(0), in(1)); break;
         case LIRProdInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
         case LIRProdInstKind::Not: visitor.not_i(def(0), in(0)); break;

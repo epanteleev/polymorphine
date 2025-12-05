@@ -36,6 +36,7 @@ namespace details {
             auto reloc = element.emit(jit_assembler);
 
             relocation_table.push_back(std::move(reloc));
+            [[maybe_unused]]
             const auto [_unused2, has2] = offset_table.emplace(name, JitDataChunk(start, jit_assembler.size() - start));
             assertion(has2, "Offset for symbol already exists: {}", name->name());
         }

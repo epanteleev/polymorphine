@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FcmpOrdering.h"
+#include "ShiftKind.h"
 #include "asm/x64/asm.h"
 
 class MasmEmitter final {
@@ -63,6 +64,30 @@ public:
     template<GPVRegVariant Op>
     void add(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
         m_asm.add(size, src, dst);
+    }
+
+    template<GPVRegVariant Op>
+    void shift(const std::uint8_t size, const ShiftKind kind, const Op& dst) {
+        switch (kind) {
+            case ShiftKind::SAL: return m_asm.sal(size, dst);
+            case ShiftKind::SAR: return m_asm.sar(size, dst);
+            case ShiftKind::SHR: return m_asm.shr(size, dst);
+            default: std::unreachable();
+        }
+    }
+
+    template<GPVRegVariant Op>
+    void shift(const std::uint8_t size, const ShiftKind kind, const std::size_t count, const Op& dst) {
+        if (count == 0) {
+            return; // No need to shift by zero
+        }
+
+        switch (kind) {
+            case ShiftKind::SAL: return m_asm.sal(size, count, dst);
+            case ShiftKind::SAR: return m_asm.sar(size, count, dst);
+            case ShiftKind::SHR: return m_asm.shr(size, count, dst);
+            default: std::unreachable();
+        }
     }
 
     void add(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {

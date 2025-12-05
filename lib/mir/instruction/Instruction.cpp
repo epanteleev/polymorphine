@@ -42,14 +42,16 @@ namespace {
 
         static std::string_view binaryOpToString(const BinaryOp op) {
             switch (op) {
-                case BinaryOp::Add: return "add";
-                case BinaryOp::Subtract: return "sub";
-                case BinaryOp::Multiply: return "multiply";
-                case BinaryOp::Divide: return "divide";
+                case BinaryOp::Add:        return "add";
+                case BinaryOp::Subtract:   return "sub";
+                case BinaryOp::Multiply:   return "multiply";
+                case BinaryOp::Divide:     return "divide";
                 case BinaryOp::BitwiseAnd: return "and";
-                case BinaryOp::BitwiseOr: return "or";
+                case BinaryOp::BitwiseOr:  return "or";
                 case BinaryOp::BitwiseXor: return "xor";
-                default: die("wrong type");
+                case BinaryOp::ShiftLeft:  return "shl";
+                case BinaryOp::ShiftRight: return "shr";
+                default: std::unreachable();
             }
         }
 
@@ -132,15 +134,15 @@ namespace {
         }
 
         void accept(Switch *inst) override {
-
+            unimplemented();
         }
 
         void accept(VCall *call) override {
-
+            unimplemented();
         }
 
         void accept(IVCall *call) override {
-
+            unimplemented();
         }
 
         void accept(Store *store) override {

@@ -1239,18 +1239,17 @@ TEST(Asm, sal_imm_addr1) {
 }
 
 TEST(Asm, sal_reg_reg1) {
-    GTEST_SKIP();
     std::vector<std::vector<std::uint8_t>> codes = {
         {0x40,0xd2,0xe7},
-        {0x62,0xf4,0x45,0x18,0xd1,0xe1},
-        {0x62,0xf4,0x44,0x18,0xd1,0xe1},
-        {0x62,0xf4,0xc4,0x18,0xd1,0xe1}
+        {0x66,0xd3,0xe7},
+        {0xd3,0xe7},
+        {0x48,0xd3,0xe7}
     };
-    std::vector<std::string> names = {
+    const std::vector<std::string> names = {
         "salb %cl, %dil",
         "salw %cx, %di",
-        "sall %ecx, %edi",
-        "salq %rcx, %rdi"
+        "sall %cx, %edi",
+        "salq %cx, %rdi"
     };
 
     const auto generator = [](const std::uint8_t size) {
