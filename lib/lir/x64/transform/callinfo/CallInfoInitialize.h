@@ -55,23 +55,50 @@ private:
         const auto call = find_call_instruction(call_holder_bb);
         const auto no_return_val = call->defs().empty();
 
-        aasm::GPRegSet reg_set;
+        aasm::RegSet reg_set;
         for (const auto& lir_val: live_set) {
-            const auto reg = lir_val.assigned_reg().to_gp_op().value();
-            const auto gp_reg = reg.as_gp_reg();
-            if (!gp_reg.has_value()) {
-                continue;
-            }
-            if (!no_return_val && gp_reg.value() == aasm::rax) {
+            const auto reg = lir_val.assigned_reg().to_reg();
+            if (!reg.has_value()) {
                 continue;
             }
 
-            if (!m_call_conv->GP_CALLER_SAVE_REGISTERS().contains(gp_reg.value())) {
-                // If the register is a caller-saved register, we need to add it to the adjust stack.
-                return;
+            switch (lir_val.type()) {
+                case LIRValType::GP: {
+                    const auto gp_reg = reg.value().as_gp_reg();
+                    if (!gp_reg.has_value()) {
+                        continue;
+                    }
+                    if (!no_return_val && gp_reg.value() == aasm::rax) {
+                        continue;
+                    }
+
+                    const auto& reg_set = m_call_conv->GP_CALLER_SAVE_REGISTERS();
+                    if (!reg_set.contains(gp_reg.value())) {
+                        // If the register is a caller-saved register, we need to add it to the adjust stack.
+                        return;
+                    }
+                    break;
+                }
+                case LIRValType::FP: {
+                    const auto xmm_reg = reg.value().as_xmm_reg();
+                    if (!xmm_reg.has_value()) {
+                        continue;
+                    }
+                    if (!no_return_val && xmm_reg.value() == aasm::xmm0) {
+                        continue;
+                    }
+
+                    const auto& reg_set = m_call_conv->XMM_CALLER_SAVE_REGISTERS();
+                    if (!reg_set.contains(xmm_reg.value())) {
+                        // If the register is a caller-saved register, we need to add it to the adjust stack.
+                        return;
+                    }
+                    break;
+                }
+                default: std::unreachable();
             }
 
-            reg_set.emplace(gp_reg.value());
+            reg_set.emplace(reg.value());
         }
         adjust_inst->add_regs(reg_set);
         adjust_inst->increase_overflow_area_size(evaluate_overflow_area_size(call));
@@ -81,7 +108,6 @@ private:
         epilogue->increase_overflow_area_size(m_max_caller_overflow_area_size);
         m_func_data.prologue()->increase_overflow_area_size(m_max_caller_overflow_area_size);
     }
-
 
     std::size_t evaluate_overflow_area_size(const LIRCall* call) noexcept {
         std::size_t overflow_args{};

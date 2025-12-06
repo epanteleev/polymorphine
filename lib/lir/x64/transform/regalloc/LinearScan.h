@@ -58,7 +58,7 @@ private:
     aasm::SymbolTable& m_symbol_tab;
     const call_conv::CallConvProvider* m_call_conv;
 
-    aasm::GPRegSet m_used_callee_saved_regs{};
+    aasm::RegSet m_used_callee_saved_regs{};
 
     std::vector<IntervalEntry> m_unhandled_intervals{};
     std::vector<IntervalEntry> m_inactive_intervals{};

@@ -50,13 +50,13 @@ namespace details {
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override{}
 
-        void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
+        void up_stack(const aasm::RegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
-        void down_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
+        void down_stack(const aasm::RegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {}
 
-        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override{}
+        void prologue(const aasm::RegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override{}
 
-        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override{}
+        void epilogue(const aasm::RegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override{}
 
         void jmp(const LIRBlock *bb) override{}
 

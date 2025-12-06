@@ -286,7 +286,7 @@ void FunctionLower::setup_gp_argument(const std::size_t idx, const ArgumentValue
         }
     }
 
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), lir_arg));
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), LIRValType::GP, lir_arg));
     memorize(&arg, copy->def(0));
 }
 
@@ -305,7 +305,7 @@ void FunctionLower::setup_arguments() {
             continue;
         }
         if (type->isa(float_type())) {
-            const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(lir_arg.size(), lir_arg));
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(lir_arg.size(), LIRValType::FP, lir_arg));
             memorize(&arg, copy->def(0));
             continue;
         }
@@ -348,7 +348,7 @@ static void insert_copies(ParallelCopy& p_copy) noexcept {
         const auto lir_val = LIRVal::try_from(input);
         assertion(lir_val.has_value(), "Expected LIRVal for ParallelCopy input");
 
-        const auto copy = target->ins_before(target->last(), LIRProducerInstruction::copy(lir_val->size(), input));
+        const auto copy = target->ins_before(target->last(), LIRProducerInstruction::copy(lir_val->size(), lir_val.value().type(), input));
         p_copy.in(idx, copy->def(0));
     }
 }
@@ -477,7 +477,7 @@ void FunctionLower::accept(Binary *inst) {
         case BinaryOp::ShiftRight: {
             LIROperand op = rhs;
             if (!rhs_v.isa(constant())) {
-                const auto copy = m_bb->ins(LIRProducerInstruction::copy(rhs.size(), rhs, aasm::rcx));
+                const auto copy = m_bb->ins(LIRProducerInstruction::copy(rhs.size(), LIRValType::GP, rhs, aasm::rcx));
                 op = copy->def(0);
             }
 
@@ -522,17 +522,36 @@ void FunctionLower::accept(CondBranch *cond_branch) {
 
 void FunctionLower::allocate_arguments_for_call(const std::span<LIROperand const> args) const {
     std::int32_t caller_arg_area_size{};
-    std::size_t idx{};
-    for (const auto& lir_val: args) {
-        const auto lir_val_arg = LIRVal::try_from(lir_val).value();
-        if (lir_val_arg.isa(gen_v()) || idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
-            lir_val_arg.assign_reg(aasm::Address(aasm::rsp, caller_arg_area_size));
-            caller_arg_area_size += align_up(lir_val_arg.size(), 8);
-            continue;
-        }
+    std::size_t gp_idx{};
+    std::size_t xmm_idx{};
 
-        lir_val_arg.assign_reg(m_call_conv->GP_ARGUMENT_REGISTERS(idx));
-        idx += 1;
+    for (const auto& lir_val: args) {
+        switch (const auto lir_val_arg = LIRVal::try_from(lir_val).value(); lir_val_arg.type()) {
+            case LIRValType::GP: {
+                if (lir_val_arg.isa(gen_v()) || gp_idx >= m_call_conv->GP_ARGUMENT_REGISTERS().size()) {
+                    lir_val_arg.assign_reg(aasm::Address(aasm::rsp, caller_arg_area_size));
+                    caller_arg_area_size += align_up(lir_val_arg.size(), cst::QWORD_SIZE);
+                    continue;
+                }
+
+                lir_val_arg.assign_reg(m_call_conv->GP_ARGUMENT_REGISTERS(gp_idx));
+                gp_idx += 1;
+                break;
+            }
+            case LIRValType::FP: {
+                if (lir_val_arg.isa(gen_v()) || xmm_idx >= m_call_conv->XMM_ARGUMENT_REGISTERS().size()) {
+                    lir_val_arg.assign_reg(aasm::Address(aasm::rsp, caller_arg_area_size));
+                    caller_arg_area_size += align_up(lir_val_arg.size(), cst::QWORD_SIZE);
+                    continue;
+                }
+
+                lir_val_arg.assign_reg(m_call_conv->XMM_ARGUMENT_REGISTERS(xmm_idx));
+                xmm_idx += 1;
+
+                break;
+            }
+            default: std::unreachable();
+        }
     }
 }
 
@@ -546,12 +565,17 @@ void FunctionLower::accept(Call *call) {
     const auto ret_type = dynamic_cast<const NonTrivialType*>(proto->ret_type());
     assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
 
-    const auto lir_call = m_bb->ins(LIRCall::call(std::string{proto->name()}, ret_type->size_of(), cont, std::move(args), proto->bind()));
+    const auto lir_val_type = convert_type_to_lir_val_type(ret_type);
+    const auto lir_call = m_bb->ins(LIRCall::call(std::string{proto->name()}, lir_val_type, ret_type->size_of(), cont, std::move(args), proto->bind()));
     cont->ins(LIRAdjustStack::up_stack());
-    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_call->def(0)));
-    memorize(call, copy_ret->def(0));
 
-    lir_call->def(0).assign_reg(aasm::rax);
+    const auto& lir_call_val = lir_call->def(0);
+    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_val_type, lir_call_val));
+    memorize(call, copy_ret->def(0));
+    switch (lir_val_type) {
+        case LIRValType::FP: lir_call_val.assign_reg(aasm::xmm0); break;
+        case LIRValType::GP: lir_call_val.assign_reg(aasm::rax); break;
+    }
     allocate_arguments_for_call(lir_call->inputs());
 }
 
@@ -601,15 +625,16 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         return load->def(0);
     }
 
+    const auto lir_val_type = convert_type_to_lir_val_type(ret_type);
     if (ret_type->isa(gp_type())) {
-        const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), get_lir_operand(val), fixed_reg));
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_val_type, get_lir_operand(val), fixed_reg));
         return copy->def(0);
     }
     if (ret_type->isa(float_type())) {
         const auto lir_op = get_lir_operand(val);
         const auto lir_val_opt = LIRVal::try_from(lir_op);
         if (!lir_val_opt.has_value() || lir_val_opt.value().isa(gen_v())) {
-            const auto copy = m_bb->ins(LIRProducerInstruction::copy_f(ret_type->size_of(), lir_op, aasm::xmm0));
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_val_type, lir_op, aasm::xmm0));
             return copy->def(0);
         }
 
@@ -759,7 +784,7 @@ void FunctionLower::accept(Select *select) {
 void FunctionLower::accept(IntDiv *div) {
     const auto lhs_val = div->lhs();
     const auto lhs = get_lir_operand(lhs_val);
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), lhs, aasm::rax));
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(lhs.size(), LIRValType::GP, lhs, aasm::rax));
     const auto copy_def = copy->def(0);
 
     const auto rhs = get_lir_operand(div->rhs());
@@ -780,13 +805,13 @@ void FunctionLower::accept(IntDiv *div) {
 
     if (const auto quotient = div->quotient(); !quotient->users().empty()) {
         const auto quotient_type = dynamic_cast<const PrimitiveType*>(quotient->type());
-        const auto copy_quotient = m_bb->ins(LIRProducerInstruction::copy(quotient_type->size_of(), idiv->def(0)));
+        const auto copy_quotient = m_bb->ins(LIRProducerInstruction::copy(quotient_type->size_of(), LIRValType::GP, idiv->def(0)));
         memorize(quotient, copy_quotient->def(0));
     }
 
     if (const auto remain = div->remain(); !remain->users().empty()) {
         const auto remain_type = dynamic_cast<const PrimitiveType*>(remain->type());
-        const auto copy_remain = m_bb->ins(LIRProducerInstruction::copy(remain_type->size_of(), idiv->def(1)));
+        const auto copy_remain = m_bb->ins(LIRProducerInstruction::copy(remain_type->size_of(), LIRValType::GP, idiv->def(1)));
         memorize(remain, copy_remain->def(0));
     }
 }
@@ -832,7 +857,7 @@ void FunctionLower::accept(Unary *inst) {
             const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
             assertion(type != nullptr, "Expected PrimitiveType for Bitcast operation");
 
-            const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), operand));
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), LIRValType::GP, operand));
             memorize(inst, copy->def(0));
             break;
         }
@@ -934,8 +959,10 @@ LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
         return lea->def(0);
     }
 
+    const auto lir_val_type = convert_type_to_lir_val_type(arg.type());
     const auto arg_vreg = get_lir_operand(arg);
-    const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), arg_vreg));
+
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), lir_val_type, arg_vreg));
     return copy->def(0);
 }
 

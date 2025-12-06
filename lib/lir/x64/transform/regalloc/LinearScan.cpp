@@ -254,7 +254,7 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::GPReg reg)
         return;
     }
 
-    if (std::ranges::contains(m_used_callee_saved_regs, reg)) {
+    if (m_used_callee_saved_regs.contains(reg)) {
         return; // Already added
     }
 

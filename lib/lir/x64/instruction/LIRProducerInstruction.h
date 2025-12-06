@@ -41,23 +41,12 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op)  {
-        return create(LIRProdInstKind::Copy, LIRValType::GP, size, size, op);
+    static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIRValType ty, const LIROperand &op)  {
+        return create(LIRProdInstKind::Copy, ty, size, size, op);
     }
 
-    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op)  {
-        return create(LIRProdInstKind::Copy, LIRValType::FP, size, size, op);
-    }
-
-    static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIROperand &op, const aasm::GPReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, LIRValType::GP, std::vector{op});
-        prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
-        prod->assign_reg(0, fixed_reg);
-        return prod;
-    }
-
-    static std::unique_ptr<LIRProducerInstruction> copy_f(const std::uint8_t size, const LIROperand &op, const aasm::XmmReg fixed_reg)  {
-        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, LIRValType::FP, std::vector{op});
+    static std::unique_ptr<LIRProducerInstruction> copy(const std::uint8_t size, const LIRValType ty, const LIROperand &op, const AssignedVReg& fixed_reg)  {
+        auto prod = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::Copy, ty, std::vector{op});
         prod->add_def(LIRVal::reg(size, size, 0, prod.get()));
         prod->assign_reg(0, fixed_reg);
         return prod;

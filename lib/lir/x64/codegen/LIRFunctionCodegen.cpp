@@ -57,8 +57,8 @@ namespace {
 
         void not_i(const LIRVal &out, const LIROperand &in) override {}
 
-        void up_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, const std::size_t local_area_size) override {
-            for (const auto &reg: reg_set) {
+        void up_stack(const aasm::RegSet &reg_set, const std::size_t caller_overflow_area_size, const std::size_t local_area_size) override {
+            for (const auto &reg: reg_set.gp_regs()) {
                 m_as.pop(8, reg);
             }
 
@@ -71,7 +71,7 @@ namespace {
             }
         }
 
-        void down_stack(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
+        void down_stack(const aasm::RegSet &reg_set, const std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             auto size_to_adjust = caller_overflow_area_size;
             if (const auto remains = (local_area_size+caller_overflow_area_size+reg_set.size()*8) % call_conv::STACK_ALIGNMENT; remains != 0L) {
                 size_to_adjust += remains;
@@ -80,13 +80,12 @@ namespace {
                 m_as.sub(8, checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
             }
 
-            for (auto rev: std::ranges::reverse_view(reg_set)) {
+            for (auto rev: std::ranges::reverse_view(reg_set.gp_regs())) {
                 m_as.push(8, rev);
             }
         }
 
-
-        void prologue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
+        void prologue(const aasm::RegSet &reg_set, const std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             if (reg_set.empty() && caller_overflow_area_size == 0 && local_area_size == 0) {
                 return;
             }
@@ -100,17 +99,17 @@ namespace {
             }
 
             m_as.sub(8, checked_cast<std::int32_t>(size_to_adjust), aasm::rsp);
-            for (const auto& reg: reg_set) {
+            for (const auto& reg: reg_set.gp_regs()) {
                 m_as.push(8, reg);
             }
         }
 
-        void epilogue(const aasm::GPRegSet &reg_set, std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
+        void epilogue(const aasm::RegSet &reg_set, const std::size_t caller_overflow_area_size, std::size_t local_area_size) override {
             if (reg_set.empty() && caller_overflow_area_size == 0 && local_area_size == 0) {
                 return;
             }
 
-            for (const auto& reg: std::ranges::reverse_view(reg_set)) {
+            for (const auto& reg: std::ranges::reverse_view(reg_set.gp_regs())) {
                 m_as.pop(8, reg);
             }
 

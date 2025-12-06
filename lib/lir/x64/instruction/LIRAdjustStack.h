@@ -22,7 +22,7 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
-    void add_regs(const aasm::GPRegSet& regs) noexcept {
+    void add_regs(const aasm::RegSet& regs) noexcept {
         assertion(m_caller_saved_regs.empty(), "invariant");
         m_caller_saved_regs = regs;
     }
@@ -59,6 +59,6 @@ public:
 private:
     std::size_t m_overflow_argument_area_size{};
     std::size_t m_local_area_size{};
-    aasm::GPRegSet m_caller_saved_regs{};
+    aasm::RegSet m_caller_saved_regs{};
     LIRAdjustKind m_adjust_kind;
 };

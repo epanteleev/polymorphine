@@ -59,8 +59,15 @@ namespace aasm {
         static constexpr R from_index(const std::size_t idx) noexcept {
             if constexpr (std::same_as<R, XmmReg>) {
                 return RegT(idx+xmm0.code());
-            } else if constexpr (std::same_as<R, GPReg> || std::same_as<R, Reg>) {
+            } else if constexpr (std::same_as<R, GPReg>) {
                 return RegT(idx);
+
+            } else if constexpr (std::same_as<R, Reg>) {
+                if (idx < GPReg::NUMBER_OF_REGISTERS) {
+                    return RegT(GPReg(idx));
+                }
+                return RegT(XmmReg(idx));
+
             } else {
                 static_assert(false, "unexpected type");
                 std::unreachable();
@@ -140,6 +147,7 @@ namespace aasm {
             }
         }
 
+    protected:
         std::bitset<MAX_NOF_REGS> m_has_values{};
     };
 
@@ -164,7 +172,30 @@ namespace aasm {
 
     class GPRegSet final: public AnyRegSet<GPReg, GPReg::NUMBER_OF_REGISTERS> {};
     class XmmRegSet final: public AnyRegSet<XmmReg, XmmReg::NUMBER_OF_REGISTERS> {};
-    class RegSet final: public AnyRegSet<Reg, GPReg::NUMBER_OF_REGISTERS+XmmReg::NUMBER_OF_REGISTERS> {};
+    class RegSet final: public AnyRegSet<Reg, GPReg::NUMBER_OF_REGISTERS+XmmReg::NUMBER_OF_REGISTERS> {
+    public:
+        [[nodiscard]]
+        GPRegSet gp_regs() const noexcept { // TODO make this more efficient
+            GPRegSet gp_set;
+            for (const auto& reg: *this) {
+                if (const auto gp_reg = reg.as_gp_reg(); gp_reg.has_value()) {
+                    gp_set.emplace(gp_reg.value());
+                }
+            }
+            return gp_set;
+        }
+
+        [[nodiscard]]
+        XmmRegSet xmm_regs() const noexcept { // TODO make this more efficient
+            XmmRegSet xmm_set;
+            for (const auto& reg: *this) {
+                if (const auto xmm_reg = reg.as_xmm_reg(); xmm_reg.has_value()) {
+                    xmm_set.emplace(xmm_reg.value());
+                }
+            }
+            return xmm_set;
+        }
+    };
 
 }
 
