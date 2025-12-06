@@ -15,6 +15,7 @@
 #include "Mov.h"
 #include "Ret.h"
 #include "Add.h"
+#include "And.h"
 #include "Sub.h"
 #include "Jmp.h"
 #include "Cmp.h"
@@ -47,6 +48,7 @@
 #include "Cvtsi2sd.h"
 #include "Shift.h"
 #include "Test.h"
+#include "Or.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -61,9 +63,12 @@ namespace aasm {
         details::CMovRR, details::CMovRM,
         details::MovRR, details::MovRI, details::MovMR, details::MovRM, details::MovMI,
         details::AddRR, details::AddRI, details::AddRM, details::AddMR, details::AddMI,
+        details::AndRR, details::AndRI, details::AndRM, details::AndMR, details::AndMI,
+        details::OrRR, details::OrRI, details::OrRM, details::OrMR, details::OrMI,
         details::SubRR, details::SubRI, details::SubRM, details::SubMI, details::SubMR,
         details::CmpRR, details::CmpRI, details::CmpMI, details::CmpRM, details::CmpMR,
         details::XorRR, details::XorRI, details::XorMI, details::XorRM, details::XorMR,
+        details::TestRR, details::TestRI, details::TestMI, details::TestRM, details::TestMR,
         details::MovzxRR, details::MovzxRM,
         details::MovsxRR, details::MovsxRM,
         details::MovsxdRR, details::MovsxdRM,

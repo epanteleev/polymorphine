@@ -443,48 +443,68 @@ TEST(Int2Float, int2fp_i8_to_f64) {
 
 TEST(Int2Float, int2fp_i8_to_f32) {
     const auto module = int2fp_cvt(SignedIntegerType::i8(), FloatingPointType::f32());
-    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+    const std::unordered_map<std::string, std::size_t> asm_size0{
         {"cvt", 3}
     };
 
     const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0);
     const auto fn = code.code_start_as<float(std::int8_t)>("cvt").value();
-    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_FLOAT_EQ(fn(1), 1.0);
     ASSERT_EQ(fn(127UL), 127.0);
-    ASSERT_DOUBLE_EQ(fn(CHAR_MAX), CHAR_MAX);
+    ASSERT_FLOAT_EQ(fn(CHAR_MAX), CHAR_MAX);
+}
+
+TEST(Int2Float, uint2fp_u64_to_f32) {
+    const auto module = int2fp_cvt(UnsignedIntegerType::u64(), FloatingPointType::f32());
+    const auto code = jit_compile_and_assembly(module);
+    const auto fn = code.code_start_as<float(unsigned long)>("cvt").value();
+    ASSERT_FLOAT_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_FLOAT_EQ(fn(UINT_MAX), static_cast<float>(UINT_MAX));
+    ASSERT_FLOAT_EQ(fn(ULONG_MAX), static_cast<float>(ULONG_MAX));
 }
 
 TEST(Int2Float, uint2fp_u32_to_f32) {
     const auto module = int2fp_cvt(UnsignedIntegerType::u32(), FloatingPointType::f32());
     const auto code = jit_compile_and_assembly(external_symbols, module, asm_size);
     const auto fn = code.code_start_as<float(unsigned int)>("cvt").value();
-    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_FLOAT_EQ(fn(1), 1.0);
     ASSERT_EQ(fn(127UL), 127.0);
-    ASSERT_DOUBLE_EQ(fn(UINT_MAX), static_cast<float>(UINT_MAX));
+    ASSERT_FLOAT_EQ(fn(UINT_MAX), static_cast<float>(UINT_MAX));
 }
 
 TEST(Int2Float, uint2fp_u16_to_f32) {
-    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+    const std::unordered_map<std::string, std::size_t> asm_size0 {
         {"cvt", 3}
     };
     const auto module = int2fp_cvt(UnsignedIntegerType::u16(), FloatingPointType::f32());
     const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0);
     const auto fn = code.code_start_as<float(unsigned short)>("cvt").value();
-    ASSERT_DOUBLE_EQ(fn(1), 1.0);
+    ASSERT_FLOAT_EQ(fn(1), 1.0);
     ASSERT_EQ(fn(127UL), 127.0);
-    ASSERT_DOUBLE_EQ(fn(USHRT_MAX), static_cast<float>(USHRT_MAX));
+    ASSERT_FLOAT_EQ(fn(USHRT_MAX), static_cast<float>(USHRT_MAX));
 }
 
 TEST(Int2Float, uint2fp_u8_to_f32) {
-    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+    const std::unordered_map<std::string, std::size_t> asm_size0 {
         {"cvt", 3}
     };
     const auto module = int2fp_cvt(UnsignedIntegerType::u8(), FloatingPointType::f32());
     const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0);
     const auto fn = code.code_start_as<float(unsigned char)>("cvt").value();
+    ASSERT_FLOAT_EQ(fn(1), 1.0);
+    ASSERT_EQ(fn(127UL), 127.0);
+    ASSERT_FLOAT_EQ(fn(UCHAR_MAX), static_cast<float>(UCHAR_MAX));
+}
+
+TEST(Int2Float, uint2fp_u64_to_f64) {
+    const auto module = int2fp_cvt(UnsignedIntegerType::u64(), FloatingPointType::f64());
+    const auto code = jit_compile_and_assembly(module, true);
+    const auto fn = code.code_start_as<double(unsigned long)>("cvt").value();
     ASSERT_DOUBLE_EQ(fn(1), 1.0);
     ASSERT_EQ(fn(127UL), 127.0);
-    ASSERT_DOUBLE_EQ(fn(UCHAR_MAX), static_cast<float>(UCHAR_MAX));
+    ASSERT_DOUBLE_EQ(fn(UINT_MAX), UINT_MAX);
+    ASSERT_DOUBLE_EQ(fn(ULONG_MAX), static_cast<double>(ULONG_MAX));
 }
 
 TEST(Int2Float, uint2fp_u32_to_f64) {

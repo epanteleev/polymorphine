@@ -314,7 +314,7 @@ TEST(GlobalConstant, escape_struct_field_constant_in_argument) {
     const std::unordered_map<std::string, std::size_t> asm_size{
         {"escape_field_constant_in_argument", 3},
     };
-    const auto external_symbols = std::unordered_map<std::string, std::size_t>{
+    const std::unordered_map<std::string, std::size_t> external_symbols{
         {"deref", reinterpret_cast<std::size_t>(&deref_i64)}
     };
 

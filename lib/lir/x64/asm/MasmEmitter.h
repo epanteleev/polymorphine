@@ -66,6 +66,53 @@ public:
         m_asm.add(size, src, dst);
     }
 
+    void add(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        if (src == 0) {
+            return; // No need to add zero
+        }
+
+        m_asm.add(size, src, dst);
+    }
+
+    void test(const std::uint8_t size, const aasm::GPReg src, const aasm::Address& dst) {
+        m_asm.test(size, src, dst);
+    }
+
+    template<GPVRegVariant Op>
+    void test(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.test(size, src, dst);
+    }
+
+    void test(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        m_asm.test(size, src, dst);
+    }
+
+    void aand(const std::uint8_t size, const aasm::GPReg src, const aasm::Address& dst) {
+        m_asm.aand(size, src, dst);
+    }
+
+    template<GPVRegVariant Op>
+    void aand(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.aand(size, src, dst);
+    }
+
+    void aand(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        m_asm.aand(size, src, dst);
+    }
+
+    void oor(const std::uint8_t size, const aasm::GPReg src, const aasm::Address& dst) {
+        m_asm.oor(size, src, dst);
+    }
+
+    template<GPVRegVariant Op>
+    void oor(const std::uint8_t size, const Op& src, const aasm::GPReg dst) {
+        m_asm.oor(size, src, dst);
+    }
+
+    void oor(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
+        m_asm.oor(size, src, dst);
+    }
+
     template<GPVRegVariant Op>
     void shift(const std::uint8_t size, const ShiftKind kind, const Op& dst) {
         switch (kind) {
@@ -88,14 +135,6 @@ public:
             case ShiftKind::SHR: return m_asm.shr(size, count, dst);
             default: std::unreachable();
         }
-    }
-
-    void add(const std::uint8_t size, const std::int32_t src, const aasm::GPReg dst) {
-        if (src == 0) {
-            return; // No need to add zero
-        }
-
-        m_asm.add(size, src, dst);
     }
 
     void sub(const std::uint8_t size, const aasm::GPReg src, const aasm::Address& dst) {

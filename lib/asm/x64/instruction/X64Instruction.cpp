@@ -481,6 +481,46 @@ namespace aasm::details {
     std::ostream& operator<<(std::ostream &os, const TestRM& test) {
         return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
+
+    std::ostream& operator<<(std::ostream &os, const AndRR& aand) {
+        return print_to(os, "and", aand.m_size, aand.m_src, aand.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const AndMR& aand) {
+        return print_to(os, "and", aand.m_size, aand.m_src, aand.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const AndRI& aand) {
+        return print_to(os, "and", aand.m_size, aand.m_src, aand.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const AndMI& aand) {
+        return print_to(os, "and", aand.m_size, aand.m_src, aand.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const AndRM& aand) {
+        return print_to(os, "and", aand.m_size, aand.m_src, aand.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const OrRR& oor) {
+        return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const OrMR& oor) {
+        return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const OrRI& oor) {
+        return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const OrMI& oor) {
+        return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream &os, const OrRM& oor) {
+        return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
+    }
 }
 
 namespace aasm {

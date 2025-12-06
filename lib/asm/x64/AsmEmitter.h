@@ -85,6 +85,48 @@ namespace aasm {
             m_instructions.emplace_back(details::AddMI(size, src, dst));
         }
 
+        // And
+        constexpr void aand(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::AndRR(size, src, dst));
+        }
+
+        constexpr void aand(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
+            m_instructions.emplace_back(details::AndRI(size, src, dst));
+        }
+
+        constexpr void aand(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::AndRM(size, src, dst));
+        }
+
+        constexpr void aand(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(details::AndMR(size, src, dst));
+        }
+
+        constexpr void aand(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(details::AndMI(size, src, dst));
+        }
+
+        // Logical Inclusive OR
+        constexpr void oor(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::OrRR(size, src, dst));
+        }
+
+        constexpr void oor(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
+            m_instructions.emplace_back(details::OrRI(size, src, dst));
+        }
+
+        constexpr void oor(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::OrRM(size, src, dst));
+        }
+
+        constexpr void oor(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(details::OrMR(size, src, dst));
+        }
+
+        constexpr void oor(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(details::OrMI(size, src, dst));
+        }
+
         // Subtract
         constexpr void sub(const std::uint8_t size, const GPReg src, const GPReg dst) {
             m_instructions.emplace_back(details::SubRR(size, src, dst));
@@ -145,6 +187,27 @@ namespace aasm {
 
         constexpr void xxor(const std::uint8_t size, const std::int32_t src, const Address& dst) {
             m_instructions.emplace_back(details::XorMI(size, src, dst));
+        }
+
+        // Test — Logical Compare
+        constexpr void test(const std::uint8_t size, const GPReg src, const GPReg dst) {
+            m_instructions.emplace_back(details::TestRR(size, src, dst));
+        }
+
+        constexpr void test(const std::uint8_t size, const std::int32_t src, const GPReg dst) {
+            m_instructions.emplace_back(details::TestRI(size, src, dst));
+        }
+
+        constexpr void test(const std::uint8_t size, const Address& src, const GPReg dst) {
+            m_instructions.emplace_back(details::TestRM(size, src, dst));
+        }
+
+        constexpr void test(const std::uint8_t size, const GPReg src, const Address& dst) {
+            m_instructions.emplace_back(details::TestMR(size, src, dst));
+        }
+
+        constexpr void test(const std::uint8_t size, const std::int32_t src, const Address& dst) {
+            m_instructions.emplace_back(details::TestMI(size, src, dst));
         }
 
         // Call

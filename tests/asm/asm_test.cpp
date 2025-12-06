@@ -1261,6 +1261,29 @@ TEST(Asm, sal_reg_reg1) {
     check_bytes(codes, names, generator);
 }
 
+TEST(Asm, test_reg_reg1) {
+    std::vector<std::vector<std::uint8_t>> codes = {
+        {0x40,0x84,0xc7},
+        {0x66,0x85,0xc7},
+        {0x85,0xc7},
+        {0x48,0x85,0xc7}
+    };
+    std::vector<std::string> names = {
+        "testb %al, %dil",
+        "testw %ax, %di",
+        "testl %eax, %edi",
+        "testq %rax, %rdi"
+    };
+
+    const auto generator = [](const std::uint8_t size) {
+        aasm::AsmEmitter a;
+        a.test(size, aasm::rax, aasm::rdi);
+        return a;
+    };
+
+    check_bytes(codes, names, generator);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

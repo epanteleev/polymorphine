@@ -50,6 +50,27 @@ public:
 
     void add(const std::uint8_t, const std::int32_t, const aasm::GPReg) {}
 
+    void test(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
+
+    template<GPVRegVariant Op>
+    void test(const std::uint8_t, const Op&, const aasm::GPReg) {}
+
+    void test(const std::uint8_t, const std::int32_t, const aasm::GPReg) {}
+
+    void aand(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
+
+    template<GPVRegVariant Op>
+    void aand(const std::uint8_t, const Op&, const aasm::GPReg) {}
+
+    void aand(const std::uint8_t, const std::int32_t, const aasm::GPReg) {}
+
+    void oor(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
+
+    template<GPVRegVariant Op>
+    void oor(const std::uint8_t, const Op&, const aasm::GPReg) {}
+
+    void oor(const std::uint8_t, const std::int32_t, const aasm::GPReg) {}
+
     void sub(const std::uint8_t, const aasm::GPReg, const aasm::Address&) {}
 
     template<typename Op>
@@ -128,6 +149,11 @@ public:
     void jmp(const aasm::Label&) {}
 
     void jcc(const aasm::CondType, const aasm::Label&) {}
+
+    [[nodiscard]]
+    aasm::Label create_label() {
+        return aasm::Label(0);
+    }
 
     void set_label(const aasm::Label&) {}
 };
