@@ -11,84 +11,96 @@ namespace aasm::details {
         }
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const Address& addr, const GPReg reg) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const Address& addr, const GPReg reg) {
         return os << name << prefix_size(size) << ' ' << addr << ", %" << reg.name(size);
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm, const Address& addr) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm, const Address& addr) {
         return os << name << prefix_size(size) << " $" << imm << ", " << addr;
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm, const GPReg reg) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm, const GPReg reg) {
         return os << name << prefix_size(size) << " $" << imm << ", %" << reg.name(size);
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg0, const GPReg reg) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg0, const GPReg reg) {
         return os << name << prefix_size(size) << " %" << reg0.name(size) << ", %" << reg.name(size);
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg0, const Address& addr) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg0, const Address& addr) {
         return os << name << prefix_size(size) << " %" << reg0.name(size) << ", " << addr;
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const GPReg reg) {
         return os << name << prefix_size(size) << " %" << reg.name(size);
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const Address& addr) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const Address& addr) {
         return os << name << prefix_size(size) << ' ' << addr;
     }
 
-    static std::ostream& print(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm) {
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const std::size_t size, const std::int64_t imm) {
         return os << name << prefix_size(size) << " $" << imm;
     }
 
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const XmmReg reg0, const XmmReg reg) {
+        return os << name << " %" << reg0.name(16) << ", %" << reg.name(16);
+    }
+
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const Address& addr, const XmmReg reg) {
+        return os << name << ' ' << addr << ", %" << reg.name(16);
+    }
+
+    static std::ostream& print_to(std::ostream& os, const std::string_view name, const XmmReg reg, const Address& addr) {
+        return os << name << " %" << reg.name(16) << ", " << addr;
+    }
+
     std::ostream& operator<<(std::ostream &os, const Lea &lea) {
-        return print(os, "lea", 8, lea.m_src, lea.m_dst);
+        return print_to(os, "lea", 8, lea.m_src, lea.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const PopR &popr) {
-        return print(os, "pop", popr.m_size, popr.m_reg);
+        return print_to(os, "pop", popr.m_size, popr.m_reg);
     }
 
     std::ostream& operator<<(std::ostream &os, const PopM &popm) {
-        return print(os, "pop", popm.m_size, popm.m_addr);
+        return print_to(os, "pop", popm.m_size, popm.m_addr);
     }
 
     std::ostream& operator<<(std::ostream& os, const NegR& negr) {
-        return print(os, "neg", negr.m_size, negr.m_src);
+        return print_to(os, "neg", negr.m_size, negr.m_src);
     }
 
     std::ostream& operator<<(std::ostream& os, const NegM &negm) {
-        return print(os, "neg", negm.m_size, negm.m_src);
+        return print_to(os, "neg", negm.m_size, negm.m_src);
     }
 
     std::ostream& operator<<(std::ostream &os, const UDivR& idiv) {
-        return print(os, "div", idiv.m_size, idiv.m_divisor);
+        return print_to(os, "div", idiv.m_size, idiv.m_divisor);
     }
 
     std::ostream& operator<<(std::ostream &os, const UDivM &idiv) {
-        return print(os, "div", idiv.m_size, idiv.m_divisor);
+        return print_to(os, "div", idiv.m_size, idiv.m_divisor);
     }
 
     std::ostream& operator<<(std::ostream &os, const IdivR& idiv) {
-        return print(os, "idiv", idiv.m_size, idiv.m_divisor);
+        return print_to(os, "idiv", idiv.m_size, idiv.m_divisor);
     }
 
     std::ostream& operator<<(std::ostream &os, const IdivM &idiv) {
-        return print(os, "idiv", idiv.m_size, idiv.m_divisor);
+        return print_to(os, "idiv", idiv.m_size, idiv.m_divisor);
     }
 
     std::ostream& operator<<(std::ostream &os, const PushR &pushr) {
-        return print(os, "push", pushr.m_size, pushr.m_reg);
+        return print_to(os, "push", pushr.m_size, pushr.m_reg);
     }
 
     std::ostream& operator<<(std::ostream &os, const PushM &pushm) {
-        return print(os, "push", pushm.m_size, pushm.m_addr);
+        return print_to(os, "push", pushm.m_size, pushm.m_addr);
     }
 
     std::ostream& operator<<(std::ostream &os, const PushI &pushi) {
-        return print(os, "push", pushi.m_size, pushi.m_imm);
+        return print_to(os, "push", pushi.m_size, pushi.m_imm);
     }
 
     std::ostream& operator<<(std::ostream &os, const Ret&) {
@@ -104,7 +116,7 @@ namespace aasm::details {
     }
 
     std::ostream & operator<<(std::ostream &os, const MovRR &movrr) {
-        return print(os, "mov", movrr.m_size, movrr.m_src, movrr.m_dest);
+        return print_to(os, "mov", movrr.m_size, movrr.m_src, movrr.m_dest);
     }
 
     std::ostream & operator<<(std::ostream &os, const MovRI &movri) {
@@ -118,95 +130,95 @@ namespace aasm::details {
     }
 
     std::ostream & operator<<(std::ostream &os, const MovMR &movmr) {
-        return print(os, "mov", movmr.m_size, movmr.m_src, movmr.m_dest);
+        return print_to(os, "mov", movmr.m_size, movmr.m_src, movmr.m_dest);
     }
 
     std::ostream& operator<<(std::ostream &os, const MovRM &movrm) {
-        return print(os, "mov", movrm.m_size, movrm.m_src, movrm.m_dest);
+        return print_to(os, "mov", movrm.m_size, movrm.m_src, movrm.m_dest);
     }
 
     std::ostream & operator<<(std::ostream &os, const MovMI &movrm) {
-        return print(os, "mov", movrm.m_size, movrm.m_src, movrm.m_dest);
+        return print_to(os, "mov", movrm.m_size, movrm.m_src, movrm.m_dest);
     }
 
     std::ostream& operator<<(std::ostream &os, const AddRR& add) {
-        return print(os, "add", add.m_size, add.m_src, add.m_dst);
+        return print_to(os, "add", add.m_size, add.m_src, add.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const AddMR& add) {
-        return print(os, "add", add.m_size, add.m_src, add.m_dst);
+        return print_to(os, "add", add.m_size, add.m_src, add.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const AddRI& add) {
-        return print(os, "add", add.m_size, add.m_src, add.m_dst);
+        return print_to(os, "add", add.m_size, add.m_src, add.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const AddMI& add) {
-        return print(os, "add", add.m_size, add.m_src, add.m_dst);
+        return print_to(os, "add", add.m_size, add.m_src, add.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const AddRM& add) {
-        return print(os, "add", add.m_size, add.m_src, add.m_dst);
+        return print_to(os, "add", add.m_size, add.m_src, add.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const SubRR& subrr) {
-        return print(os, "sub", subrr.m_size, subrr.m_src, subrr.m_dst);
+        return print_to(os, "sub", subrr.m_size, subrr.m_src, subrr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SubMR &submr) {
-        return print(os, "sub", submr.m_size, submr.m_src, submr.m_dst);
+        return print_to(os, "sub", submr.m_size, submr.m_src, submr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SubRI &subrr) {
-        return print(os, "sub", subrr.m_size, subrr.m_src, subrr.m_dst);
+        return print_to(os, "sub", subrr.m_size, subrr.m_src, subrr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SubMI &submi) {
-        return print(os, "sub", submi.m_size, submi.m_src, submi.m_dst);
+        return print_to(os, "sub", submi.m_size, submi.m_src, submi.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SubRM &subrm) {
-        return print(os, "sub", subrm.m_size, subrm.m_src, subrm.m_dst);
+        return print_to(os, "sub", subrm.m_size, subrm.m_src, subrm.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const CmpRR& cmp) {
-        return print(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
+        return print_to(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const CmpMR& cmp) {
-        return print(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
+        return print_to(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const CmpRI& cmp) {
-        return print(os, "cmp", cmp.m_size, cmp.m_imm, cmp.m_dst);
+        return print_to(os, "cmp", cmp.m_size, cmp.m_imm, cmp.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const CmpMI& cmp) {
-        return print(os, "cmp", cmp.m_size, cmp.m_imm, cmp.m_dst);
+        return print_to(os, "cmp", cmp.m_size, cmp.m_imm, cmp.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const CmpRM& cmp) {
-        return print(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
+        return print_to(os, "cmp", cmp.m_size, cmp.m_src, cmp.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const XorRR& xorrr) {
-        return print(os, "xor", xorrr.m_size, xorrr.m_src, xorrr.m_dst);
+        return print_to(os, "xor", xorrr.m_size, xorrr.m_src, xorrr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const XorMR& xormr) {
-        return print(os, "xor", xormr.m_size, xormr.m_src, xormr.m_dst);
+        return print_to(os, "xor", xormr.m_size, xormr.m_src, xormr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const XorRI& xorri) {
-        return print(os, "xor", xorri.m_size, xorri.m_src, xorri.m_dst);
+        return print_to(os, "xor", xorri.m_size, xorri.m_src, xorri.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const XorMI& xormi) {
-        return print(os, "xor", xormi.m_size, xormi.m_src, xormi.m_dst);
+        return print_to(os, "xor", xormi.m_size, xormi.m_src, xormi.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const XorRM& xorrm) {
-        return print(os, "xor", xorrm.m_size, xorrm.m_src, xorrm.m_dst);
+        return print_to(os, "xor", xorrm.m_size, xorrm.m_src, xorrm.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const MovzxRR& movzxrr) {
@@ -276,107 +288,107 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream& os, const MovssRR& rr) {
-        return os << "movss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "movss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovssRM& rr) {
-        return os << "movss " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "movss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovssMR& rr) {
-        return os << "movss %" << rr.m_src.name(16) << ", " << rr.m_dst;
+        return print_to(os, "movss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovsdRR& rr) {
-        return os << "movsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "movsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovsdRM& rr) {
-        return os << "movsd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "movsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const MovsdMR& rr) {
-        return os << "movsd %" << rr.m_src.name(16) << ", " << rr.m_dst;
+        return print_to(os, "movsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const AddssRR& rr) {
-        return os << "addss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "addss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const AddssRM& rr) {
-        return os << "addss " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "addss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const AddsdRR& rr) {
-        return os << "addsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "addsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const AddsdRM& rr) {
-        return os << "addsd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "addsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const SubssRR& rr) {
-        return os << "subss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "subss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const SubssRM& rr) {
-        return os << "subss " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "subss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const SubsdRR& rr) {
-        return os << "subsd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "subsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const SubsdRM& rr) {
-        return os << "subsd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "subsd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const UcomisdRR& rr) {
-        return os << "ucomisd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "ucomisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const UcomisdRM& rr) {
-        return os << "ucomisd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "ucomisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const UcomissRR& rr) {
-        return os << "ucomiss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "ucomisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const UcomissRM& rr) {
-        return os << "ucomiss " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "ucomisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const ComissRR& rr) {
-        return os << "comiss %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "comiss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const ComissRM& rr) {
-        return os << "comiss " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "comiss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const ComisdRR& rr) {
-        return os << "comisd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "comisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const ComisdRM& rr) {
-        return os << "comisd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "comisd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const XorpsRR& rr) {
-        return os << "xorps %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "xorps", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const XorpsRM& rr) {
-        return os << "xorps " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "xorps", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const XorpdRR& rr) {
-        return os << "xorpd %" << rr.m_src.name(16) << ", %" << rr.m_dst.name(16);
+        return print_to(os, "xorpd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const XorpdRM& rr) {
-        return os << "xorpd " << rr.m_src << ", %" << rr.m_dst.name(16);
+        return print_to(os, "xorpd", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtss2siRR& rr) {
@@ -400,7 +412,7 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtsi2ssRM& rr) {
-        return os << "cvtsi2ss " << rr.m_src << ", %" << rr.m_dst.name(rr.m_size);
+        return print_to(os, "cvtsi2ss", rr.m_src, rr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream& os, const Cvtsi2sdRR& rr) {
@@ -412,11 +424,11 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream &os, const SalRI& sal) {
-        return os << "sal" << prefix_size(sal.m_size) << " $" << static_cast<unsigned>(sal.m_src) << ", %" << sal.m_dst.name(sal.m_size);
+        return print_to(os, "sal", sal.m_size, sal.m_src, sal.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SalMI& sal) {
-        return os << "sal" << prefix_size(sal.m_size) << " $" << static_cast<unsigned>(sal.m_src) << ", " << sal.m_dst;
+        return print_to(os, "sal", sal.m_size, sal.m_src, sal.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SalRR& sal) {
@@ -425,19 +437,19 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream &os, const SarRI& sar) {
-        return os << "sar" << prefix_size(sar.m_size) << " $" << static_cast<unsigned>(sar.m_src) << ", %" << sar.m_dst.name(sar.m_size);
+        return print_to(os, "sar", sar.m_size, sar.m_src, sar.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SarMI& sar) {
-        return os << "sal" << prefix_size(sar.m_size) << " $" << static_cast<unsigned>(sar.m_src) << ", " << sar.m_dst;
+        return print_to(os, "sar", sar.m_size, sar.m_src, sar.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const ShrRI& shr) {
-        return os << "shr" << prefix_size(shr.m_size) << " $" << static_cast<unsigned>(shr.m_src) << ", %" << shr.m_dst.name(shr.m_size);
+        return print_to(os, "shr", shr.m_size, shr.m_src, shr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const ShrMI& shr) {
-        return os << "shr" << prefix_size(shr.m_size) << " $" << static_cast<unsigned>(shr.m_src) << ", " << shr.m_dst;
+        return print_to(os, "shr", shr.m_size, shr.m_src, shr.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const SarRR& sar) {
@@ -451,23 +463,23 @@ namespace aasm::details {
     }
 
     std::ostream& operator<<(std::ostream &os, const TestRR& test) {
-        return print(os, "test", test.m_size, test.m_src, test.m_dst);
+        return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const TestMR& test) {
-        return print(os, "test", test.m_size, test.m_src, test.m_dst);
+        return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const TestRI& test) {
-        return print(os, "test", test.m_size, test.m_src, test.m_dst);
+        return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const TestMI& test) {
-        return print(os, "test", test.m_size, test.m_src, test.m_dst);
+        return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
 
     std::ostream& operator<<(std::ostream &os, const TestRM& test) {
-        return print(os, "test", test.m_size, test.m_src, test.m_dst);
+        return print_to(os, "test", test.m_size, test.m_src, test.m_dst);
     }
 }
 
