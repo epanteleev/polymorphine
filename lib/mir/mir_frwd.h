@@ -21,6 +21,7 @@ class FcmpInstruction;
 class GetElementPtr;
 class GetFieldPtr;
 class Call;
+class TupleCall;
 class Select;
 class IntDiv;
 class Projection;

@@ -4,7 +4,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
     switch (m_kind) {
         case LIRProdInstKind::Gen: visitor.gen(def(0)); break;
         case LIRProdInstKind::Add: {
-            switch (type()) {
+            switch (type(0)) {
                 case LIRValType::GP: visitor.add_i(def(0), in(0), in(1)); break;
                 case LIRValType::FP: visitor.add_f(def(0), in(0), in(1)); break;
                 default: std::unreachable();
@@ -24,7 +24,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Neg: visitor.neg_i(def(0), in(0)); break;
         case LIRProdInstKind::Not: visitor.not_i(def(0), in(0)); break;
         case LIRProdInstKind::Copy: {
-            switch (type()) {
+            switch (type(0)) {
                 case LIRValType::GP: visitor.copy_i(def(0), in(0)); break;
                 case LIRValType::FP: visitor.copy_f(def(0), in(0)); break;
                 default: std::unreachable();
@@ -34,7 +34,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
         case LIRProdInstKind::Load: {
             const auto in0 = LIRVal::try_from(in(0));
             assertion(in0.has_value(), "invariant");
-            switch (type()) {
+            switch (type(0)) {
                 case LIRValType::GP: visitor.load_i(def(0), in0.value()); break;
                 case LIRValType::FP: visitor.load_f(def(0), in0.value()); break;
                 default: std::unreachable();
@@ -42,7 +42,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRProdInstKind::LoadByIdx: {
-            switch (type()) {
+            switch (type(0)) {
                 case LIRValType::GP: visitor.load_by_idx_i(def(0), in(0), in(1)); break;
                 case LIRValType::FP: visitor.load_by_idx_f(def(0), in(0), in(1)); break;
                 default: std::unreachable();
@@ -50,7 +50,7 @@ void LIRProducerInstruction::visit(LIRVisitor &visitor) {
             break;
         }
         case LIRProdInstKind::ReadByOffset: {
-            switch (type()) {
+            switch (type(0)) {
                 case LIRValType::GP: visitor.read_by_offset_i(def(0), in(0), in(1)); break;
                 case LIRValType::FP: visitor.read_by_offset_f(def(0), in(0), in(1)); break;
                 default: std::unreachable();

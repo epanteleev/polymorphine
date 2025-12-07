@@ -16,38 +16,44 @@ public:
     using const_reference = const T&;
     using size_type  = std::size_t;
 
-    InplaceVec() = default;
+    constexpr InplaceVec() = default;
+
+    constexpr InplaceVec(std::initializer_list<T> init) {
+        for (const auto& elem: init) {
+            push_back(elem);
+        }
+    }
 
     template<typename U = T>
-    void push_back(U&& elem) {
+    constexpr void push_back(U&& elem) {
         assertion(size() < N, "Must be");
         std::construct_at(at(m_size++), std::forward<U>(elem));
     }
 
     template<typename... Args>
-    void emplace_back(Args&&... args) {
+    constexpr void emplace_back(Args&&... args) {
         assertion(size() < N, "Must be");
         std::construct_at(at(m_size++), std::forward<Args>(args)...);
     }
 
-    void pop_back() noexcept {
+    constexpr void pop_back() noexcept {
         assertion(m_size != 0, "Must be");
         std::destroy_at(&m_storage[m_size--]);
     }
 
     [[nodiscard]]
-    reference operator[](const std::size_t idx) noexcept {
+    constexpr reference operator[](const std::size_t idx) noexcept {
         assertion(idx < N, "Must be");
         return *at(idx);
     }
 
     [[nodiscard]]
-    const_reference operator[](const std::size_t idx) const noexcept {
+    constexpr const_reference operator[](const std::size_t idx) const noexcept {
         assertion(idx < N, "Must be");
         return *at(idx);
     }
 
-    void remove(const_reference val) {
+    constexpr void remove(const_reference val) {
         const auto removed = std::remove(begin(), end(), val);
         if (removed != end()) {
             m_size--;
@@ -55,57 +61,59 @@ public:
     }
 
     [[nodiscard]]
-    const_reference back() const noexcept {
+    constexpr const_reference back() const noexcept {
         return *at(size() - 1);
     }
 
     [[nodiscard]]
-    pointer data() const noexcept {
+    constexpr pointer data() const noexcept {
         return at(0);
     }
 
-    pointer data() noexcept {
+    constexpr pointer data() noexcept {
         return at(0);
     }
 
     [[nodiscard]]
-    size_type size() const noexcept {
+    constexpr size_type size() const noexcept {
         return m_size;
     }
 
     [[nodiscard]]
-    bool empty() const noexcept {
+    constexpr bool empty() const noexcept {
         return m_size == 0;
     }
 
-    iterator begin() noexcept {
+    constexpr iterator begin() noexcept {
         return at(0);
     }
 
-    iterator end() noexcept {
-        return at(m_size);
-    }
-
-    const_iterator begin() const noexcept {
-        return at(0);
-    }
-
-    const_iterator end() const noexcept {
+    constexpr iterator end() noexcept {
         return at(m_size);
     }
 
     [[nodiscard]]
-    std::span<T const> span() const noexcept { //TODO find way to remove
+    constexpr const_iterator begin() const noexcept {
+        return at(0);
+    }
+
+    [[nodiscard]]
+    constexpr const_iterator end() const noexcept {
+        return at(m_size);
+    }
+
+    [[nodiscard]]
+    constexpr std::span<T const> span() const noexcept { //TODO find way to remove
         return {at(0), m_size};
     }
 
 private:
-    T* at(const std::size_t idx) noexcept {
+    constexpr T* at(const std::size_t idx) noexcept {
         return &reinterpret_cast<T*>(&m_storage)[idx];
     }
 
     [[nodiscard]]
-    const T* at(const std::size_t idx) const noexcept {
+    constexpr const T* at(const std::size_t idx) const noexcept {
         return &reinterpret_cast<const T*>(&m_storage)[idx];
     }
 

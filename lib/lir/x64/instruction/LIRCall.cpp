@@ -6,6 +6,11 @@ void LIRCall::visit(LIRVisitor &visitor) {
             visitor.call(def(0), m_name, to_lir_vals_only(inputs()), m_bind);
             break;
         }
+        case LIRCallKind::TupleCall: {
+            assertion(defs().size() == 2, "invariant");
+            visitor.call(def(0), def(1), m_name, to_lir_vals_only(inputs()), m_bind);
+            break;
+        }
         case LIRCallKind::ICall: {
             const auto pointer = LIRVal::try_from(in(0));
             assertion(pointer.has_value(), "invariant");

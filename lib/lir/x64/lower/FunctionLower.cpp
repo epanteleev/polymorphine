@@ -606,6 +606,40 @@ void FunctionLower::accept(Call *call) {
     allocate_arguments_for_call(lir_call->inputs());
 }
 
+void FunctionLower::accept(TupleCall *call) {
+    m_bb->ins(LIRAdjustStack::down_stack());
+
+    const auto proto = call->prototype();
+    auto args = lower_function_prototypes(call->operands(), *proto);
+    const auto cont = m_bb_mapping.at(call->cont());
+
+    const auto ret_type = dynamic_cast<const TupleType*>(proto->ret_type());
+    assertion(ret_type != nullptr, "Expected NonTrivialType for return type");
+
+    const auto lir_val_type_first = convert_type_to_lir_val_type(ret_type->first());
+    const auto lir_val_type_second = convert_type_to_lir_val_type(ret_type->second());
+    const auto lir_call = m_bb->ins(LIRCall::tuple_call(std::string{proto->name()}, lir_val_type_first, lir_val_type_second, ret_type->first()->size_of(), ret_type->second()->size_of(), cont, std::move(args), proto->bind()));
+    cont->ins(LIRAdjustStack::up_stack());
+
+    const auto& lir_call_val1 = lir_call->def(0);
+    const auto copy_ret = cont->ins(LIRProducerInstruction::copy(ret_type->second()->size_of(), lir_val_type_first, lir_call_val1));
+    memorize(call->first(), copy_ret->def(0));
+    switch (lir_val_type_first) {
+        case LIRValType::FP: lir_call_val1.assign_reg(aasm::xmm0); break;
+        case LIRValType::GP: lir_call_val1.assign_reg(aasm::rax); break;
+    }
+
+    const auto& lir_call_val2 = lir_call->def(1);
+    const auto copy_ret2 = cont->ins(LIRProducerInstruction::copy(ret_type->second()->size_of(), lir_val_type_first, lir_call_val2));
+    memorize(call->second(), copy_ret2->def(0));
+    switch (lir_val_type_first) {
+        case LIRValType::FP: lir_call_val2.assign_reg(aasm::xmm1); break;
+        case LIRValType::GP: lir_call_val2.assign_reg(aasm::rdx); break;
+    }
+
+    allocate_arguments_for_call(lir_call->inputs());
+}
+
 std::vector<LIROperand> FunctionLower::lower_function_prototypes(const std::span<const Value> operands, const FunctionPrototype& proto) {
     std::vector<LIROperand> args;
     args.reserve(operands.size());

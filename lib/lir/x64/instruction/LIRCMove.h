@@ -6,13 +6,14 @@
 class LIRCMove final: public LIRProducerInstructionBase {
 public:
     explicit LIRCMove(const aasm::CondType cond_type, std::vector<LIROperand> &&uses) noexcept:
-        LIRProducerInstructionBase(LIRValType::GP, std::move(uses)),
+        LIRProducerInstructionBase({LIRValType::GP}, std::move(uses)),
         m_cond_type(cond_type) {}
 
     void visit(LIRVisitor &visitor) override {
         visitor.cmov_i(m_cond_type, def(0), in(0), in(1));
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRCMove> cmov(aasm::CondType cond_type, const LIROperand &src, const LIROperand &dest) {
         auto cmov = std::make_unique<LIRCMove>(cond_type, std::vector{src, dest});
         cmov->add_def(LIRVal::reg(src.size(), src.align(), 0, cmov.get()));

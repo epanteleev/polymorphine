@@ -10,7 +10,14 @@
 
 LIRValType LIRVal::type() const noexcept {
     const auto vis = [&]<typename T>(const T& val) -> LIRValType {
-        return val.type();
+        if constexpr (std::is_same_v<T, LIRArg>) {
+            return val.type();
+        } else if constexpr (std::is_base_of_v<LIRInstructionBase, T> || std::is_same_v<T, LIRCall>) {
+            return val.type(m_index);
+        } else {
+            static_assert(false, "Unsupported type in LIRVal::type");
+            std::unreachable();
+        }
     };
 
     return visit(vis);

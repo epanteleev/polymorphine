@@ -64,6 +64,8 @@ namespace details {
 
         void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {}
 
+        void call(const LIRVal &out1, const LIRVal &out2, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {}
+
         void vcall(std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override{}
 
         void icall(const LIRVal &out, const LIRVal &pointer, std::span<LIRVal const> args) override{}

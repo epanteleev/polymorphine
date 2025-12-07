@@ -125,12 +125,21 @@ namespace {
             os << ']';
         }
 
-        void accept(Call *inst) override {
+        template<typename T>
+        void print_call(T* inst) {
             print_val(inst);
             os << "call " << *inst->prototype()->ret_type() << ' ';
             inst->prototype()->print(os, inst->operands());
             os << ' ';
             inst->cont()->print_short_name(os);
+        }
+
+        void accept(Call *inst) override {
+            print_call(inst);
+        }
+
+        void accept(TupleCall *inst) override {
+            print_call(inst);
         }
 
         void accept(Switch *inst) override {

@@ -577,6 +577,38 @@ TEST(ReturnStruct, return_struct_by_value_f64_i64) {
     ASSERT_EQ(p.second, 5678);
 }
 
+template<typename Fn, typename Fn1>
+static Module make_point3(const PrimitiveType* ty1, Fn&& fn1, const PrimitiveType* ty2, Fn1&& fn2) {
+    ModuleBuilder builder;
+    const auto tuple = TupleType::tuple(ty1, ty2);
+    const auto prototype = builder.add_function_prototype(tuple, {}, "make_point", FunctionBind::DEFAULT);
+    {
+        const auto data = builder.make_function_builder(prototype).value();
+        data.ret(fn1(1234), fn2(5678));
+    }
+    {
+        const auto proto = builder.add_function_prototype(ty2, {}, "get_second", FunctionBind::DEFAULT);
+        auto func = builder.make_function_builder(proto).value();
+        const auto [_, sec] = func.tuple_call(prototype, {});
+        func.ret(sec);
+    }
+
+    return builder.build();
+}
+
+TEST(ReturnStruct, get_second_from_returned_struct) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"make_point", 3},
+        {"get_second", 3},
+    };
+
+    const auto module = make_point3(SignedIntegerType::i64(), Value::i64, FloatingPointType::f64(), Value::f64);
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size, true);
+    const auto get_second = buffer.code_start_as<double()>("get_second").value();
+    const auto second = get_second();
+    ASSERT_EQ(second, 5678);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

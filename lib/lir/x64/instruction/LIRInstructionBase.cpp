@@ -265,6 +265,11 @@ namespace {
             print_arguments(args);
         }
 
+        void call(const LIRVal& out1, const LIRVal& out2, const std::string_view name, const std::span<LIRVal const> args, FunctionBind bind) override {
+            m_os << "call " << name << " out(" << out1 << ", " << out2 << ')';
+            print_arguments(args);
+        }
+
         void vcall(const std::string_view name, std::span<LIRVal const> args, FunctionBind linkage) override {
             m_os << "vcall(" << name << ')';
             print_arguments(args);

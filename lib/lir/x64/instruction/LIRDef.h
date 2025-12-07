@@ -6,12 +6,13 @@
 
 class LIRDef {
 public:
-    explicit LIRDef(const LIRValType type) noexcept:
-        m_type(type) {}
+    explicit LIRDef(const InplaceVec<LIRValType, 2>& types) noexcept:
+        m_assigned_reg_type(types) {}
 
     [[nodiscard]]
-    LIRValType type() const noexcept {
-        return m_type;
+    LIRValType type(const std::size_t idx) const noexcept {
+        assertion(idx < m_assigned_reg_type.size(), "Index out of bounds");
+        return m_assigned_reg_type[idx];
     }
 
     [[nodiscard]]
@@ -45,5 +46,5 @@ protected:
 private:
     InplaceVec<LIRVal, 2> m_defs;
     InplaceVec<AssignedVReg, 2> m_assigned_regs;
-    LIRValType m_type;
+    InplaceVec<LIRValType, 2> m_assigned_reg_type;
 };

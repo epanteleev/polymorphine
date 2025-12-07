@@ -104,6 +104,17 @@ public:
         return m_bb->ins(Call::call(prototype, cont, std::move(args)));
     }
 
+    [[nodiscard]]
+    std::pair<Value, Value> tuple_call(const FunctionPrototype* prototype, std::vector<Value>&& args) {
+        const auto cont = create_basic_block();
+        const auto call_inst = m_bb->ins(TupleCall::call(prototype, cont, std::move(args)));
+        switch_block(cont);
+
+        const auto first = m_bb->ins(Projection::proj(call_inst, 0));
+        const auto second = m_bb->ins(Projection::proj(call_inst, 1));
+        return {first, second};
+    }
+
     void vcall(const FunctionPrototype* prototype, BasicBlock* cont, std::vector<Value>&& args) const {
         m_bb->ins(VCall::call(prototype, cont, std::move(args)));
     }

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "LIRProducerInstructionBase.h"
-#include "../../../asm/x64/CondType.h"
+#include "asm/x64/CondType.h"
 
 class LIRSetCC final: public LIRProducerInstructionBase {
 public:
     explicit LIRSetCC(const aasm::CondType cond_type) noexcept:
-        LIRProducerInstructionBase(LIRValType::GP, {}),
+        LIRProducerInstructionBase({LIRValType::GP}, {}),
         m_cond_type(cond_type) {}
 
     void visit(LIRVisitor &visitor) override {

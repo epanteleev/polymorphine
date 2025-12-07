@@ -66,6 +66,8 @@ private:
 
     void accept(Call *call) override;
 
+    void accept(TupleCall *call) override;
+
     void accept(Return *inst) override;
 
     void accept(ReturnValue *inst) override;

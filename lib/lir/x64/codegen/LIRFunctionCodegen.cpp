@@ -129,12 +129,17 @@ namespace {
             m_as.jcc(aasm::invert(cond_type), target_false);
         }
 
-        void call(const LIRVal &out, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {
+        void call(const LIRVal &, const std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {
             const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
             m_as.call(symbol);
         }
 
-        void vcall(const std::string_view name, std::span<LIRVal const> args, FunctionBind bind) override {
+        void call(const LIRVal &, const LIRVal &, const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) override {
+            const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
+            m_as.call(symbol);
+        }
+
+        void vcall(const std::string_view name, std::span<LIRVal const> args, const FunctionBind bind) override {
             const auto [symbol, _] = m_symbol_tab.add(name, cvt_bind_attribute(bind));
             m_as.call(symbol);
         }

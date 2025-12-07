@@ -76,7 +76,7 @@ static void verify_clamp_int(const Module& module) {
     const std::unordered_map<std::string, std::size_t> sizes = {
         {"max", 11},
         {"min", 11},
-        {"clamp", 9}
+        {"clamp", 5}
     };
 
     const auto code = jit_compile_and_assembly(module, sizes, true);

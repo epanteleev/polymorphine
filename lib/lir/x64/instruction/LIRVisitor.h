@@ -65,6 +65,7 @@ public:
     virtual void jcc(aasm::CondType cond_type, const LIRBlock* on_true, const LIRBlock* on_false) = 0;
 
     virtual void call(const LIRVal& out, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) = 0;
+    virtual void call(const LIRVal& out1, const LIRVal& out2, std::string_view name, std::span<LIRVal const> args, FunctionBind bind) = 0;
     virtual void vcall(std::string_view name, std::span<LIRVal const> args, FunctionBind bind) = 0;
     virtual void icall(const LIRVal& out, const LIRVal& pointer, std::span<LIRVal const> args) = 0;
     virtual void ivcall(const LIRVal& pointer, std::span<LIRVal const> args) = 0;

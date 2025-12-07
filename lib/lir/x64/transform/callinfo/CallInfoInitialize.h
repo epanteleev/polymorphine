@@ -64,32 +64,36 @@ private:
 
             switch (lir_val.type()) {
                 case LIRValType::GP: {
-                    const auto gp_reg = reg.value().as_gp_reg();
-                    if (!gp_reg.has_value()) {
-                        continue;
-                    }
-                    if (!no_return_val && gp_reg.value() == aasm::rax) {
+                    const auto gp_reg_opt = reg.value().as_gp_reg();
+                    if (!gp_reg_opt.has_value()) {
                         continue;
                     }
 
-                    const auto& reg_set = m_call_conv->GP_CALLER_SAVE_REGISTERS();
-                    if (!reg_set.contains(gp_reg.value())) {
+                    const auto gp_reg = gp_reg_opt.value();
+
+                    if (!no_return_val && (gp_reg == aasm::rax || gp_reg == aasm::rdx)) {
+                        continue;
+                    }
+
+                    const auto& gp_reg_set = m_call_conv->GP_CALLER_SAVE_REGISTERS();
+                    if (!gp_reg_set.contains(gp_reg)) {
                         // If the register is a caller-saved register, we need to add it to the adjust stack.
                         return;
                     }
                     break;
                 }
                 case LIRValType::FP: {
-                    const auto xmm_reg = reg.value().as_xmm_reg();
-                    if (!xmm_reg.has_value()) {
+                    const auto xmm_reg_opt = reg.value().as_xmm_reg();
+                    if (!xmm_reg_opt.has_value()) {
                         continue;
                     }
-                    if (!no_return_val && xmm_reg.value() == aasm::xmm0) {
+                    const auto xmm_reg = xmm_reg_opt.value();
+                    if (!no_return_val && (xmm_reg == aasm::xmm0 || xmm_reg == aasm::xmm1)) {
                         continue;
                     }
 
-                    const auto& reg_set = m_call_conv->XMM_CALLER_SAVE_REGISTERS();
-                    if (!reg_set.contains(xmm_reg.value())) {
+                    const auto& xmm_reg_set = m_call_conv->XMM_CALLER_SAVE_REGISTERS();
+                    if (!xmm_reg_set.contains(xmm_reg)) {
                         // If the register is a caller-saved register, we need to add it to the adjust stack.
                         return;
                     }
