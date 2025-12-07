@@ -247,6 +247,33 @@ static bool is_pinned(const Instruction& inst) noexcept {
     return false;
 }
 
+static void assign_return_reg(const std::span<LIROperand const> lir_values) {
+    constexpr aasm::GPReg gp_regs[] = {aasm::rax, aasm::rdx};
+    constexpr aasm::XmmReg fp_regs[] = {aasm::xmm0, aasm::xmm1};
+
+    std::size_t gp_idx{};
+    std::size_t fp_idx{};
+
+    const auto first_lir_val = LIRVal::try_from(lir_values[0]);
+    assertion(first_lir_val.has_value(), "Expected LIRVal for return value");
+
+    switch (const auto first = first_lir_val.value(); first.type()) {
+        case LIRValType::GP: first.assign_reg(gp_regs[gp_idx++]); break;
+        case LIRValType::FP: first.assign_reg(fp_regs[fp_idx++]); break;
+    }
+
+    if (lir_values.size() == 1) {
+        return;
+    }
+
+    const auto second_lir_val = LIRVal::try_from(lir_values[1]);
+    assertion(second_lir_val.has_value(), "Expected LIRVal for return value");
+    switch (const auto second = second_lir_val.value(); second.type()) {
+        case LIRValType::GP: second.assign_reg(gp_regs[gp_idx++]); break;
+        case LIRValType::FP: second.assign_reg(fp_regs[fp_idx++]); break;
+    }
+}
+
 LIRFuncData FunctionLower::create_lir_function(const FunctionData &function) {
     std::vector<LIRArg> args;
     args.reserve(function.args().size());
@@ -610,10 +637,13 @@ void FunctionLower::accept(Return *inst) {
     m_bb->ins(LIRReturn::ret());
 }
 
-LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Value& val, const aasm::GPReg fixed_reg) {
+LIRVal FunctionLower::lower_return_value(const Value& val) {
+    const auto ret_type = dynamic_cast<const PrimitiveType*>(val.type());
+    assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
+
     if (val.isa(g_value())) {
         const auto slot = lower_global_cst(*val.get<GlobalValue*>());
-        const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L), fixed_reg));
+        const auto lea = m_bb->ins(LIRProducerInstruction::lea(ret_type->size_of(), slot, LirCst::imm64(0L)));
         return lea->def(0);
     }
     if (val.isa(field_access())) {
@@ -621,27 +651,24 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
         const auto [src, idx] = try_fold_field_access(gep);
         const auto src_vreg = get_lir_operand(src);
         const auto idx_lir_op = get_lir_operand(idx);
-        const auto load = m_bb->ins(LIRProducerInstruction::lea(gep->access_type()->size_of(), src_vreg, idx_lir_op, fixed_reg));
+        const auto load = m_bb->ins(LIRProducerInstruction::lea(gep->access_type()->size_of(), src_vreg, idx_lir_op));
         return load->def(0);
     }
 
-    const auto lir_val_type = convert_type_to_lir_val_type(ret_type);
     if (ret_type->isa(gp_type())) {
-        const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_val_type, get_lir_operand(val), fixed_reg));
+        const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), LIRValType::GP, get_lir_operand(val)));
         return copy->def(0);
     }
     if (ret_type->isa(float_type())) {
         const auto lir_op = get_lir_operand(val);
         const auto lir_val_opt = LIRVal::try_from(lir_op);
         if (!lir_val_opt.has_value() || lir_val_opt.value().isa(gen_v())) {
-            const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), lir_val_type, lir_op, aasm::xmm0));
+            const auto copy = m_bb->ins(LIRProducerInstruction::copy(ret_type->size_of(), LIRValType::FP, lir_op));
             return copy->def(0);
         }
 
         // Directly assign to xmm0. Not need to emit copy instruction, because fixed-regs intervals never intercept.
-        auto lir_val = lir_val_opt.value();
-        lir_val.assign_reg(aasm::xmm0);
-        return lir_val;
+        return lir_val_opt.value();
     }
 
     unimplemented();
@@ -649,22 +676,19 @@ LIRVal FunctionLower::lower_return_value(const PrimitiveType* ret_type, const Va
 
 void FunctionLower::accept(ReturnValue *inst) {
     const auto& ret_value = inst->first();
-    const auto ret_type = dynamic_cast<const PrimitiveType*>(ret_value.type());
-    assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
-
-    const auto copy_first = lower_return_value(ret_type, ret_value, aasm::rax);
+    LIRReturn* ret;
+    const auto copy_first = lower_return_value(ret_value);
     if (const auto second = inst->second(); !second) {
         m_bb->ins(LIRAdjustStack::epilogue());
-        m_bb->ins(LIRReturn::ret(copy_first));
+        ret = m_bb->ins(LIRReturn::ret(copy_first));
 
     } else {
-        const auto second_type = dynamic_cast<const PrimitiveType*>(second->type());
-        assertion(second_type != nullptr, "Expected PrimitiveType for return value");
-
-        const auto copy_second = lower_return_value(second_type, *second, aasm::rdx);
+        const auto copy_second = lower_return_value(second.value());
         m_bb->ins(LIRAdjustStack::epilogue());
-        m_bb->ins(LIRReturn::ret(copy_first, copy_second));
+        ret = m_bb->ins(LIRReturn::ret(copy_first, copy_second));
     }
+
+    assign_return_reg(ret->inputs());
 }
 
 void FunctionLower::accept(VCall *call) {
@@ -880,12 +904,10 @@ void FunctionLower::accept(Unary *inst) {
                 const auto copy = m_bb->ins(LIRProducerInstruction::cvtint2fp(type->size_of(), lir_operand));
                 memorize(inst, copy->def(0));
 
-            } else if (ty->isa(unsigned_type())) {
+            } else {
+                assertion(ty->isa(unsigned_type()), "expected unsigned");
                 const auto copy = m_bb->ins(LIRProducerInstruction::cvtuint2fp(type->size_of(), lir_operand));
                 memorize(inst, copy->def(0));
-
-            } else {
-                die("Unsupported type");
             }
             break;
         }

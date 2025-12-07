@@ -111,7 +111,7 @@ private:
     void schedule_late(ValueInstruction *inst);
 
     LIROperand lower_global_cst(const GlobalValue &global);
-    LIRVal lower_return_value(const PrimitiveType *ret_type, const Value &val, aasm::GPReg fixed_reg);
+    LIRVal lower_return_value(const Value &val);
     LIROperand make_fp_constant(const Type &type, double val);
     LIROperand get_lir_operand(const Value& val);
     LIRVal get_lir_val(const Value& val);

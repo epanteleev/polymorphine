@@ -543,6 +543,7 @@ TEST(Int2Float, uint2fp_u8_to_f64) {
 }
 
 int main(int argc, char **argv) {
+    error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

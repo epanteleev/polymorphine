@@ -138,7 +138,7 @@ public:
     }
 
     static std::unique_ptr<LIRProducerInstruction> cvtint2fp(const std::uint8_t to_size, const LIROperand &op) {
-        return create(LIRProdInstKind::CvtInt2Fp, LIRValType::GP, to_size, to_size, op);
+        return create(LIRProdInstKind::CvtInt2Fp, LIRValType::FP, to_size, to_size, op);
     }
 
     static std::unique_ptr<LIRProducerInstruction> cvtuint2fp(const std::uint8_t to_size, const LIROperand &op) {

@@ -26,7 +26,7 @@ private:
     BasicBlock* m_cont;
 };
 
-class Call final : public TerminateValueInstruction, public Callable {
+class Call final: public TerminateValueInstruction, public Callable {
 public:
     explicit Call(const FunctionPrototype* proto, BasicBlock* successor, std::vector<Value>&& args) noexcept:
         TerminateValueInstruction(proto->ret_type(), successor, std::move(args)),
