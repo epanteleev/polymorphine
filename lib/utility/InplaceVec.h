@@ -118,7 +118,7 @@ private:
     }
 
     std::uint8_t m_size{};
-    char m_storage[N*sizeof(T)];
+    alignas(T) char m_storage[N*sizeof(T)];
 };
 
 static_assert(std::ranges::range<InplaceVec<int, 2>>, "should be");
