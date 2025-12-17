@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../helpers/Utils.h"
+#include "helpers/Utils.h"
 
 static void verify_codes(const std::vector<std::uint8_t>& codes, const std::uint8_t* v) {
     for (std::size_t i = 0; i < codes.size(); ++i) {

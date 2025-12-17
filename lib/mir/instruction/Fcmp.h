@@ -3,7 +3,7 @@
 #include <memory>
 #include "Compare.h"
 
-enum class FcmpPredicate {
+enum class FcmpPredicate: std::uint8_t {
     // Ordered
     Oeq,
     One,
@@ -55,6 +55,7 @@ public:
         return m_pred;
     }
 
+    [[nodiscard]]
     static std::unique_ptr<FcmpInstruction> fcmp(const FcmpPredicate pred, const Value& lhs, const Value& rhs) {
         return std::make_unique<FcmpInstruction>(pred, lhs, rhs);
     }

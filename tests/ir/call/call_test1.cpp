@@ -2,7 +2,7 @@
 
 #include "utility/Error.h"
 
-#include "../../helpers/Jit.h"
+#include "helpers/Jit.h"
 #include "mir/mir.h"
 
 static Module call_external() {
@@ -10,10 +10,9 @@ static Module call_external() {
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "call_external", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();
-    const auto cont = data.create_basic_block();
+
     const auto proto = builder.add_function_prototype(SignedIntegerType::i32(), {}, "return_constant", FunctionBind::EXTERN);
-    const auto res = data.call(proto, cont, {});
-    data.switch_block(cont);
+    const auto res = data.call(proto, {});
     data.ret(res);
 
     return builder.build();
@@ -43,10 +42,9 @@ static Module call_external_with_args() {
     const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "call_external_with_args", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();
-    const auto cont = data.create_basic_block();
+
     const auto proto = builder.add_function_prototype(SignedIntegerType::i32(), {SignedIntegerType::i32(), SignedIntegerType::i32()}, "add", FunctionBind::EXTERN);
-    const auto res = data.call(proto, cont, {Value::i32(10), Value::i32(20)});
-    data.switch_block(cont);
+    const auto res = data.call(proto, {Value::i32(10), Value::i32(20)});
     data.ret(res);
     return builder.build();
 }
@@ -79,15 +77,11 @@ static Module clamp() {
     const auto min_val = data.arg(1);
     const auto max_val = data.arg(2);
 
-    const auto cont = data.create_basic_block();
     const auto proto_min = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionBind::EXTERN);
-    const auto clamped = data.call(proto_min, cont, {a, max_val});
-    data.switch_block(cont);
+    const auto clamped = data.call(proto_min, {a, max_val});
 
-    const auto cont1 = data.create_basic_block();
     const auto proto_max = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionBind::EXTERN);
-    const auto clamped_final = data.call(proto_max, cont1, {clamped, min_val});
-    data.switch_block(cont1);
+    const auto clamped_final = data.call(proto_max, {clamped, min_val});
 
     data.ret(clamped_final);
     return builder.build();
@@ -116,15 +110,11 @@ static Module clamp2() {
     const auto min_val = data.arg(1);
     const auto max_val = data.arg(2);
 
-    auto cont1 = data.create_basic_block();
     const auto proto_max = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "max", FunctionBind::EXTERN);
-    const auto clamped = data.call(proto_max, cont1, {a, min_val});
-    data.switch_block(cont1);
+    const auto clamped = data.call(proto_max, {a, min_val});
 
-    const auto cont = data.create_basic_block();
     const auto proto_min = builder.add_function_prototype(SignedIntegerType::i64(), {SignedIntegerType::i64(), SignedIntegerType::i64()}, "min", FunctionBind::EXTERN);
-    const auto clamped_final = data.call(proto_min, cont, {clamped, max_val});
-    data.switch_block(cont);
+    const auto clamped_final = data.call(proto_min, {clamped, max_val});
 
     data.ret(clamped_final);
     return builder.build();
@@ -177,10 +167,7 @@ static Module argument_shuffle() {
                                                                                SignedIntegerType::i32(), SignedIntegerType::i32()},
                                                      "arg_locator", FunctionBind::EXTERN);
 
-    const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(arg_locator, cont, {a0, a1, a2, a3, a4, a5});
-    data.switch_block(cont);
-
+    const auto ret_val = data.call(arg_locator, {a0, a1, a2, a3, a4, a5});
     data.ret(ret_val);
     return builder.build();
 }
@@ -210,10 +197,7 @@ static Module argument_shuffle7(const IntegerType* ty) {
     const auto a5 = data.arg(0);
 
     const auto arg_locator = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty}, "arg_locator7", FunctionBind::EXTERN);
-    const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(arg_locator, cont, {aa, a0, a1, a2, a3, a4, a5});
-    data.switch_block(cont);
-
+    const auto ret_val = data.call(arg_locator, {aa, a0, a1, a2, a3, a4, a5});
     data.ret(ret_val);
     return builder.build();
 }
@@ -301,10 +285,7 @@ static Module argument_shuffle8(const IntegerType* ty) {
     const auto a5 = data.arg(0);
 
     const auto arg_locator = builder.add_function_prototype(SignedIntegerType::i64(), {ty, ty, ty, ty, ty, ty, ty, ty, ty}, "arg_locator8", FunctionBind::EXTERN);
-    const auto cont = data.create_basic_block();
-    const auto ret_val = data.call(arg_locator, cont, {ab, aa, a0, a1, a2, a3, a4, a5});
-    data.switch_block(cont);
-
+    const auto ret_val = data.call(arg_locator, {ab, aa, a0, a1, a2, a3, a4, a5});
     data.ret(ret_val);
     return builder.build();
 }

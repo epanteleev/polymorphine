@@ -18,6 +18,10 @@ public:
 
     constexpr InplaceVec() = default;
 
+    constexpr ~InplaceVec() {
+        release();
+    }
+
     constexpr InplaceVec(std::initializer_list<T> init) {
         for (const auto& elem: init) {
             push_back(elem);
@@ -58,6 +62,13 @@ public:
         if (removed != end()) {
             m_size--;
         }
+    }
+
+    constexpr void release() noexcept {
+        for (std::size_t i{}; i < m_size; ++i) {
+            std::destroy_at(&m_storage[i]);
+        }
+        m_size = 0;
     }
 
     [[nodiscard]]
@@ -109,16 +120,16 @@ public:
 
 private:
     constexpr T* at(const std::size_t idx) noexcept {
-        return &reinterpret_cast<T*>(&m_storage)[idx];
+        return &std::bit_cast<T*>(&m_storage[0])[idx];
     }
 
     [[nodiscard]]
     constexpr const T* at(const std::size_t idx) const noexcept {
-        return &reinterpret_cast<const T*>(&m_storage)[idx];
+        return &std::bit_cast<const T*>(&m_storage[0])[idx];
     }
 
     std::uint8_t m_size{};
-    alignas(T) char m_storage[N*sizeof(T)];
+    alignas(T) std::byte m_storage[N*sizeof(T)];
 };
 
 static_assert(std::ranges::range<InplaceVec<int, 2>>, "should be");

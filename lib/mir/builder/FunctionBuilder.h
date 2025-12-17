@@ -100,8 +100,11 @@ public:
     }
 
     [[nodiscard]]
-    Value call(const FunctionPrototype* prototype, BasicBlock* cont, std::vector<Value>&& args) const {
-        return m_bb->ins(Call::call(prototype, cont, std::move(args)));
+    Value call(const FunctionPrototype* prototype, std::vector<Value>&& args) {
+        const auto cont = create_basic_block();
+        const auto call = m_bb->ins(Call::call(prototype, cont, std::move(args)));
+        switch_block(cont);
+        return call;
     }
 
     [[nodiscard]]
@@ -115,8 +118,10 @@ public:
         return {first, second};
     }
 
-    void vcall(const FunctionPrototype* prototype, BasicBlock* cont, std::vector<Value>&& args) const {
+    void vcall(const FunctionPrototype* prototype, std::vector<Value>&& args) {
+        const auto cont = create_basic_block();
         m_bb->ins(VCall::call(prototype, cont, std::move(args)));
+        switch_block(cont);
     }
 
     [[nodiscard]]

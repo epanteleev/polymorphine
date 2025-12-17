@@ -46,7 +46,7 @@ namespace details {
         explicit AllocTemporalRegsForInstruction(const TemporalRegsCounter& temp_counter, EmptyEmitter& as, aasm::SymbolTable& symbol_tab) noexcept:
             LIRInstructionMapping(temp_counter, as, symbol_tab) {}
 
-        void gen(const LIRVal &out) override{}
+        void gen(const LIRVal &out) override {}
 
         void parallel_copy(const LIRVal &out, std::span<LIRVal const> inputs) override{}
 

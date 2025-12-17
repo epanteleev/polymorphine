@@ -1,7 +1,6 @@
 #include "ModuleBuilder.h"
 #include "FunctionBuilder.h"
 #include "utility/Error.h"
-#include "mir/types/ArrayType.h"
 
 #include <ranges>
 

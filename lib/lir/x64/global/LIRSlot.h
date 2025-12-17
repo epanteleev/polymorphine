@@ -5,6 +5,7 @@
 
 #include "base/global/CommonSlot.h"
 #include "lir/x64/lir_frwd.h"
+#include "utility/ArithmeticUtils.h"
 
 template<typename T>
 concept SlotVariant = std::convertible_to<T, Constant> ||
@@ -32,3 +33,11 @@ public:
 
     void print_description(std::ostream &os) const;
 };
+
+inline std::pair<SlotType, std::int64_t> fp_bitcast(const std::size_t size, const double val) {
+    switch (size) {
+        case cst::QWORD_SIZE: return {SlotType::QWord, bitcast(val)};
+        case cst::DWORD_SIZE: return {SlotType::DWord, bitcast(static_cast<float>(val))};
+        default: std::unreachable();
+    }
+}

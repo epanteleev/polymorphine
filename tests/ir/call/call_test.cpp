@@ -7,10 +7,8 @@ static void call_test(ModuleBuilder& builder, const IntegerType* ty) {
     const auto prototype = builder.add_function_prototype(ty, {}, "call_test", FunctionBind::DEFAULT);
     const auto fn_builder = builder.make_function_builder(prototype);
     auto data = fn_builder.value();
-    const auto cont = data.create_basic_block();
     const auto proto = builder.add_function_prototype(ty, {}, "ret_42", FunctionBind::DEFAULT);
-    const auto res = data.call(proto, cont, {});
-    data.switch_block(cont);
+    const auto res = data.call(proto, {});
     data.ret(res);
 }
 
@@ -79,11 +77,9 @@ static Module return_arg(const IntegerType* ty, const Value& val) {
         const auto prototype = builder.add_function_prototype(ty, {ty}, "return_arg", FunctionBind::DEFAULT);
         auto fn_builder = builder.make_function_builder(prototype);
         auto data = fn_builder.value();
-        const auto cont = data.create_basic_block();
         const auto arg = data.arg(0);
         const auto proto = builder.add_function_prototype(ty, {ty, ty}, "sum", FunctionBind::DEFAULT);
-        const auto call = data.call(proto, cont, {arg, val});
-        data.switch_block(cont);
+        const auto call = data.call(proto, {arg, val});
         data.ret(call);
     }
     {

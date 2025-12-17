@@ -101,7 +101,7 @@ void LiveIntervalsJoinEval::setup_parallel_copy_groups() {
             const auto& parallel_copy = dynamic_cast<const ParallelCopy&>(inst);
             auto inputs = parallel_copy_inputs(parallel_copy);
             auto new_intervals = create_live_intervals(inputs);
-            add_group(std::move(new_intervals), std::move(inputs), std::nullopt);
+            add_group(std::move(new_intervals), std::move(inputs), parallel_copy.assigned_reg(0).to_reg());
         }
     }
 }
@@ -167,7 +167,7 @@ void LiveIntervalsJoinEval::add_to_worklist_if_not_in_group(const LIRInstruction
 
 void LiveIntervalsJoinEval::add_group(LiveInterval &&live_interval, std::vector<LIRVal> &&members, const std::optional<aasm::Reg> &fixed_register) {
     m_groups.emplace_back(std::move(live_interval), std::move(members), fixed_register);
-    for (const auto lir_val: m_groups.back().members()) {
+    for (const auto& lir_val: m_groups.back().members()) {
         m_group_mapping.emplace(lir_val, std::prev(m_groups.end()));
     }
 }

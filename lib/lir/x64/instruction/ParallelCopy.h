@@ -1,12 +1,11 @@
 #pragma once
-#include "LIRProducerInstruction.h"
-#include "mir/instruction/Instruction.h"
 
+#include "LIRProducerInstruction.h"
 
 class ParallelCopy final: public LIRProducerInstructionBase {
 public:
-    explicit ParallelCopy(std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) noexcept:
-        LIRProducerInstructionBase({LIRValType::GP}, std::move(uses)),
+    explicit ParallelCopy(const LIRValType ty, std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) noexcept:
+        LIRProducerInstructionBase({ty}, std::move(uses)),
         m_blocks(std::move(blocks)) {}
 
     void visit(LIRVisitor &visitor) override;
@@ -21,9 +20,9 @@ public:
         return m_blocks;
     }
 
-    static std::unique_ptr<ParallelCopy> copy(std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) {
+    static std::unique_ptr<ParallelCopy> copy(const LIRValType ty, std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) {
         const auto size = uses.front().size();
-        auto copy = std::make_unique<ParallelCopy>(std::move(uses), std::move(blocks));
+        auto copy = std::make_unique<ParallelCopy>(ty, std::move(uses), std::move(blocks));
         copy->add_def(LIRVal::reg(size, size, 0, copy.get()));
         return copy;
     }

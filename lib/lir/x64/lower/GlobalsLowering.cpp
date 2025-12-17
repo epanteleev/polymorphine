@@ -53,13 +53,21 @@ LIRSlot GlobalsLowering::lower_aggregate_slot(const AggregateType *aggregate_typ
 LIRSlot GlobalsLowering::create_slot_iter(const NonTrivialType* ty, const Initializer& global) {
     const auto vis = [&]<typename U>(const U& glob) -> LIRSlot {
         if constexpr (std::is_same_v<U, double>) {
-            unimplemented();
+            const auto fp_type = dynamic_cast<const FloatingPointType*>(ty);
+            assertion(fp_type != nullptr, "Expected FloatingPointType for floating-point constant");
+            const auto [slot_type, bitmask] = fp_bitcast(fp_type->size_of(), glob);
+            return LIRSlot(Constant(slot_type, bitmask));
 
         } else if constexpr (std::is_same_v<U, std::int64_t>) {
-            const auto int_type = dynamic_cast<const IntegerType*>(ty);
-            assertion(int_type != nullptr, "Expected IntegerType for integer constant");
-            const auto slot_type = to_slot_type(int_type->size_of());
-            return LIRSlot(Constant(slot_type, glob));
+            if (const auto int_type = dynamic_cast<const IntegerType*>(ty)) {
+                const auto slot_type = to_slot_type(int_type->size_of());
+                return LIRSlot(Constant(slot_type, glob));
+            }
+            if (const auto fp_type = dynamic_cast<const FloatingPointType*>(ty)) {
+                const auto [slot_type, bitmask] = fp_bitcast(fp_type->size_of(), static_cast<double>(glob));
+                return LIRSlot(Constant(slot_type, bitmask));
+            }
+            die("Unsupported type for integer constant");
 
         } else if constexpr (std::is_same_v<U, std::string>) {
             const auto array_type = dynamic_cast<const ArrayType*>(ty);

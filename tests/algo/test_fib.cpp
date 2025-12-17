@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mir/mir.h"
-#include "../helpers/Jit.h"
+#include "helpers/Jit.h"
 
 template<typename Fn>
 static Module fib(const IntegerType* ty, Fn&& fn) {
@@ -207,14 +207,10 @@ static Module recursive_fib(const IntegerType* ty) {
 
     data.switch_block(if_else);
     auto sub = data.sub(n, Value::i64(1));
-    auto cont = data.create_basic_block();
-    auto call1 = data.call(copy, cont, {sub});
+    auto call1 = data.call(copy, {sub});
 
-    data.switch_block(cont);
     auto sub2 = data.sub(n, Value::i64(2));
-    auto cont1 = data.create_basic_block();
-    auto call2 = data.call(prototype, cont1, {sub2});
-    data.switch_block(cont1);
+    auto call2 = data.call(prototype, {sub2});
 
     auto add = data.add(call1, call2);
     data.store(ret_addr, add);

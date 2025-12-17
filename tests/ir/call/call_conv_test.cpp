@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <climits>
 
-#include "../../helpers/Jit.h"
+#include "helpers/Jit.h"
 #include "mir/mir.h"
 
 static Module struct_arg_size1(const PrimitiveType* ty) {
@@ -356,9 +356,7 @@ static Module struct_arg_external(const PrimitiveType* ty, Fn&& fn) {
         const auto prototype = builder.add_function_prototype(ty, {point_type}, "sum_fields", std::vector{AttributeSet{Attribute::ByValue}}, FunctionBind::DEFAULT);
         auto data = builder.make_function_builder(prototype).value();
         const auto ext_proto = builder.add_function_prototype(ty, {ty, ty}, "sum", FunctionBind::EXTERN);
-        const auto cont = data.create_basic_block();
-        const auto call = data.call(ext_proto, cont, {fn(20), fn(30)});
-        data.switch_block(cont);
+        const auto call = data.call(ext_proto, {fn(20), fn(30)});
         data.ret(call);
     }
 
@@ -414,9 +412,7 @@ static Module struct_arg_external2() {
         data.store(field1, Value::i64(30));
         data.store(field2, Value::i64(40));
 
-        const auto cont = data.create_basic_block();
-        const auto call = data.call(ext_proto, cont, {alloc});
-        data.switch_block(cont);
+        const auto call = data.call(ext_proto, {alloc});
         data.ret(call);
     }
 
@@ -473,9 +469,7 @@ static Module struct_arg_external3(const PrimitiveType* ty, Fn&& fn) {
         data.store(field4, fn(2));
         data.store(field5, fn(3));
 
-        const auto cont = data.create_basic_block();
-        const auto call = data.call(ext_proto, cont, {alloc1, alloc2});
-        data.switch_block(cont);
+        const auto call = data.call(ext_proto, {alloc1, alloc2});
         data.ret(call);
     }
 

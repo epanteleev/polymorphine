@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <utility>
+
+#include "base/Constant.h"
 
 /**
  * Represents a constant value in the LIR (Low-Level Intermediate Representation).
@@ -55,3 +58,11 @@ private:
     std::int64_t m_value;
     Kind m_kind;
 };
+
+inline LirCst fp_zero(const std::size_t size) {
+    switch (size) {
+        case cst::QWORD_SIZE: return LirCst::imm64(0UL);
+        case cst::DWORD_SIZE: return LirCst::imm32(0UL);
+        default: std::unreachable();
+    }
+}

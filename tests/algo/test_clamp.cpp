@@ -58,14 +58,11 @@ static Module clamp_int(const IntegerType* ty) {
         const auto arg = data.arg(0);
         const auto min = data.arg(1);
         const auto max = data.arg(2);
-        const auto cont = data.create_basic_block();
         const auto max_proto = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionBind::DEFAULT);
-        const auto min_val = data.call(max_proto, cont, {arg, min});
-        data.switch_block(cont);
-        const auto then = data.create_basic_block();
+        const auto min_val = data.call(max_proto, {arg, min});
+
         const auto min_proto = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionBind::DEFAULT);
-        const auto max_val = data.call(min_proto, then, {min_val, max});
-        data.switch_block(then);
+        const auto max_val = data.call(min_proto, {min_val, max});
         data.ret(max_val);
     }
     return builder.build();
@@ -184,14 +181,11 @@ static Module clamp_float(const FloatingPointType* ty) {
         const auto arg = data.arg(0);
         const auto min = data.arg(1);
         const auto max = data.arg(2);
-        const auto cont = data.create_basic_block();
         const auto max_proto = builder.add_function_prototype(ty, {ty, ty}, "max", FunctionBind::DEFAULT);
-        const auto min_val = data.call(max_proto, cont, {arg, min});
-        data.switch_block(cont);
-        const auto then = data.create_basic_block();
+        const auto min_val = data.call(max_proto, {arg, min});
+
         const auto min_proto = builder.add_function_prototype(ty, {ty, ty}, "min", FunctionBind::DEFAULT);
-        const auto max_val = data.call(min_proto, then, {min_val, max});
-        data.switch_block(then);
+        const auto max_val = data.call(min_proto, {min_val, max});
         data.ret(max_val);
     }
     return builder.build();

@@ -7,8 +7,8 @@
 #include "LIRValType.h"
 #include "base/Attribute.h"
 #include "lir/x64/lir_frwd.h"
-#include "../asm/operand/AssignedVReg.h"
-#include "../asm/operand/GPVReg.h"
+#include "lir/x64/asm/operand/AssignedVReg.h"
+#include "lir/x64/asm/operand/GPVReg.h"
 #include "lir/x64/instruction/LIRUse.h"
 #include "utility/Error.h"
 

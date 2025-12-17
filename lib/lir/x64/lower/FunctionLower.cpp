@@ -411,29 +411,10 @@ LIROperand FunctionLower::make_fp_constant(const Type& type, const double val) {
     assertion(fp_type != nullptr, "Expected FloatingPointType for constant");
 
     if (val == 0.0) {
-        switch (fp_type->size_of()) {
-            case cst::QWORD_SIZE: return LirCst::imm64(0UL);
-            case cst::DWORD_SIZE: return LirCst::imm32(0UL);
-            default: std::unreachable();
-        }
+        return fp_zero(fp_type->size_of());
     }
 
-    SlotType slot_type;
-    std::int64_t bitmask;
-    switch (fp_type->size_of()) {
-        case cst::QWORD_SIZE: {
-            slot_type = SlotType::QWord;
-            bitmask = bitcast(val);
-            break;
-        }
-        case cst::DWORD_SIZE: {
-            slot_type = SlotType::DWord;
-            bitmask = bitcast(static_cast<float>(val));
-            break;
-        }
-        default: std::unreachable();
-    }
-
+    const auto [slot_type, bitmask] = fp_bitcast(fp_type->size_of(), val);
     auto& global = m_obj_function.global_data();
     auto label = create_anon_constant_label(m_obj_function.uid(), m_cst_index++);
     const auto name = label;
@@ -750,7 +731,8 @@ void FunctionLower::accept(Phi *inst) {
         incoming_values.emplace_back(get_lir_val(incoming));
         incoming_targets.push_back(m_bb_mapping.at(target));
     }
-    const auto parallel_copy = m_bb->ins(ParallelCopy::copy(std::move(incoming_values), std::move(incoming_targets)));
+    const auto lir_val_type = convert_type_to_lir_val_type(inst->type());
+    const auto parallel_copy = m_bb->ins(ParallelCopy::copy(lir_val_type, std::move(incoming_values), std::move(incoming_targets)));
     memorize(inst, parallel_copy->def(0));
 }
 

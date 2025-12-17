@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../helpers/Utils.h"
+#include "helpers/Utils.h"
 #include "asm/x64/asm.h"
 
 TEST(Asm, ret) {
