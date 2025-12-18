@@ -4,7 +4,7 @@
 #include "mir/mir.h"
 
 template<typename Fn>
-static Module load_store_global_test(const IntegerType* ty, Fn&& fn) {
+static Module load_store_global_test(const PrimitiveType* ty, Fn&& fn) {
     ModuleBuilder builder;
     {
         const auto global = builder.add_variable("my_global_var", ty, 40L).value();
@@ -14,6 +14,19 @@ static Module load_store_global_test(const IntegerType* ty, Fn&& fn) {
         data.ret(global);
     }
     return builder.build();
+}
+
+TEST(GlobalVariable, load_store_global_f64) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"load_store", 4},
+    };
+
+    const auto module = load_store_global_test(FloatingPointType::f64(), Value::f64);
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size, true);
+    const auto fn = buffer.code_start_as<double*()>("load_store").value();
+    const auto result = fn();
+    ASSERT_EQ(*result, 47);
+    ASSERT_EQ(*result, 47); // Ensure the value is retained
 }
 
 TEST(GlobalVariable, load_store_global_i64) {
@@ -101,7 +114,7 @@ TEST(GlobalVariable, load_store_global_struct) {
     ASSERT_EQ(result->b, 84); // Ensure the value is retained
 }
 
-static Module global_array_test(const IntegerType* ty) {
+static Module global_array_test(const PrimitiveType* ty) {
     ModuleBuilder builder;
     {
         const auto array_type = builder.add_array_type(ty, 100);
@@ -121,6 +134,21 @@ TEST(GlobalVariable, escape_array_i32) {
     const auto module = global_array_test(SignedIntegerType::i32());
     const auto buffer = jit_compile_and_assembly({}, module, asm_size);
     const auto fn = buffer.code_start_as<std::int32_t*()>("global_array").value();
+    const auto result = fn();
+    ASSERT_EQ(result[0], 1);
+    ASSERT_EQ(result[1], 2);
+    for (auto i = 3; i < 100; i++) {
+        ASSERT_EQ(result[i], 0);
+    }
+}
+
+TEST(GlobalVariable, escape_array_f32) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_array", 2}
+    };
+    const auto module = global_array_test(FloatingPointType::f32());
+    const auto buffer = jit_compile_and_assembly({}, module, asm_size);
+    const auto fn = buffer.code_start_as<float*()>("global_array").value();
     const auto result = fn();
     ASSERT_EQ(result[0], 1);
     ASSERT_EQ(result[1], 2);

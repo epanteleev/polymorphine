@@ -12,13 +12,14 @@ namespace details {
     public:
         explicit VRegSelection(InplaceVec<aasm::GPReg, aasm::GPReg::NUMBER_OF_REGISTERS>&& free_gp_regs,
             InplaceVec<aasm::XmmReg, aasm::XmmReg::NUMBER_OF_REGISTERS>&& free_xmm_regs, const call_conv::CallConvProvider* call_conv) noexcept:
-            m_free_gp_regs(std::move(free_gp_regs)),
-            m_free_xmm_regs(std::move(free_xmm_regs)),
+            m_free_gp_regs(free_gp_regs),
+            m_free_xmm_regs(free_xmm_regs),
             m_call_conv(call_conv) {}
 
+        [[nodiscard]]
         aasm::Address stack_alloc(const std::size_t size, const std::size_t align) noexcept {
-            m_local_area_size = align_up(m_local_area_size, align) + size;
-            return aasm::Address(aasm::rbp, -m_local_area_size);
+            m_local_area_size = align_up(m_local_area_size, align) + static_cast<std::int64_t>(size);
+            return aasm::Address(aasm::rbp, -static_cast<std::int32_t>(m_local_area_size));
         }
 
         [[nodiscard]]
@@ -51,7 +52,7 @@ namespace details {
         }
 
         void push(const aasm::Reg reg) {
-            const auto vis = [&]<typename T>(const T& val) {
+            const auto vis = [this]<typename T>(const T& val) {
                 push_impl(val);
             };
 
@@ -74,7 +75,7 @@ namespace details {
         }
 
         [[nodiscard]]
-        std::int32_t local_area_size() const noexcept {
+        std::int64_t local_area_size() const noexcept {
             return m_local_area_size;
         }
 
@@ -86,7 +87,7 @@ namespace details {
 
         InplaceVec<aasm::GPReg, aasm::GPReg::NUMBER_OF_REGISTERS> m_free_gp_regs;
         InplaceVec<aasm::XmmReg, aasm::XmmReg::NUMBER_OF_REGISTERS> m_free_xmm_regs;
-        std::int32_t m_local_area_size{};
+        std::int64_t m_local_area_size{};
         const call_conv::CallConvProvider* m_call_conv;
     };
 }

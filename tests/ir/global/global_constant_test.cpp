@@ -20,8 +20,18 @@ TEST(GlobalConstant, load_global_constant_f64) {
         {"global_constant_test", 2},
     };
 
-    const auto buffer = jit_compile_and_assembly({}, global_constant_test(FloatingPointType::f64()), asm_size, true);
+    const auto buffer = jit_compile_and_assembly({}, global_constant_test(FloatingPointType::f64()), asm_size);
     const auto fn = buffer.code_start_as<double()>("global_constant_test").value();
+    ASSERT_EQ(fn(), 42);
+}
+
+TEST(GlobalConstant, load_global_constant_f32) {
+    const std::unordered_map<std::string, std::size_t> asm_size{
+        {"global_constant_test", 2},
+    };
+
+    const auto buffer = jit_compile_and_assembly({}, global_constant_test(FloatingPointType::f32()), asm_size);
+    const auto fn = buffer.code_start_as<float()>("global_constant_test").value();
     ASSERT_EQ(fn(), 42);
 }
 

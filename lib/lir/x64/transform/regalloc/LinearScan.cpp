@@ -249,7 +249,7 @@ void LinearScan::allocate_register(const LIRVal &lir_val, const aasm::GPReg reg)
     }
     lir_val.assign_reg(reg);
 
-    if (!std::ranges::contains(m_call_conv->GP_CALLEE_SAVE_REGISTERS(), reg)) {
+    if (!m_call_conv->GP_CALLEE_SAVE_REGISTERS().contains(reg)) {
         // This is a caller-save register, we can skip it.
         return;
     }
