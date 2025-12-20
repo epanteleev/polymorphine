@@ -40,18 +40,22 @@ public:
         return m_adjust_kind;
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRAdjustStack> up_stack() {
         return std::make_unique<LIRAdjustStack>(LIRAdjustKind::UpStack);
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRAdjustStack> down_stack() {
         return std::make_unique<LIRAdjustStack>(LIRAdjustKind::DownStack);
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRAdjustStack> prologue() {
         return std::make_unique<LIRAdjustStack>(LIRAdjustKind::Prologue);
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRAdjustStack> epilogue() {
         return std::make_unique<LIRAdjustStack>(LIRAdjustKind::Epilogue);
     }

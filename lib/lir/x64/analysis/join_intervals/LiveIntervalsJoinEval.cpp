@@ -1,4 +1,3 @@
-#include <ostream>
 #include <algorithm>
 
 #include "lir/x64/analysis/intervals/IntervalHint.h"
@@ -36,11 +35,12 @@ void LiveIntervalsJoinEval::collect_xmm_argument(const LIRVal &arg, const XVReg 
 
 void LiveIntervalsJoinEval::collect_argument_regs() {
     for (const auto& arg: m_data.args()) {
-        if (const auto fixed_reg = arg.assigned_reg().to_gp_op(); fixed_reg.has_value()) {
+        const auto& assigned_reg = arg.assigned_reg();
+        if (const auto fixed_reg = assigned_reg.to_gp_op(); fixed_reg.has_value()) {
             collect_gp_argument(arg, fixed_reg.value());
         }
 
-        if (const auto fixed_reg = arg.assigned_reg().to_xmm_op(); fixed_reg.has_value()) {
+        if (const auto fixed_reg = assigned_reg.to_xmm_op(); fixed_reg.has_value()) {
             collect_xmm_argument(arg, fixed_reg.value());
         }
     }

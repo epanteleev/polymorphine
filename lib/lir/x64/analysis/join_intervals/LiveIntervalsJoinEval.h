@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LiveIntervalsGroups.h"
+#include "asm/x64/reg/AnyRegMap.h"
 #include "base/analysis/AnalysisPass.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
 
@@ -26,10 +27,12 @@ public:
         do_joining();
     }
 
+    [[nodiscard]]
     std::unique_ptr<LiveIntervalsGroups> result() {
         return std::make_unique<LiveIntervalsGroups>(std::move(m_groups), std::move(m_group_mapping));
     }
 
+    [[nodiscard]]
     static LiveIntervalsJoinEval create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data);
 
 private:
@@ -63,7 +66,7 @@ private:
     const LiveIntervals& m_intervals;
     const LIRFuncData& m_data;
 
-    std::unordered_map<aasm::Reg, std::vector<LIRVal>, aasm::RegHash, aasm::RegEqual> m_reg_to_lir_val{};
+    aasm::RegMap<std::vector<LIRVal>> m_reg_to_lir_val{};
     std::deque<Group> m_groups;
     LIRValMap<LiveIntervalsGroups::group_iterator> m_group_mapping{};
 };
