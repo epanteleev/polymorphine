@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "ValueInstruction.h"
+#include "mir/types/PointerType.h"
 
 enum class UnaryOp: std::uint8_t {
     Negate,
@@ -72,6 +73,16 @@ public:
     [[nodiscard]]
     static std::unique_ptr<Unary> bitcast(const IntegerType* ty, const Value &value) {
         return std::make_unique<Unary>(ty, UnaryOp::Bitcast, value);
+    }
+
+    [[nodiscard]]
+    static std::unique_ptr<Unary> ptr2int(const IntegerType* ty, const Value &value) {
+        return std::make_unique<Unary>(ty, UnaryOp::Ptr2Int, value);
+    }
+
+    [[nodiscard]]
+    static std::unique_ptr<Unary> int2ptr(const Value &value) {
+        return std::make_unique<Unary>(PointerType::ptr(), UnaryOp::Int2Ptr, value);
     }
 
 private:

@@ -542,6 +542,86 @@ TEST(Int2Float, uint2fp_u8_to_f64) {
     ASSERT_DOUBLE_EQ(fn(UCHAR_MAX), UCHAR_MAX);
 }
 
+static Module ptr2int_cvt(const IntegerType* to) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(to, {PointerType::ptr()}, "cvt", FunctionBind::DEFAULT);
+
+    const auto fn_builder = builder.make_function_builder(prototype);
+    auto data = fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.ptr2int(to, arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(Ptr2Int, ptr2u64) {
+    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+        {"cvt", 2}
+    };
+
+    const auto module = ptr2int_cvt(UnsignedIntegerType::u64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0, true);
+    char loc{};
+
+    const auto fn = code.code_start_as<std::uint64_t(char*)>("cvt").value();
+    ASSERT_EQ(fn(&loc), reinterpret_cast<std::uint64_t>(&loc));
+}
+
+TEST(Ptr2Int, ptr2i64) {
+    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+        {"cvt", 2}
+    };
+
+    const auto module = ptr2int_cvt(SignedIntegerType::i64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0, true);
+    char loc{};
+
+    const auto fn = code.code_start_as<std::int64_t(char*)>("cvt").value();
+    ASSERT_EQ(fn(&loc), reinterpret_cast<std::int64_t>(&loc));
+}
+
+static Module int2ptr_cvt(const IntegerType* from) {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(PointerType::ptr(), {from}, "cvt", FunctionBind::DEFAULT);
+
+    const auto fn_builder = builder.make_function_builder(prototype);
+    auto data = fn_builder.value();
+
+    const auto arg = data.arg(0);
+    const auto cvt = data.int2ptr(arg);
+    data.ret(cvt);
+
+    return builder.build();
+}
+
+TEST(Ptr2Int, u64_to_ptr) {
+    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+        {"cvt", 2}
+    };
+
+    const auto module = int2ptr_cvt(UnsignedIntegerType::u64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0, true);
+    char loc{};
+
+    const auto fn = code.code_start_as<char*(std::uint64_t)>("cvt").value();
+    ASSERT_EQ(fn(reinterpret_cast<std::uint64_t>(&loc)), &loc);
+}
+
+TEST(Ptr2Int, i64_to_ptr) {
+    const std::unordered_map<std::string, std::size_t> asm_size0 = {
+        {"cvt", 2}
+    };
+
+    const auto module = int2ptr_cvt(SignedIntegerType::i64());
+    const auto code = jit_compile_and_assembly(external_symbols, module, asm_size0, true);
+    char loc{};
+
+    const auto fn = code.code_start_as<char*(std::int64_t)>("cvt").value();
+    ASSERT_EQ(fn(reinterpret_cast<std::int64_t>(&loc)), &loc);
+}
+
 int main(int argc, char **argv) {
     error::setup_terminate_handler();
     ::testing::InitGoogleTest(&argc, argv);

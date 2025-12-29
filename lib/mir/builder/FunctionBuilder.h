@@ -155,6 +155,16 @@ public:
     }
 
     [[nodiscard]]
+    Value ptr2int(const IntegerType* to_type, const Value& value) const {
+        return m_bb->ins(Unary::ptr2int(to_type, value));
+    }
+
+    [[nodiscard]]
+    Value int2ptr(const Value& value) const {
+        return m_bb->ins(Unary::int2ptr(value));
+    }
+
+    [[nodiscard]]
     Value fp2int(const IntegerType* to_type, const Value& value) const {
         return m_bb->ins(Unary::fp2int(to_type, value));
     }

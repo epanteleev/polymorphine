@@ -160,9 +160,9 @@ TEST(BubbleSort, bubble_sort_i16) {
 }
 
 TEST(BubbleSort, bubble_sort_u32) {
-    const auto module = bubble_sort(UnsignedIntegerType::u64(), UnsignedIntegerType::u32(), Value::u32);
+    const auto module = bubble_sort(UnsignedIntegerType::u64(), SignedIntegerType::i32(), Value::i32);
     const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
-    const auto fn = code.code_start_as<void(uint64_t*, uint32_t)>("bubble_sort").value();
+    const auto fn = code.code_start_as<void(uint64_t*, int32_t)>("bubble_sort").value();
 
     uint64_t arr[] = {5, 3, 8, 1, 2};
     uint64_t sorted[] = {1, 2, 3, 5, 8};

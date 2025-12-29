@@ -892,6 +892,8 @@ void FunctionLower::accept(Unary *inst) {
             memorize(inst, trunc->def(0));
             break;
         }
+        case UnaryOp::Int2Ptr: [[fallthrough]];
+        case UnaryOp::Ptr2Int: [[fallthrough]];
         case UnaryOp::Bitcast: {
             const auto operand = get_lir_operand(inst->operand());
             const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
@@ -927,7 +929,8 @@ void FunctionLower::accept(Unary *inst) {
             }
             break;
         }
-        default: die("Unsupported unary operation: {}", static_cast<int>(inst->op()));
+        case UnaryOp::LogicalNot: unimplemented();
+        default: std::unreachable();
     }
 }
 
