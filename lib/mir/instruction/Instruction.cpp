@@ -37,7 +37,7 @@ namespace {
 
     private:
         void print_val(const Instruction* inst) const {
-            os << '%' << inst->owner()->id() << 'x' << inst->id() << " = ";
+            os << inst->location() << " = ";
         }
 
         static std::string_view binaryOpToString(const BinaryOp op) {

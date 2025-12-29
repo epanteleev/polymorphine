@@ -11,6 +11,7 @@ public:
 
     void visit(LIRVisitor &visitor) override;
 
+    [[nodiscard]]
     static std::unique_ptr<LIRICmp> cmp(const LIROperand &lhs, const LIROperand &rhs) {
         return std::make_unique<LIRICmp>(std::vector{lhs, rhs});
     }

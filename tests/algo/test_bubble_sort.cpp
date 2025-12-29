@@ -112,7 +112,7 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
 
     data.switch_block(for_inc18);
     auto v23 = data.load(inc_type, i);
-    auto inc19 = data.add(v23, Value::i32(1));
+    auto inc19 = data.add(v23, inc_creator(1));
     data.store(i, inc19);
     data.br(for_cond);
 
@@ -149,7 +149,7 @@ TEST(BubbleSort, bubble_sort_i64) {
 }
 
 TEST(BubbleSort, bubble_sort_i16) {
-    const auto module = bubble_sort(SignedIntegerType::i16(), SignedIntegerType::i8(), Value::i32);
+    const auto module = bubble_sort(SignedIntegerType::i16(), SignedIntegerType::i8(), Value::i8);
     const auto code = jit_compile_and_assembly({}, module, symbol_sizes, true);
     const auto fn = code.code_start_as<void(int16_t*, int32_t)>("bubble_sort").value();
 
@@ -279,7 +279,7 @@ static Module bubble_sort_fp(const PrimitiveType* ty, const PrimitiveType* inc_t
 
     data.switch_block(for_inc18);
     auto v23 = data.load(inc_type, i);
-    auto inc19 = data.add(v23, Value::i32(1));
+    auto inc19 = data.add(v23, inc_creator(1));
     data.store(i, inc19);
     data.br(for_cond);
 

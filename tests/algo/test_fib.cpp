@@ -183,7 +183,8 @@ TEST(Fib, u64) {
     }
 }
 
-static Module recursive_fib(const IntegerType* ty) {
+template<typename Fn>
+static Module recursive_fib(const IntegerType* ty, Fn&& fn) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionBind::DEFAULT);
     const auto copy = builder.add_function_prototype(ty, {ty}, "fib_recursive", FunctionBind::DEFAULT);
@@ -195,7 +196,7 @@ static Module recursive_fib(const IntegerType* ty) {
     auto n = data.arg(0);
     auto ret_addr = data.alloc(ty);
 
-    auto base_case = data.icmp(IcmpPredicate::Le, n, Value::i64(1));
+    auto base_case = data.icmp(IcmpPredicate::Le, n, fn(1));
     auto if_then = data.create_basic_block();
     auto if_end = data.create_basic_block();
     auto if_else = data.create_basic_block();
@@ -206,10 +207,10 @@ static Module recursive_fib(const IntegerType* ty) {
     data.br(if_end);
 
     data.switch_block(if_else);
-    auto sub = data.sub(n, Value::i64(1));
+    auto sub = data.sub(n, fn(1));
     auto call1 = data.call(copy, {sub});
 
-    auto sub2 = data.sub(n, Value::i64(2));
+    auto sub2 = data.sub(n, fn(2));
     auto call2 = data.call(prototype, {sub2});
 
     auto add = data.add(call1, call2);
@@ -228,7 +229,7 @@ static const std::unordered_map<std::string, size_t> sizes = {
 };
 
 TEST(Fib, RecursiveFib_i64) {
-    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i64()));
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i64(), Value::i64));
     const auto fn = buffer.code_start_as<long(long)>("fib_recursive").value();
 
     for (long i = 0; i < 20; ++i) {
@@ -238,7 +239,7 @@ TEST(Fib, RecursiveFib_i64) {
 }
 
 TEST(Fib, RecursiveFib_i32) {
-    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i32()));
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i32(), Value::i32));
     const auto fn = buffer.code_start_as<int(int)>("fib_recursive").value();
     for (int i = 0; i < 20; ++i) {
         const auto res = fn(i);
@@ -247,7 +248,7 @@ TEST(Fib, RecursiveFib_i32) {
 }
 
 TEST(Fib, RecursiveFib_i16) {
-    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i16()));
+    const auto buffer = jit_compile_and_assembly(sizes, recursive_fib(SignedIntegerType::i16(), Value::i16));
     const auto fn = buffer.code_start_as<short(short)>("fib_recursive").value();
 
     for (short i = 0; i < 20; ++i) {

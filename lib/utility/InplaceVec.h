@@ -42,7 +42,7 @@ public:
 
     constexpr void pop_back() noexcept {
         assertion(m_size != 0, "Must be");
-        std::destroy_at(&m_storage[m_size--]);
+        std::destroy_at(at(m_size--));
     }
 
     [[nodiscard]]
@@ -66,7 +66,7 @@ public:
 
     constexpr void release() noexcept {
         for (std::size_t i{}; i < m_size; ++i) {
-            std::destroy_at(&m_storage[i]);
+            std::destroy_at(at(i));
         }
         m_size = 0;
     }
@@ -81,6 +81,7 @@ public:
         return at(0);
     }
 
+    [[nodiscard]]
     constexpr pointer data() noexcept {
         return at(0);
     }

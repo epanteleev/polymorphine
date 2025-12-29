@@ -1,6 +1,7 @@
 #pragma once
 #include <limits>
 
+#include "InstLocation.h"
 #include "utility/Error.h"
 
 template<typename BB>
@@ -18,6 +19,11 @@ public:
     BB *owner() const noexcept {
         assertion(m_owner != nullptr, "Instruction owner is not set");
         return m_owner;
+    }
+
+    [[nodiscard]]
+    InstLocation location() const noexcept {
+        return InstLocation(owner()->id(), id());
     }
 
 protected:

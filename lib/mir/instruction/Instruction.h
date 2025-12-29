@@ -8,7 +8,6 @@
 #include "InstructionVisitor.h"
 #include "base/CommonInstruction.h"
 #include "mir/value/Value.h"
-#include "utility/Error.h"
 
 template<typename F>
 concept InstructionMatcher = std::is_invocable_r_v<bool, F, const Instruction*>;

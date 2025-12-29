@@ -33,6 +33,7 @@ public:
         return m_name;
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRCall> call(std::string&& name, const LIRValType ty, const std::uint8_t size, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionBind bind) {
         InplaceVec<LIRValType, 2> types{ty};
         auto call = std::make_unique<LIRCall>(std::move(name), types, LIRCallKind::Call, std::move(args), cont, bind);
@@ -40,6 +41,7 @@ public:
         return call;
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRCall> tuple_call(std::string&& name, const LIRValType ty1, const LIRValType ty2, const std::size_t size1, const std::size_t size2, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionBind bind) {
         InplaceVec<LIRValType, 2> types{ty1, ty2};
         auto call = std::make_unique<LIRCall>(std::move(name), types, LIRCallKind::Call, std::move(args), cont, bind);
@@ -48,6 +50,7 @@ public:
         return call;
     }
 
+    [[nodiscard]]
     static std::unique_ptr<LIRCall> vcall(std::string&& name, LIRBlock* cont, std::vector<LIROperand>&& args, FunctionBind bind) {
         const InplaceVec<LIRValType, 2> types{LIRValType::GP};
         return std::make_unique<LIRCall>(std::move(name), types, LIRCallKind::VCall, std::move(args), cont, bind);

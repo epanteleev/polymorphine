@@ -1,11 +1,12 @@
 #pragma once
 
-#include "PrimitiveType.h"
+#include "ArithmeticType.h"
 
-class IntegerType : public PrimitiveType {};
+class IntegerType : public ArithmeticType {};
 
 class UnsignedIntegerType final: public IntegerType {
-    constexpr explicit UnsignedIntegerType(const std::size_t size) : m_size(size) {}
+    constexpr explicit UnsignedIntegerType(const std::size_t size) noexcept:
+        m_size(size) {}
 
 public:
     [[nodiscard]]
@@ -40,7 +41,8 @@ private:
 };
 
 class SignedIntegerType final: public IntegerType {
-    explicit constexpr SignedIntegerType(const std::size_t size) : m_size(size) {}
+    explicit constexpr SignedIntegerType(const std::size_t size) noexcept:
+        m_size(size) {}
 
 public:
     [[nodiscard]]

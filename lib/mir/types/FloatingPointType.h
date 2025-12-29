@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PrimitiveType.h"
+#include "ArithmeticType.h"
 
 
-class FloatingPointType final : public PrimitiveType {
+class FloatingPointType final : public ArithmeticType {
     constexpr explicit FloatingPointType(const std::size_t size) noexcept:
         m_size(size) {}
 
