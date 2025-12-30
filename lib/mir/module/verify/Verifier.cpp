@@ -1,13 +1,15 @@
-#include "Verifier.h"
-#include "mir/instruction/Instruction.h"
-#include "mir/instruction/Binary.h"
-#include "mir/types/FlagType.h"
-
 #include <ranges>
 
+#include "Verifier.h"
+#include "mir/types/FlagType.h"
+#include "mir/instruction/Instruction.h"
+#include "mir/instruction/Icmp.h"
+#include "mir/instruction/Fcmp.h"
+#include "mir/instruction/Binary.h"
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Store.h"
+#include "mir/instruction/IntDiv.h"
 
 class InstructionVerifier final: public Visitor {
 public:
@@ -21,8 +23,8 @@ public:
 private:
     friend class Visitor;
 
-    template<typename InTy>
-    void validate_binary(const Binary* inst) {
+    template<typename InTy, typename B>
+    void validate_binary(const B* inst) {
         const auto a_type = inst->lhs().type();
         const auto b_type = inst->rhs().type();
         if (InTy::cast(a_type) == nullptr) {
@@ -52,8 +54,7 @@ private:
     template<typename OutTy>
     [[nodiscard]]
     bool check_out_type(const Unary* inst) {
-        const auto ty = inst->type();
-        if (OutTy::cast(ty) == nullptr) {
+        if (const auto ty = inst->type(); OutTy::cast(ty) == nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
             return true;
         }
@@ -170,6 +171,10 @@ private:
     }
 
     void accept(CondBranch *cond_branch) override {
+        const auto cond = cond_branch->condition().type();
+        if (FlagType::cast(cond) == nullptr) {
+            m_correct.emplace(VerifierResult::wrong_type(cond_branch->location(), cond));
+        }
     }
 
     void accept(Call *inst) override {
@@ -210,9 +215,8 @@ private:
             return;
         }
 
-        const auto pointer_type = PointerType::cast(store->pointer().type());
-        if (pointer_type == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(store->location(), pointer_type));
+        if (const auto ptr_type = PointerType::cast(store->pointer().type()); ptr_type == nullptr) {
+            m_correct.emplace(VerifierResult::wrong_type(store->location(), ptr_type));
         }
     }
 
@@ -224,9 +228,18 @@ private:
     }
 
     void accept(IcmpInstruction *icmp) override {
+        const auto a_type = icmp->lhs().type();
+        const auto b_type = icmp->rhs().type();
+        if (a_type != b_type && a_type == PointerType::ptr()) {
+            m_correct.emplace(VerifierResult::wrong_type(icmp->location(), a_type, b_type));
+            return;
+        }
+
+        validate_binary<IntegerType>(icmp);
     }
 
     void accept(FcmpInstruction *fcmp) override {
+        validate_binary<FloatingPointType>(fcmp);
     }
 
     void accept(GetElementPtr *gep) override {
@@ -239,6 +252,7 @@ private:
     }
 
     void accept(IntDiv *div) override {
+        validate_binary<IntegerType>(div);
     }
 
     void accept(Projection *proj) override {

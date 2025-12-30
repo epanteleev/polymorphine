@@ -26,6 +26,7 @@ public:
         visitor.accept(this);
     }
 
+    [[nodiscard]]
     static std::unique_ptr<Select> select(const Value& cond, const Value& true_val, const Value& false_val) {
         return std::make_unique<Select>(true_val.type(), std::vector{cond, true_val, false_val});
     }
