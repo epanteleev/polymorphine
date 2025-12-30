@@ -77,8 +77,15 @@ private:
     void emit(const aasm::XmmReg out, const aasm::XmmReg in1, const std::int64_t in2) override {
         assertion(in2 == 0, "invariant");
         const auto temp1 = m_temporal_regs.xmm_temp1();
-        m_as.xorfp(m_size, in1, temp1);
-        m_as.divfp(m_size, temp1, out);
+        if (in1 == out) {
+            m_as.xorfp(m_size, temp1, temp1);
+            m_as.divfp(m_size, temp1, out);
+
+        } else {
+            m_as.xorfp(m_size, temp1, temp1);
+            m_as.copyfp(m_size, in1, out);
+            m_as.divfp(m_size, temp1, out);
+        }
     }
 
     void emit(const aasm::XmmReg out, const std::int64_t in1, const aasm::XmmReg in2) override {
