@@ -25,6 +25,16 @@ public:
         return &f64_instance;
     }
 
+    [[nodiscard]]
+    static constexpr const FloatingPointType *cast(const Type *type) noexcept {
+        static constexpr const FloatingPointType* fp_types[] = {f32(), f64()};
+        for (auto& fp_type : fp_types) {
+            if (fp_type == type) return fp_type;
+        }
+
+        return nullptr;
+    }
+
 private:
     const std::size_t m_size;
 };

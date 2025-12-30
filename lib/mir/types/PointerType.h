@@ -16,4 +16,13 @@ public:
         static constexpr PointerType pointer;
         return &pointer;
     }
+
+    [[nodiscard]]
+    static constexpr const PointerType* cast(const Type* ty) noexcept {
+        if (ty == ptr()) {
+            return ptr();
+        }
+
+        return nullptr;
+    }
 };

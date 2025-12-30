@@ -52,7 +52,7 @@ public:
     template<std::derived_from<Type> T>
     [[nodiscard]]
     constexpr const T *as_type() const noexcept {
-        if (const auto ty = dynamic_cast<const T *>(m_type)) {
+        if (const auto ty = T::cast(m_type)) {
             return ty;
         }
 

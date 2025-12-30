@@ -60,6 +60,11 @@ public:
         return std::make_unique<Binary>(BinaryOp::BitwiseXor, lhs, rhs);
     }
 
+    [[nodiscard]]
+    static std::unique_ptr<Binary> div(const Value &lhs, const Value &rhs) {
+        return std::make_unique<Binary>(BinaryOp::Divide, lhs, rhs);
+    }
+
 private:
     const BinaryOp m_op;
 };

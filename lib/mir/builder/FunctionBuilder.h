@@ -67,6 +67,11 @@ public:
     }
 
     [[nodiscard]]
+    Value div(const Value& lhs, const Value& rhs) const {
+        return m_bb->ins(Binary::div(lhs, rhs));
+    }
+
+    [[nodiscard]]
     std::pair<Value, Value> idiv(const Value& lhs, const Value& rhs) const {
         const auto idiv = m_bb->ins(IntDiv::div(lhs, rhs));
         const auto quotient = m_bb->ins(Projection::proj(idiv, 0));

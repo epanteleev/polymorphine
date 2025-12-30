@@ -2,7 +2,10 @@
 
 #include "ArithmeticType.h"
 
-class IntegerType : public ArithmeticType {};
+class IntegerType : public ArithmeticType {
+public:
+    static constexpr const IntegerType *cast(const Type* ty) noexcept;
+};
 
 class UnsignedIntegerType final: public IntegerType {
     constexpr explicit UnsignedIntegerType(const std::size_t size) noexcept:
@@ -34,6 +37,16 @@ public:
     static consteval const UnsignedIntegerType *u64() noexcept {
         static constexpr UnsignedIntegerType u64_instance(8);
         return &u64_instance;
+    }
+
+    [[nodiscard]]
+    static constexpr const UnsignedIntegerType *cast(const Type* ty) {
+        static constexpr const UnsignedIntegerType* uint_types[] = { u8(), u16(), u32(), u64() };
+        for (const auto& type : uint_types) {
+            if (type == ty) return type;
+        }
+
+        return nullptr;
     }
 
 private:
@@ -72,6 +85,33 @@ public:
         return &i64_instance;
     }
 
+    [[nodiscard]]
+    static constexpr const SignedIntegerType *cast(const Type* ty) {
+        static constexpr const SignedIntegerType* int_types[] = { i8(), i16(), i32(), i64() };
+        for (const auto& type : int_types) {
+            if (type == ty) return type;
+        }
+
+        return nullptr;
+    }
 private:
     const std::size_t m_size;
 };
+
+constexpr const IntegerType * IntegerType::cast(const Type *ty) noexcept {
+    static constexpr const IntegerType* int_types[] = {
+        SignedIntegerType::i8(),
+        SignedIntegerType::i16(),
+        SignedIntegerType::i32(),
+        SignedIntegerType::i64(),
+        UnsignedIntegerType::u8(),
+        UnsignedIntegerType::u16(),
+        UnsignedIntegerType::u32(),
+        UnsignedIntegerType::u64()
+    };
+    for (const auto& type : int_types) {
+        if (type == ty) return type;
+    }
+
+    return nullptr;
+}

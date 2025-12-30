@@ -22,7 +22,7 @@ public:
         return m_values[2];
     }
 
-    void visit(Visitor &visitor) {
+    void visit(Visitor &visitor) override {
         visitor.accept(this);
     }
 

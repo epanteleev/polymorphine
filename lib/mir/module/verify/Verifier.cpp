@@ -5,6 +5,10 @@
 
 #include <ranges>
 
+#include "mir/instruction/Alloc.h"
+#include "mir/instruction/Phi.h"
+#include "mir/instruction/Store.h"
+
 class InstructionVerifier final: public Visitor {
 public:
     [[nodiscard]]
@@ -17,10 +21,11 @@ public:
 private:
     friend class Visitor;
 
-    void accept(Binary *inst) override {
+    template<typename InTy>
+    void validate_binary(const Binary* inst) {
         const auto a_type = inst->lhs().type();
         const auto b_type = inst->rhs().type();
-        if (dynamic_cast<const ArithmeticType*>(a_type) == nullptr) {
+        if (InTy::cast(a_type) == nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), a_type, b_type));
             return;
         }
@@ -29,11 +34,26 @@ private:
         }
     }
 
+    void accept(Binary *inst) override {
+        switch (inst->op()) {
+            case BinaryOp::Add:        [[fallthrough]];
+            case BinaryOp::Subtract:   [[fallthrough]];
+            case BinaryOp::Multiply:   validate_binary<ArithmeticType>(inst); break;
+            case BinaryOp::Divide:     validate_binary<FloatingPointType>(inst); break;
+            case BinaryOp::BitwiseAnd: [[fallthrough]];
+            case BinaryOp::BitwiseOr:  [[fallthrough]];
+            case BinaryOp::BitwiseXor: [[fallthrough]];
+            case BinaryOp::ShiftLeft:  [[fallthrough]];
+            case BinaryOp::ShiftRight: validate_binary<IntegerType>(inst); break;
+            default: std::unreachable();
+        }
+    }
+
     template<typename OutTy>
     [[nodiscard]]
     bool check_out_type(const Unary* inst) {
         const auto ty = inst->type();
-        if (dynamic_cast<const OutTy*>(ty) == nullptr) {
+        if (OutTy::cast(ty) == nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
             return true;
         }
@@ -51,21 +71,21 @@ private:
 
     void check_operand_size(const Unary* inst ) {
         const auto ty = inst->type();
-        if (dynamic_cast<const SignedIntegerType*>(ty) == nullptr && dynamic_cast<const SignedIntegerType*>(ty) != nullptr) {
+        if (SignedIntegerType::cast(ty) == nullptr && SignedIntegerType::cast(ty) != nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
             return;
         }
 
-        if (dynamic_cast<const UnsignedIntegerType*>(ty) == nullptr && dynamic_cast<const UnsignedIntegerType*>(ty) != nullptr) {
+        if (UnsignedIntegerType::cast(ty) == nullptr && UnsignedIntegerType::cast(ty) != nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
         }
     }
 
     void validate_trunk(const Unary* inst) {
         if (check_out_type<IntegerType>(inst)) return;
-        const auto ty = dynamic_cast<const IntegerType*>(inst->type());
+        const auto ty = IntegerType::cast(inst->type());
 
-        const auto op_type = dynamic_cast<const IntegerType*>(inst->operand().type());
+        const auto op_type = IntegerType::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() <= ty->size_of()) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
             return;
@@ -76,9 +96,9 @@ private:
 
     void validate_bitcast(const Unary* inst) {
         if (check_out_type<IntegerType>(inst)) return;
-        const auto ty = dynamic_cast<const IntegerType*>(inst->type());
+        const auto ty = IntegerType::cast(inst->type());
 
-        const auto op_type = dynamic_cast<const IntegerType*>(inst->operand().type());
+        const auto op_type = IntegerType::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() != ty->size_of()) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
             return;
@@ -90,9 +110,9 @@ private:
     template<typename IntTy>
     void validate_ext(const Unary* inst) {
         if (check_out_type<IntegerType>(inst)) return;
-        const auto ty = dynamic_cast<const IntTy*>(inst->type());
+        const auto ty = IntTy::cast(inst->type());
 
-        const auto op_type = dynamic_cast<const IntTy*>(inst->operand().type());
+        const auto op_type = IntTy::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() >= ty->size_of()) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
         }
@@ -101,9 +121,9 @@ private:
     template<typename To, typename From>
     void validate_unary_from_to(const Unary* inst) {
         if (check_out_type<To>(inst)) return;
-        const auto ty = dynamic_cast<const To*>(inst->type());
+        const auto ty = To::cast(inst->type());
 
-        const auto op_type = dynamic_cast<const From*>(inst->operand().type());
+        const auto op_type = From::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() != ty->size_of()) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
         }
@@ -112,9 +132,9 @@ private:
     template<typename To, typename From>
     void validate_unary_from_to0(const Unary* inst) {
         if (check_out_type<To>(inst)) return;
-        const auto ty = dynamic_cast<const To*>(inst->type());
+        const auto ty = To::cast(inst->type());
 
-        const auto op_type = dynamic_cast<const From*>(inst->operand().type());
+        const auto op_type = From::cast(inst->operand().type());
         if (op_type == nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
         }
@@ -122,7 +142,7 @@ private:
 
     void validate_flag2int(const Unary *inst) {
         if (check_out_type<IntegerType>(inst)) return;
-        const auto op_type = dynamic_cast<const FlagType*>(inst->operand().type());
+        const auto op_type = FlagType::cast(inst->operand().type());
         if (op_type == nullptr) {
             m_correct.emplace(VerifierResult::wrong_type(inst->location(), inst->type()));
         }
@@ -174,12 +194,33 @@ private:
     }
 
     void accept(Phi *inst) override {
+        const auto out_type = inst->type();
+        for (const auto& incoming: inst->operands()) {
+            if (const auto incoming_ty = incoming.type(); incoming_ty != out_type) {
+                m_correct.emplace(VerifierResult::wrong_type(inst->location(), out_type, incoming_ty));
+                return;
+            }
+        }
     }
 
     void accept(Store *store) override {
+        const auto value_ty = store->value().type();
+        if (PrimitiveType::cast(value_ty) == nullptr) {
+            m_correct.emplace(VerifierResult::wrong_type(store->location(), value_ty));
+            return;
+        }
+
+        const auto pointer_type = PointerType::cast(store->pointer().type());
+        if (pointer_type == nullptr) {
+            m_correct.emplace(VerifierResult::wrong_type(store->location(), pointer_type));
+        }
     }
 
     void accept(Alloc *alloc) override {
+        const auto out_ty = alloc->type();
+        if (VoidType::cast(out_ty) != nullptr || FlagType::cast(out_ty) != nullptr) {
+            m_correct.emplace(VerifierResult::wrong_type(alloc->location(), out_ty));
+        }
     }
 
     void accept(IcmpInstruction *icmp) override {

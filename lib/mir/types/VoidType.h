@@ -12,4 +12,13 @@ public:
         static constexpr VoidType instance;
         return &instance;
     }
+
+    [[nodiscard]]
+    static constexpr const VoidType* cast(const Type* ty) noexcept {
+        if (ty == type()) {
+            return type();
+        }
+
+        return nullptr;
+    }
 };

@@ -37,9 +37,9 @@ public:
 
 private:
     static const TupleType *make_ty(const Value &lhs, const Value &rhs) {
-        const auto lhs_type = dynamic_cast<const PrimitiveType*>(lhs.type());
+        const auto lhs_type = PrimitiveType::cast(lhs.type());
         assertion(lhs_type != nullptr, "expected");
-        const auto rhs_type = dynamic_cast<const PrimitiveType*>(rhs.type());
+        const auto rhs_type = PrimitiveType::cast(rhs.type());
         assertion(rhs_type != nullptr, "expected");
         return TupleType::tuple(lhs_type, rhs_type);
     }

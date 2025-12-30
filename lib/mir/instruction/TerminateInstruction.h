@@ -124,8 +124,8 @@ public:
         switch (m_values.size()) {
             case 1: return m_values[0].type();
             case 2: {
-                const auto first_type = dynamic_cast<const PrimitiveType*>(m_values[0].type());
-                const auto second_type = dynamic_cast<const PrimitiveType*>(m_values[1].type());
+                const auto first_type = PrimitiveType::cast(m_values[0].type());
+                const auto second_type = PrimitiveType::cast(m_values[1].type());
                 return TupleType::tuple(first_type, second_type);
             }
             default: die("Unsupported number of return values: {}", m_values.size());

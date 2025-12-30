@@ -1,22 +1,25 @@
 #pragma once
+
 #include "VoidType.h"
+#include "IntegerType.h"
+#include "FloatingPointType.h"
 
 namespace impls {
     inline bool signed_type(const Type *type) noexcept {
-        return dynamic_cast<const SignedIntegerType *>(type) != nullptr;
+        return SignedIntegerType::cast(type) != nullptr;
     }
 
     inline bool unsigned_type(const Type *type) noexcept {
-        return dynamic_cast<const UnsignedIntegerType *>(type) != nullptr;
+        return UnsignedIntegerType::cast(type) != nullptr;
     }
 
     inline bool primitive(const Type *type) noexcept {
-        return dynamic_cast<const PrimitiveType *>(type) != nullptr;
+        return PrimitiveType::cast(type) != nullptr;
     }
 
     template<typename T, std::size_t SIZE>
     bool is_type_with_size(const Type *type) noexcept {
-        const auto as_type = dynamic_cast<const T *>(type);
+        const auto as_type = T::cast(type);
         if (!as_type) {
             return false;
         }
@@ -25,20 +28,20 @@ namespace impls {
     }
 
     inline bool void_type(const Type *type) noexcept {
-        return dynamic_cast<const VoidType *>(type) != nullptr;
+        return VoidType::cast(type) != nullptr;
     }
 
     inline bool gp_type(const Type *type) noexcept {
-        const auto int_type = dynamic_cast<const IntegerType*>(type);
+        const auto int_type = IntegerType::cast(type);
         if (int_type != nullptr) {
             return true;
         }
 
-        return dynamic_cast<const PointerType*>(type) != nullptr;
+        return PointerType::cast(type) != nullptr;
     }
 
     inline bool float_type(const Type *type) noexcept {
-        return dynamic_cast<const FloatingPointType*>(type) != nullptr;
+        return FloatingPointType::cast(type) != nullptr;
     }
 }
 

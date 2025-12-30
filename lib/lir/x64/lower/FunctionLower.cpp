@@ -407,7 +407,7 @@ static std::string create_anon_constant_label(const std::size_t id, const std::s
 }
 
 LIROperand FunctionLower::make_fp_constant(const Type& type, const double val) {
-    const auto fp_type = dynamic_cast<const FloatingPointType*>(&type);
+    const auto fp_type = FloatingPointType::cast(&type);
     assertion(fp_type != nullptr, "Expected FloatingPointType for constant");
 
     if (val == 0.0) {
@@ -653,7 +653,7 @@ void FunctionLower::accept(Return *inst) {
 }
 
 LIRVal FunctionLower::lower_return_value(const Value& val) {
-    const auto ret_type = dynamic_cast<const PrimitiveType*>(val.type());
+    const auto ret_type = PrimitiveType::cast(val.type());
     assertion(ret_type != nullptr, "Expected PrimitiveType for return value");
 
     if (val.isa(g_value())) {
@@ -791,7 +791,7 @@ void FunctionLower::accept(FcmpInstruction *fcmp) {
 void FunctionLower::accept(GetElementPtr *gep) {
     const auto pointer = get_lir_val(gep->pointer());
     const auto index = get_lir_operand(gep->index());
-    const auto type = dynamic_cast<const PrimitiveType*>(gep->type());
+    const auto type = PrimitiveType::cast(gep->type());
     assertion(type != nullptr, "Expected PrimitiveType for GEP operation");
     const auto gep_inst = m_bb->ins(LIRProducerInstruction::lea(type->size_of(), pointer, index));
     memorize(gep, gep_inst->def(0));
@@ -844,13 +844,13 @@ void FunctionLower::accept(IntDiv *div) {
     idiv->assign_reg(1, aasm::rdx);
 
     if (const auto quotient = div->quotient(); !quotient->users().empty()) {
-        const auto quotient_type = dynamic_cast<const PrimitiveType*>(quotient->type());
+        const auto quotient_type = PrimitiveType::cast(quotient->type());
         const auto copy_quotient = m_bb->ins(LIRProducerInstruction::copy(quotient_type->size_of(), LIRValType::GP, idiv->def(0)));
         memorize(quotient, copy_quotient->def(0));
     }
 
     if (const auto remain = div->remain(); !remain->users().empty()) {
-        const auto remain_type = dynamic_cast<const PrimitiveType*>(remain->type());
+        const auto remain_type = PrimitiveType::cast(remain->type());
         const auto copy_remain = m_bb->ins(LIRProducerInstruction::copy(remain_type->size_of(), LIRValType::GP, idiv->def(1)));
         memorize(remain, copy_remain->def(0));
     }
@@ -867,7 +867,7 @@ void FunctionLower::accept(Unary *inst) {
         case UnaryOp::Load: lower_load(inst); break;
         case UnaryOp::SignExtend: {
             const auto operand = get_lir_operand(inst->operand());
-            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            const auto type = PrimitiveType::cast(inst->type());
             assertion(type != nullptr, "Expected PrimitiveType for SignExtend operation");
 
             const auto movsx = m_bb->ins(LIRProducerInstruction::movsx(type->size_of(), operand));
@@ -876,7 +876,7 @@ void FunctionLower::accept(Unary *inst) {
         }
         case UnaryOp::ZeroExtend: {
             const auto operand = get_lir_operand(inst->operand());
-            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            const auto type = PrimitiveType::cast(inst->type());
             assertion(type != nullptr, "Expected PrimitiveType for ZeroExtend operation");
 
             const auto movzx = m_bb->ins(LIRProducerInstruction::movzx(type->size_of(), operand));
@@ -885,7 +885,7 @@ void FunctionLower::accept(Unary *inst) {
         }
         case UnaryOp::Trunk: {
             const auto operand = get_lir_operand(inst->operand());
-            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            const auto type = PrimitiveType::cast(inst->type());
             assertion(type != nullptr, "Expected PrimitiveType for Trunk operation");
 
             const auto trunc = m_bb->ins(LIRProducerInstruction::trunc(type->size_of(), operand));
@@ -896,7 +896,7 @@ void FunctionLower::accept(Unary *inst) {
         case UnaryOp::Ptr2Int: [[fallthrough]];
         case UnaryOp::Bitcast: {
             const auto operand = get_lir_operand(inst->operand());
-            const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+            const auto type = PrimitiveType::cast(inst->type());
             assertion(type != nullptr, "Expected PrimitiveType for Bitcast operation");
 
             const auto copy = m_bb->ins(LIRProducerInstruction::copy(type->size_of(), LIRValType::GP, operand));
@@ -905,7 +905,7 @@ void FunctionLower::accept(Unary *inst) {
         }
         case UnaryOp::Float2Int: {
             const auto operand = get_lir_operand(inst->operand());
-            const auto type = dynamic_cast<const IntegerType*>(inst->type());
+            const auto type = PrimitiveType::cast(inst->type());
             assertion(type != nullptr, "Expected IntegerType for Float2Int operation");
 
             const auto copy = m_bb->ins(LIRProducerInstruction::cvtfp2int(type->size_of(), operand));
@@ -915,7 +915,7 @@ void FunctionLower::accept(Unary *inst) {
         case UnaryOp::Int2Float: {
             const auto& operand = inst->operand();
             const auto lir_operand = get_lir_operand(operand);
-            const auto type = dynamic_cast<const FloatingPointType*>(inst->type());
+            const auto type = FloatingPointType::cast(inst->type());
             assertion(type != nullptr, "Expected FloatingPointType for Int2Float operation");
 
             if (const auto ty = operand.type(); ty->isa(signed_type())) {
@@ -936,7 +936,7 @@ void FunctionLower::accept(Unary *inst) {
 
 void FunctionLower::lower_load(const Unary *inst) {
     const auto& pointer = inst->operand();
-    const auto type = dynamic_cast<const PrimitiveType*>(inst->type());
+    const auto type = PrimitiveType::cast(inst->type());
     assertion(type != nullptr, "Expected PrimitiveType for load operation");
 
     if (pointer.isa(value_semantic())) {
@@ -974,7 +974,7 @@ void FunctionLower::lower_load(const Unary *inst) {
 }
 
 LIRVal FunctionLower::lower_primitive_type_argument(const Value& arg) {
-    const auto type = dynamic_cast<const PrimitiveType*>(arg.type());
+    const auto type = PrimitiveType::cast(arg.type());
     assertion(type != nullptr, "Expected NonTrivialType for call argument");
 
     if (arg.isa(any_stack_alloc())) {
