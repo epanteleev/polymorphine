@@ -273,6 +273,15 @@ public:
     }
 
     template<XVRegVariant Op>
+    constexpr void divfp(const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
+        switch (size) {
+            case cst::DWORD_SIZE: m_asm.divss(src, dst); break;
+            case cst::QWORD_SIZE: m_asm.divsd(src, dst); break;
+            default: std::unreachable();
+        }
+    }
+
+    template<XVRegVariant Op>
     constexpr void cmpfp(const FcmpOrdering ord, const std::uint8_t size, const Op& src, const aasm::XmmReg dst) {
         switch (ord) {
             case FcmpOrdering::ORDERED:   ord_cmpfp(size, src, dst); break;

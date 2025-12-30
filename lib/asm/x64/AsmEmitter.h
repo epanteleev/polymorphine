@@ -392,6 +392,24 @@ namespace aasm {
             m_instructions.emplace_back(details::SubsdRM(src, dst));
         }
 
+        // Divide Scalar Single Precision Floating-Point Values
+        constexpr void divss(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::DivssRR(src, dst));
+        }
+
+        constexpr void divss(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::DivssRM(src, dst));
+        }
+
+        // Divide Scalar Double Precision Floating-Point Value
+        constexpr void divsd(const XmmReg src, const XmmReg dst) {
+            m_instructions.emplace_back(details::DivsdRR(src, dst));
+        }
+
+        constexpr void divsd(const Address& src, const XmmReg dst) {
+            m_instructions.emplace_back(details::DivsdRM(src, dst));
+        }
+
         // Unordered Compare Scalar Single Precision Floating-Point Values and Set EFLAGS
         constexpr void ucomiss(const XmmReg src, const XmmReg dst) {
             m_instructions.emplace_back(details::UcomissRR(src, dst));

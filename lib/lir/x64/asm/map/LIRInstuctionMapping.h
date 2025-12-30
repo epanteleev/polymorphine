@@ -60,6 +60,7 @@
 #include "lir/x64/asm/emitters/CvtInt2FpEmit.h"
 #include "lir/x64/asm/emitters/CvtUInt2FpEmit.h"
 #include "lir/x64/asm/emitters/ShiftIntEmit.h"
+#include "lir/x64/asm/emitters/DivFloatEmit.h"
 
 namespace details {
     template<typename TemporalRegStorage, typename AsmEmit>
@@ -227,6 +228,10 @@ namespace details {
 
         void add_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) final {
             binary_xmm_op<AddFloatEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
+        }
+
+        void div_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            binary_xmm_op<DivFloatEmit<TemporalRegStorage, AsmEmit>>(out, in1, in2);
         }
 
         void mov_f(const LIROperand &in1, const LIROperand &in2) final {

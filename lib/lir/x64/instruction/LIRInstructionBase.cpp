@@ -236,6 +236,10 @@ namespace {
             m_os << "add_f out(" << out << ") in(" << in1 << ", " << in2 << ')';
         }
 
+        void div_f(const LIRVal &out, const LIROperand &in1, const LIROperand &in2) override {
+            m_os << "add_f out(" << out << ") in(" << in1 << ", " << in2 << ')';
+        }
+
         void jmp(const LIRBlock *bb) override {
             m_os << "jmp ";
             bb->print_short_name(m_os);

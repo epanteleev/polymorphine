@@ -132,6 +132,9 @@ public:
     constexpr void addfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     template<XVRegVariant Op>
+    constexpr void divfp(const std::uint8_t, const Op&, const aasm::XmmReg) {}
+
+    template<XVRegVariant Op>
     constexpr void cmpfp(const FcmpOrdering, const std::uint8_t, const Op&, const aasm::XmmReg) {}
 
     template<XVRegVariant Op>

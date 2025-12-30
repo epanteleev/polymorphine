@@ -521,6 +521,22 @@ namespace aasm::details {
     std::ostream& operator<<(std::ostream &os, const OrRM& oor) {
         return print_to(os, "or", oor.m_size, oor.m_src, oor.m_dst);
     }
+
+    std::ostream& operator<<(std::ostream& os, const DivssRR& rr) {
+        return print_to(os, "divss", rr.m_src, rr.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const DivssRM& rr) {
+        return print_to(os, "divss", rr.m_src, rr.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const DivsdRR& rr) {
+        return print_to(os, "divsd", rr.m_src, rr.m_dst);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const DivsdRM& rr) {
+        return print_to(os, "divsd", rr.m_src, rr.m_dst);
+    }
 }
 
 namespace aasm {

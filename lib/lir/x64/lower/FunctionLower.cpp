@@ -481,6 +481,11 @@ void FunctionLower::accept(Binary *inst) {
             memorize(inst, sub->def(0));
             break;
         }
+        case BinaryOp::Divide: {
+            const auto sub = m_bb->ins(LIRProducerInstruction::fdiv(lhs, rhs));
+            memorize(inst, sub->def(0));
+            break;
+        }
         case BinaryOp::ShiftLeft: [[fallthrough]];
         case BinaryOp::ShiftRight: {
             LIROperand op = rhs;

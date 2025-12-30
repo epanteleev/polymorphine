@@ -12,6 +12,7 @@ enum class LIRProdInstKind: std::uint8_t {
     Mul,
     DivI,
     DivU,
+    DivF,
     And,
     Or,
     Xor,
@@ -88,6 +89,12 @@ public:
         udiv->add_def(LIRVal::reg(lhs.size(), lhs.align(), 0, udiv.get()));
         udiv->add_def(LIRVal::reg(lhs.size(), lhs.align(), 1, udiv.get()));
         return udiv;
+    }
+
+    static std::unique_ptr<LIRProducerInstruction> fdiv(const LIROperand &lhs, const LIROperand &rhs) {
+        auto idiv = std::make_unique<LIRProducerInstruction>(LIRProdInstKind::DivF, LIRValType::FP, std::vector{lhs, rhs});
+        idiv->add_def(LIRVal::reg(lhs.size(), lhs.align(), 0, idiv.get()));
+        return idiv;
     }
 
     static std::unique_ptr<LIRProducerInstruction> gen(const std::uint8_t size, const std::uint8_t align) {

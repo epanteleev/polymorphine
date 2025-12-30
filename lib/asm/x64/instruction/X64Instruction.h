@@ -49,6 +49,7 @@
 #include "Shift.h"
 #include "Test.h"
 #include "Or.h"
+#include "Divss.h"
 
 namespace aasm {
     using X64Instruction = std::variant<
@@ -86,6 +87,8 @@ namespace aasm {
         details::AddsdRR, details::AddsdRM,
         details::SubsdRR, details::SubsdRM,
         details::SubssRR, details::SubssRM,
+        details::DivssRR, details::DivssRM,
+        details::DivsdRR, details::DivsdRM,
         details::UcomisdRR, details::UcomisdRM,
         details::UcomissRR, details::UcomissRM,
         details::ComissRR, details::ComissRM,

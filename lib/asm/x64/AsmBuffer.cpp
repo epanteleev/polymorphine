@@ -8,6 +8,7 @@ namespace aasm {
         const auto pretty_print = static_cast<int>(os.width());
 
         std::unordered_map<std::uint32_t, std::vector<std::size_t>> instruction_to_label;
+        instruction_to_label.reserve(asm_buff.m_label_table.size());
         for (const auto& [idx, instruction]: std::ranges::enumerate_view(asm_buff.m_label_table)) {
             auto [fst, _] = instruction_to_label.emplace(instruction, std::vector<std::size_t>{});
             fst->second.push_back(idx);
