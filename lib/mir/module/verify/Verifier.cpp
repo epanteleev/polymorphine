@@ -1,4 +1,5 @@
 #include <ranges>
+#include <algorithm>
 
 #include "Verifier.h"
 #include "mir/types/FlagType.h"
@@ -10,12 +11,16 @@
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/IntDiv.h"
+#include "mir/value/UsedValue.h"
 
 class InstructionVerifier final: public Visitor {
 public:
     [[nodiscard]]
-    static std::optional<VerifierResult> apply(const Instruction* inst) {
-        InstructionVerifier instVer;
+    static std::optional<VerifierResult> apply(const FunctionPrototype* proto, const Instruction* inst) {
+        InstructionVerifier instVer(proto, inst);
+        if (auto valid_du = instVer.verify_def_use_chain(); valid_du.has_value()) {
+            return std::move(valid_du.value());
+        }
         const_cast<Instruction*>(inst)->visit(instVer);
         return std::move(instVer.m_correct);
     }
@@ -23,16 +28,73 @@ public:
 private:
     friend class Visitor;
 
+    explicit InstructionVerifier(const FunctionPrototype* proto, const Instruction* inst) noexcept:
+        m_inst(inst),
+        m_prototype(proto) {}
+
+    void raise_type_error(const Type *a_type, const Type *b_type) {
+        m_correct.emplace(VerifierResult::wrong_type(m_prototype, m_inst->location(), a_type, b_type));
+    }
+
+    void raise_type_error(const Type *a_type) {
+        m_correct.emplace(VerifierResult::wrong_type(m_prototype, m_inst->location(), a_type));
+    }
+
+    void raise_cfg_error(const BasicBlock* bb, const BasicBlock* pred) {
+        m_correct.emplace(VerifierResult::invalid_cfg(m_prototype, m_inst->location(), bb->id(), pred->id()));
+    }
+
+    void raise_terminator_error(const BasicBlock* bb) {
+        m_correct.emplace(VerifierResult::invalid_terminator(m_prototype, m_inst->location(), bb->id()));
+    }
+
+    [[nodiscard]]
+    std::optional<VerifierResult> verify_def_use_chain() const {
+        for (const auto& operand: m_inst->operands()) {
+            const auto local = UsedValue::try_from(operand);
+            if (!local.has_value()) {
+                continue;
+            }
+
+            if (const auto& users = local.value().users(); std::ranges::contains(users, m_inst)) {
+                continue;
+            }
+
+            return VerifierResult::invalid_du(m_prototype, m_inst->location());
+        }
+        return std::nullopt;
+    }
+
+    bool verify_cfg() {
+        const auto bb = m_inst->owner();
+        for (const auto pred: bb->successors()) {
+            if (!std::ranges::contains(pred->predecessors(), bb)) {
+                raise_cfg_error(bb, pred);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool verify_return() {
+        if (const auto bb = m_inst->owner(); !bb->successors().empty()) {
+            raise_terminator_error(bb);
+            return true;
+        }
+
+        return false;
+    }
+
     template<typename InTy, typename B>
     void validate_binary(const B* inst) {
         const auto a_type = inst->lhs().type();
         const auto b_type = inst->rhs().type();
         if (InTy::cast(a_type) == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), a_type, b_type));
+            raise_type_error(a_type, b_type);
             return;
         }
         if (a_type != b_type) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), a_type, b_type));
+            raise_type_error(a_type, b_type);
         }
     }
 
@@ -55,7 +117,7 @@ private:
     [[nodiscard]]
     bool check_out_type(const Unary* inst) {
         if (const auto ty = inst->type(); OutTy::cast(ty) == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
             return true;
         }
 
@@ -66,19 +128,19 @@ private:
         if (check_out_type<IntegerType>(inst)) return;
 
         if (const auto ty = inst->type(); ty != inst->operand().type()) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
         }
     }
 
     void check_operand_size(const Unary* inst ) {
         const auto ty = inst->type();
         if (SignedIntegerType::cast(ty) == nullptr && SignedIntegerType::cast(ty) != nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
             return;
         }
 
         if (UnsignedIntegerType::cast(ty) == nullptr && UnsignedIntegerType::cast(ty) != nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
         }
     }
 
@@ -88,7 +150,7 @@ private:
 
         const auto op_type = IntegerType::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() <= ty->size_of()) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
             return;
         }
 
@@ -101,7 +163,7 @@ private:
 
         const auto op_type = IntegerType::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() != ty->size_of()) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
             return;
         }
 
@@ -115,7 +177,7 @@ private:
 
         const auto op_type = IntTy::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() >= ty->size_of()) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
         }
     }
 
@@ -126,7 +188,7 @@ private:
 
         const auto op_type = From::cast(inst->operand().type());
         if (op_type == nullptr || op_type->size_of() != ty->size_of()) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
         }
     }
 
@@ -137,7 +199,7 @@ private:
 
         const auto op_type = From::cast(inst->operand().type());
         if (op_type == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), ty));
+            raise_type_error(ty);
         }
     }
 
@@ -145,7 +207,7 @@ private:
         if (check_out_type<IntegerType>(inst)) return;
         const auto op_type = FlagType::cast(inst->operand().type());
         if (op_type == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(inst->location(), inst->type()));
+            raise_type_error(inst->type());
         }
     }
 
@@ -168,41 +230,49 @@ private:
     }
 
     void accept(Branch *branch) override {
+        verify_cfg();
     }
 
     void accept(CondBranch *cond_branch) override {
         const auto cond = cond_branch->condition().type();
         if (FlagType::cast(cond) == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(cond_branch->location(), cond));
+            raise_type_error(cond);
         }
     }
 
     void accept(Call *inst) override {
+        verify_cfg();
     }
 
     void accept(TupleCall *inst) override {
+        verify_cfg();
     }
 
     void accept(Return *inst) override {
+        verify_return();
     }
 
     void accept(ReturnValue *inst) override {
+        verify_return();
     }
 
     void accept(Switch *inst) override {
+        verify_cfg();
     }
 
     void accept(VCall *call) override {
+        verify_cfg();
     }
 
     void accept(IVCall *call) override {
+        verify_cfg();
     }
 
     void accept(Phi *inst) override {
         const auto out_type = inst->type();
         for (const auto& incoming: inst->operands()) {
             if (const auto incoming_ty = incoming.type(); incoming_ty != out_type) {
-                m_correct.emplace(VerifierResult::wrong_type(inst->location(), out_type, incoming_ty));
+                raise_type_error(out_type, incoming_ty);
                 return;
             }
         }
@@ -211,19 +281,19 @@ private:
     void accept(Store *store) override {
         const auto value_ty = store->value().type();
         if (PrimitiveType::cast(value_ty) == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(store->location(), value_ty));
+            raise_type_error(value_ty);
             return;
         }
 
         if (const auto ptr_type = PointerType::cast(store->pointer().type()); ptr_type == nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(store->location(), ptr_type));
+            raise_type_error(ptr_type);
         }
     }
 
     void accept(Alloc *alloc) override {
         const auto out_ty = alloc->type();
         if (VoidType::cast(out_ty) != nullptr || FlagType::cast(out_ty) != nullptr) {
-            m_correct.emplace(VerifierResult::wrong_type(alloc->location(), out_ty));
+            raise_type_error(out_ty);
         }
     }
 
@@ -231,7 +301,7 @@ private:
         const auto a_type = icmp->lhs().type();
         const auto b_type = icmp->rhs().type();
         if (a_type != b_type && a_type == PointerType::ptr()) {
-            m_correct.emplace(VerifierResult::wrong_type(icmp->location(), a_type, b_type));
+            raise_type_error(a_type, b_type);
             return;
         }
 
@@ -259,13 +329,15 @@ private:
     }
 
     std::optional<VerifierResult> m_correct{};
+    const Instruction* m_inst;
+    const FunctionPrototype* m_prototype;
 };
 
 std::optional<VerifierResult> Verifier::apply(const Module &module) {
     for (const auto& fn: std::ranges::views::values(module.functions())) {
         for (const auto& bb: fn.basic_blocks()) {
             for (const auto& inst: bb.instructions()) {
-                if (auto res = InstructionVerifier::apply(&inst); res.has_value()) {
+                if (auto res = InstructionVerifier::apply(fn.prototype(), &inst); res.has_value()) {
                     return res;
                 }
             }

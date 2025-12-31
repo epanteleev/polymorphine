@@ -46,6 +46,11 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const FunctionData &fd);
 
     [[nodiscard]]
+    const FunctionPrototype* prototype() const noexcept {
+        return m_prototype;
+    }
+
+    [[nodiscard]]
     std::string_view name() const noexcept {
         return m_prototype->name();
     }
