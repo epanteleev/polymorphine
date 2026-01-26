@@ -1,6 +1,7 @@
 #pragma once
+#include <cstdint>
 
-enum class AnalysisType {
+enum class AnalysisType: std::uint8_t {
     PreOrderTraverse,
     PostOrderTraverse,
     BFSTraverse,
@@ -8,6 +9,8 @@ enum class AnalysisType {
     LivenessAnalysis,
     LiveIntervalsEval,
     LiveIntervalsGroups,
+    JoinPointSet,
+    EscapeAnalysis,
     Max
 };
 

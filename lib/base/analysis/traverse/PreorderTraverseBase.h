@@ -16,7 +16,7 @@ class PreorderTraverseBase final {
         m_data(data) {}
 
 public:
-    using basic_block = typename FD::code_block_type;
+    using basic_block = FD::code_block_type;
     using result_type = Ordering<basic_block>;
     static constexpr auto analysis_kind = AnalysisType::PreOrderTraverse;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Store.h"
 #include "TerminateInstruction.h"
 #include "TerminateValueInstruction.h"
 #include "Unary.h"
@@ -20,6 +21,10 @@ namespace impl {
         }
 
         return false;
+    }
+
+    inline bool store(const Instruction* inst) noexcept {
+        return dynamic_cast<const Store*>(inst) != nullptr;
     }
 
     inline bool any_terminate(const Instruction* inst) noexcept {
@@ -45,4 +50,8 @@ consteval auto any_terminate() {
 
 consteval auto load() {
     return impl::load;
+}
+
+consteval auto store() {
+    return impl::store;
 }

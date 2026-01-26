@@ -103,6 +103,7 @@ private:
             }
 
             std::vector<std::size_t> mapped_pred;
+            mapped_pred.reserve(pred.size());
             for (const auto p: pred) {
                 const auto mapped = incoming.at(p);
                 mapped_pred.push_back(mapped);

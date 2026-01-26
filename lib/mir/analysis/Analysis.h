@@ -4,6 +4,8 @@
 #include "base/analysis/traverse/BFSOrderTraverseBase.h"
 #include "base/analysis/traverse/PostOrderTraverseBase.h"
 #include "base/analysis/traverse/PreorderTraverseBase.h"
+#include "escape/EscapeAnalysis.h"
+#include "join/JoinPointSet.h"
 
 #include "mir/module/FunctionData.h"
 
@@ -16,5 +18,7 @@ static_assert(Analysis<BFSOrderTraverse>);
 static_assert(Analysis<PostOrderTraverse>);
 static_assert(Analysis<PreorderTraverse>);
 static_assert(Analysis<DominatorTreeEval>);
+static_assert(Analysis<JoinPointSet>);
+static_assert(Analysis<EscapeAnalysis>);
 
 using AnalysisPassManager = AnalysisPassManagerBase<FunctionData>;

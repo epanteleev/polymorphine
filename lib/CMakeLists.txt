@@ -36,6 +36,9 @@ add_library(polymorphine SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
+        mir/analysis/escape/EscapeAnalysis.cpp
+        mir/analysis/escape/EscapeAnalysis.h
+        mir/analysis/escape/EscapeAnalysisResult.h
 )
 
 try_setup_coverage_options(polymorphine)
