@@ -3,7 +3,8 @@
 #include "EscapeAnalysisResult.h"
 #include "base/analysis/AnalysisPass.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
-#include "mir/analysis/Analysis.h"
+#include "base/analysis/traverse/Ordering.h"
+#include "base/analysis/traverse/PreorderTraverseBase.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/module/FunctionData.h"
 
@@ -26,7 +27,7 @@ public:
     }
 
     static EscapeAnalysis create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data) {
-        const auto& preorder = *cache->analyze<PreorderTraverse>(data);
+        const auto& preorder = *cache->analyze<PreorderTraverseBase<FunctionData>>(data);
         return EscapeAnalysis(preorder);
     }
 
