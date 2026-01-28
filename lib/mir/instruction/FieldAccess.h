@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ValueInstruction.h"
-#include "mir/types/PointerType.h"
-
+#include "mir/value/ValueMatcher.h"
 
 class FieldAccess: public ValueInstruction {
 public:
@@ -17,3 +16,7 @@ public:
     [[nodiscard]]
     virtual const NonTrivialType* access_type() const noexcept = 0;
 };
+
+consteval auto field_access() noexcept {
+    return impls::value_inst<FieldAccess>;
+}

@@ -4,8 +4,6 @@
 #include "Projection.h"
 #include "ValueInstruction.h"
 #include "mir/module/FunctionPrototype.h"
-#include "mir/types/TypeMatcher.h"
-
 
 class TerminateValueInstruction : public ValueInstruction {
 public:
@@ -33,6 +31,11 @@ public:
         TerminateValueInstruction(proto->ret_type(), successor, std::move(args)),
         Callable(proto) {}
 
+    [[nodiscard]]
+    std::span<Value const> args() const noexcept {
+        return operands();
+    }
+
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static std::unique_ptr<Call> call(const FunctionPrototype* proto, BasicBlock* cont, std::vector<Value>&& args) {
@@ -46,6 +49,11 @@ public:
     explicit TupleCall(const FunctionPrototype* proto, BasicBlock* successor, std::vector<Value>&& args) noexcept:
         TerminateValueInstruction(proto->ret_type(), successor, std::move(args)),
         Callable(proto) {}
+
+    [[nodiscard]]
+    std::span<Value const> args() const noexcept {
+        return operands();
+    }
 
     void visit(Visitor &visitor) override { visitor.accept(this); }
 

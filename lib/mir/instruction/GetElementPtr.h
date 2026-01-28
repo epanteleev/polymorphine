@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FieldAccess.h"
+#include "mir/value/ValueMatcher.h"
 
 class GetElementPtr final: public FieldAccess {
 public:
@@ -27,3 +28,29 @@ public:
 private:
     const NonTrivialType* m_basic_type;
 };
+
+namespace impls {
+    template<typename T, typename ...Args>
+    bool value_inst_with_operands(const Value& inst, Args&& ...args) noexcept {
+        if (!inst.is<ValueInstruction*>()) {
+            return false;
+        }
+        const auto val = inst.get<ValueInstruction*>();
+        if (const auto *typed = dynamic_cast<const T*>(val)) {
+            return match_args(typed->operands(), std::forward<Args>(args)...);
+        }
+
+        return false;
+    }
+}
+
+consteval auto gep() noexcept {
+    return impls::value_inst<GetElementPtr>;
+}
+
+template<typename Matcher1, typename Matcher2>
+consteval auto gep(Matcher1&& pointer, Matcher2&& index) noexcept {
+    return [=](const Value& inst) {
+        return impls::value_inst_with_operands<GetElementPtr>(inst, pointer, index);
+    };
+}

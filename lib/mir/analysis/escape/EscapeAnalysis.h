@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EscapeAnalysisResult.h"
+#include "EscapeState.h"
 #include "base/analysis/AnalysisPass.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "base/analysis/traverse/Ordering.h"
@@ -23,7 +24,7 @@ public:
     void run();
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<EscapeAnalysisResult>();
+        return std::make_unique<EscapeAnalysisResult>(std::move(m_escape_state));
     }
 
     static EscapeAnalysis create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data) {
@@ -33,5 +34,5 @@ public:
 
 private:
     const Ordering<basic_block>& m_ordering;
-    std::unordered_map<ValueInstruction*, bool> m_escape_state;
+    std::unordered_map<const ValueInstruction*, EscapeState> m_escape_state;
 };

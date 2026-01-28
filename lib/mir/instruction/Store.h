@@ -23,3 +23,13 @@ public:
         return std::make_unique<Store>(ptr, value);
     }
 };
+
+namespace impl {
+    inline bool store(const Instruction* inst) noexcept {
+        return dynamic_cast<const Store*>(inst) != nullptr;
+    }
+}
+
+consteval auto store() {
+    return impl::store;
+}

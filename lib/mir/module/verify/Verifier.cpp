@@ -11,6 +11,9 @@
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/IntDiv.h"
+#include "mir/instruction/TerminateInstruction.h"
+#include "mir/instruction/Unary.h"
+#include "mir/types/VoidType.h"
 #include "mir/value/UsedValue.h"
 
 class InstructionVerifier final: public Visitor {
@@ -21,7 +24,7 @@ public:
         if (auto valid_du = instVer.verify_def_use_chain(); valid_du.has_value()) {
             return std::move(valid_du.value());
         }
-        const_cast<Instruction*>(inst)->visit(instVer);
+        inst->visit(instVer);
         return std::move(instVer.m_correct);
     }
 

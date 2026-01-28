@@ -4,10 +4,10 @@
 #include <vector>
 #include <iosfwd>
 
+#include "mir/value/Value.h"
 #include "mir/value/Use.h"
+#include "mir/types/NonTrivialType.h"
 #include "base/Attribute.h"
-#include "mir/mir_frwd.h"
-#include "mir/instruction/Unary.h"
 
 class ArgumentValue final: public Use {
 public:
@@ -32,3 +32,7 @@ private:
     const std::size_t m_index;
     const AttributeSet m_attributes;
 };
+
+consteval auto argument() noexcept {
+    return [](const Value& inst) { return inst.is<ArgumentValue*>(); };
+}

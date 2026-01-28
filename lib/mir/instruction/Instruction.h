@@ -33,6 +33,10 @@ public:
 
     virtual void visit(Visitor& visitor) = 0;
 
+    virtual void visit(Visitor& visitor) const {
+        const_cast<Instruction*>(this)->visit(visitor);
+    }
+
     void print(std::ostream& os) const;
 
 protected:

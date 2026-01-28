@@ -4,9 +4,8 @@
 
 #include "utility/OrderedSet.h"
 #include "base/FunctionDataBase.h"
-#include "mir/global/GValuePool.h"
-#include "mir/instruction/InstructionMatcher.h"
 
+#include "mir/global/GValuePool.h"
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/module/FunctionPrototype.h"
@@ -36,12 +35,7 @@ public:
     }
 
     [[nodiscard]]
-    BasicBlock* last() const {
-        const auto last_bb = m_basic_blocks.back();
-        assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
-        assertion(last_bb->last().isa(any_return()), "last basic block is not a return block");
-        return last_bb.get();
-    }
+    BasicBlock* last() const;
 
     friend std::ostream &operator<<(std::ostream &os, const FunctionData &fd);
 

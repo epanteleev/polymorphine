@@ -38,3 +38,9 @@ public:
 private:
     const std::size_t m_size;
 };
+
+namespace impls {
+    inline bool float_type(const Type *type) noexcept {
+        return FloatingPointType::cast(type) != nullptr;
+    }
+}

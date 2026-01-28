@@ -12,6 +12,7 @@ enum class IcmpPredicate {
     Ge
 };
 
+[[nodiscard]]
 inline std::string_view to_string(const IcmpPredicate op) noexcept {
     switch (op) {
         case IcmpPredicate::Eq: return "eq";
@@ -44,3 +45,25 @@ public:
 private:
     const IcmpPredicate m_pred;
 };
+
+namespace impls {
+    template<typename LHS, typename RHL>
+    bool icmp(const Value& inst, LHS& l, RHL&& r) noexcept {
+        if (!inst.is<ValueInstruction*>()) {
+            return false;
+        }
+        const auto val = inst.get<ValueInstruction*>();
+        if (const auto *icmp = dynamic_cast<const IcmpInstruction*>(val)) {
+            return l(icmp->lhs()) && r(icmp->rhs());
+        }
+
+        return false;
+    }
+}
+
+template<typename LHS, typename RHS>
+consteval auto icmp(LHS&& l, RHS&& r) noexcept {
+    return [=](const Value& inst) {
+        return impls::icmp(inst, l, r);
+    };
+}

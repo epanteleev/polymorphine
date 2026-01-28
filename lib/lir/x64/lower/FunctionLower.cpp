@@ -18,6 +18,39 @@
 
 #include "mir/mir.h"
 
+namespace impls {
+    inline bool value_semantic(const Value& value) noexcept {
+        if (value.is<ArgumentValue*>()) {
+            if (const auto arg = value.get<ArgumentValue*>(); arg->attributes().has(Attribute::ByValue)) {
+                return true;
+            }
+        }
+        if (value_inst<Alloc>(value)) {
+            return true;
+        }
+
+        return value.is<GlobalValue*>();
+    }
+
+    inline bool any_stack_alloc(const Value& value) noexcept {
+        if (value.is<ArgumentValue*>()) {
+            if (const auto arg = value.get<ArgumentValue*>(); arg->attributes().has(Attribute::ByValue)) {
+                return true;
+            }
+        }
+
+        return value_inst<Alloc>(value);
+    }
+}
+
+consteval auto value_semantic() noexcept {
+    return impls::value_semantic;
+}
+
+consteval auto any_stack_alloc() noexcept {
+    return impls::any_stack_alloc;
+}
+
 /**
  * Creates a LIR constant based on the type and integer value.
  * @param type The type of the constant.
@@ -227,12 +260,15 @@ static std::pair<Value, Value> try_fold_field_access(const FieldAccess* field_ac
 }
 
 static bool is_pinned(const Instruction& inst) noexcept {
-    const auto value_inst = dynamic_cast<const ValueInstruction*>(&inst);
+    const auto value_inst = ValueInstruction::cast(&inst);
     if (value_inst == nullptr) {
         return true;
     }
 
-    if (inst.isa(load()) || inst.isa(any_terminate())) {
+    if (inst.isa(load())) {
+        return true;
+    }
+    if (const auto term = Terminator::from(&inst); term.has_value()) {
         return true;
     }
 
@@ -303,8 +339,13 @@ void FunctionLower::setup_gp_argument(const std::size_t idx, const ArgumentValue
     static constexpr auto RCX_IDX = 3;
 
     if (idx != RDX_IDX && idx != RCX_IDX) {
-        const auto is_no_live_out = [&](const auto& user) { // TODO better live-out checker.
-            return user->owner() == m_function.first() && !user->isa(any_terminate());
+        const auto is_no_live_out = [&](const Instruction* user) { // TODO better live-out checker.
+            if (user->owner() != m_function.first()) {
+                return true;
+            }
+
+            const auto term = Terminator::from(user);
+            return !term.has_value();
         };
 
         if (std::ranges::all_of(arg.users(), is_no_live_out)) {
@@ -351,7 +392,7 @@ void FunctionLower::traverse_instructions() {
                 continue;
             }
 
-            const auto value_inst = dynamic_cast<ValueInstruction*>(&inst);
+            const auto value_inst = ValueInstruction::cast(&inst);
             // Put the instruction into the set. It will be processed later on demand before its user.
             m_late_schedule_instructions.emplace(value_inst);
         }

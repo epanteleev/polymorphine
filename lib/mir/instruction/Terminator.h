@@ -12,8 +12,8 @@ concept IsTerminator = std::derived_from<T, TerminateInstruction> ||
     std::derived_from<T, TerminateValueInstruction>;
 
 class Terminator final {
-    explicit Terminator(TerminateInstruction * inst) noexcept;
-    explicit Terminator(TerminateValueInstruction * inst) noexcept;
+    explicit Terminator(const TerminateInstruction * inst) noexcept;
+    explicit Terminator(const TerminateValueInstruction * inst) noexcept;
 
 public:
     [[nodiscard]]
@@ -25,9 +25,9 @@ public:
         return std::visit(matcher, m_value);
     }
 
-    static std::expected<Terminator, Error> from(Instruction* inst) noexcept;
+    static std::expected<Terminator, Error> from(const Instruction* inst) noexcept;
 
 private:
-    std::variant<TerminateInstruction *,
-        TerminateValueInstruction *> m_value;
+    std::variant<const TerminateInstruction *,
+        const TerminateValueInstruction *> m_value;
 };

@@ -31,7 +31,7 @@ namespace {
     public:
         explicit Printer(std::ostream& os) noexcept: os(os) {}
 
-        void do_print(Instruction* inst) {
+        void do_print(const Instruction* inst) {
             inst->visit(*this);
         }
 
@@ -223,5 +223,5 @@ namespace {
 
 void Instruction::print(std::ostream& os) const {
     Printer p(os);
-    p.do_print(const_cast<Instruction *>(this));
+    p.do_print(this);
 }

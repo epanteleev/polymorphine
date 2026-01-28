@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "mir/mir_frwd.h"
-#include "mir/global/GlobalSymbol.h"
 #include "mir/types/Type.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
@@ -115,4 +114,52 @@ private:
     const Type* m_type;
 };
 
-std::ostream& operator<<(std::ostream& os, const Value& obj);
+namespace impls {
+    inline bool any_value(const Value&) noexcept {
+        return true;
+    }
+
+    inline bool constant(const Value& value) noexcept {
+        return value.is<double>() || value.is<std::int64_t>();
+    }
+
+    inline bool signed_v(const Value& value) noexcept {
+        return signed_type(value.type());
+    }
+
+    inline bool unsigned_v(const Value& value) noexcept {
+        return unsigned_type(value.type());
+    }
+
+    inline bool integral(const Value& value, const std::uint64_t cst) noexcept {
+        if (value.is<std::int64_t>()) {
+            return value.get<std::int64_t>() == static_cast<std::int64_t>(cst);
+        }
+
+        return false;
+    }
+}
+
+consteval auto any_value() noexcept {
+    return impls::any_value;
+}
+
+consteval auto constant() {
+    return impls::constant;
+}
+
+consteval auto float_type() noexcept {
+    return impls::float_type;
+}
+
+consteval auto signed_v() {
+    return impls::signed_v;
+}
+
+consteval auto unsigned_v() {
+    return impls::unsigned_v;
+}
+
+consteval auto integral(const std::uint64_t cst) noexcept {
+    return [=](const Value& value) { return impls::integral(value, cst); };
+}

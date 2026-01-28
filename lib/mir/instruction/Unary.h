@@ -88,3 +88,17 @@ public:
 private:
     const UnaryOp m_op;
 };
+
+namespace impls {
+    inline bool load(const Instruction* inst) noexcept {
+        if (const auto unary = dynamic_cast<const Unary*>(inst); unary != nullptr) {
+            return unary->op() == UnaryOp::Load;
+        }
+
+        return false;
+    }
+}
+
+consteval auto load() {
+    return impls::load;
+}

@@ -8,6 +8,7 @@
 
 #include "types/Type.h"
 #include "types/StructType.h"
+#include "types/VoidType.h"
 #include "types/TypeMatcher.h"
 
 #include "instruction/Instruction.h"
@@ -15,7 +16,6 @@
 #include "instruction/Binary.h"
 #include "instruction/Unary.h"
 #include "instruction/TerminateInstruction.h"
-#include "instruction/InstructionMatcher.h"
 
 #include "value/UsedValueMap.h"
 #include "value/ValueMatcher.h"

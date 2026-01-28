@@ -4,8 +4,8 @@
 #include "mir/instruction/TerminateValueInstruction.h"
 #include "utility/Error.h"
 
-Terminator::Terminator(TerminateInstruction *inst) noexcept: m_value(inst) {}
-Terminator::Terminator(TerminateValueInstruction *inst) noexcept: m_value(inst) {}
+Terminator::Terminator(const TerminateInstruction *inst) noexcept: m_value(inst) {}
+Terminator::Terminator(const TerminateValueInstruction *inst) noexcept: m_value(inst) {}
 
 std::span<BasicBlock *const> Terminator::targets() const noexcept {
     const auto visitor = [&]<typename T>(const T &val) {
@@ -15,11 +15,11 @@ std::span<BasicBlock *const> Terminator::targets() const noexcept {
     return std::visit(visitor, m_value);
 }
 
-std::expected<Terminator, Error> Terminator::from(Instruction *inst) noexcept {
-    if (const auto term = dynamic_cast<TerminateInstruction *>(inst)) {
+std::expected<Terminator, Error> Terminator::from(const Instruction *inst) noexcept {
+    if (const auto term = dynamic_cast<const TerminateInstruction *>(inst)) {
         return Terminator(term);
     }
-    if (const auto term = dynamic_cast<TerminateValueInstruction *>(inst)) {
+    if (const auto term = dynamic_cast<const TerminateValueInstruction *>(inst)) {
         return Terminator(term);
     }
 

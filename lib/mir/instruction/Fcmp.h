@@ -22,6 +22,7 @@ enum class FcmpPredicate: std::uint8_t {
     Uno,
 };
 
+[[nodiscard]]
 inline std::string_view to_string(const FcmpPredicate pred) noexcept {
     switch (pred) {
         case FcmpPredicate::Oeq: return "oeq";
@@ -63,3 +64,18 @@ public:
 private:
     const FcmpPredicate m_pred;
 };
+
+namespace impls {
+    inline bool fcmp(const Value& inst) noexcept {
+        if (!inst.is<ValueInstruction*>()) {
+            return false;
+        }
+
+        const auto val = inst.get<ValueInstruction*>();
+        return dynamic_cast<const FcmpInstruction*>(val) != nullptr;
+    }
+}
+
+consteval auto fcmp() noexcept {
+    return impls::fcmp;
+}

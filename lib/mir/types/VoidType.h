@@ -22,3 +22,13 @@ public:
         return nullptr;
     }
 };
+
+namespace impls {
+    inline bool void_type(const Type *type) noexcept {
+        return VoidType::cast(type) != nullptr;
+    }
+}
+
+consteval auto void_type() noexcept {
+    return impls::void_type;
+}

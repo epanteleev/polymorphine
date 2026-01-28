@@ -1,13 +1,13 @@
 #pragma once
 
 #include "JoinPointSetResult.h"
+
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "base/analysis/dom/DominatorTree.h"
-#include "base/analysis/dom/DominatorTreeEvalBase.h"
+#include "mir/analysis/escape/EscapeAnalysisResult.h"
+
 #include "mir/module/BasicBlock.h"
 #include "mir/module/FunctionData.h"
-#include "mir/instruction/Alloc.h"
-
 
 class JoinPointSet final {
 public:
@@ -15,8 +15,10 @@ public:
     using result_type = JoinPointSetResult;
 
 private:
-    explicit JoinPointSet(const DominatorTree<BasicBlock>* m_dom_tree) noexcept:
-        m_dom_tree(m_dom_tree) {}
+    explicit JoinPointSet(const DominatorTree<BasicBlock>* m_dom_tree, const EscapeAnalysisResult* escape_analysis, const FunctionData *data) noexcept:
+        m_dom_tree(m_dom_tree),
+        m_data(data),
+        m_escape_analysis(escape_analysis) {}
 
 public:
     static constexpr auto analysis_kind = AnalysisType::JoinPointSet;
@@ -27,14 +29,13 @@ public:
         return std::make_unique<JoinPointSetResult>(std::move(m_join_set));
     }
 
-    static JoinPointSet create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data) {
-        const auto dom = cache->analyze<DominatorTreeEvalBase<FunctionData>>(data);
-        return JoinPointSet(dom);
-    }
+    static JoinPointSet create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data);
 
 private:
     static bool has_user_in_block(const BasicBlock* block, const Alloc* alloc) noexcept;
 
     const DominatorTree<BasicBlock>* m_dom_tree;
-    std::unordered_map<BasicBlock*, std::unordered_set<Alloc*>> m_join_set{};
+    const FunctionData *m_data;
+    const EscapeAnalysisResult* m_escape_analysis;
+    std::unordered_map<const BasicBlock*, std::unordered_set<Alloc*>> m_join_set{};
 };

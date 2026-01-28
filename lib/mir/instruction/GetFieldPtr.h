@@ -35,3 +35,7 @@ private:
     const StructType* m_basic_type;
     std::size_t m_index{};
 };
+
+consteval auto gfp() noexcept {
+    return impls::value_inst<GetFieldPtr>;
+}

@@ -6,7 +6,7 @@
 #include "mir/module/FunctionPrototype.h"
 #include "Instruction.h"
 #include "mir/types/TupleType.h"
-#include "mir/types/TypeMatcher.h"
+#include "mir/types/VoidType.h"
 
 
 class TerminateInstruction: public Instruction {
@@ -150,6 +150,16 @@ public:
         TerminateInstruction(std::move(args), {successor}),
         Callable(prototype) {}
 
+    [[nodiscard]]
+    const Value& pointer() const noexcept {
+        return m_values[0];
+    }
+
+    [[nodiscard]]
+    std::span<Value const> args() const noexcept {
+        return operands().subspan(1);
+    }
+
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     [[nodiscard]]
@@ -170,6 +180,16 @@ public:
         TerminateInstruction(std::move(args), {successor}),
         Callable(prototype) {}
 
+    [[nodiscard]]
+    const Value& pointer() const noexcept {
+        return m_values[0];
+    }
+
+    [[nodiscard]]
+    std::span<Value const> args() const noexcept {
+        return operands().subspan(1);
+    }
+
     void visit(Visitor &visitor) override { visitor.accept(this); }
 
     static std::unique_ptr<IVCall> call(const FunctionPrototype* prototype, const Value& pointer, std::vector<Value> &&args, BasicBlock *successor) {
@@ -177,3 +197,18 @@ public:
         return std::make_unique<IVCall>(prototype, std::move(args), successor);
     }
 };
+
+namespace impl {
+    inline bool any_return(const Instruction* inst) noexcept {
+        if (const auto ret = dynamic_cast<const Return*>(inst); ret != nullptr) {
+            return true;
+        }
+
+        const auto ret_val = dynamic_cast<const ReturnValue*>(inst);
+        return ret_val != nullptr;
+    }
+}
+
+consteval auto any_return() {
+    return impl::any_return;
+}

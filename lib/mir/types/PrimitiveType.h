@@ -10,3 +10,13 @@ public:
     [[nodiscard]]
     static const PrimitiveType* cast(const Type* ty) noexcept;
 };
+
+namespace impls {
+    inline bool primitive(const Type *type) noexcept {
+        return PrimitiveType::cast(type) != nullptr;
+    }
+}
+
+consteval auto primitive() noexcept {
+    return impls::primitive;
+}

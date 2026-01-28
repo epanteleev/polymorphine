@@ -2,6 +2,7 @@
 
 #include "mir/global/Initializer.h"
 #include "mir/global/GlobalSymbol.h"
+#include "mir/value/Value.h"
 
 enum class GValueKind : uint8_t {
     CONSTANT,
@@ -39,3 +40,27 @@ private:
     GValueKind m_kind;
     Initializer m_value;
 };
+
+
+namespace impls {
+    inline bool g_variable(const Value& value) noexcept {
+        if (!value.is<GlobalValue*>()) {
+            return false;
+        }
+
+        const auto gvalue = value.get<GlobalValue*>();
+        return gvalue->kind() == GValueKind::VARIABLE;
+    }
+
+    inline bool g_value(const Value& value) noexcept {
+        return value.is<GlobalValue*>();
+    }
+}
+
+consteval auto g_variable() noexcept {
+    return impls::g_variable;
+}
+
+consteval auto g_value() noexcept {
+    return impls::g_value;
+}
