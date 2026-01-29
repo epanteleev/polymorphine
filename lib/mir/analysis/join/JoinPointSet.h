@@ -34,6 +34,8 @@ public:
 private:
     static bool has_user_in_block(const BasicBlock* block, const Alloc* alloc) noexcept;
 
+    void evaluate_joins(const Alloc* alloc, std::unordered_set<const BasicBlock*>&& stores) noexcept;
+
     const DominatorTree<BasicBlock>* m_dom_tree;
     const FunctionData *m_data;
     const EscapeAnalysisResult* m_escape_analysis;
