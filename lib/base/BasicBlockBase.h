@@ -35,7 +35,7 @@ public:
      * @return span of pointers to predecessor blocks. It is empty if there are no predecessors.
      */
     [[nodiscard]]
-    std::span<Derived* const> predecessors() const {
+    std::span<const Derived* const> predecessors() const {
         return m_predecessors;
     }
 

@@ -7,9 +7,9 @@
 
 class JoinPointSetResult final: public AnalysisPassResult {
 public:
-    explicit JoinPointSetResult(std::unordered_map<const BasicBlock*, std::unordered_set<Alloc*>>&& joins) noexcept:
+    explicit JoinPointSetResult(std::unordered_map<const BasicBlock*, std::unordered_set<const Alloc*>>&& joins) noexcept:
         m_join_set(std::move(joins)) {}
 
 private:
-    std::unordered_map<const BasicBlock*, std::unordered_set<Alloc*>> m_join_set;
+    std::unordered_map<const BasicBlock*, std::unordered_set<const Alloc*>> m_join_set;
 };

@@ -9,6 +9,30 @@
 #include "base/Constrains.h"
 
 template<CodeBlock BB>
+class DominanceFrontiers final {
+public:
+    using frontier_set = std::vector<const BB*>;
+    using frontier_map = std::unordered_map<const BB*, frontier_set>;
+
+    explicit DominanceFrontiers(frontier_map &&frontiers) noexcept:
+        m_frontiers(std::move(frontiers)) {}
+
+    [[nodiscard]]
+    std::optional<std::span<const BB* const>> frontiers(const BB* bb) const {
+        const auto& frontiers = m_frontiers.find(bb);
+        if (frontiers == m_frontiers.end()) {
+            return std::nullopt;
+        }
+
+        return frontiers->second;
+    }
+
+private:
+    frontier_map m_frontiers;
+};
+
+
+template<CodeBlock BB>
 struct DominatorTreeNode final {
     explicit DominatorTreeNode(const BB *me):
         m_me(me) {}
@@ -69,12 +93,15 @@ class DominatorTree final: public AnalysisPassResult {
 
 public:
     using dom_node = std::unique_ptr<DominatorTreeNode<BB>>;
+    using frontier_set = DominanceFrontiers<BB>::frontier_set;
+    using frontier_map = DominanceFrontiers<BB>::frontier_map;
 
-    explicit DominatorTree(std::unordered_map<const BB*, dom_node> &&dominator_tree) noexcept
-        : dominator_tree(std::move(dominator_tree)) {}
+    explicit DominatorTree(std::unordered_map<const BB*, dom_node> &&dominator_tree) noexcept:
+        dominator_tree(std::move(dominator_tree)) {}
 
+    [[nodiscard]]
     bool dominates(const BB* dominator, const BB* target) {
-        for (auto dom: dominators(target)) {
+        for (const auto dom: dominators(target)) {
             if (dom->m_me == dominator) {
                 return true;
             }
@@ -84,11 +111,51 @@ public:
     }
 
     /** @return strict dominators **/
+    [[nodiscard]]
     Dominators dominators(const BB* target) const {
         return Dominators(dominator_tree.at(const_cast<BB*>(target)).get()->idom);
     }
 
-    
+    [[nodiscard]]
+    DominanceFrontiers<BB> dominance_frontiers() const {
+        frontier_map frontiers;
+        frontiers.reserve(dominator_tree.size());
+        for (const auto& [block, sub_tree]: dominator_tree) {
+            if (sub_tree == nullptr) {
+                continue;
+            }
+
+            frontiers.emplace(block, frontier_set{});
+        }
+
+        for (const auto& [block, node]: dominator_tree) {
+            const auto preds = block->predecessors();
+            if (preds.size() < 2) {
+                continue;
+            }
+
+            const auto idom = node->idom != nullptr ? node->idom->m_me : nullptr;
+            for (const auto& pred: preds) {
+                auto runner = pred;
+                while (runner && runner != idom) {
+                    auto it = frontiers.find(runner);
+                    if (it != frontiers.end()) {
+                        it->second.push_back(block);
+                    }
+
+                    const auto dom_it = dominator_tree.find(runner);
+                    if (dom_it == dominator_tree.end()) {
+                        break;
+                    }
+
+                    const auto runner_node = dom_it->second.get();
+                    runner = runner_node->idom != nullptr ? runner_node->idom->m_me : nullptr;
+                }
+            }
+        }
+
+        return DominanceFrontiers<BB>(std::move(frontiers));
+    }
 
     std::ostream &print(std::ostream &os) const {
         os << '[';

@@ -5,68 +5,88 @@
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Store.h"
 
-namespace {
-    class AllocStoreAnalysis final {
-    public:
-        using Result = std::unordered_map<const Alloc *, std::unordered_set<const BasicBlock *>>;
+#include <random>
 
-        explicit AllocStoreAnalysis(const FunctionData *data, const EscapeAnalysisResult* escape_analysis) noexcept:
-            m_data(data),
-            m_escape_analysis(escape_analysis) {}
+using AllocStoreAnalysisResult = std::unordered_map<const Alloc *, std::unordered_set<const BasicBlock *>>;
 
-        Result run() {
-            std::unordered_map<const Alloc *, std::unordered_set<const BasicBlock *>> alloc_info;
-
-            for (const auto& bb: m_data->basic_blocks()) {
-                for (const auto& inst: bb.instructions()) {
-                    if (!inst.isa(alloc())) {
-                        continue;
-                    }
-
-                    const auto alloc = Alloc::cast(&inst);
-                    if (m_escape_analysis->escape_state(alloc) != EscapeState::NOESCAPE) {
-                        continue;
-                    }
-
-                    std::unordered_set<const BasicBlock *> blocks;
-                    for (const auto& user: alloc->users()) {
-                        if (!user->isa(store())) {
-                            continue;
-                        }
-
-                        blocks.emplace(user->owner());
-                    }
-                    alloc_info.emplace(alloc, std::move(blocks));
-                }
-            }
-
-            return alloc_info;
+static std::unordered_set<const BasicBlock *> collect_blocks(const Alloc *alloc) {
+    std::unordered_set<const BasicBlock *> blocks;
+    for (const auto& user: alloc->users()) {
+        if (!user->isa(store())) {
+            continue;
         }
 
-    private:
-        const FunctionData *m_data;
-        const EscapeAnalysisResult* m_escape_analysis;
-    };
+        blocks.emplace(user->owner());
+    }
+    return blocks;
 }
 
+static AllocStoreAnalysisResult alloc_store_analysis(const FunctionData *data, const EscapeAnalysisResult* escape_analysis) {
+    AllocStoreAnalysisResult alloc_info;
+    for (const auto& bb: data->basic_blocks()) {
+        for (const auto& inst: bb.instructions()) {
+            if (!inst.isa(alloc())) {
+                continue;
+            }
+
+            const auto alloc = Alloc::cast(&inst);
+            if (escape_analysis->escape_state(alloc) != EscapeState::NOESCAPE) {
+                continue;
+            }
+
+            alloc_info.emplace(alloc, collect_blocks(alloc));
+        }
+    }
+
+    return alloc_info;
+}
 
 void JoinPointSet::run() {
-    const auto alloc_info = AllocStoreAnalysis(m_data, m_escape_analysis).run();
-    for (const auto& [alloc, stores]: alloc_info) {
-
+    auto alloc_info = alloc_store_analysis(m_data, m_escape_analysis);
+    for (auto& [alloc, stores]: alloc_info) {
+        evaluate_joins(alloc, std::move(stores));
     }
 }
 
 void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<const BasicBlock *> &&stores) noexcept {
     std::unordered_set<const BasicBlock *> phi_places;
 
-    const auto frontiers = m_dom_tree->dominators()
+    const auto frontiers = m_dom_tree->dominance_frontiers();
     while (!stores.empty()) {
         const auto x = *stores.begin();
         stores.erase(stores.begin());
 
+        const auto x_frontiers_opt = frontiers.frontiers(x);
+        if (!x_frontiers_opt.has_value()) {
+            continue;
+        }
 
+        const auto& x_frontiers = x_frontiers_opt.value();
+        for (const auto& frontier: x_frontiers) {
+            if (phi_places.contains(x)) {
+                continue;
+            }
+
+            add_value(frontier, alloc);
+            phi_places.emplace(frontier);
+
+            if (!has_user_in_block(frontier, alloc)) {
+                stores.emplace(frontier);
+            }
+        }
     }
+}
+
+void JoinPointSet::add_value(const BasicBlock *bb, const Alloc *alloc) noexcept {
+    const auto allocs = m_join_set.find(bb);
+    if (allocs != m_join_set.end()) {
+        allocs->second.emplace(alloc);
+        return;
+    }
+
+    std::unordered_set<const Alloc *> blocks; //TODO std::vector????
+    blocks.emplace(alloc);
+    m_join_set.emplace(bb, std::move(blocks));
 
 }
 
