@@ -22,7 +22,10 @@ public:
     static Mem2Reg create(FunctionData &fn) noexcept;
 
 private:
+    [[maybe_unused]]
     FunctionData& m_fn;
+    [[maybe_unused]]
     const DominatorTree<BasicBlock>& m_tree;
+    [[maybe_unused]]
     const JoinPointSetResult& m_join_point_set;
 };

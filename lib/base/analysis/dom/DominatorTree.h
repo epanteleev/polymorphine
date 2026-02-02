@@ -4,6 +4,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 
 #include "base/analysis/AnalysisPass.h"
 #include "base/Constrains.h"
