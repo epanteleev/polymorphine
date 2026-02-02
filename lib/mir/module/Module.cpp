@@ -1,6 +1,7 @@
 #include "mir/module/Module.h"
 
 #include <ranges>
+#include <ostream>
 
 std::ostream & operator<<(std::ostream &os, const Module &module) {
     for (const auto& proto: std::ranges::views::values(module.m_prototypes)) {

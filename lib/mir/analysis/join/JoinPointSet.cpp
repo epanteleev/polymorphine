@@ -7,10 +7,12 @@
 
 #include <random>
 
-using AllocStoreAnalysisResult = std::unordered_map<const Alloc *, std::unordered_set<const BasicBlock *>>;
+#include "mir/analysis/Analysis.h"
 
-static std::unordered_set<const BasicBlock *> collect_blocks(const Alloc *alloc) {
-    std::unordered_set<const BasicBlock *> blocks;
+using AllocStoreAnalysisResult = std::unordered_map<const Alloc *, std::unordered_set<BasicBlock *>>;
+
+static std::unordered_set<BasicBlock *> collect_blocks(const Alloc *alloc) {
+    std::unordered_set<BasicBlock *> blocks;
     for (const auto& user: alloc->users()) {
         if (!user->isa(store())) {
             continue;
@@ -48,21 +50,20 @@ void JoinPointSet::run() {
     }
 }
 
-void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<const BasicBlock *> &&stores) noexcept {
+void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<BasicBlock *> &&stores) noexcept {
     std::unordered_set<const BasicBlock *> phi_places;
 
-    const auto frontiers = m_dom_tree->dominance_frontiers();
     while (!stores.empty()) {
         const auto x = *stores.begin();
         stores.erase(stores.begin());
 
-        const auto x_frontiers_opt = frontiers.frontiers(x);
+        const auto x_frontiers_opt = m_frontiers.frontiers(x);
         if (!x_frontiers_opt.has_value()) {
             continue;
         }
 
         const auto& x_frontiers = x_frontiers_opt.value();
-        for (const auto& frontier: x_frontiers) {
+        for (auto& frontier: x_frontiers) {
             if (phi_places.contains(x)) {
                 continue;
             }
@@ -77,7 +78,7 @@ void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<const B
     }
 }
 
-void JoinPointSet::add_value(const BasicBlock *bb, const Alloc *alloc) noexcept {
+void JoinPointSet::add_value(BasicBlock *const bb, const Alloc *alloc) noexcept {
     const auto allocs = m_join_set.find(bb);
     if (allocs != m_join_set.end()) {
         allocs->second.emplace(alloc);
@@ -91,9 +92,9 @@ void JoinPointSet::add_value(const BasicBlock *bb, const Alloc *alloc) noexcept 
 }
 
 JoinPointSet JoinPointSet::create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
-    const auto dom = cache->analyze<DominatorTreeEvalBase<FunctionData>>(data);
+    const auto frontiers = cache->analyze<DominanceFrontiersEval>(data);
     const auto escape_analysis = cache->analyze<EscapeAnalysis>(data);
-    return JoinPointSet(dom, escape_analysis, data);
+    return JoinPointSet(*frontiers, escape_analysis, data);
 }
 
 bool JoinPointSet::has_user_in_block(const BasicBlock *block, const Alloc *alloc) noexcept {

@@ -55,6 +55,6 @@ private:
 
     const FD* m_data;
     std::vector<bool> visited;
-    std::vector<const basic_block *> m_order{};
+    std::vector<basic_block *> m_order{};
     std::stack<std::span<basic_block* const>> stack;
 };

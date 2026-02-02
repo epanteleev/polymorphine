@@ -9,6 +9,7 @@
 #include "mir/types/Type.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
+#include "mir/types/Undef.h"
 
 template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
@@ -18,10 +19,19 @@ concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, GlobalValue *>;
 
 class Value final {
-public:
-    constexpr Value(double value, const FloatingPointType *type) noexcept: m_value(value), m_type(type) {}
-    constexpr Value(std::int64_t value, const IntegerType * type) noexcept: m_value(value), m_type(type) {}
+    constexpr Value(double value, const FloatingPointType *type) noexcept:
+        m_value(value),
+        m_type(type) {}
 
+    constexpr Value(std::int64_t value, const IntegerType * type) noexcept:
+        m_value(value),
+        m_type(type) {}
+
+    constexpr Value() noexcept:
+        m_value(std::monostate{}),
+        m_type(Undef::undef()) {}
+
+public:
     Value(const ArgumentValue* value) noexcept;
     Value(const ValueInstruction* value) noexcept;
     Value(const GlobalValue* value) noexcept;
@@ -105,12 +115,17 @@ public:
         return {value, FloatingPointType::f32()};
     }
 
+    constexpr static Value undefined() noexcept {
+        return {};
+    }
+
 private:
     std::variant<double,
         std::int64_t,
         ArgumentValue*,
         ValueInstruction *,
-        GlobalValue*> m_value;
+        GlobalValue*,
+        std::monostate> m_value;
     const Type* m_type;
 };
 

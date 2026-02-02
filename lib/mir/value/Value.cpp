@@ -35,6 +35,9 @@ std::ostream& operator<<(std::ostream& os, const Value& obj) {
         } else if constexpr (std::is_same_v<T, ValueInstruction*>) {
             os << '%' << val->owner()->id() << 'x' << val->id();
 
+        } else if constexpr (std::is_same_v<T, std::monostate>) {
+            os << "undef";
+
         } else {
             static_assert(false, "Unsupported type in Value variant");
         }

@@ -6,6 +6,7 @@ enum class AnalysisType: std::uint8_t {
     PostOrderTraverse,
     BFSTraverse,
     DominatorTree,
+    DominanceFrontiers,
     LivenessAnalysis,
     LiveIntervalsEval,
     LiveIntervalsGroups,

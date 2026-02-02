@@ -1,4 +1,6 @@
 #include <ranges>
+#include <ostream>
+
 #include "LIRModule.h"
 
 

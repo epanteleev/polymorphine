@@ -1,5 +1,7 @@
 #include "FunctionData.h"
 
+#include <ostream>
+
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/TerminateValueInstruction.h"
 

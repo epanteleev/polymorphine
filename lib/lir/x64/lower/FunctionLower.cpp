@@ -487,6 +487,9 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         } else if constexpr (std::is_same_v<T, GlobalValue *>) {
             return lower_global_cst(*v);
 
+        } else if constexpr (std::is_same_v<T, std::monostate>) {
+            die("undefined value"); //TODO die for now
+
         } else {
             static_assert(false, "Unsupported type in Value variant");
             std::unreachable();

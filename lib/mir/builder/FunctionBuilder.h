@@ -100,7 +100,7 @@ public:
     }
 
     [[nodiscard]]
-    Value phi(const PrimitiveType* type, std::vector<Value>&& values, std::vector<BasicBlock*>&& targets) const {
+    Value phi(const PrimitiveType* type, std::vector<Value>&& values, std::vector<const BasicBlock*>&& targets) const {
         return m_bb->ins(Phi::phi(type, std::move(values), std::move(targets)));
     }
 

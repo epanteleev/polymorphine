@@ -59,6 +59,10 @@ namespace {
             os << '}';
         }
 
+        void accept(Undef *type) override {
+            os << "undef";
+        }
+
         std::ostream &os;
     };
 }

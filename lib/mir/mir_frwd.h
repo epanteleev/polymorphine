@@ -41,6 +41,7 @@ class VoidType;
 class StructType;
 class ArrayType;
 class TupleType;
+class Undef;
 
 class Value;
 class ArgumentValue;

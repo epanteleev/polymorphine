@@ -27,5 +27,3 @@ public:
 
     virtual void visit(type::Visitor &visitor) = 0;
 };
-
-std::ostream& operator<<(std::ostream &os, const Type &obj);

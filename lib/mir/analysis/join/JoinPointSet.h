@@ -4,6 +4,7 @@
 
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "base/analysis/dom/DominatorTree.h"
+#include "base/analysis/frontiers/DominanceFrontiers.h"
 #include "mir/analysis/escape/EscapeAnalysisResult.h"
 
 #include "mir/module/BasicBlock.h"
@@ -15,8 +16,8 @@ public:
     using result_type = JoinPointSetResult;
 
 private:
-    explicit JoinPointSet(const DominatorTree<BasicBlock>* m_dom_tree, const EscapeAnalysisResult* escape_analysis, const FunctionData *data) noexcept:
-        m_dom_tree(m_dom_tree),
+    explicit JoinPointSet(const DominanceFrontiers<BasicBlock>& frontiers, const EscapeAnalysisResult* escape_analysis, const FunctionData *data) noexcept:
+        m_frontiers(frontiers),
         m_data(data),
         m_escape_analysis(escape_analysis) {}
 
@@ -34,11 +35,11 @@ public:
 private:
     static bool has_user_in_block(const BasicBlock* block, const Alloc* alloc) noexcept;
 
-    void evaluate_joins(const Alloc* alloc, std::unordered_set<const BasicBlock*>&& stores) noexcept;
-    void add_value(const BasicBlock* bb, const Alloc* alloc) noexcept;
+    void evaluate_joins(const Alloc* alloc, std::unordered_set<BasicBlock*>&& stores) noexcept;
+    void add_value(BasicBlock* bb, const Alloc* alloc) noexcept;
 
-    const DominatorTree<BasicBlock>* m_dom_tree;
+    const DominanceFrontiers<BasicBlock>& m_frontiers;
     const FunctionData *m_data;
     const EscapeAnalysisResult* m_escape_analysis;
-    std::unordered_map<const BasicBlock*, std::unordered_set<const Alloc*>> m_join_set{};
+    std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set{};
 };

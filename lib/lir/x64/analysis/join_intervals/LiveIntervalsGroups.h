@@ -68,25 +68,26 @@ public:
         return m_groups.end();
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const LiveIntervalsGroups& groups);
+    template<typename Os>
+    friend Os& operator<<(Os &os, const LiveIntervalsGroups &groups) {
+        for (const auto& group: groups.m_groups) {
+            os << "Group: " << group.interval() << "\n Values: ";
+            for (const auto& val: group.members()) {
+                os << val << " ";
+            }
+            const auto& fixed_register = group.fixed_register();
+            if (fixed_register.has_value()) {
+                os << "Fixed Register: " << fixed_register.value();
+            }
+            os << "\n";
+        }
+
+        return os;
+    }
 
 private:
     std::deque<Group> m_groups;
     LIRValMap<group_iterator> m_group_mapping;
 };
 
-inline std::ostream & operator<<(std::ostream &os, const LiveIntervalsGroups &groups) {
-    for (const auto& group: groups.m_groups) {
-        os << "Group: " << group.interval() << std::endl << " Values: ";
-        for (const auto& val: group.members()) {
-            os << val << " ";
-        }
-        const auto& fixed_register = group.fixed_register();
-        if (fixed_register.has_value()) {
-            os << "Fixed Register: " << fixed_register.value();
-        }
-        os << "\n";
-    }
 
-    return os;
-}

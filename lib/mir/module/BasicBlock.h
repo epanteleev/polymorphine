@@ -21,6 +21,15 @@ public:
         return inst_ptr;
     }
 
+    template<std::derived_from<Instruction> U>
+    U* prepend(std::unique_ptr<U>&& inst) {
+        auto inst_ptr = inst.get();
+        const auto id = m_instructions.insert_before(0, std::move(inst));
+        inst_ptr->connect(id, this);
+        make_def_use_chain(inst_ptr);
+        return inst_ptr;
+    }
+
     [[nodiscard]]
     Terminator last() const noexcept;
 

@@ -52,6 +52,8 @@ public:
     const_pointer operator->() const { return current->get(); }
 
     pointer get() { return current->get(); }
+
+    [[nodiscard]]
     const_pointer get() const { return current->get(); }
 
 private:
@@ -128,6 +130,7 @@ public:
         return *m_list[index]->data;
     }
 
+    [[nodiscard]]
     const_reference at(std::size_t index) const {
         assertion(index < size(), "invariant");
         return *m_list[index]->get();
@@ -146,10 +149,12 @@ public:
         return iterator(m_holder.end());
     }
 
+    [[nodiscard]]
     const_iterator begin() const noexcept {
         return const_iterator(m_holder.begin());
     }
 
+    [[nodiscard]]
     const_iterator end() const noexcept {
         return const_iterator(m_holder.end());
     }
@@ -159,6 +164,7 @@ public:
         return m_holder.size();
     }
 
+    [[nodiscard]]
     const_iterator back() const noexcept {
         return const_iterator(m_list.back());
     }

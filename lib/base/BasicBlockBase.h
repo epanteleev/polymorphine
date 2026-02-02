@@ -2,7 +2,6 @@
 
 #include <span>
 #include <vector>
-#include <ostream>
 #include <utility>
 
 #include "utility/Error.h"
@@ -35,7 +34,7 @@ public:
      * @return span of pointers to predecessor blocks. It is empty if there are no predecessors.
      */
     [[nodiscard]]
-    std::span<const Derived* const> predecessors() const {
+    std::span<Derived* const> predecessors() const {
         return m_predecessors;
     }
 
@@ -81,7 +80,8 @@ public:
     /**
      * Prints only label name of the block to the output stream.
      */
-    std::ostream &print_short_name(std::ostream &os) const {
+    template<typename Os>
+    Os &print_short_name(Os &os) const {
         if (m_id == 0) {
             os << "entry";
         } else {
@@ -91,9 +91,10 @@ public:
         return os;
     }
 
-    void print(std::ostream &os) const {
+    template<typename Os>
+    void print(Os &os) const {
         print_short_name(os);
-        os << ':' << std::endl;
+        os << ":\n";
 
         for (const auto &inst : m_instructions) {
             os << "  ";

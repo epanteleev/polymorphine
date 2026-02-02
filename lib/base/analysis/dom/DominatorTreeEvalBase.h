@@ -17,8 +17,8 @@ class DominatorTreeEvalBase final {
 public:
     using basic_block = FD::code_block_type;
     using order_type = Ordering<basic_block>;
-    using dom_node = DominatorTreeNode<basic_block>;
     using result_type = DominatorTree<basic_block>;
+    using dom_node = result_type::dom_node;
 
 private:
     explicit DominatorTreeEvalBase(order_type& postorder) noexcept:
@@ -60,7 +60,7 @@ public:
 private:
     static constexpr auto UNDEFINED = std::numeric_limits<std::size_t>::max();
 
-    void enumeration_to_dom_map(const Ordering<basic_block>& ordering, const std::unordered_map<std::size_t, const basic_block*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
+    void enumeration_to_dom_map(const Ordering<basic_block>& ordering, const std::unordered_map<std::size_t, basic_block*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
         for (const auto key: dominators | std::views::keys) {
             const auto block = index_to_block.at(key);
             dominator_tree[block] = std::make_unique<dom_node>(block);
@@ -93,7 +93,7 @@ private:
         return dominators;
     }
 
-    static std::unordered_map<std::size_t, std::vector<std::size_t>> calculate_incoming(const order_type& postorder, const std::unordered_map<const basic_block*, std::size_t>& incoming) {
+    static std::unordered_map<std::size_t, std::vector<std::size_t>> calculate_incoming(const order_type& postorder, const std::unordered_map<basic_block*, std::size_t>& incoming) {
         std::unordered_map<std::size_t, std::vector<std::size_t>> predecessors;
 
         for (const auto bb : postorder) {
@@ -116,8 +116,8 @@ private:
         return predecessors;
     }
 
-    static std::unordered_map<const basic_block*, std::size_t> indexing_blocks(Ordering<basic_block>& ordering) {
-        std::unordered_map<const basic_block*, std::size_t> indexing;
+    static std::unordered_map<basic_block*, std::size_t> indexing_blocks(const Ordering<basic_block>& ordering) {
+        std::unordered_map<basic_block*, std::size_t> indexing;
         for (auto [i, bb]: std::ranges::views::enumerate(ordering)) {
             indexing[bb] = i;
         }
@@ -140,7 +140,7 @@ private:
         return finger1;
     }
 
-    static std::size_t evaluate_idom(const std::unordered_map<std::size_t, std::size_t> & dominators, const std::unordered_map<std::size_t, std::vector<std::size_t>> & incoming_map, std::size_t idx) {
+    static std::size_t evaluate_idom(const std::unordered_map<std::size_t, std::size_t> & dominators, const std::unordered_map<std::size_t, std::vector<std::size_t>> & incoming_map, const std::size_t idx) {
         const auto& incoming = incoming_map.at(idx);
 
         const auto filter = [&dominators](const std::size_t idom) {
@@ -155,8 +155,8 @@ private:
         return std::ranges::fold_left_first(v, fold).value();
     }
 
-    static std::unordered_map<std::size_t, const basic_block*> eval_index_to_label(const std::unordered_map<const basic_block *, std::size_t> & block_to_index) {
-        std::unordered_map<std::size_t, const basic_block*> index_to_label;
+    static std::unordered_map<std::size_t, basic_block*> eval_index_to_label(const std::unordered_map<basic_block *, std::size_t> & block_to_index) {
+        std::unordered_map<std::size_t, basic_block*> index_to_label;
         for (const auto &[bb, idx]: block_to_index) {
             index_to_label[idx] = bb;
         }
@@ -164,6 +164,6 @@ private:
         return index_to_label;
     }
 
-    std::unordered_map<const basic_block*, std::unique_ptr<dom_node>> dominator_tree{};
+    std::unordered_map<basic_block*, std::unique_ptr<dom_node>> dominator_tree{};
     order_type& m_postorder;
 };
