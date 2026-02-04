@@ -4,7 +4,7 @@
 #include "helpers/Jit.h"
 
 template<typename Fn>
-static Module fib(const IntegerType* ty, Fn&& fn) {
+static Module fib_map(const IntegerType* ty, std::unordered_map<std::string_view, BasicBlock*>& blocks, Fn&& fn) {
     ModuleBuilder builder;
     const auto prototype = builder.add_function_prototype(ty, {ty}, "fib", FunctionBind::DEFAULT);
 
@@ -27,13 +27,21 @@ static Module fib(const IntegerType* ty, Fn&& fn) {
     auto v0 = data.load(ty, n_addr);
     auto cmp0 = data.icmp(IcmpPredicate::Eq, v0, fn(0));
 
+    blocks["entry"] = data.current_block();
     auto if_then = data.create_basic_block();
+    blocks["if_then"] = if_then;
     auto if_end = data.create_basic_block();
+    blocks["if_end"] = if_end;
     auto for_cond = data.create_basic_block();
+    blocks["for_cond"] = for_cond;
     auto for_body = data.create_basic_block();
+    blocks["for_body"] = for_body;
     auto for_inc = data.create_basic_block();
+    blocks["for_inc"] = for_inc;
     auto for_end = data.create_basic_block();
+    blocks["for_end"] = for_end;
     auto ret = data.create_basic_block();
+    blocks["ret"] = ret;
 
     data.br_cond(cmp0, if_then, if_end);
 
@@ -85,6 +93,12 @@ static Module fib(const IntegerType* ty, Fn&& fn) {
     return builder.build();
 }
 
+template<typename Fn>
+static Module fib(const IntegerType* ty, Fn&& fn) {
+    std::unordered_map<std::string_view, BasicBlock*> blocks;
+    return fib_map(ty, blocks, std::forward<Fn>(fn));
+}
+
 template<std::integral T>
 static T fib_value(T n) {
     T n0 = 0;
@@ -99,12 +113,53 @@ static T fib_value(T n) {
     return n1;
 }
 
+TEST(FibDom, dominators) {
+    std::unordered_map<std::string_view, BasicBlock*> blocks;
+    auto mod = fib_map(SignedIntegerType::i8(), blocks, Value::i8);
+    auto fun = mod.find_function_data("fib");
+    ASSERT_TRUE(fun.has_value());
+
+    AnalysisPassManager manager;
+    const auto dom = manager.analyze<DominatorTreeEval>(fun.value());
+
+    ASSERT_EQ(dom->immediate_dominator(blocks["entry"]), std::nullopt);
+    ASSERT_EQ(dom->immediate_dominator(blocks["if_then"]), blocks["entry"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["if_end"]), blocks["entry"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["ret"]), blocks["entry"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["for_cond"]), blocks["if_end"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["for_body"]), blocks["for_cond"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["for_inc"]), blocks["for_body"]);
+    ASSERT_EQ(dom->immediate_dominator(blocks["for_end"]), blocks["for_cond"]);
+
+    std::unordered_map<BasicBlock*, BasicBlock*> idom_map = {
+        {blocks["entry"], nullptr},
+        {blocks["if_then"], blocks["entry"]},
+        {blocks["if_end"], blocks["entry"]},
+        {blocks["ret"], blocks["entry"]},
+        {blocks["for_cond"], blocks["if_end"]},
+        {blocks["for_body"], blocks["for_cond"]},
+        {blocks["for_inc"], blocks["for_body"]},
+        {blocks["for_end"], blocks["for_cond"]},
+    };
+
+    const auto idoms = dom->immediate_dominators();
+    ASSERT_EQ(idoms.size(), idom_map.size());
+
+    for (const auto& [bb, idom]: idoms) {
+        const auto actual_idom = idom_map[bb];
+        ASSERT_EQ(actual_idom, idom);
+        idom_map.erase(bb);
+    }
+
+    ASSERT_EQ(idom_map.size(), 0);
+}
+
 static const std::unordered_map<std::string, std::size_t> fib_sizes = {
     {"fib", 31}
 };
 
 TEST(Fib, i8) {
-    const auto buffer = jit_compile_and_assembly(fib(SignedIntegerType::i8(), Value::i8), fib_sizes, false);
+    const auto buffer = jit_compile_and_assembly(fib(SignedIntegerType::i8(), Value::i8), fib_sizes, true);
     const auto fn = buffer.code_start_as<std::int8_t(std::int8_t)>("fib").value();
 
     for (std::int8_t i = 0; i < 20; ++i) {

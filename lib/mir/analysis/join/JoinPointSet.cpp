@@ -57,13 +57,12 @@ void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<BasicBl
         const auto x = *stores.begin();
         stores.erase(stores.begin());
 
-        const auto x_frontiers_opt = m_frontiers.frontiers(x);
-        if (!x_frontiers_opt.has_value()) {
+        const auto x_frontiers = m_frontiers.frontiers(x);
+        if (!x_frontiers.contains(x)) {
             continue;
         }
 
-        const auto& x_frontiers = x_frontiers_opt.value();
-        for (auto& frontier: x_frontiers) {
+        for (const auto frontier: x_frontiers) {
             if (phi_places.contains(x)) {
                 continue;
             }

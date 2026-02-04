@@ -188,6 +188,11 @@ public:
         m_bb = bb;
     }
 
+    [[nodiscard]]
+    BasicBlock* current_block() const noexcept {
+        return m_bb;
+    }
+
     void br_cond(const Value& condition, BasicBlock *true_target, BasicBlock *false_target) const {
         m_bb->ins(CondBranch::br_cond(condition, true_target, false_target));
     }

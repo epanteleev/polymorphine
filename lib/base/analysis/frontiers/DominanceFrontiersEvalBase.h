@@ -36,7 +36,11 @@ private:
 
     void init_frontier_set() {
         const auto idoms = m_dominator_tree.immediate_dominators();
-        for (const auto [block, sub_tree]: idoms) {
+        for (const auto [block, idom]: idoms) {
+            if (idom == nullptr) {
+                continue;
+            }
+
             m_dominance_frontiers.emplace(block, frontier_set{});
         }
     }
@@ -50,13 +54,10 @@ private:
 
             for (const auto& pred: preds) {
                 auto runner = pred;
-                while (runner != b_idom) {
+                while (b_idom!= nullptr && runner != b_idom) {
                     auto it = m_dominance_frontiers.find(runner);
-                    if (it != m_dominance_frontiers.end()) {
-                        it->second.push_back(block);
-                    }
-                    it->second.push_back(block);
-
+                    assertion(it != m_dominance_frontiers.end(), "must be");
+                    it->second.emplace(block);
                     const auto dom_it = m_dominator_tree.immediate_dominator(block);
                     if (!dom_it.has_value()) {
                         break;

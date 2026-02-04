@@ -4,7 +4,7 @@
 template<CodeBlock BB>
 class DominatorTreeNodeIterator final {
 public:
-    explicit DominatorTreeNodeIterator(DominatorTreeNode<BB> *node):
+    explicit DominatorTreeNodeIterator(DominatorTreeNode<BB> *node) noexcept:
         m_dominator_node(node) {}
 
     DominatorTreeNodeIterator &operator++() {
@@ -12,19 +12,19 @@ public:
         return *this;
     }
 
-    bool operator==(const DominatorTreeNodeIterator &other) const {
+    bool operator==(const DominatorTreeNodeIterator &other) const noexcept {
         return m_dominator_node == other.m_dominator_node;
     }
 
-    bool operator!=(const DominatorTreeNodeIterator &other) const {
+    bool operator!=(const DominatorTreeNodeIterator &other) const noexcept {
         return m_dominator_node != other.m_dominator_node;
     }
 
-    DominatorTreeNode<BB>* operator->() const {
+    DominatorTreeNode<BB>* operator->() const noexcept {
         return m_dominator_node;
     }
 
-    DominatorTreeNode<BB>* operator*() const {
+    DominatorTreeNode<BB>* operator*() const noexcept {
         return m_dominator_node;
     }
 
@@ -38,11 +38,11 @@ public:
     explicit Dominators(DominatorTreeNode<BB> *node) noexcept:
         m_dominator_node(node) {}
 
-    DominatorTreeNodeIterator<BB> begin() const {
+    DominatorTreeNodeIterator<BB> begin() const noexcept {
         return DominatorTreeNodeIterator<BB>(m_dominator_node);
     }
 
-    DominatorTreeNodeIterator<BB> end() const {
+    DominatorTreeNodeIterator<BB> end() const noexcept {
         return DominatorTreeNodeIterator<BB>(nullptr);
     }
 

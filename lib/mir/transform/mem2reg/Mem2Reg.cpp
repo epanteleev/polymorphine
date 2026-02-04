@@ -31,7 +31,6 @@ namespace {
 }
 
 void Mem2Reg::run() noexcept {
-    [[maybe_unused]]
     const auto inserted_phis = insert_phis();
     RewritePrimitives rewrite(m_fn, m_tree, inserted_phis, m_escape_analysis);
     rewrite.run();

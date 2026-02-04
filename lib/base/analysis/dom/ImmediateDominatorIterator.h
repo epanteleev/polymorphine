@@ -2,9 +2,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "DominatorTreeNode.h"
-
-
 template<CodeBlock BB>
 class ImmediateDominatorIterator final {
     using dom_node_ptr = std::unique_ptr<DominatorTreeNode<BB>>;
@@ -28,10 +25,18 @@ public:
     }
 
     std::pair<BB* const, BB* const> operator->() const {
+        if (m_block_idom->second->idom == nullptr) {
+            return std::make_pair(m_block_idom->first, nullptr);
+        }
+
         return std::make_pair(m_block_idom->first, m_block_idom->second->idom->m_me);
     }
 
     std::pair<BB*, BB*> operator*() const {
+        if (m_block_idom->second->idom == nullptr) {
+            return std::make_pair(m_block_idom->first, nullptr);
+        }
+
         return std::make_pair(m_block_idom->first, m_block_idom->second->idom->m_me);
     }
 
@@ -45,17 +50,24 @@ class ImmediateDominators final {
     using idom_map = std::unordered_map<BB*, dom_node_ptr>;
 
 public:
-    explicit ImmediateDominators(const idom_map* node) noexcept:
+    explicit ImmediateDominators(const idom_map& node) noexcept:
         m_dom_map(node) {}
 
-    ImmediateDominatorIterator<BB> begin() const {
-        return ImmediateDominatorIterator<BB>(m_dom_map->begin());
+    [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_dom_map.size();
     }
 
+    [[nodiscard]]
+    ImmediateDominatorIterator<BB> begin() const noexcept {
+        return ImmediateDominatorIterator<BB>(m_dom_map.begin());
+    }
+
+    [[nodiscard]]
     ImmediateDominatorIterator<BB> end() const {
-        return ImmediateDominatorIterator<BB>(m_dom_map->end());
+        return ImmediateDominatorIterator<BB>(m_dom_map.end());
     }
 
 private:
-    const idom_map *m_dom_map;
+    const idom_map& m_dom_map;
 };

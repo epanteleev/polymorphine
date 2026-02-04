@@ -42,10 +42,16 @@ public:
         return Dominators(idom_node->second->idom);
     }
 
+    /** @return immediate dominator of given block
+     * or std::nullopt if the block doesn't have idom.
+     * **/
     [[nodiscard]]
     std::optional<BB *> immediate_dominator(BB *const target) const {
         const auto idom_node = m_dominator_tree.find(target);
         if (idom_node == m_dominator_tree.end()) {
+            return std::nullopt;
+        }
+        if (idom_node->second->idom == nullptr) {
             return std::nullopt;
         }
 
@@ -54,33 +60,7 @@ public:
 
     [[nodiscard]]
     ImmediateDominators<BB> immediate_dominators() const noexcept {
-        return ImmediateDominators(&m_dominator_tree);
-    }
-
-    [[nodiscard]]
-    auto begin() const noexcept {
-        return m_dominator_tree.begin();
-    }
-
-    [[nodiscard]]
-    auto end() const noexcept {
-        return m_dominator_tree.end();
-    }
-
-    template<typename Os>
-    Os &print(Os &os) const {
-        os << '[';
-        for (auto& [k, v]: m_dominator_tree) {
-            k->print_short_name(os);
-            os << " -> ";
-            if (v->idom) {
-                v->idom->m_me->print_short_name(os);
-            } else {
-                os << "null";
-            }
-            os << " ";
-        }
-        return os << ']';
+        return ImmediateDominators(m_dominator_tree);
     }
 
 private:
