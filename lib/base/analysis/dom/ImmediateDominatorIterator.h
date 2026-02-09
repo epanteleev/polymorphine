@@ -1,11 +1,11 @@
 #pragma once
-#include <memory>
+
 #include <unordered_map>
 
 template<CodeBlock BB>
 class ImmediateDominatorIterator final {
-    using dom_node_ptr = std::unique_ptr<DominatorTreeNode<BB>>;
-    using idom_iterator = std::unordered_map<BB*, dom_node_ptr>::const_iterator;
+    using dom_node = DominatorTreeNode<BB>;
+    using idom_iterator = std::unordered_map<BB*, dom_node>::const_iterator;
 
 public:
     explicit ImmediateDominatorIterator(idom_iterator dominator_tree) noexcept:
@@ -25,19 +25,19 @@ public:
     }
 
     std::pair<BB* const, BB* const> operator->() const {
-        if (m_block_idom->second->idom == nullptr) {
+        if (m_block_idom->second.idom == nullptr) {
             return std::make_pair(m_block_idom->first, nullptr);
         }
 
-        return std::make_pair(m_block_idom->first, m_block_idom->second->idom->m_me);
+        return std::make_pair(m_block_idom->first, m_block_idom->second.idom->m_me);
     }
 
     std::pair<BB*, BB*> operator*() const {
-        if (m_block_idom->second->idom == nullptr) {
+        if (m_block_idom->second.idom == nullptr) {
             return std::make_pair(m_block_idom->first, nullptr);
         }
 
-        return std::make_pair(m_block_idom->first, m_block_idom->second->idom->m_me);
+        return std::make_pair(m_block_idom->first, m_block_idom->second.idom->m_me);
     }
 
 private:
@@ -46,8 +46,8 @@ private:
 
 template<CodeBlock BB>
 class ImmediateDominators final {
-    using dom_node_ptr = std::unique_ptr<DominatorTreeNode<BB>>;
-    using idom_map = std::unordered_map<BB*, dom_node_ptr>;
+    using dom_node = DominatorTreeNode<BB>;
+    using idom_map = std::unordered_map<BB*, dom_node>;
 
 public:
     explicit ImmediateDominators(const idom_map& node) noexcept:

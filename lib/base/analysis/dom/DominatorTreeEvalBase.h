@@ -63,7 +63,7 @@ private:
     void enumeration_to_dom_map(const Ordering<basic_block>& ordering, const std::unordered_map<std::size_t, basic_block*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
         for (const auto key: dominators | std::views::keys) {
             const auto block = index_to_block.at(key);
-            dominator_tree[block] = std::make_unique<dom_node>(block);
+            dominator_tree.emplace(block, block);
         }
 
         dominators.erase(ordering.size()-1); // Remove the entry block
@@ -71,11 +71,13 @@ private:
         for (auto& [key, value]: dominators) {
             const auto block = index_to_block.at(key);
             const auto idom = index_to_block.at(value);
-            auto& idom_node = dominator_tree[idom];
-            auto& dominator_node = dominator_tree[block];
+            auto idom_node = dominator_tree.find(idom);
+            assertion(idom_node != dominator_tree.end(), "must be");
+            auto dominator_node = dominator_tree.find(block);
+            assertion(dominator_node != dominator_tree.end(), "must be");
 
-            dominator_node->idom = idom_node.get();
-            idom_node->children.push_back(dominator_node.get());
+            dominator_node->second.idom = &idom_node->second;
+            idom_node->second.children.push_back(&dominator_node->second);
         }
     }
 
@@ -164,6 +166,6 @@ private:
         return index_to_label;
     }
 
-    std::unordered_map<basic_block*, std::unique_ptr<dom_node>> dominator_tree{};
+    std::unordered_map<basic_block*, dom_node> dominator_tree{};
     order_type& m_postorder;
 };

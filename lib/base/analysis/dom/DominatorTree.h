@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 #include <optional>
 
@@ -12,12 +11,10 @@
 
 template<CodeBlock BB>
 class DominatorTree final: public AnalysisPassResult {
-    using dom_node_ptr = std::unique_ptr<DominatorTreeNode<BB>>;
-
 public:
     using dom_node = DominatorTreeNode<BB>;
 
-    explicit DominatorTree(std::unordered_map<BB*, dom_node_ptr> &&dominator_tree) noexcept:
+    explicit DominatorTree(std::unordered_map<BB*, dom_node> &&dominator_tree) noexcept:
         m_dominator_tree(std::move(dominator_tree)) {}
 
     [[nodiscard]]
@@ -39,7 +36,7 @@ public:
             return Dominators<BB>(nullptr);
         }
 
-        return Dominators(idom_node->second->idom);
+        return Dominators(idom_node->second.idom);
     }
 
     /** @return immediate dominator of given block
@@ -51,11 +48,11 @@ public:
         if (idom_node == m_dominator_tree.end()) {
             return std::nullopt;
         }
-        if (idom_node->second->idom == nullptr) {
+        if (idom_node->second.idom == nullptr) {
             return std::nullopt;
         }
 
-        return idom_node->second->idom->m_me;
+        return idom_node->second.idom->m_me;
     }
 
     [[nodiscard]]
@@ -64,5 +61,5 @@ public:
     }
 
 private:
-    std::unordered_map<BB*, dom_node_ptr> m_dominator_tree;
+    std::unordered_map<BB*, dom_node> m_dominator_tree;
 };
