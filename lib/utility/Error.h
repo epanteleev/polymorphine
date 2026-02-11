@@ -14,7 +14,7 @@ namespace error {
     void setup_terminate_handler();
 }
 
-enum class Error {
+enum class Error: std::uint8_t {
     CastError,
     NotFoundError,
     AlreadyExists,

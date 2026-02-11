@@ -1,8 +1,8 @@
 #include "Elf.h"
 
 #include "asm/x64/SizeEvaluator.h"
-#include "lir/x64/asm/jit/OpCodeBuffer.h"
-#include "lir/x64/asm/jit/JitDataBlob.h"
+#include "lir/x64/asm/compilation/OpCodeBuffer.h"
+#include "lir/x64/asm/compilation/CompilationDataBlob.h"
 
 Elf Elf::collect(const aasm::AsmModule &module) {
     elf::elfio writer;

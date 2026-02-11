@@ -1,4 +1,4 @@
-#include "JitModule.h"
+#include "CompiledModule.h"
 
 #include "OpCodeBuffer.h"
 #include "asm/x64/SizeEvaluator.h"
@@ -24,7 +24,7 @@ static MmapAllocation map_memory(const std::size_t plt_size, const std::size_t c
     return {std::span(memory, total_size), std::span(memory, plt_table_size), std::span(memory + plt_table_size, code_buffer_size)};
 }
 
-JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, aasm::AsmModule &&module) {
+CompiledModule CompiledModule::assembly(const std::unordered_map<const aasm::Symbol *, std::size_t> &external_symbols, aasm::AsmModule &&module) {
     const auto code_buffer_size = aasm::ModuleSizeEvaluator::module_size_eval(module);
     const auto plt_size = external_symbols.size() * sizeof(std::int64_t);
     const auto [memory, plt_table, code_buffer] = map_memory(plt_size, code_buffer_size);
@@ -43,10 +43,10 @@ JitModule JitModule::assembly(const std::unordered_map<const aasm::Symbol *, std
     details::RelocResolver resolver(plt_table_map, module, code_buffer, plt_table.size());
     resolver.run();
 
-    JitDataBlob code_blob(resolver.result(), code_buffer);
+    CompilationDataBlob code_blob(resolver.result(), code_buffer);
     return {std::move(module.m_symbol_table), memory, std::move(code_blob)};
 }
 
-std::ostream & operator<<(std::ostream &os, const JitModule &blob) {
+std::ostream & operator<<(std::ostream &os, const CompiledModule &blob) {
     return os << blob.m_code_blob;
 }

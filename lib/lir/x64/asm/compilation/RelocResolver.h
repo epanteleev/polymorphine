@@ -25,7 +25,7 @@ namespace details {
             try_resolve_relocations();
         }
 
-        std::unordered_map<const aasm::Symbol*, JitDataChunk> result() {
+        std::unordered_map<const aasm::Symbol*, CompilationDataChunk> result() {
             return std::move(offset_table);
         }
 
@@ -37,7 +37,7 @@ namespace details {
 
             relocation_table.push_back(std::move(reloc));
             [[maybe_unused]]
-            const auto [_unused2, has2] = offset_table.emplace(name, JitDataChunk(start, jit_assembler.size() - start));
+            const auto [_unused2, has2] = offset_table.emplace(name, CompilationDataChunk(start, jit_assembler.size() - start));
             assertion(has2, "Offset for symbol already exists: {}", name->name());
         }
 
@@ -87,6 +87,6 @@ namespace details {
         std::size_t m_code_buffer_offset;
 
         std::vector<std::vector<aasm::Relocation>> relocation_table;
-        std::unordered_map<const aasm::Symbol*, JitDataChunk> offset_table;
+        std::unordered_map<const aasm::Symbol*, CompilationDataChunk> offset_table;
     };
 }

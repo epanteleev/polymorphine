@@ -67,6 +67,10 @@ public:
         return m_instructions.at(idx);
     }
 
+    void remove_instruction(const Inst* id) {
+        m_instructions.remove(id->id());
+    }
+
     /**
      * Returns number of instructions in the block.
      */

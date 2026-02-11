@@ -1,7 +1,8 @@
 #pragma once
 
 #include "lir/x64/lir.h"
-#include "lir/x64/asm/jit/JitModule.h"
+#include "lir/x64/asm/compilation/CompiledModule.h"
+#include "mir/transform/OptPipeline.h"
 
 /**
  * Performs JIT compilation and assembly of the given module.
@@ -9,7 +10,7 @@
  * @param verbose If true, prints the intermediate representations after each step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitModule jit_compile_and_assembly(const Module& module, bool verbose = false);
+CompiledModule jit_compile_and_assembly(const Module& module, bool verbose = false);
 
 /**
  * Performs JIT compilation and assembly of the given module with external symbols.
@@ -18,8 +19,8 @@ JitModule jit_compile_and_assembly(const Module& module, bool verbose = false);
  * @param verbose If true, prints the intermediate representations after each step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, bool verbose = false);
-JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose = false);
+CompiledModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, bool verbose = false);
+CompiledModule jit_compile_and_assembly(const std::unordered_map<std::string, std::size_t>& external_symbols, const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose = false);
 
 /**
  * Performs JIT compilation, assembly of the given module and verify number of instructions in the functions.
@@ -28,4 +29,24 @@ JitModule jit_compile_and_assembly(const std::unordered_map<std::string, std::si
  * @param verbose If true, prints the intermediate representations after each step.
  * @return A JitCodeBlob containing the compiled code.
  */
-JitModule jit_compile_and_assembly(const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose);
+CompiledModule jit_compile_and_assembly(const Module& module, const std::unordered_map<std::string, std::size_t>& asm_size, bool verbose);
+
+class JitCompiler final {
+public:
+    explicit JitCompiler(const OptPipeline& opt_pipeline, bool verbose = false) noexcept;
+
+    explicit JitCompiler(bool verbose = false) noexcept;
+
+    explicit JitCompiler(const std::unordered_map<std::string, std::size_t>& external_symbols, const OptPipeline& opt_pipeline, const bool verbose = false) noexcept:
+        m_external_symbols(external_symbols),
+        m_opt_pipeline(opt_pipeline),
+        m_verbose(verbose) {}
+
+    [[nodiscard]]
+    CompiledModule compile(const Module& module) const;
+
+private:
+    const std::unordered_map<std::string, std::size_t>& m_external_symbols;
+    const OptPipeline& m_opt_pipeline;
+    const bool m_verbose;
+};

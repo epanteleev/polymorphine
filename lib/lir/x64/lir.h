@@ -6,4 +6,4 @@
 #include "analysis/liveness/LivenessAnalysis.h"
 
 #include "codegen/Codegen.h"
-#include "asm/jit/OpCodeBuffer.h"
+#include "asm/compilation/OpCodeBuffer.h"

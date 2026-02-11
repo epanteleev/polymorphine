@@ -32,7 +32,13 @@ public:
         return &it->second;
     }
 
-    const std::unordered_map<std::string, FunctionData>& functions() const {
+    [[nodiscard]]
+    std::unordered_map<std::string, FunctionData>& functions() noexcept {
+        return m_functions;
+    }
+
+    [[nodiscard]]
+    const std::unordered_map<std::string, FunctionData>& functions() const noexcept {
         return m_functions;
     }
 

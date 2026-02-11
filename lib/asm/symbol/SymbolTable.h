@@ -13,6 +13,7 @@ namespace aasm {
      */
     class SymbolTable final {
     public:
+        [[nodiscard]]
         std::pair<const Symbol*, bool> add(const std::string_view name, const BindAttribute bind) {
             assertion(!name.empty(), "Symbol name cannot be empty");
             if (const auto it = m_symbol_map.find(std::string(name)); it != m_symbol_map.end()) { //TODO string creation
@@ -24,6 +25,7 @@ namespace aasm {
             return {&new_symbol, true};
         }
 
+        [[nodiscard]]
         std::optional<const Symbol*> find(const std::string& name) const {
             assertion(!name.empty(), "Symbol name cannot be empty");
             if (const auto it = m_symbol_map.find(name); it != m_symbol_map.end()) {

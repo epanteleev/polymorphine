@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <expected>
-#include <memory>
 #include <unordered_map>
 
 #include "asm/symbol/Symbol.h"
@@ -10,11 +9,11 @@
 #include "utility/Error.h"
 
 /**
- * Represents a block of JIT-compiled code for one function or global data.
+ * Represents a block of compiled code for one function or global data.
  */
-class JitDataChunk final {
+class CompilationDataChunk final {
 public:
-    explicit JitDataChunk(const std::size_t _offset, const std::size_t _size) noexcept:
+    explicit CompilationDataChunk(const std::size_t _offset, const std::size_t _size) noexcept:
         offset(_offset), size(_size) {}
 
     const std::size_t offset; // Offset from blob start
@@ -22,11 +21,11 @@ public:
 };
 
 /**
- * JitCodeBlob is a class that represents ready-to-execute JIT-compiled code.
+ * JitCodeBlob is a class that represents ready-to-execute compiled code.
  */
-class JitDataBlob final {
+class CompilationDataBlob final {
 public:
-    JitDataBlob(std::unordered_map<const aasm::Symbol*, JitDataChunk> &&offset_table,
+    CompilationDataBlob(std::unordered_map<const aasm::Symbol*, CompilationDataChunk> &&offset_table,
         const std::span<std::uint8_t> code_buffer) noexcept:
         m_offset_table(std::move(offset_table)),
         m_code_buffer(code_buffer) {}
@@ -44,9 +43,9 @@ public:
         return std::unexpected(Error::NotFoundError);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const JitDataBlob& blob);
+    friend std::ostream& operator<<(std::ostream& os, const CompilationDataBlob& blob);
 
 private:
-    std::unordered_map<const aasm::Symbol*, JitDataChunk> m_offset_table;
+    std::unordered_map<const aasm::Symbol*, CompilationDataChunk> m_offset_table;
     std::span<std::uint8_t> m_code_buffer;
 };

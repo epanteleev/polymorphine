@@ -7,16 +7,17 @@
 #include <memory>
 
 #include "asm/symbol/SymbolTable.h"
-#include "lir/x64/asm/jit/JitDataBlob.h"
 #include "asm/x64/AsmModule.h"
+
+#include "CompilationDataBlob.h"
 #include "utility/Error.h"
 #include "utility/Sanitizer.h"
 
 template<typename T>
 requires std::is_function_v<T>
-class JitFunctionFunctor {
+class CompiledFunctionFunctor {
 public:
-    explicit JitFunctionFunctor(const T* fn) noexcept:
+    explicit CompiledFunctionFunctor(const T* fn) noexcept:
         m_fn(fn) {}
 
     template<typename... Args>
@@ -32,14 +33,14 @@ private:
 };
 
 
-class JitModule final {
+class CompiledModule final {
 public:
-    JitModule(aasm::SymbolTable&& symbol_table, const std::span<std::uint8_t> total_mem, JitDataBlob&& code_blob) noexcept:
+    CompiledModule(aasm::SymbolTable&& symbol_table, const std::span<std::uint8_t> total_mem, CompilationDataBlob&& code_blob) noexcept:
         m_symbol_table(std::move(symbol_table)),
         m_total_mem(total_mem),
         m_code_blob(std::move(code_blob)) {}
 
-    ~JitModule() noexcept {
+    ~CompiledModule() noexcept {
         const auto err = munmap(m_total_mem.data(), m_total_mem.size());
         assert_perror(err);
     }
@@ -52,17 +53,18 @@ public:
     template<typename T>
     requires std::is_function_v<T>
     [[nodiscard]]
-    std::expected<JitFunctionFunctor<T>, Error> code_start_as(const std::string& name) const {
+    std::expected<CompiledFunctionFunctor<T>, Error> code_start_as(const std::string& name) const {
         if (const auto code = code_start(name); code.has_value()) {
-            return JitFunctionFunctor<T>(reinterpret_cast<T*>(code.value()));
+            return CompiledFunctionFunctor<T>(reinterpret_cast<T*>(code.value()));
         }
 
         return std::unexpected(Error::NotFoundError);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const JitModule& blob);
+    friend std::ostream& operator<<(std::ostream& os, const CompiledModule& blob);
 
-    static JitModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, aasm::AsmModule&& module);
+    [[nodiscard]]
+    static CompiledModule assembly(const std::unordered_map<const aasm::Symbol*, std::size_t>& external_symbols, aasm::AsmModule&& module);
 
 private:
     /**
@@ -81,5 +83,5 @@ private:
 
     aasm::SymbolTable m_symbol_table;
     std::span<std::uint8_t> m_total_mem;
-    JitDataBlob m_code_blob;
+    CompilationDataBlob m_code_blob;
 };

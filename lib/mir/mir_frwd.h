@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class Instruction;
 class Binary;
 class Unary;
@@ -48,7 +50,7 @@ class ArgumentValue;
 
 class FunctionData;
 
-enum class Error;
+enum class Error: std::uint8_t;
 
 class AnalysisPassResult;
 
