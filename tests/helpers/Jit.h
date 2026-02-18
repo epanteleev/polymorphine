@@ -43,7 +43,7 @@ public:
         m_verbose(verbose) {}
 
     [[nodiscard]]
-    CompiledModule compile(const Module& module) const;
+    CompiledModule compile(Module& module) const;
 
 private:
     const std::unordered_map<std::string, std::size_t>& m_external_symbols;

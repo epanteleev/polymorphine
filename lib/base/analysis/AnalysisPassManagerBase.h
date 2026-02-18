@@ -23,8 +23,8 @@ public:
 
         auto a = A::create(this, data);
         a.run();
-        pass_res = a.result();
-        return static_cast<result_type*>(pass_res.get());
+        m_passes[idx] = a.result();
+        return static_cast<result_type*>(m_passes[idx].get());
     }
 
 private:

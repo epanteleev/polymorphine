@@ -73,6 +73,8 @@ public:
         return std::visit(std::forward<Visitor>(visitor), m_value);
     }
 
+    friend bool operator==(const Value& b, const Value& a) noexcept;
+
     friend std::ostream& operator<<(std::ostream& os, const Value& obj);
 
     constexpr static Value i8(std::int8_t value) noexcept {

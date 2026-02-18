@@ -39,13 +39,7 @@ public:
 
     void print(std::ostream& os) const;
 
-    void replace_operand(const ValueInstruction* old_val, const Value& new_val) {
-        for (auto& v : m_values) {
-            if (v.is<ValueInstruction*>() && v.get<ValueInstruction*>() == old_val) {
-                v = new_val;
-            }
-        }
-    }
+    void update_operand(std::size_t idx, const Value& new_val);
 
 protected:
     friend class BasicBlock;

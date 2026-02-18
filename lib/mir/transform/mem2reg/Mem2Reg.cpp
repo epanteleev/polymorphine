@@ -9,15 +9,12 @@
 #include <stack>
 #include <unordered_set>
 
+#include "mir/value/UsedValue.h"
+
 namespace {
     class RewritePrimitives final {
     public:
-        explicit RewritePrimitives(
-            FunctionData& fn,
-            const DominatorTree<BasicBlock>& tree,
-            const std::unordered_map<const Phi*, const Alloc*>& inserted_phis,
-            const EscapeAnalysisResult& escape_analysis
-        ) noexcept:
+        explicit RewritePrimitives(FunctionData& fn, const DominatorTree<BasicBlock>& tree, const std::unordered_map<const Phi*, const Alloc*>& inserted_phis, const EscapeAnalysisResult& escape_analysis) noexcept:
             m_fn(fn),
             m_tree(tree),
             m_inserted_phis(inserted_phis),
@@ -25,7 +22,9 @@ namespace {
 
         void run() {
             collect_promotable_allocs();
-            if (m_promotable_allocs.empty()) return;
+            if (m_promotable_allocs.empty()) {
+                return;
+            }
             build_dom_children();
             rename(m_fn.first());
             cleanup();
@@ -64,8 +63,9 @@ namespace {
         }
 
         static void replace_all_uses(const ValueInstruction* old_val, const Value& new_val) {
-            for (const auto* user : old_val->users()) {
-                const_cast<Instruction*>(user)->replace_operand(old_val, new_val);
+            for (auto* user : old_val->users()) {
+                const auto idx = index_of(user->operands(), old_val);
+                const_cast<Instruction*>(user)->update_operand(idx, new_val);
             }
         }
 
@@ -79,7 +79,7 @@ namespace {
                     const auto it = m_inserted_phis.find(phi);
                     if (it != m_inserted_phis.end()) {
                         const auto* a = it->second;
-                        m_reaching_def[a].push(Value(phi));
+                        m_reaching_def[a].emplace(phi);
                         num_pushed[a]++;
                         continue;
                     }
@@ -122,7 +122,7 @@ namespace {
                     const auto incoming = phi->incoming();
                     for (std::size_t i = 0; i < incoming.size(); i++) {
                         if (incoming[i] == block) {
-                            phi->set_incoming_value(i, m_reaching_def[a].top());
+                            phi->update_operand(i, m_reaching_def[a].top());
                             break;
                         }
                     }
@@ -168,23 +168,21 @@ namespace {
 
 void Mem2Reg::run() noexcept {
     const auto inserted_phis = insert_phis();
-    RewritePrimitives rewrite(m_fn, m_tree, inserted_phis, m_escape_analysis);
+    const auto tree = m_manager.analyze<DominatorTreeEval>(&m_fn);
+    const auto escape_analysis = m_manager.analyze<EscapeAnalysis>(&m_fn);
+    RewritePrimitives rewrite(m_fn, *tree, inserted_phis, *escape_analysis);
     rewrite.run();
 }
 
 Mem2Reg Mem2Reg::create(FunctionData &fn) noexcept {
-    AnalysisPassManager manager;
-    const auto join_point_set = manager.analyze<JoinPointSet>(&fn);
-    const auto dominator_tree = manager.analyze<DominatorTreeEval>(&fn);
-    const auto escape_analysis = manager.analyze<EscapeAnalysis>(&fn);
-
-    return Mem2Reg(fn, *dominator_tree, *join_point_set, *escape_analysis);
+    return Mem2Reg(fn);
 }
 
-std::unordered_map<const Phi *, const Alloc *> Mem2Reg::insert_phis() const {
+std::unordered_map<const Phi *, const Alloc *> Mem2Reg::insert_phis() {
     std::unordered_map<const Phi*, const Alloc*> inserted_phis;
 
-    for (const auto& [bb, v_set]: m_join_point_set) {
+    const auto& join_point_set = *m_manager.analyze<JoinPointSet>(&m_fn);
+    for (const auto& [bb, v_set]: join_point_set) {
         auto pred = bb->predecessors();
         std::vector<const BasicBlock*> blocks;
         blocks.reserve(pred.size());

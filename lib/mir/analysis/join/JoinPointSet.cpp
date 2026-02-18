@@ -1,12 +1,10 @@
 #include "JoinPointSet.h"
 
-#include "mir/analysis/escape/EscapeAnalysis.h"
 #include "base/analysis/dom/DominatorTreeEvalBase.h"
+#include "mir/analysis/escape/EscapeAnalysis.h"
+
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Store.h"
-
-#include <random>
-
 #include "mir/analysis/Analysis.h"
 
 using AllocStoreAnalysisResult = std::unordered_map<const Alloc *, std::unordered_set<BasicBlock *>>;
@@ -57,13 +55,8 @@ void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<BasicBl
         const auto x = *stores.begin();
         stores.erase(stores.begin());
 
-        const auto x_frontiers = m_frontiers.frontiers(x);
-        if (!x_frontiers.contains(x)) {
-            continue;
-        }
-
-        for (const auto frontier: x_frontiers) {
-            if (phi_places.contains(x)) {
+        for (const auto frontier: m_frontiers.frontiers(x)) {
+            if (phi_places.contains(frontier)) {
                 continue;
             }
 
@@ -87,7 +80,6 @@ void JoinPointSet::add_value(BasicBlock *const bb, const Alloc *alloc) noexcept 
     std::unordered_set<const Alloc *> blocks; //TODO std::vector????
     blocks.emplace(alloc);
     m_join_set.emplace(bb, std::move(blocks));
-
 }
 
 JoinPointSet JoinPointSet::create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {

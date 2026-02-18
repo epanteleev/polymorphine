@@ -145,7 +145,7 @@ namespace {
         }
 
         void accept(Alloc *alloc) override {
-            set_state(alloc, EscapeState::FIELD_ESCAPED);
+            set_state(alloc, EscapeState::NOESCAPE);
         }
 
         void accept(IcmpInstruction *icmp) override {}

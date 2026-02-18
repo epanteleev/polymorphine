@@ -23,6 +23,7 @@
 #include "mir/instruction/Select.h"
 #include "mir/instruction/Alloc.h"
 #include "mir/instruction/Store.h"
+#include "mir/value/UsedValue.h"
 
 #include "utility/Error.h"
 
@@ -224,4 +225,18 @@ namespace {
 void Instruction::print(std::ostream& os) const {
     Printer p(os);
     p.do_print(this);
+}
+
+void Instruction::update_operand(const std::size_t idx, const Value &new_val) {
+    assertion(idx < m_values.size(), "out of range");
+    const auto& val = m_values[idx];
+    if (auto lv_opt = UsedValue::try_from(val); lv_opt.has_value()) {
+        lv_opt->remove_user(this);
+    }
+
+    m_values[idx] = new_val;
+
+    if (auto lv_opt = UsedValue::try_from(new_val); lv_opt.has_value()) {
+        lv_opt->add_user(this);
+    }
 }

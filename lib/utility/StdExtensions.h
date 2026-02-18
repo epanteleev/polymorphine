@@ -37,3 +37,9 @@ void remove_if_fast(std::vector<T>& vector, Fn&& fn) {
         }
     }
 }
+
+template<typename T, typename U>
+[[nodiscard]]
+std::size_t index_of(std::span<const T> data, const U& value) {
+    return std::distance(data.begin(), std::find(data.begin(), data.end(), value));
+}

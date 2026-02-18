@@ -43,7 +43,9 @@ JitCompiler::JitCompiler(const bool verbose) noexcept:
     m_opt_pipeline(empty_opt_pipeline),
     m_verbose(verbose) {}
 
-CompiledModule JitCompiler::compile(const Module &module) const {
+CompiledModule JitCompiler::compile(Module &module) const {
+    m_opt_pipeline.run(module);
+
     return jit_compile_and_assembly(m_external_symbols, module, {}, m_verbose);
 }
 

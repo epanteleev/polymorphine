@@ -5,8 +5,8 @@
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "base/analysis/dom/DominatorTree.h"
 #include "base/analysis/frontiers/DominanceFrontiers.h"
-#include "mir/analysis/escape/EscapeAnalysisResult.h"
 
+#include "mir/analysis/escape/EscapeAnalysisResult.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/module/FunctionData.h"
 
@@ -26,10 +26,12 @@ public:
 
     void run();
 
+    [[nodiscard]]
     std::unique_ptr<result_type> result() noexcept {
         return std::make_unique<JoinPointSetResult>(std::move(m_join_set));
     }
 
+    [[nodiscard]]
     static JoinPointSet create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data);
 
 private:
@@ -41,5 +43,5 @@ private:
     const DominanceFrontiers<BasicBlock>& m_frontiers;
     const FunctionData *m_data;
     const EscapeAnalysisResult* m_escape_analysis;
-    std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set{};
+    std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set;
 };

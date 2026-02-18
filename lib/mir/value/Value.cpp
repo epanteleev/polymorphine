@@ -24,6 +24,14 @@ Value::Value(const GlobalValue *value) noexcept:
     m_value(const_cast<GlobalValue *>(value)),
     m_type(PointerType::ptr()) {}
 
+bool operator==(const Value& b, const Value& a) noexcept {
+    if (&b == &a) {
+        return true;
+    }
+
+    return a.m_type == b.m_type && a.m_value == b.m_value;
+}
+
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
         if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t>) {

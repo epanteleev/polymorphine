@@ -21,6 +21,11 @@ public:
         return m_join_set.end();
     }
 
+    [[nodiscard]]
+    std::size_t size() const noexcept {
+        return m_join_set.size();
+    }
+
 private:
     std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set;
 };

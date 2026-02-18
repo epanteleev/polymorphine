@@ -33,7 +33,7 @@ public:
     template<typename Os>
     friend Os& operator<<(Os& os, const VerifierResult& res) noexcept {
         const auto vis = [&]<typename T>(const T& arg) noexcept {
-            os << arg << " in " << *res.m_prototype << " " << res.m_loc;
+            os << arg << " in '" << *res.m_prototype << "' inst=" << res.m_loc;
         };
 
         std::visit(vis, res.m_result);
@@ -82,7 +82,7 @@ private:
     struct InvalidDUChain final {
         template<typename Os>
         friend Os& operator<<(Os& os, const InvalidDUChain&) noexcept {
-            return os << "Def-Use chain error in function";
+            return os << "Invalid def-use chain";
         }
     };
 

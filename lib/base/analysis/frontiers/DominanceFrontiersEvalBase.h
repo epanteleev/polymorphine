@@ -14,7 +14,7 @@ private:
         m_dominator_tree(dominator_tree) {}
 
 public:
-    static constexpr auto analysis_kind = AnalysisType::DominatorTree;
+    static constexpr auto analysis_kind = AnalysisType::DominanceFrontiers;
 
     void run() {
         init_frontier_set();
@@ -54,11 +54,11 @@ private:
 
             for (const auto& pred: preds) {
                 auto runner = pred;
-                while (b_idom!= nullptr && runner != b_idom) {
+                while (b_idom != nullptr && runner != b_idom) {
                     auto it = m_dominance_frontiers.find(runner);
                     assertion(it != m_dominance_frontiers.end(), "must be");
                     it->second.emplace(block);
-                    const auto dom_it = m_dominator_tree.immediate_dominator(block);
+                    const auto dom_it = m_dominator_tree.immediate_dominator(runner);
                     if (!dom_it.has_value()) {
                         break;
                     }

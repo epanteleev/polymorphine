@@ -2,6 +2,7 @@
 
 #include "mir/mir.h"
 #include "helpers/Jit.h"
+#include "mir/transform/mem2reg/Mem2Reg.h"
 
 template<typename Fn>
 static Module fib_map(const IntegerType* ty, std::unordered_map<std::string_view, BasicBlock*>& blocks, Fn&& fn) {
@@ -152,6 +153,15 @@ TEST(FibDom, dominators) {
     }
 
     ASSERT_EQ(idom_map.size(), 0);
+}
+
+TEST(FibOpt, i8) {
+    auto fib_mod = fib(SignedIntegerType::i8(), Value::i8);
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(fib_mod);
+    std::cout << obj << std::endl;
 }
 
 static const std::unordered_map<std::string, std::size_t> fib_sizes = {

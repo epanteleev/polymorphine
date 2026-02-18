@@ -14,11 +14,6 @@ public:
         return m_entries;
     }
 
-    void set_incoming_value(std::size_t index, const Value& value) noexcept {
-        assertion(index < m_values.size(), "index out of range");
-        m_values[index] = value;
-    }
-
     [[nodiscard]]
     static std::unique_ptr<Phi> phi(const PrimitiveType* type, std::vector<Value>&& values, std::vector<const BasicBlock*>&& targets) {
         return std::make_unique<Phi>(type, std::move(values), std::move(targets));

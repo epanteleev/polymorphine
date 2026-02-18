@@ -36,6 +36,14 @@ void UsedValue::add_user(Instruction* user) {
     std::visit(visitor, m_value);
 }
 
+void UsedValue::remove_user(Instruction *user) {
+    const auto visitor = [&]<typename T>(const T &val) {
+        val->remove_user(user);
+    };
+
+    std::visit(visitor, m_value);
+}
+
 std::span<const Instruction * const> UsedValue::users() const noexcept {
     const auto visitor = []<typename T>(const T &val) {
         return val->users();

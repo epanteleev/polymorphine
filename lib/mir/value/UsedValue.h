@@ -32,6 +32,8 @@ public:
 
     void add_user(Instruction* user);
 
+    void remove_user(Instruction* user);
+
     [[nodiscard]]
     std::span<const Instruction* const> users() const noexcept;
 
