@@ -12,13 +12,12 @@ FunctionData::FunctionData(const std::size_t uid, const FunctionPrototype* proto
 }
 
 BasicBlock * FunctionData::last() const {
-    const auto last_bb = m_basic_blocks.back();
-    assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
-    assertion(last_bb->last().isa(any_return()), "last basic block is not a return block");
-    return last_bb.get();
+    auto& last_bb = m_basic_blocks.back();
+    assertion(last_bb.last().isa(any_return()), "last basic block is not a return block");
+    return const_cast<BasicBlock*>(&last_bb);
 }
 
-static std::ostream& print_blocks(std::ostream &os, const OrderedSet<BasicBlock> &blocks) {
+static std::ostream& print_blocks(std::ostream &os, const ObjPool<BasicBlock> &blocks) {
     os << '{' << std::endl;
     for (const auto &bb : blocks) {
         bb.print(os);

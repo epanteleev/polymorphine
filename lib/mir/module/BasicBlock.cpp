@@ -4,12 +4,10 @@
 #include "mir/value/UsedValue.h"
 
 Terminator BasicBlock::last() const noexcept {
-    const auto back = m_instructions.back();
-    if (back == m_instructions.end()) {
-        die("BasicBlock has no instructions");
-    }
+    assertion(!m_instructions.empty(), "must be non empty");
+    const auto& last = m_instructions.back();
 
-    const auto term = Terminator::from(back.get());
+    const auto term = Terminator::from(&last);
     if (!term.has_value()) {
         die("Last instruction is not a terminator");
     }

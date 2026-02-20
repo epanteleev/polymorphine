@@ -2,8 +2,6 @@
 
 #include <span>
 
-#include "utility/OrderedSet.h"
-
 #include "base/BasicBlockBase.h"
 #include "base/Constrains.h"
 

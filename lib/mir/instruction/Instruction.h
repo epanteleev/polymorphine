@@ -43,8 +43,5 @@ public:
 
 protected:
     friend class BasicBlock;
-
-    BasicBlock* m_owner{};
-    std::size_t m_id{NO_ID};
     std::vector<Value> m_values;
 };

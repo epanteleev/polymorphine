@@ -17,7 +17,7 @@ public:
     }
 
     LIRBlock* create_mach_block() {
-        const auto id = m_basic_blocks.push_back(std::make_unique<LIRBlock>());
+        const auto id = m_basic_blocks.push_back(LIRBlock()); // TODO emplace back
         m_basic_blocks[id].set_id(id);
         return &m_basic_blocks[id];
     }

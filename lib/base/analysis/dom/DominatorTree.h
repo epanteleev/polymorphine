@@ -39,7 +39,8 @@ public:
         return Dominators(idom_node->second.idom);
     }
 
-    /** @return immediate dominator of given block
+    /**
+     * @return immediate dominator of given block
      * or std::nullopt if the block doesn't have idom.
      * **/
     [[nodiscard]]
@@ -53,6 +54,19 @@ public:
         }
 
         return idom_node->second.idom->m_me;
+    }
+
+    /**
+     * @return
+     * **/
+    [[nodiscard]]
+    std::span<BB*> idom(BB* const dominator) const {
+        const auto idom_node = m_dominator_tree.find(dominator);
+        if (idom_node == m_dominator_tree.end()) {
+            return {};
+        }
+
+        return idom_node->second.children;
     }
 
     [[nodiscard]]

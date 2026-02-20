@@ -4,7 +4,10 @@
 #include "base/Constrains.h"
 
 template<CodeBlock BB>
-struct DominatorTreeNode final {
+class DominatorTreeNode final {
+public:
+    using iterator = std::vector<DominatorTreeNode *>::iterator;
+
     explicit DominatorTreeNode(BB *const me) noexcept:
         m_me(me) {}
 

@@ -4,8 +4,8 @@
 #include <vector>
 #include <utility>
 
+#include "instruction_list/InstructionList.h"
 #include "utility/Error.h"
-#include "utility/OrderedSet.h"
 
 /**
  * Base class for basic blocks in MIR an LIR.
@@ -50,12 +50,12 @@ public:
      * Returns the instructions in the block.
      */
     [[nodiscard]]
-    const OrderedSet<Inst>& instructions() const noexcept {
+    const InstructionList<Inst>& instructions() const noexcept {
         return m_instructions;
     }
 
     [[nodiscard]]
-    const OrderedSet<Inst>& instructions() noexcept {
+    const InstructionList<Inst>& instructions() noexcept {
         return m_instructions;
     }
 
@@ -122,5 +122,5 @@ protected:
 
     std::size_t m_id{NO_ID};
     std::vector<Derived *> m_predecessors;
-    OrderedSet<Inst> m_instructions;
+    InstructionList<Inst> m_instructions;
 };

@@ -35,16 +35,16 @@ std::expected<FunctionBuilder, Error> ModuleBuilder::make_function_builder(const
  * Otherwise, find return block and move it to the end.
  */
 static void finalize_function(FunctionData* fd) noexcept {
-    for (const auto& bbs = fd->basic_blocks(); const auto& bb : bbs) {
+    for (auto& bbs = fd->basic_blocks(); const auto& bb : bbs) {
         if (!bb.last().isa(any_return())) {
             continue;
         }
-        if (bbs.back().get() == &bb) {
+        const auto& last = bbs.back();
+        if (&last == &bb) {
             continue;
         }
 
-        auto current = fd->remove(&bb);
-        fd->add_basic_block(std::move(current));
+        bbs.swap(last.id(), bb.id());
         break;
     }
 }

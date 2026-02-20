@@ -16,7 +16,8 @@ class UsedValue final {
 
 public:
     template <IsLocalValueType T>
-    [[nodiscard]] T* get() const {
+    [[nodiscard]]
+    T* get() const {
         return std::get<T*>(m_value);
     }
 

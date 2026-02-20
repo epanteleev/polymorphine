@@ -2,7 +2,6 @@
 
 #include <iosfwd>
 
-#include "utility/OrderedSet.h"
 #include "base/FunctionDataBase.h"
 
 #include "mir/global/GValuePool.h"
@@ -29,7 +28,7 @@ public:
     }
 
     BasicBlock* create_basic_block() {
-        const auto id = add_basic_block(std::make_unique<BasicBlock>());
+        const auto id = add_basic_block(BasicBlock()); //TODO emplace_back
         m_basic_blocks[id].set_id(id);
         return &m_basic_blocks[id];
     }
@@ -49,7 +48,7 @@ public:
         return m_prototype->name();
     }
 
-    std::size_t add_basic_block(std::unique_ptr<BasicBlock>&& bb) {
+    std::size_t add_basic_block(BasicBlock&& bb) {
         return m_basic_blocks.push_back(std::move(bb));
     }
 

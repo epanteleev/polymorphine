@@ -25,6 +25,17 @@ public:
         return std::make_unique<Phi>(type, std::move(values), std::move(targets));
     }
 
+
+    [[nodiscard]]
+    static const Phi* cast(const Instruction* inst) noexcept {
+        return dynamic_cast<const Phi *>(inst);
+    }
+
+    [[nodiscard]]
+    static Phi* cast(Instruction* inst) noexcept {
+        return dynamic_cast<Phi *>(inst);
+    }
+
 private:
     std::vector<const BasicBlock*> m_entries;
 };

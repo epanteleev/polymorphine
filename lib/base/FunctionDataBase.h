@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Constrains.h"
-#include "utility/OrderedSet.h"
-
+#include "utility/ObjPool.h"
 
 /**
  * Base class for function data in MIR and LIR.
@@ -31,8 +30,8 @@ public:
      * It doesn't have predecessors.
      */
     [[nodiscard]]
-    code_block_type* first() const {
-        return m_basic_blocks.begin().get();
+    code_block_type* first() const noexcept {
+        return &m_basic_blocks.front();
     }
 
     /**
@@ -52,18 +51,23 @@ public:
     }
 
     [[nodiscard]]
-    const OrderedSet<BB>& basic_blocks() const noexcept {
+    const ObjPool<BB>& basic_blocks() const noexcept {
         return m_basic_blocks;
     }
 
-    std::unique_ptr<code_block_type> remove(const code_block_type* bb) {
+    [[nodiscard]]
+    ObjPool<BB>& basic_blocks() noexcept {
+        return m_basic_blocks;
+    }
+
+    code_block_type remove(const code_block_type* bb) {
         return m_basic_blocks.remove(bb->id());
     }
 
 protected:
     std::size_t m_uid;
     std::vector<arg_type> m_args;
-    OrderedSet<code_block_type> m_basic_blocks;
+    ObjPool<code_block_type> m_basic_blocks;
 };
 
 

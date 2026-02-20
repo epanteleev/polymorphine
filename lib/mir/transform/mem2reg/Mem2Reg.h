@@ -20,9 +20,6 @@ public:
     static Mem2Reg create(FunctionData &fn) noexcept;
 
 private:
-    [[nodiscard]]
-    std::unordered_map<const Phi*, const Alloc*> insert_phis();
-
     FunctionData& m_fn;
     AnalysisPassManager m_manager;
 };

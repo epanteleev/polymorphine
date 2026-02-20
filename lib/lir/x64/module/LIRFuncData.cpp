@@ -5,11 +5,11 @@
 #include <ostream>
 
 LIRBlock * LIRFuncData::last() const {
-    const auto last_bb = m_basic_blocks.back();
-    assertion(last_bb != m_basic_blocks.end(), "last basic block is null");
-    const auto ret = dynamic_cast<const LIRReturn*>(last_bb->last());
+    assertion(!m_basic_blocks.empty(), "must be non empty");
+    auto& last_bb = m_basic_blocks.back();
+    const auto ret = dynamic_cast<const LIRReturn*>(last_bb.last());
     assertion(ret != nullptr, "last instruction is not a return");
-    return last_bb.get();
+    return &last_bb;
 }
 
 LIRAdjustStack * LIRFuncData::prologue() const {
@@ -26,7 +26,7 @@ LIRAdjustStack * LIRFuncData::epilogue() const {
     return epilogue;
 }
 
-static std::ostream& print_blocks(std::ostream &os, const OrderedSet<LIRBlock> &blocks) {
+static std::ostream& print_blocks(std::ostream &os, const ObjPool<LIRBlock> &blocks) {
     os << '{' << std::endl;
     for (const auto &bb : blocks) {
         bb.print(os);

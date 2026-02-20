@@ -5,26 +5,25 @@
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/Unary.h"
+#include "mir/value/UsedValue.h"
 
 #include <stack>
 #include <unordered_set>
 
-#include "mir/value/UsedValue.h"
-
 namespace {
     class RewritePrimitives final {
     public:
-        explicit RewritePrimitives(FunctionData& fn, const DominatorTree<BasicBlock>& tree, const std::unordered_map<const Phi*, const Alloc*>& inserted_phis, const EscapeAnalysisResult& escape_analysis) noexcept:
+        explicit RewritePrimitives(FunctionData& fn, AnalysisPassManager& manager) noexcept:
             m_fn(fn),
-            m_tree(tree),
-            m_inserted_phis(inserted_phis),
-            m_escape_analysis(escape_analysis) {}
+            m_manager(manager) {}
 
         void run() {
+            insert_phis();
             collect_promotable_allocs();
             if (m_promotable_allocs.empty()) {
                 return;
             }
+
             build_dom_children();
             rename(m_fn.first());
             cleanup();
@@ -32,12 +31,20 @@ namespace {
 
     private:
         void collect_promotable_allocs() {
-            for (const auto& bb : m_fn.basic_blocks()) {
+            const auto escape_analysis = m_manager.analyze<EscapeAnalysis>(&m_fn);
+            for (const auto& bb: m_fn.basic_blocks()) {
                 for (const auto& inst : bb.instructions()) {
                     const auto* a = Alloc::cast(&inst);
-                    if (a == nullptr) continue;
-                    if (m_escape_analysis.escape_state(a) != EscapeState::NOESCAPE) continue;
-                    if (PrimitiveType::cast(a->allocated_type()) == nullptr) continue;
+                    if (a == nullptr) {
+                        continue;
+                    }
+
+                    if (escape_analysis->escape_state(a) != EscapeState::NOESCAPE) {
+                        continue;
+                    }
+                    if (PrimitiveType::cast(a->allocated_type()) == nullptr) {
+                        continue;
+                    }
 
                     m_promotable_allocs.insert(a);
                     m_reaching_def[a].push(Value::undefined());
@@ -46,10 +53,13 @@ namespace {
         }
 
         void build_dom_children() {
-            for (const auto [block, idom] : m_tree.immediate_dominators()) {
-                if (idom != nullptr) {
-                    m_dom_children[idom].push_back(block);
+            const auto tree = m_manager.analyze<DominatorTreeEval>(&m_fn);
+            for (const auto [block, idom]: tree->immediate_dominators()) {
+                if (idom == nullptr) {
+                    continue;
                 }
+
+                m_dom_children[idom].push_back(block);
             }
         }
 
@@ -57,8 +67,14 @@ namespace {
         const Alloc* get_promotable_alloc(const Value& val) const {
             if (!val.is<ValueInstruction*>()) return nullptr;
             const auto* a = dynamic_cast<const Alloc*>(val.get<ValueInstruction*>());
-            if (a == nullptr) return nullptr;
-            if (!m_promotable_allocs.contains(a)) return nullptr;
+            if (a == nullptr) {
+                return nullptr;
+            }
+
+            if (!m_promotable_allocs.contains(a)) {
+                return nullptr;
+            }
+
             return a;
         }
 
@@ -116,11 +132,13 @@ namespace {
                     if (phi == nullptr) break; // phis are always at the front
 
                     const auto it = m_inserted_phis.find(phi);
-                    if (it == m_inserted_phis.end()) continue;
+                    if (it == m_inserted_phis.end()) {
+                        continue;
+                    }
 
                     const auto* a = it->second;
                     const auto incoming = phi->incoming();
-                    for (std::size_t i = 0; i < incoming.size(); i++) {
+                    for (std::size_t i{}; i < incoming.size(); i++) {
                         if (incoming[i] == block) {
                             phi->update_operand(i, m_reaching_def[a].top());
                             break;
@@ -154,50 +172,149 @@ namespace {
             }
         }
 
+        void insert_phis() {
+            const auto& join_point_set = *m_manager.analyze<JoinPointSet>(&m_fn);
+            for (const auto& [bb, v_set]: join_point_set) {
+                auto pred = bb->predecessors();
+                std::vector<const BasicBlock*> blocks;
+                blocks.reserve(pred.size());
+                for (const auto& p: pred) {
+                    blocks.push_back(p);
+                }
+
+                for (const auto& v: v_set) {
+                    const auto primitive_ty = PrimitiveType::cast(v->allocated_type());
+                    assertion(primitive_ty != nullptr, "must be primitive type");
+
+                    auto copy = blocks;
+                    const auto phi = bb->prepend(Phi::undef(primitive_ty, std::move(copy)));
+                    m_inserted_phis.emplace(phi, v);
+                }
+            }
+        }
+
         FunctionData& m_fn;
-        const DominatorTree<BasicBlock>& m_tree;
-        const std::unordered_map<const Phi*, const Alloc*>& m_inserted_phis;
-        const EscapeAnalysisResult& m_escape_analysis;
+        std::unordered_map<const Phi*, const Alloc*> m_inserted_phis;
+        AnalysisPassManager& m_manager;
 
         std::unordered_set<const Alloc*> m_promotable_allocs;
         std::unordered_map<const Alloc*, std::stack<Value>> m_reaching_def;
         std::unordered_map<BasicBlock*, std::vector<BasicBlock*>> m_dom_children;
         std::vector<std::pair<BasicBlock*, const Instruction*>> m_dead_instructions;
     };
+
+    class PhiFunctionPruning final {
+    public:
+        explicit PhiFunctionPruning(FunctionData& fn, AnalysisPassManager& manager) noexcept:
+            m_fn(fn),
+            m_manager(manager) {}
+
+        void run() {
+            initial_setup();
+            propagate_usefulness();
+            prune_useless_phis();
+        }
+
+    private:
+        void initial_setup() {
+            const auto& preorder = *m_manager.analyze<PreorderTraverse>(&m_fn);
+            for (const auto& block : preorder) {
+                for (auto& inst : block->instructions()) {
+                    if (const auto phi = Phi::cast(&inst); phi != nullptr) {
+                        mark_useless(phi);
+                        continue;
+                    }
+
+                    handle_operands(inst);
+                }
+            }
+        }
+
+        void propagate_usefulness() {
+            while (!m_worklist.empty()) {
+                const auto phi = m_worklist.top();
+                m_worklist.pop();
+
+                handle_phi_operands(phi);
+            }
+        }
+
+        void handle_operands(const Instruction& inst) {
+            for (const auto& op: inst.operands()) {
+                if (!op.is<ValueInstruction*>()) {
+                    continue;
+                }
+
+                const auto phi = Phi::cast(op.get<ValueInstruction*>());
+                if (phi == nullptr) {
+                    continue;
+                }
+
+                mark_useful(phi);
+                m_worklist.push(phi);
+            }
+        }
+
+        void handle_phi_operands(const Phi* inst) {
+            for (const auto& op: inst->operands()) {
+                if (!op.is<ValueInstruction*>()) {
+                    continue;
+                }
+
+                const auto phi = Phi::cast(op.get<ValueInstruction*>());
+                if (phi == nullptr) {
+                    continue;
+                }
+
+                if (is_useful(phi)) {
+                    continue;
+                }
+
+                mark_useful(phi);
+                m_worklist.push(phi);
+            }
+        }
+
+        void prune_useless_phis() {
+            for (const auto &[phi, useful]: m_useful) {
+                if (!useful) {
+                    continue;
+                }
+
+                const auto owner = phi->owner();
+                owner->remove_instruction(phi);
+            }
+        }
+
+        void mark_useful(Phi* const phi) noexcept {
+            m_useful[phi] = true;
+        }
+
+        void mark_useless(Phi* const phi) noexcept {
+            m_useful.emplace(phi, false);
+        }
+
+        [[nodiscard]]
+        bool is_useful(Phi* const phi) const noexcept {
+            return m_useful.at(phi);
+        }
+
+        FunctionData& m_fn;
+        AnalysisPassManager& m_manager;
+
+        std::unordered_map<Phi*, bool> m_useful;
+        std::stack<Phi*> m_worklist;
+    };
 }
 
 void Mem2Reg::run() noexcept {
-    const auto inserted_phis = insert_phis();
-    const auto tree = m_manager.analyze<DominatorTreeEval>(&m_fn);
-    const auto escape_analysis = m_manager.analyze<EscapeAnalysis>(&m_fn);
-    RewritePrimitives rewrite(m_fn, *tree, inserted_phis, *escape_analysis);
+    RewritePrimitives rewrite(m_fn, m_manager);
     rewrite.run();
+
+    PhiFunctionPruning prune(m_fn, m_manager);
+    prune.run();
 }
 
 Mem2Reg Mem2Reg::create(FunctionData &fn) noexcept {
     return Mem2Reg(fn);
-}
-
-std::unordered_map<const Phi *, const Alloc *> Mem2Reg::insert_phis() {
-    std::unordered_map<const Phi*, const Alloc*> inserted_phis;
-
-    const auto& join_point_set = *m_manager.analyze<JoinPointSet>(&m_fn);
-    for (const auto& [bb, v_set]: join_point_set) {
-        auto pred = bb->predecessors();
-        std::vector<const BasicBlock*> blocks;
-        blocks.reserve(pred.size());
-        for (const auto& p: pred) {
-            blocks.push_back(p);
-        }
-
-        for (const auto& v: v_set) {
-            const auto primitive_ty = PrimitiveType::cast(v->allocated_type());
-            assertion(primitive_ty != nullptr, "must be primitive type");
-
-            auto copy = blocks;
-            const auto phi = bb->prepend(Phi::undef(primitive_ty, std::move(copy)));
-            inserted_phis.emplace(phi, v);
-        }
-    }
-    return inserted_phis;
 }
