@@ -10,7 +10,7 @@ public:
     using value_type = T;
     using reference = T&;
     using pointer = T*;
-    using const_pointer = const pointer;
+    using const_pointer = const T*;
     using difference_type = std::iterator_traits<Iterator>::difference_type;
     using const_reference = reference;
 
@@ -19,7 +19,7 @@ public:
     explicit ObjPoolIterator(Iterator first) noexcept:
         current(first) {}
 
-    ObjPoolIterator &operator++() {
+    ObjPoolIterator &operator++() noexcept {
         ++current;
         return *this;
     }
@@ -72,18 +72,17 @@ public:
     [[nodiscard]]
     std::size_t push_back(U&& ptr) {
         const auto free_slot = get_free_index();
-        const auto s = size();
         m_holder.push_back(std::forward<U>(ptr));
-        if (free_slot == s) {
-            m_list.push_back(--m_holder.end());
-            return s;
+        auto new_iter = std::prev(m_holder.end());
+        if (free_slot == m_list.size()) {
+            m_list.push_back(new_iter);
+        } else {
+            m_list[free_slot] = new_iter;
         }
-
-        m_list[free_slot] = --m_holder.end();
         return free_slot;
     }
 
-    template<std::derived_from<T> U>
+    template<std::convertible_to<T> U>
     [[nodiscard]]
     std::size_t insert_before(std::size_t idx, U&& ptr) {
         auto iter = m_list[idx];
@@ -92,14 +91,12 @@ public:
         }
 
         const auto free_slot = get_free_index();
-        const auto s = size();
-        m_holder.insert(iter, std::forward<U>(ptr));
-        if (free_slot == s) {
-            m_list.push_back(--m_holder.end());
-            return s;
+        auto new_iter = m_holder.insert(iter, std::forward<U>(ptr));
+        if (free_slot == m_list.size()) {
+            m_list.push_back(new_iter);
+        } else {
+            m_list[free_slot] = new_iter;
         }
-
-        m_list[free_slot] = --m_holder.end();
         return free_slot;
     }
 
@@ -121,9 +118,11 @@ public:
 
         auto it_i = m_list[i];
         auto it_j = m_list[j];
+        assertion(it_i != m_holder.end() && it_j != m_holder.end(), "cannot swap freed slots");
 
         if (std::next(it_i) == it_j) {
             m_holder.splice(it_i, m_holder, it_j);
+
         } else if (std::next(it_j) == it_i) {
             m_holder.splice(it_j, m_holder, it_i);
         } else {
@@ -147,13 +146,13 @@ public:
 
     [[nodiscard]]
     const_reference at(std::size_t index) const {
-        assertion(index < size(), "invariant");
+        assertion(index < m_list.size() && m_list[index] != m_holder.end(), "index out of range or freed");
         return *m_list[index];
     }
 
     [[nodiscard]]
     reference at(std::size_t index) {
-        assertion(index < size(), "invariant");
+        assertion(index < m_list.size() && m_list[index] != m_holder.end(), "index out of range or freed");
         return *m_list[index];
     }
 
@@ -182,27 +181,27 @@ public:
 
     [[nodiscard]]
     bool empty() const noexcept {
-        return m_list.empty();
+        return m_holder.empty();
     }
 
     [[nodiscard]]
-    reference back() const noexcept {
-        return *m_list.back();
+    const_reference back() const noexcept {
+        return m_holder.back();
     }
 
     [[nodiscard]]
-    reference front() const noexcept {
-        return *m_list.front();
+    const_reference front() const noexcept {
+        return m_holder.front();
     }
 
     [[nodiscard]]
     reference back() noexcept {
-        return *m_list.back();
+        return m_holder.back();
     }
 
     [[nodiscard]]
     reference front() noexcept {
-        return *m_list.front();
+        return m_holder.front();
     }
 
 private:

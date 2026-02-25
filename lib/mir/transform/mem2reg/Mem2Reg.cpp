@@ -277,7 +277,7 @@ namespace {
 
         void prune_useless_phis() {
             for (const auto &[phi, useful]: m_useful) {
-                if (!useful) {
+                if (useful) {
                     continue;
                 }
 

@@ -16,7 +16,6 @@ public:
         return m_span.begin();
     }
 
-
 private:
     value m_span;
 };

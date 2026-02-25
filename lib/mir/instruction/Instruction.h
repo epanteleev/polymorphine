@@ -31,6 +31,8 @@ public:
         return m_values;
     }
 
+    void release() const noexcept;
+
     virtual void visit(Visitor& visitor) = 0;
 
     virtual void visit(Visitor& visitor) const {

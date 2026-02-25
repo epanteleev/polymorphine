@@ -5,7 +5,7 @@
 
 Terminator BasicBlock::last() const noexcept {
     assertion(!m_instructions.empty(), "must be non empty");
-    const auto& last = m_instructions.back();
+    auto& last = m_instructions.back();
 
     const auto term = Terminator::from(&last);
     if (!term.has_value()) {

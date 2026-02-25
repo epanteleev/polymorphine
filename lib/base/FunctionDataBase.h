@@ -31,7 +31,7 @@ public:
      */
     [[nodiscard]]
     code_block_type* first() const noexcept {
-        return &m_basic_blocks.front();
+        return const_cast<code_block_type*>(&m_basic_blocks.front());
     }
 
     /**

@@ -9,7 +9,7 @@ LIRBlock * LIRFuncData::last() const {
     auto& last_bb = m_basic_blocks.back();
     const auto ret = dynamic_cast<const LIRReturn*>(last_bb.last());
     assertion(ret != nullptr, "last instruction is not a return");
-    return &last_bb;
+    return const_cast<LIRBlock *>(&last_bb);
 }
 
 LIRAdjustStack * LIRFuncData::prologue() const {

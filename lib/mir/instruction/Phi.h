@@ -39,3 +39,13 @@ public:
 private:
     std::vector<const BasicBlock*> m_entries;
 };
+
+namespace impls {
+    inline bool phi(const Instruction* inst) noexcept {
+        return Phi::cast(inst) != nullptr;
+    }
+}
+
+consteval auto phi() {
+    return impls::phi;
+}

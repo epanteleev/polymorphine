@@ -268,6 +268,9 @@ static bool is_pinned(const Instruction& inst) noexcept {
     if (inst.isa(load())) {
         return true;
     }
+    if (inst.isa(phi())) {
+        return true;
+    }
     if (const auto term = Terminator::from(&inst); term.has_value()) {
         return true;
     }
@@ -777,7 +780,7 @@ void FunctionLower::accept(Phi *inst) {
     incoming_targets.reserve(inst->incoming().size());
 
     for (const auto [target, incoming]: std::views::zip(inst->incoming(), inst->operands())) {
-        incoming_values.emplace_back(get_lir_val(incoming));
+        incoming_values.emplace_back(get_lir_operand(incoming));
         incoming_targets.push_back(m_bb_mapping.at(target));
     }
     const auto lir_val_type = convert_type_to_lir_val_type(inst->type());

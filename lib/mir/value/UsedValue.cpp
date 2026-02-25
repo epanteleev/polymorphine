@@ -36,7 +36,7 @@ void UsedValue::add_user(Instruction* user) {
     std::visit(visitor, m_value);
 }
 
-void UsedValue::remove_user(Instruction *user) {
+void UsedValue::remove_user(const Instruction *user) {
     const auto visitor = [&]<typename T>(const T &val) {
         val->remove_user(user);
     };

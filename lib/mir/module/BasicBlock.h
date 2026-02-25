@@ -30,6 +30,11 @@ public:
         return inst_ptr;
     }
 
+    void remove_instruction(const Instruction* id) {
+        id->release();
+        m_instructions.remove(id->id());
+    }
+
     [[nodiscard]]
     Terminator last() const noexcept;
 

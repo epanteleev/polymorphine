@@ -19,7 +19,7 @@ public:
     std::span<BasicBlock * const> successors() const noexcept {
         return m_successors;
     }
-    
+
 protected:
     std::vector<BasicBlock* > m_successors;
 };

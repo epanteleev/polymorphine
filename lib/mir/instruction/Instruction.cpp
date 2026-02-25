@@ -240,3 +240,14 @@ void Instruction::update_operand(const std::size_t idx, const Value &new_val) {
         lv_opt->add_user(this);
     }
 }
+
+void Instruction::release() const noexcept {
+    for (const auto& op: m_values) {
+        auto lv_opt = UsedValue::try_from(op);
+        if (!lv_opt.has_value()) {
+            continue;
+        }
+
+        lv_opt->remove_user(this);
+    }
+}
