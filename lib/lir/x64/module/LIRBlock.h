@@ -3,8 +3,6 @@
 #include <span>
 
 #include "base/BasicBlockBase.h"
-#include "base/Constrains.h"
-
 #include "lir/x64/instruction/LIRInstructionBase.h"
 #include "lir/x64/instruction/LIRControlInstruction.h"
 
@@ -54,5 +52,3 @@ private:
 
     static void make_def_use_chain(LIRInstructionBase* inst);
 };
-
-static_assert(CodeBlock<LIRBlock>, "assumed to be");

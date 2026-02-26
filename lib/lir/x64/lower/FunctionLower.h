@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ranges>
-
+#include "ParallelCopyContext.h"
 #include "mir/mir.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
 #include "lir/x64/asm/cc/CallConv.h"
@@ -54,7 +53,7 @@ private:
 
     void setup_bb_mapping();
 
-    void finalize_parallel_copies() const noexcept;
+    void finalize_parallel_copies() noexcept;
 
     void accept(Binary *inst) override;
 
@@ -115,7 +114,12 @@ private:
     LIROperand lower_global_cst(const GlobalValue &global);
     LIRVal lower_return_value(const Value &val);
     LIROperand make_fp_constant(const Type &type, double val);
+
+    [[nodiscard]]
     LIROperand get_lir_operand(const Value& val);
+    [[nodiscard]]
+    LIROperand get_lir_operand(ValueInstruction* val);
+    [[nodiscard]]
     LIRVal get_lir_val(const Value& val);
 
     template <IsLocalValueType T>
@@ -137,5 +141,6 @@ private:
     std::unordered_set<LIRBlock*> m_parallel_copy_owners;
     // Temporal storage for late scheduled instructions.
     std::unordered_set<ValueInstruction*> m_late_schedule_instructions;
+    std::unordered_map<ParallelCopy*, ParallelCopyContext> m_uncompleted_phis;
 };
 

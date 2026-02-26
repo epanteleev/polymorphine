@@ -416,15 +416,19 @@ void FunctionLower::setup_bb_mapping() {
 
 static void insert_copies(ParallelCopy& p_copy) noexcept {
     for (auto [idx, input, target]: std::views::zip(std::views::iota(0UL), p_copy.inputs(), p_copy.targets())) {
-        const auto lir_val = LIRVal::try_from(input);
-        assertion(lir_val.has_value(), "Expected LIRVal for ParallelCopy input");
-
-        const auto copy = target->ins_before(target->last(), LIRProducerInstruction::copy(lir_val->size(), lir_val.value().type(), input));
+        const auto copy = target->ins_before(target->last(), LIRProducerInstruction::copy(input.size(), input.type(), input));
         p_copy.in(idx, copy->def(0));
     }
 }
 
-void FunctionLower::finalize_parallel_copies() const noexcept {
+void FunctionLower::finalize_parallel_copies() noexcept {
+    for (auto& [parallel_copy, ctx]: m_uncompleted_phis) {
+        for (auto [idx, val]: std::ranges::views::zip(ctx.indexes(), ctx.values())) {
+            const auto lir_val = get_lir_operand(val);
+            parallel_copy->in(idx, lir_val);
+        }
+    }
+
     for (auto& bb: m_parallel_copy_owners) {
         for (auto& inst: bb->instructions()) {
             if (!inst.isa(parallel_copy())) break;
@@ -437,7 +441,7 @@ void FunctionLower::finalize_parallel_copies() const noexcept {
 LIROperand FunctionLower::lower_global_cst(const GlobalValue& global) {
     switch (global.kind()) {
         case GValueKind::CONSTANT: {
-            GlobalsLowering lowering{m_obj_function.global_data(), global};
+            GlobalsLowering lowering(m_obj_function.global_data(), global);
             return lowering.lower();
         }
         case GValueKind::VARIABLE: return m_global_data.lookup(std::string(global.name())).value();
@@ -478,14 +482,7 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
             return m_value_mapping.at(UsedValue::from(v));
 
         } else if constexpr (std::is_same_v<T, ValueInstruction *>) {
-            const auto lir_val_iter = m_value_mapping.find(UsedValue::from(v));
-            if (lir_val_iter != m_value_mapping.end()) {
-                return lir_val_iter->second;
-            }
-
-            assertion(m_late_schedule_instructions.contains(v), "invariant");
-            schedule_late(v);
-            return m_value_mapping.at(UsedValue::from(v));
+            return get_lir_operand(v);
 
         } else if constexpr (std::is_same_v<T, GlobalValue *>) {
             return lower_global_cst(*v);
@@ -500,6 +497,17 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
     };
 
     return val.visit(visitor);
+}
+
+LIROperand FunctionLower::get_lir_operand(ValueInstruction *const val) {
+    const auto lir_val_iter = m_value_mapping.find(UsedValue::from(val));
+    if (lir_val_iter != m_value_mapping.end()) {
+        return lir_val_iter->second;
+    }
+
+    assertion(m_late_schedule_instructions.contains(val), "invariant");
+    schedule_late(val);
+    return m_value_mapping.at(UsedValue::from(val));
 }
 
 LIRVal FunctionLower::get_lir_val(const Value &val) {
@@ -779,12 +787,31 @@ void FunctionLower::accept(Phi *inst) {
     std::vector<LIRBlock*> incoming_targets;
     incoming_targets.reserve(inst->incoming().size());
 
-    for (const auto [target, incoming]: std::views::zip(inst->incoming(), inst->operands())) {
+    std::vector<std::size_t> uncompleted_indices;
+    std::vector<ValueInstruction*> uncompleted_values;
+
+    for (const auto [target, incoming, idx]: std::views::zip(inst->incoming(), inst->operands(), std::ranges::views::iota(0U))) {
+        if (incoming.is<ValueInstruction*>()) {
+            const auto value_inst = incoming.get<ValueInstruction*>();
+            if (!m_late_schedule_instructions.contains(value_inst)) {
+                uncompleted_indices.push_back(idx);
+                uncompleted_values.emplace_back(value_inst);
+
+                constexpr auto undef = LirCst::imm32(0);
+                incoming_values.emplace_back(undef);
+                incoming_targets.push_back(m_bb_mapping.at(target));
+                continue;
+            }
+        }
+
         incoming_values.emplace_back(get_lir_operand(incoming));
         incoming_targets.push_back(m_bb_mapping.at(target));
+
     }
     const auto lir_val_type = convert_type_to_lir_val_type(inst->type());
     const auto parallel_copy = m_bb->ins(ParallelCopy::copy(lir_val_type, std::move(incoming_values), std::move(incoming_targets)));
+    m_uncompleted_phis.emplace(parallel_copy, ParallelCopyContext(std::move(uncompleted_indices), std::move(uncompleted_values)));
+
     memorize(inst, parallel_copy->def(0));
 }
 
@@ -1081,7 +1108,7 @@ void FunctionLower::try_schedule_late(ValueInstruction *inst) {
     schedule_late(inst);
 }
 
-void FunctionLower::schedule_late(ValueInstruction *inst) {
+void FunctionLower::schedule_late(ValueInstruction *const inst) {
     m_late_schedule_instructions.erase(inst);
     inst->visit(*this);
 }

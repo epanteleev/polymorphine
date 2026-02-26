@@ -59,6 +59,9 @@ public:
     }
 
     [[nodiscard]]
+    LIRValType type() const noexcept;
+
+    [[nodiscard]]
     std::uint8_t align() const noexcept;
 
     friend std::ostream& operator<<(std::ostream& os, const LIROperand& op) noexcept;

@@ -69,6 +69,17 @@ static Module clamp_int(const IntegerType* ty) {
 }
 
 template<typename Fn>
+static void verify_compilation(const CompiledModule& code) {
+    const auto clamp = code.code_start_as<Fn>("clamp").value();
+
+    ASSERT_EQ(clamp(10, 0, 20), 10);
+    ASSERT_EQ(clamp(10, 20, 30), 20);
+    ASSERT_EQ(clamp(10, 5, 15), 10);
+    ASSERT_EQ(clamp(10, 10, 10), 10);
+    ASSERT_EQ(clamp(10, -5, 5), 5);
+}
+
+template<typename Fn>
 static void verify_clamp_int(const Module& module) {
     const std::unordered_map<std::string, std::size_t> sizes = {
         {"max", 11},
@@ -77,13 +88,17 @@ static void verify_clamp_int(const Module& module) {
     };
 
     const auto code = jit_compile_and_assembly(module, sizes, true);
-    const auto clamp = code.code_start_as<Fn>("clamp").value();
+    verify_compilation<Fn>(code);
+}
 
-    ASSERT_EQ(clamp(10, 0, 20), 10);
-    ASSERT_EQ(clamp(10, 20, 30), 20);
-    ASSERT_EQ(clamp(10, 5, 15), 10);
-    ASSERT_EQ(clamp(10, 10, 10), 10);
-    ASSERT_EQ(clamp(10, -5, 5), 5);
+TEST(ClampOpt, clamp32) {
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+
+    auto clamp = clamp_int(SignedIntegerType::i32());
+    const auto obj = compiler.compile(clamp);
+    verify_compilation<std::int32_t(std::int32_t, std::int32_t, std::int32_t)>(obj);
 }
 
 TEST(Clamp, clamp_i32) {

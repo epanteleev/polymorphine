@@ -21,3 +21,5 @@
 #include "value/ValueMatcher.h"
 
 #include "analysis/Analysis.h"
+
+#include "transform/mem2reg/Mem2Reg.h"

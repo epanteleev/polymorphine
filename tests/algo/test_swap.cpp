@@ -21,6 +21,23 @@ static Module swap(const PrimitiveType* ty) {
     return builder.build();
 }
 
+TEST(SwapOpt, swap32) {
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+
+    auto swap_mod = swap(SignedIntegerType::i32());
+    const auto obj = compiler.compile(swap_mod);
+    std::int32_t a = 42;
+    std::int32_t b = 84;
+
+    const auto fn = obj.code_start_as<void(void*, void*)>("swap").value();
+    fn(&a, &b);
+
+    ASSERT_EQ(a, 84);
+    ASSERT_EQ(b, 42);
+}
+
 TEST(SanityCheck, swap_signed) {
     const auto sign_types = {
         SignedIntegerType::i32(),

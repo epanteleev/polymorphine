@@ -85,11 +85,9 @@ public:
     template<std::convertible_to<T> U>
     [[nodiscard]]
     std::size_t insert_before(std::size_t idx, U&& ptr) {
+        assertion(idx < m_list.size(), "must be");
         auto iter = m_list[idx];
-        if (iter == m_holder.end()) {
-            return push_back(std::forward<U>(ptr));
-        }
-
+        assertion(iter != m_holder.end(), "must be");
         const auto free_slot = get_free_index();
         auto new_iter = m_holder.insert(iter, std::forward<U>(ptr));
         if (free_slot == m_list.size()) {
@@ -113,7 +111,7 @@ public:
         return removed;
     }
 
-    void swap(std::size_t i, std::size_t j) noexcept {
+    void swap(std::size_t i, std::size_t j) {
         if (i == j) return;
 
         auto it_i = m_list[i];

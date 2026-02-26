@@ -21,6 +21,7 @@ public:
     }
 
     static std::unique_ptr<ParallelCopy> copy(const LIRValType ty, std::vector<LIROperand> &&uses, std::vector<LIRBlock*>&& blocks) {
+        assertion(uses.size() == blocks.size(), "must be");
         const auto size = uses.front().size();
         auto copy = std::make_unique<ParallelCopy>(ty, std::move(uses), std::move(blocks));
         copy->add_def(LIRVal::reg(size, size, 0, copy.get()));

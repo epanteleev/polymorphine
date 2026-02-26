@@ -1,7 +1,24 @@
 #include "LIROperand.h"
+#include "base/Constant.h"
+
 #include <ostream>
 
-#include "base/Constant.h"
+LIRValType LIROperand::type() const noexcept {
+    const auto visitor = [&]<typename T>(const T &val) -> LIRValType {
+        if constexpr (std::is_same_v<T, const LIRNamedSlot*> || std::is_same_v<T, LirCst>) {
+            return LIRValType::GP;
+
+        } else if constexpr (std::is_same_v<T, LIRVal>) {
+            return val.type();
+
+        } else {
+            static_assert(false);
+            std::unreachable();
+        }
+    };
+
+    return std::visit(visitor, m_operand);
+}
 
 std::uint8_t LIROperand::align() const noexcept {
     const auto visitor = [&]<typename T>(const T &val) -> std::uint8_t {

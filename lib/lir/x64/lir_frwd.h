@@ -10,6 +10,7 @@ class LIRControlInstruction;
 class LIRProducerInstructionBase;
 class LIRCall;
 class LIRAdjustStack;
+class ParallelCopy;
 
 enum class FunctionBind: std::uint8_t;
 enum class FcmpOrdering : std::uint8_t;
