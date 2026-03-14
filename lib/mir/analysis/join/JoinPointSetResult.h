@@ -7,10 +7,10 @@
 
 class JoinPointSetResult final: public AnalysisPassResult {
 public:
-    using join_set = std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>>;
+    using join_set = std::unordered_map<BasicBlock*, std::vector<const Alloc*>>;
     using iterator = join_set::const_iterator;
 
-    explicit JoinPointSetResult(std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>>&& joins) noexcept:
+    explicit JoinPointSetResult(std::unordered_map<BasicBlock*, std::vector<const Alloc*>>&& joins) noexcept:
         m_join_set(std::move(joins)) {}
 
     iterator begin() const noexcept {
@@ -27,5 +27,5 @@ public:
     }
 
 private:
-    std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set;
+    std::unordered_map<BasicBlock*, std::vector<const Alloc*>> m_join_set;
 };

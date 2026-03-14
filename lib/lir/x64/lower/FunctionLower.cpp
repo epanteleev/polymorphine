@@ -259,6 +259,11 @@ static std::pair<Value, Value> try_fold_field_access(const FieldAccess* field_ac
     std::unreachable();
 }
 
+static bool has_phi_user(const ValueInstruction* inst) noexcept {
+    const auto users = inst->users();
+    return !users.empty() && users[0]->isa(phi());
+}
+
 static bool is_pinned(const Instruction& inst) noexcept {
     const auto value_inst = ValueInstruction::cast(&inst);
     if (value_inst == nullptr) {
@@ -279,7 +284,12 @@ static bool is_pinned(const Instruction& inst) noexcept {
         return false;
     }
 
-    if (value_inst->users().size() > 1) {
+    const auto users = value_inst->users();
+    if (users.size() > 1) {
+        return true;
+    }
+
+    if (has_phi_user(value_inst)) {
         return true;
     }
 
@@ -343,12 +353,7 @@ void FunctionLower::setup_gp_argument(const std::size_t idx, const ArgumentValue
 
     if (idx != RDX_IDX && idx != RCX_IDX) {
         const auto is_no_live_out = [&](const Instruction* user) { // TODO better live-out checker.
-            if (user->owner() != m_function.first()) {
-                return true;
-            }
-
-            const auto term = Terminator::from(user);
-            return !term.has_value();
+            return user->owner() == m_function.first() && !Terminator::from(user).has_value();
         };
 
         if (std::ranges::all_of(arg.users(), is_no_live_out)) {
@@ -431,7 +436,7 @@ void FunctionLower::finalize_parallel_copies() noexcept {
 
     for (auto& bb: m_parallel_copy_owners) {
         for (auto& inst: bb->instructions()) {
-            if (!inst.isa(parallel_copy())) break;
+            if (!inst.isa(parallel_copy())) continue;
 
             insert_copies(dynamic_cast<ParallelCopy&>(inst));
         }
@@ -810,9 +815,11 @@ void FunctionLower::accept(Phi *inst) {
     }
     const auto lir_val_type = convert_type_to_lir_val_type(inst->type());
     const auto parallel_copy = m_bb->ins(ParallelCopy::copy(lir_val_type, std::move(incoming_values), std::move(incoming_targets)));
-    m_uncompleted_phis.emplace(parallel_copy, ParallelCopyContext(std::move(uncompleted_indices), std::move(uncompleted_values)));
+    const auto def = parallel_copy->def(0);
+    const auto copy = m_bb->ins(LIRProducerInstruction::copy(def.size(), lir_val_type, def));
 
-    memorize(inst, parallel_copy->def(0));
+    m_uncompleted_phis.emplace(parallel_copy, ParallelCopyContext(std::move(uncompleted_indices), std::move(uncompleted_values)));
+    memorize(inst, copy->def(0));
 }
 
 void FunctionLower::accept(Store *store) {

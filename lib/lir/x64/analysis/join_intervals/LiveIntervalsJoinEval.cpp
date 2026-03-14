@@ -95,7 +95,7 @@ void LiveIntervalsJoinEval::setup_parallel_copy_groups() {
     for (const auto& bb: m_data.basic_blocks()) {
         for (const auto& inst: bb.instructions()) {
             if (!inst.isa(parallel_copy())) {
-                break;
+                continue;
             }
 
             const auto& parallel_copy = dynamic_cast<const ParallelCopy&>(inst);

@@ -156,13 +156,31 @@ TEST(FibDom, dominators) {
 }
 
 TEST(FibOpt, i8) {
-    GTEST_SKIP();
     auto fib_mod = fib(SignedIntegerType::i8(), Value::i8);
     OptPipeline pipeline;
     pipeline.add_pass<Mem2Reg>();
     const JitCompiler compiler(pipeline, true);
     const auto obj = compiler.compile(fib_mod);
-    std::cout << obj << std::endl;
+
+    const auto fn = obj.code_start_as<std::int8_t(std::int8_t)>("fib").value();
+    for (std::int8_t i{}; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << static_cast<int>(i);
+    }
+}
+
+TEST(FibOpt, i32) {
+    auto fib_mod = fib(SignedIntegerType::i32(), Value::i32);
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(fib_mod);
+
+    const auto fn = obj.code_start_as<std::int32_t(std::int32_t)>("fib").value();
+    for (std::int32_t i{}; i < 20; ++i) {
+        const auto res = fn(i);
+        ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << i;
+    }
 }
 
 static const std::unordered_map<std::string, std::size_t> fib_sizes = {
@@ -173,7 +191,7 @@ TEST(Fib, i8) {
     const auto buffer = jit_compile_and_assembly(fib(SignedIntegerType::i8(), Value::i8), fib_sizes, true);
     const auto fn = buffer.code_start_as<std::int8_t(std::int8_t)>("fib").value();
 
-    for (std::int8_t i = 0; i < 20; ++i) {
+    for (std::int8_t i{}; i < 20; ++i) {
         const auto res = fn(i);
         ASSERT_EQ(res, fib_value(i)) << "Failed for value: " << static_cast<int>(i);
     }

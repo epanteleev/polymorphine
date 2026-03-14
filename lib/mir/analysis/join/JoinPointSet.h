@@ -43,5 +43,5 @@ private:
     const DominanceFrontiers<BasicBlock>& m_frontiers;
     const FunctionData *m_data;
     const EscapeAnalysisResult* m_escape_analysis;
-    std::unordered_map<BasicBlock*, std::unordered_set<const Alloc*>> m_join_set;
+    std::unordered_map<BasicBlock*, std::vector<const Alloc*>> m_join_set;
 };

@@ -22,7 +22,7 @@ private:
 
 public:
     void run() {
-        compute_local_live_set();
+        compute_local_live_set_in_function();
         setup_liveness();
         compute_global_live_set();
     }
@@ -43,33 +43,63 @@ public:
     }
 
 private:
-    void compute_local_live_set() {
+    void compute_local_live_set_in_function() {
         for (const auto bb: m_ordering) {
-            LIRValSet gen;
-            LIRValSet kill;
+            compute_local_live_set(bb);
+        }
 
-            for (const auto& inst: bb->instructions()) {
-                if (!inst.isa(parallel_copy())) {
-                    for (auto& in: inst.inputs()) {
-                        const auto lir_val = LIRVal::try_from(in);
-                        if (!lir_val.has_value()) {
-                            continue;
-                        }
+        finalize_parallel_copies_in_function();
+    }
 
-                        if (kill.contains(lir_val.value())) {
-                            continue;
-                        }
+    void compute_local_live_set(const LIRBlock* bb) {
+        LIRValSet gen;
+        LIRValSet kill;
 
-                        gen.insert(lir_val.value());
+        for (const auto& inst: bb->instructions()) {
+            if (!inst.isa(parallel_copy())) {
+                for (auto& in: inst.inputs()) {
+                    const auto lir_val = LIRVal::try_from(in);
+                    if (!lir_val.has_value()) {
+                        continue;
                     }
-                }
 
-                for (const auto& out: LIRVal::defs(&inst)) {
-                    kill.insert(out);
+                    if (kill.contains(lir_val.value())) {
+                        continue;
+                    }
+
+                    gen.insert(lir_val.value());
                 }
             }
 
-            m_kill_gen_set.emplace(bb, std::pair(kill, gen));
+            for (const auto& out: LIRVal::defs(&inst)) {
+                kill.insert(out);
+            }
+        }
+
+        m_kill_gen_set.emplace(bb, std::pair(kill, gen));
+    }
+
+    void finalize_parallel_copies_in_function() {
+        for (const auto bb: m_ordering) {
+            for (auto& inst: bb->instructions()) {
+                if (!inst.isa(parallel_copy())) continue;
+
+                finalize_parallel_copies(dynamic_cast<ParallelCopy&>(inst));
+            }
+        }
+    }
+
+    void finalize_parallel_copies(ParallelCopy& phi) {
+        for (const auto& [value, block]: std::ranges::views::zip(phi.inputs(), phi.targets())) {
+            const auto lir_val = LIRVal::try_from(value);
+            if (!lir_val.has_value()) {
+                continue;
+            }
+
+            auto& [kill, gen] = m_kill_gen_set.at(phi.owner());
+            if (!kill.contains(lir_val.value())) {
+                gen.insert(lir_val.value());
+            }
         }
     }
 

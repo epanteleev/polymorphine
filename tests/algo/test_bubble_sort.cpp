@@ -122,6 +122,21 @@ static Module bubble_sort(const PrimitiveType* ty, const PrimitiveType* inc_type
     return builder.build();
 }
 
+TEST(BubbleSort, opt) {
+    auto mod = bubble_sort(SignedIntegerType::i32(), SignedIntegerType::i32(), Value::i32);
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(mod);
+
+    const auto fn = obj.code_start_as<void(int*, int)>("bubble_sort").value();
+
+    int arr[] = {5, 9, 0};
+    int sorted[] = {0, 5, 9};
+    fn(arr, 3);
+    ASSERT_TRUE(std::equal(arr, arr + 3, sorted));
+}
+
 static std::unordered_map<std::string, std::size_t> symbol_sizes = {
     {"bubble_sort", 54}
 };

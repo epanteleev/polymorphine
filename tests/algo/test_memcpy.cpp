@@ -68,6 +68,7 @@ static Module memcpy_test_module() {
     return builder.build();
 }
 
+
 TEST(Memcpy, basic) {
     char dst[10] = {};
     const char* src = "Hello";
@@ -78,6 +79,21 @@ TEST(Memcpy, basic) {
 
     const auto func = jit_compile_and_assembly(memcpy_test_module(), asm_size, true);
     const auto memcpy_test = func.code_start_as<void(void*, const void*, std::size_t)>("memcpy_test").value();
+    memcpy_test(dst, src, 6);
+    ASSERT_STREQ(dst, "Hello");
+}
+
+TEST(Memcpy, opt) {
+    auto mod = memcpy_test_module();
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(mod);
+
+    const auto memcpy_test = obj.code_start_as<void(void*, const void*, std::size_t)>("memcpy_test").value();
+
+    char dst[10]{};
+    const char* src = "Hello";
     memcpy_test(dst, src, 6);
     ASSERT_STREQ(dst, "Hello");
 }

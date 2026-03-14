@@ -25,7 +25,28 @@ TEST(ObjPool, test1) {
     ASSERT_EQ(v2, 4);
 }
 
-TEST(OrderedSet, iterator1) {
+TEST(ObjPool, intsert_before) {
+    ObjPool<int> pool;
+    const auto id1 = pool.push_back(3);
+    ASSERT_EQ(pool.size(), 1);
+
+    const auto id2 = pool.insert_before(id1, 2);
+    ASSERT_EQ(pool.size(), 2);
+
+    const auto id3 = pool.insert_before(id2, 4);
+    ASSERT_EQ(pool.size(), 3);
+
+    ASSERT_EQ(pool[id1], 3);
+    ASSERT_EQ(pool[id2], 2);
+    ASSERT_EQ(pool[id3], 4);
+
+    constexpr int values[] = {4, 2, 3};
+    for (const auto& [actual, expected]: std::ranges::views::zip(pool, values)) {
+        ASSERT_EQ(actual, expected);
+    }
+}
+
+TEST(ObjPool, iterator1) {
     ObjPool<int> set;
     [[maybe_unused]]
     auto a = set.push_back(3);
@@ -39,7 +60,7 @@ TEST(OrderedSet, iterator1) {
     ASSERT_EQ(*it, 4);
 }
 
-TEST(OrderedSet, iterator2) {
+TEST(ObjPool, iterator2) {
     ObjPool<int> set;
     [[maybe_unused]]
     auto a = set.push_back(3);
@@ -53,7 +74,7 @@ TEST(OrderedSet, iterator2) {
     ASSERT_EQ(*it, 3);
 }
 
-TEST(OrderedSet, iterator3) {
+TEST(ObjPool, iterator3) {
     ObjPool<int> set;
     [[maybe_unused]]
     auto _a = set.push_back(3);

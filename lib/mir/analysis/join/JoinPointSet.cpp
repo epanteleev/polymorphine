@@ -42,8 +42,7 @@ static AllocStoreAnalysisResult alloc_store_analysis(const FunctionData *data, c
 }
 
 void JoinPointSet::run() {
-    auto alloc_info = alloc_store_analysis(m_data, m_escape_analysis);
-    for (auto& [alloc, stores]: alloc_info) {
+    for (auto& [alloc, stores]: alloc_store_analysis(m_data, m_escape_analysis)) {
         evaluate_joins(alloc, std::move(stores));
     }
 }
@@ -72,14 +71,17 @@ void JoinPointSet::evaluate_joins(const Alloc *alloc, std::unordered_set<BasicBl
 
 void JoinPointSet::add_value(BasicBlock *const bb, const Alloc *alloc) noexcept {
     const auto allocs = m_join_set.find(bb);
-    if (allocs != m_join_set.end()) {
-        allocs->second.emplace(alloc);
+    if (allocs == m_join_set.end()) {
+        std::vector<const Alloc *> blocks;
+        blocks.push_back(alloc);
+        m_join_set.emplace(bb, std::move(blocks));
         return;
     }
 
-    std::unordered_set<const Alloc *> blocks; //TODO std::vector????
-    blocks.emplace(alloc);
-    m_join_set.emplace(bb, std::move(blocks));
+    const auto elem = std::ranges::find(allocs->second, alloc);
+    if (elem == allocs->second.end()) {
+        allocs->second.push_back(alloc);
+    }
 }
 
 JoinPointSet JoinPointSet::create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
