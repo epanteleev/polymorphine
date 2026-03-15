@@ -37,13 +37,13 @@ void LinearScan::run() {
 }
 
 LinearScan LinearScan::create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data, aasm::SymbolTable &symbol_tab, const call_conv::CallConvProvider *call_conv)  {
-    const auto intervals = cache->analyze<LiveIntervalsEval>(data);
-    const auto joins = cache->analyze<LiveIntervalsJoinEval>(data);
-    const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+    const auto& intervals = cache->analyze<LiveIntervalsEval>(data);
+    const auto& joins = cache->analyze<LiveIntervalsJoinEval>(data);
+    const auto& preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
     const auto reg_set = collect_used_argument_regs(data->args());
 
     auto vreg_selection = details::VRegSelection::create(call_conv, reg_set);
-    return LinearScan(*data, std::move(vreg_selection), *intervals, *joins, *preorder, symbol_tab, call_conv);
+    return LinearScan(*data, std::move(vreg_selection), intervals, joins, preorder, symbol_tab, call_conv);
 }
 
 void LinearScan::allocate_fixed_registers() {

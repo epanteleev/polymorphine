@@ -82,6 +82,19 @@ public:
         return free_slot;
     }
 
+    template<typename... Args>
+    std::size_t emplace_back(Args&&... args) {
+        const auto free_slot = get_free_index();
+        m_holder.emplace_back(std::forward<Args>(args)...);
+        auto new_iter = std::prev(m_holder.end());
+        if (free_slot == m_list.size()) {
+            m_list.push_back(new_iter);
+        } else {
+            m_list[free_slot] = new_iter;
+        }
+        return free_slot;
+    }
+
     template<std::convertible_to<T> U>
     [[nodiscard]]
     std::size_t insert_before(std::size_t idx, U&& ptr) {

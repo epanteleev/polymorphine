@@ -49,8 +49,8 @@ public:
     }
 
     static DominatorTreeEvalBase create(AnalysisPassManagerBase<FD> *cache, const FD *data) {
-        auto post_order = cache->template analyze<PostOrderTraverseBase<FD>>(data);
-        return DominatorTreeEvalBase(*post_order);
+        auto& post_order = cache->template analyze<PostOrderTraverseBase<FD>>(data);
+        return DominatorTreeEvalBase(post_order);
     }
 
     std::unique_ptr<result_type> result() noexcept {

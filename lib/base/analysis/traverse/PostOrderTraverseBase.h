@@ -31,8 +31,8 @@ public:
     }
 
     static PostOrderTraverseBase create(AnalysisPassManagerBase<FD>* cache, const FD *data) {
-        auto preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
-        return PostOrderTraverseBase(*preorder);
+        auto& preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
+        return PostOrderTraverseBase(preorder);
     }
 
 private:

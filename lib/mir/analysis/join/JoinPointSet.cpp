@@ -21,7 +21,7 @@ static std::unordered_set<BasicBlock *> collect_blocks(const Alloc *alloc) {
     return blocks;
 }
 
-static AllocStoreAnalysisResult alloc_store_analysis(const FunctionData *data, const EscapeAnalysisResult* escape_analysis) {
+static AllocStoreAnalysisResult alloc_store_analysis(const FunctionData *data, const EscapeAnalysisResult& escape_analysis) {
     AllocStoreAnalysisResult alloc_info;
     for (const auto& bb: data->basic_blocks()) {
         for (const auto& inst: bb.instructions()) {
@@ -30,7 +30,7 @@ static AllocStoreAnalysisResult alloc_store_analysis(const FunctionData *data, c
             }
 
             const auto alloc = Alloc::cast(&inst);
-            if (escape_analysis->escape_state(alloc) != EscapeState::NOESCAPE) {
+            if (escape_analysis.escape_state(alloc) != EscapeState::NOESCAPE) {
                 continue;
             }
 
@@ -85,9 +85,9 @@ void JoinPointSet::add_value(BasicBlock *const bb, const Alloc *alloc) noexcept 
 }
 
 JoinPointSet JoinPointSet::create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data) {
-    const auto frontiers = cache->analyze<DominanceFrontiersEval>(data);
-    const auto escape_analysis = cache->analyze<EscapeAnalysis>(data);
-    return JoinPointSet(*frontiers, escape_analysis, data);
+    const auto& frontiers = cache->analyze<DominanceFrontiersEval>(data);
+    const auto& escape_analysis = cache->analyze<EscapeAnalysis>(data);
+    return JoinPointSet(frontiers, escape_analysis, data);
 }
 
 bool JoinPointSet::has_user_in_block(const BasicBlock *block, const Alloc *alloc) noexcept {

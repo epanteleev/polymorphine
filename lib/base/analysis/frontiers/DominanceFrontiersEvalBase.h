@@ -22,8 +22,8 @@ public:
     }
 
     static DominanceFrontiersEvalBase create(AnalysisPassManagerBase<FD> *cache, const FD *data) {
-        const auto dominator_tree = cache->template analyze<DominatorTreeEvalBase<FD>>(data);
-        return DominanceFrontiersEvalBase(*dominator_tree);
+        const auto& dominator_tree = cache->template analyze<DominatorTreeEvalBase<FD>>(data);
+        return DominanceFrontiersEvalBase(dominator_tree);
     }
 
     std::unique_ptr<result_type> result() {

@@ -19,8 +19,19 @@ public:
         return m_values[1];
     }
 
+    [[nodiscard]]
     static std::unique_ptr<Store> store(const Value& ptr, const Value& value) {
         return std::make_unique<Store>(ptr, value);
+    }
+
+    [[nodiscard]]
+    static const Store* cast(const Instruction* inst) noexcept {
+        return dynamic_cast<const Store *>(inst);
+    }
+
+    [[nodiscard]]
+    static Store* cast(Instruction* inst) noexcept {
+        return dynamic_cast<Store *>(inst);
     }
 };
 

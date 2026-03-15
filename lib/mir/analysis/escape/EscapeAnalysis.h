@@ -28,7 +28,7 @@ public:
     }
 
     static EscapeAnalysis create(AnalysisPassManagerBase<FunctionData>* cache, const FunctionData *data) {
-        const auto& preorder = *cache->analyze<PreorderTraverseBase<FunctionData>>(data);
+        const auto& preorder = cache->analyze<PreorderTraverseBase<FunctionData>>(data);
         return EscapeAnalysis(preorder);
     }
 

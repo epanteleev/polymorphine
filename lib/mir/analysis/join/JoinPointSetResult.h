@@ -1,6 +1,6 @@
 #pragma once
+
 #include <unordered_map>
-#include <unordered_set>
 
 #include "base/analysis/AnalysisPass.h"
 #include "mir/module/BasicBlock.h"

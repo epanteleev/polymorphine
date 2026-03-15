@@ -19,15 +19,15 @@ TEST(EmptyFunc, traverse) {
         .value();
 
     AnalysisPassManager cache;
-    const auto& preorder = *cache.analyze<PreorderTraverse>(func);
+    const auto& preorder = cache.analyze<PreorderTraverse>(func);
     ASSERT_EQ(preorder.size(), 1);
     ASSERT_EQ(preorder[0], func->first());
 
-    const auto& postorder = *cache.analyze<PostOrderTraverse>(func);
+    const auto& postorder = cache.analyze<PostOrderTraverse>(func);
     ASSERT_EQ(postorder.size(), 1);
     ASSERT_EQ(postorder[0], func->first());
 
-    const auto& bfs = *cache.analyze<BFSOrderTraverse>(func);
+    const auto& bfs = cache.analyze<BFSOrderTraverse>(func);
     ASSERT_EQ(bfs.size(), 1);
     ASSERT_EQ(bfs[0], func->first());
 }
@@ -38,7 +38,7 @@ TEST(EmptyFunc, dom) {
         .value();
 
     AnalysisPassManager cache;
-    const auto& dom = *cache.analyze<DominatorTreeEval>(func);
+    const auto& dom = cache.analyze<DominatorTreeEval>(func);
 
     std::size_t size{};
     for (auto _: dom.dominators(func->first())) {

@@ -12,19 +12,19 @@ class AnalysisPassManagerBase final {
 
 public:
     template <Analysis A>
-    A::result_type* analyze(const FD* data) {
+    A::result_type& analyze(const FD* data) {
         using result_type = A::result_type;
         constexpr auto idx = static_cast<std::size_t>(A::analysis_kind);
 
         auto& pass_res = m_passes[idx];
         if (pass_res != nullptr) {
-            return static_cast<result_type*>(pass_res.get());
+            return *static_cast<result_type*>(pass_res.get());
         }
 
         auto a = A::create(this, data);
         a.run();
         m_passes[idx] = a.result();
-        return static_cast<result_type*>(m_passes[idx].get());
+        return *static_cast<result_type*>(m_passes[idx].get());
     }
 
 private:

@@ -30,8 +30,8 @@ public:
 
     static FunctionLower create(AnalysisPassManagerBase<FunctionData> *cache, const FunctionData *data, GlobalData& global_data, const call_conv::CallConvProvider* call_conv) {
         // It is assumed that bfs order guarantees domination order.
-        const auto* bfs = cache->analyze<BFSOrderTraverseBase<FunctionData>>(data);
-        return {create_lir_function(*data), *data, *bfs, global_data, call_conv};
+        const auto& bfs = cache->analyze<BFSOrderTraverseBase<FunctionData>>(data);
+        return {create_lir_function(*data), *data, bfs, global_data, call_conv};
     }
 
     LIRFuncData result() {

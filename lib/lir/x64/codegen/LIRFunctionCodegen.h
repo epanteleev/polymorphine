@@ -22,8 +22,8 @@ public:
     }
 
     static LIRFunctionCodegen create(LIRAnalysisPassManager* cache, const LIRFuncData* data, aasm::SymbolTable& symbol_tab) {
-        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return LIRFunctionCodegen(*data, *preorder, symbol_tab);
+        const auto& preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+        return LIRFunctionCodegen(*data, preorder, symbol_tab);
     }
 
 private:

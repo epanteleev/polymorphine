@@ -11,7 +11,7 @@ FunctionData::FunctionData(const std::size_t uid, const FunctionPrototype* proto
     create_basic_block();
 }
 
-BasicBlock * FunctionData::last() const {
+BasicBlock* FunctionData::last() const {
     auto& last_bb = m_basic_blocks.back();
     assertion(last_bb.last().isa(any_return()), "last basic block is not a return block");
     return const_cast<BasicBlock*>(&last_bb);

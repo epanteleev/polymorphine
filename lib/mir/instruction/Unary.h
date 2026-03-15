@@ -85,6 +85,16 @@ public:
         return std::make_unique<Unary>(PointerType::ptr(), UnaryOp::Int2Ptr, value);
     }
 
+    [[nodiscard]]
+    static const Unary* cast(const Instruction* inst) noexcept {
+        return dynamic_cast<const Unary *>(inst);
+    }
+
+    [[nodiscard]]
+    static Unary* cast(Instruction* inst) noexcept {
+        return dynamic_cast<Unary *>(inst);
+    }
+
 private:
     const UnaryOp m_op;
 };

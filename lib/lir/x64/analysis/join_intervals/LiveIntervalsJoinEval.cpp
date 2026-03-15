@@ -9,8 +9,8 @@
 
 
 LiveIntervalsJoinEval LiveIntervalsJoinEval::create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-    const auto intervals = cache->analyze<LiveIntervalsEval>(data);
-    return {*intervals, *data};
+    const auto& intervals = cache->analyze<LiveIntervalsEval>(data);
+    return {intervals, *data};
 }
 
 void LiveIntervalsJoinEval::collect_gp_argument(const LIRVal &arg, const GPVReg &vreg) {

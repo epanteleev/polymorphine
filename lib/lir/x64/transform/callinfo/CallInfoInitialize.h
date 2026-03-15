@@ -15,8 +15,8 @@ class CallInfoInitialize final {
 
 public:
     static CallInfoInitialize create(AnalysisPassManagerBase<LIRFuncData>* manager, LIRFuncData* data, const call_conv::CallConvProvider* call_conv) {
-        const auto liveness_info = manager->analyze<LivenessAnalysis>(data);
-        return {*liveness_info, *data, call_conv};
+        const auto& liveness_info = manager->analyze<LivenessAnalysis>(data);
+        return {liveness_info, *data, call_conv};
     }
 
     void run() {

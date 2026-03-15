@@ -44,9 +44,9 @@ public:
     }
 
     static LiveIntervalsEval create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        const auto liveness = cache->analyze<LivenessAnalysis>(data);
-        const auto preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return LiveIntervalsEval(*data, *liveness, *preorder);
+        const auto& liveness = cache->analyze<LivenessAnalysis>(data);
+        const auto& preorder = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+        return LiveIntervalsEval(*data, liveness, preorder);
     }
 
 private:

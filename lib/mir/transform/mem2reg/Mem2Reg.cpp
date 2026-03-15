@@ -31,17 +31,17 @@ namespace {
 
     private:
         void collect_promotable_allocs() {
-            const auto escape_analysis = m_manager.analyze<EscapeAnalysis>(&m_fn);
+            const auto& escape_analysis = m_manager.analyze<EscapeAnalysis>(&m_fn);
             for (const auto& bb: m_fn.basic_blocks()) {
                 for (const auto& inst : bb.instructions()) {
                     const auto* a = Alloc::cast(&inst);
                     if (a == nullptr) {
                         continue;
                     }
-
-                    if (escape_analysis->escape_state(a) != EscapeState::NOESCAPE) {
+                    if (escape_analysis.escape_state(a) != EscapeState::NOESCAPE) {
                         continue;
                     }
+
                     if (PrimitiveType::cast(a->allocated_type()) == nullptr) {
                         continue;
                     }
@@ -53,8 +53,8 @@ namespace {
         }
 
         void build_dom_children() {
-            const auto tree = m_manager.analyze<DominatorTreeEval>(&m_fn);
-            for (const auto [block, idom]: tree->immediate_dominators()) {
+            const auto& tree = m_manager.analyze<DominatorTreeEval>(&m_fn);
+            for (const auto [block, idom]: tree.immediate_dominators()) {
                 if (idom == nullptr) {
                     continue;
                 }
@@ -66,7 +66,7 @@ namespace {
         [[nodiscard]]
         const Alloc* get_promotable_alloc(const Value& val) const {
             if (!val.is<ValueInstruction*>()) return nullptr;
-            const auto* a = dynamic_cast<const Alloc*>(val.get<ValueInstruction*>());
+            const auto* a = Alloc::cast(val.get<ValueInstruction*>());
             if (a == nullptr) {
                 return nullptr;
             }
@@ -78,10 +78,10 @@ namespace {
             return a;
         }
 
-        static void replace_all_uses(const ValueInstruction* old_val, const Value& new_val) {
+        static void replace_all_uses(ValueInstruction* old_val, const Value& new_val) {
             for (auto* user : old_val->users()) {
                 const auto idx = index_of(user->operands(), old_val);
-                const_cast<Instruction*>(user)->update_operand(idx, new_val);
+                user->update_operand(idx, new_val);
             }
         }
 
@@ -91,9 +91,8 @@ namespace {
 
             for (auto& inst : block->instructions()) {
                 // --- Inserted phi: it defines a new reaching value for its alloc ---
-                if (auto* phi = dynamic_cast<Phi*>(&inst)) {
-                    const auto it = m_inserted_phis.find(phi);
-                    if (it != m_inserted_phis.end()) {
+                if (auto* phi = Phi::cast(&inst)) {
+                    if (const auto it = m_inserted_phis.find(phi); it != m_inserted_phis.end()) {
                         const auto* a = it->second;
                         m_reaching_def[a].emplace(phi);
                         num_pushed[a]++;
@@ -102,7 +101,7 @@ namespace {
                 }
 
                 // --- Store to a promotable alloc: push stored value, mark dead ---
-                if (auto* store = dynamic_cast<Store*>(&inst)) {
+                if (auto* store = Store::cast(&inst)) {
                     const auto* a = get_promotable_alloc(store->pointer());
                     if (a != nullptr) {
                         m_reaching_def[a].push(store->value());
@@ -113,7 +112,7 @@ namespace {
                 }
 
                 // --- Load from a promotable alloc: RAUW with reaching def, mark dead ---
-                if (auto* load = dynamic_cast<Unary*>(&inst)) {
+                if (auto* load = Unary::cast(&inst)) {
                     if (load->op() == UnaryOp::Load) {
                         const auto* a = get_promotable_alloc(load->operand());
                         if (a != nullptr) {
@@ -128,7 +127,7 @@ namespace {
             // Fill in phi operands in each CFG successor.
             for (auto* succ : block->successors()) {
                 for (auto& inst : succ->instructions()) {
-                    auto* phi = dynamic_cast<Phi*>(&inst);
+                    auto* phi = Phi::cast(&inst);
                     if (phi == nullptr) break; // phis are always at the front
 
                     const auto it = m_inserted_phis.find(phi);
@@ -168,12 +167,13 @@ namespace {
             }
 
             for (const auto* a : m_promotable_allocs) {
-                a->owner()->remove_instruction(a);
+                const auto owner = a->owner();
+                owner->remove_instruction(a);
             }
         }
 
         void insert_phis() {
-            const auto& join_point_set = *m_manager.analyze<JoinPointSet>(&m_fn);
+            const auto& join_point_set = m_manager.analyze<JoinPointSet>(&m_fn);
             for (const auto& [bb, v_set]: join_point_set) {
                 auto pred = bb->predecessors();
                 std::vector<const BasicBlock*> blocks;
@@ -194,8 +194,8 @@ namespace {
         }
 
         FunctionData& m_fn;
-        std::unordered_map<const Phi*, const Alloc*> m_inserted_phis;
         AnalysisPassManager& m_manager;
+        std::unordered_map<const Phi*, const Alloc*> m_inserted_phis;
 
         std::unordered_set<const Alloc*> m_promotable_allocs;
         std::unordered_map<const Alloc*, std::stack<Value>> m_reaching_def;
@@ -217,7 +217,7 @@ namespace {
 
     private:
         void initial_setup() {
-            const auto& preorder = *m_manager.analyze<PreorderTraverse>(&m_fn);
+            const auto& preorder = m_manager.analyze<PreorderTraverse>(&m_fn);
             for (const auto& block : preorder) {
                 for (auto& inst : block->instructions()) {
                     if (const auto phi = Phi::cast(&inst); phi != nullptr) {
@@ -280,9 +280,16 @@ namespace {
                 if (useful) {
                     continue;
                 }
+                phi->release();
+            }
+
+            for (const auto &[phi, useful]: m_useful) {
+                if (useful) {
+                    continue;
+                }
 
                 const auto owner = phi->owner();
-                owner->remove_instruction(phi);
+                owner->remove_instruction_fast(phi);
             }
         }
 

@@ -10,7 +10,7 @@ public:
     explicit Use(const Type *type) noexcept:
         m_type(type) {}
 
-    void add_user(const Instruction *user) {
+    void add_user(Instruction *user) {
         m_users.push_back(user);
     }
 
@@ -26,11 +26,16 @@ public:
     }
 
     [[nodiscard]]
+    std::span<Instruction* const> users() noexcept {
+        return m_users;
+    }
+
+    [[nodiscard]]
     const Type* type() const noexcept {
         return m_type;
     }
 
 protected:
     const Type *m_type;
-    std::vector<const Instruction*> m_users;
+    std::vector<Instruction*> m_users;
 };

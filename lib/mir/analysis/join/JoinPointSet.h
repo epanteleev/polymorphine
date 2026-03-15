@@ -16,7 +16,7 @@ public:
     using result_type = JoinPointSetResult;
 
 private:
-    explicit JoinPointSet(const DominanceFrontiers<BasicBlock>& frontiers, const EscapeAnalysisResult* escape_analysis, const FunctionData *data) noexcept:
+    explicit JoinPointSet(const DominanceFrontiers<BasicBlock>& frontiers, const EscapeAnalysisResult& escape_analysis, const FunctionData *data) noexcept:
         m_frontiers(frontiers),
         m_data(data),
         m_escape_analysis(escape_analysis) {}
@@ -42,6 +42,6 @@ private:
 
     const DominanceFrontiers<BasicBlock>& m_frontiers;
     const FunctionData *m_data;
-    const EscapeAnalysisResult* m_escape_analysis;
+    const EscapeAnalysisResult& m_escape_analysis;
     std::unordered_map<BasicBlock*, std::vector<const Alloc*>> m_join_set;
 };

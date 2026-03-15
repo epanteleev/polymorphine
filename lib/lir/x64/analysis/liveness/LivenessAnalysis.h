@@ -38,8 +38,8 @@ public:
     }
 
     static LivenessAnalysis create(AnalysisPassManagerBase<LIRFuncData> *cache, const LIRFuncData *data) {
-        const auto ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
-        return LivenessAnalysis(*ordering);
+        const auto& ordering = cache->analyze<PreorderTraverseBase<LIRFuncData>>(data);
+        return LivenessAnalysis(ordering);
     }
 
 private:

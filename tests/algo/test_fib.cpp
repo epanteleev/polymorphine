@@ -121,16 +121,16 @@ TEST(FibDom, dominators) {
     ASSERT_TRUE(fun.has_value());
 
     AnalysisPassManager manager;
-    const auto dom = manager.analyze<DominatorTreeEval>(fun.value());
+    const auto& dom = manager.analyze<DominatorTreeEval>(fun.value());
 
-    ASSERT_EQ(dom->immediate_dominator(blocks["entry"]), std::nullopt);
-    ASSERT_EQ(dom->immediate_dominator(blocks["if_then"]), blocks["entry"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["if_end"]), blocks["entry"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["ret"]), blocks["entry"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["for_cond"]), blocks["if_end"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["for_body"]), blocks["for_cond"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["for_inc"]), blocks["for_body"]);
-    ASSERT_EQ(dom->immediate_dominator(blocks["for_end"]), blocks["for_cond"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["entry"]), std::nullopt);
+    ASSERT_EQ(dom.immediate_dominator(blocks["if_then"]), blocks["entry"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["if_end"]), blocks["entry"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["ret"]), blocks["entry"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["for_cond"]), blocks["if_end"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["for_body"]), blocks["for_cond"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["for_inc"]), blocks["for_body"]);
+    ASSERT_EQ(dom.immediate_dominator(blocks["for_end"]), blocks["for_cond"]);
 
     std::unordered_map<BasicBlock*, BasicBlock*> idom_map = {
         {blocks["entry"], nullptr},
@@ -143,7 +143,7 @@ TEST(FibDom, dominators) {
         {blocks["for_end"], blocks["for_cond"]},
     };
 
-    const auto idoms = dom->immediate_dominators();
+    const auto idoms = dom.immediate_dominators();
     ASSERT_EQ(idoms.size(), idom_map.size());
 
     for (const auto& [bb, idom]: idoms) {

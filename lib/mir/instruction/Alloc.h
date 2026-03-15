@@ -20,8 +20,8 @@ public:
     [[nodiscard]]
     const NonTrivialType* allocated_type() const noexcept { return m_type; }
 
-    template <std::derived_from<Instruction> I>
-    static const Alloc* cast(const I* instruction) noexcept {
+    [[nodiscard]]
+    static const Alloc* cast(const Instruction* instruction) noexcept {
         return dynamic_cast<const Alloc*>(instruction);
     }
 
