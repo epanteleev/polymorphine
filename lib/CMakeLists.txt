@@ -36,7 +36,6 @@ add_library(polymorphine SHARED
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:asm_x64>
         $<TARGET_OBJECTS:lir_x64>
-        lir/x64/lower/ParallelCopyContext.h
 )
 
 try_setup_coverage_options(polymorphine)

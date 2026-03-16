@@ -166,7 +166,7 @@ void LinearScan::activate_unhandled_fixed_regs(const LiveInterval &unhandled_int
             continue;
         }
 
-        const auto& real_interval = group.value()->m_interval;
+        const auto& real_interval = group.value()->interval();
         if (real_interval.start() > unhandled_interval.finish()) {
             // No need to check further, the intervals are sorted.
             break;

@@ -124,11 +124,3 @@ static void check_bytes_cc(const std::vector<std::vector<std::uint8_t>>& codes, 
         ASSERT_EQ(name, make_string(asm_buffer)) << "Mismatch at scale=" << scale;
     }
 }
-
-template<std::signed_integral T>
-[[maybe_unused]]
-static constexpr T add_overflow(T a, T b) {
-    T sum;
-    __builtin_add_overflow(a, b, &sum);
-    return sum;
-}

@@ -41,3 +41,23 @@ constexpr std::int64_t bitcast(const T value) noexcept {
     return result;
 }
 
+template<std::signed_integral T>
+constexpr T add_overflow(const T& lhs, const T& rhs) noexcept {
+    T result{};
+    __builtin_add_overflow(lhs, rhs, &result);
+    return result;
+}
+
+template<std::signed_integral T>
+constexpr T sub_overflow(const T& lhs, const T& rhs) noexcept {
+    T result{};
+    __builtin_sub_overflow(lhs, rhs, &result);
+    return result;
+}
+
+template<std::signed_integral T>
+constexpr T mul_overflow(const T& lhs, const T& rhs) noexcept {
+    T result{};
+    __builtin_mul_overflow(lhs, rhs, &result);
+    return result;
+}
