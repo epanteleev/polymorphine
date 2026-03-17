@@ -234,6 +234,10 @@ void Instruction::update_operand(const std::size_t idx, const Value &new_val) {
         lv_opt->remove_user(this);
     }
 
+    raw_update_operand(idx, new_val);
+}
+
+void Instruction::raw_update_operand(const std::size_t idx, const Value &new_val) {
     m_values[idx] = new_val;
 
     if (auto lv_opt = UsedValue::try_from(new_val); lv_opt.has_value()) {
@@ -241,7 +245,7 @@ void Instruction::update_operand(const std::size_t idx, const Value &new_val) {
     }
 }
 
-void Instruction::release() const noexcept {
+void Instruction::release_instruction_users() const noexcept {
     for (const auto& op: m_values) {
         auto lv_opt = UsedValue::try_from(op);
         if (!lv_opt.has_value()) {

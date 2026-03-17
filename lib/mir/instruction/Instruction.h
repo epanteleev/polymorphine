@@ -31,7 +31,7 @@ public:
         return m_values;
     }
 
-    void release() const noexcept;
+    void release_instruction_users() const noexcept;
 
     virtual void visit(Visitor& visitor) = 0;
 
@@ -44,6 +44,10 @@ public:
     void update_operand(std::size_t idx, const Value& new_val);
 
 protected:
+    friend class ValueInstruction;
+
+    void raw_update_operand(std::size_t idx, const Value& new_val);
+
     friend class BasicBlock;
     std::vector<Value> m_values;
 };

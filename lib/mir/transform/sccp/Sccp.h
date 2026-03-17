@@ -3,8 +3,8 @@
 #include "mir/analysis/Analysis.h"
 #include "mir/transform/TransformPass.h"
 
-class SCCP final: public TransformPass {
-    explicit SCCP(FunctionData &fn) noexcept:
+class Sccp final: public TransformPass {
+    explicit Sccp(FunctionData &fn) noexcept:
         m_fn(fn) {}
 
 public:
@@ -16,7 +16,7 @@ public:
     }
 
     [[nodiscard]]
-    static SCCP create(FunctionData &fn) noexcept;
+    static Sccp create(FunctionData &fn) noexcept;
 
 private:
     FunctionData& m_fn;

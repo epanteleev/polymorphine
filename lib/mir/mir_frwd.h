@@ -46,6 +46,7 @@ class TupleType;
 class Undef;
 
 class Value;
+class VConstant;
 class ArgumentValue;
 
 class FunctionData;

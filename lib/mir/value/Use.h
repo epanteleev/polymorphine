@@ -6,6 +6,7 @@
 #include "utility/Error.h"
 
 class Use {
+    friend class ValueInstruction;
 public:
     explicit Use(const Type *type) noexcept:
         m_type(type) {}
@@ -33,6 +34,14 @@ public:
     [[nodiscard]]
     const Type* type() const noexcept {
         return m_type;
+    }
+
+private:
+    [[nodiscard]]
+    std::vector<Instruction*> release_users() noexcept {
+        std::vector<Instruction*> empty;
+        std::swap(empty, m_users);
+        return empty;
     }
 
 protected:

@@ -4,6 +4,7 @@
 #include "base/Constrains.h"
 #include "mir/instruction/Instruction.h"
 #include "mir/instruction/Terminator.h"
+#include "utility/StdExtensions.h"
 
 
 class BasicBlock final: public BasicBlockBase<BasicBlock, Instruction> {
@@ -31,7 +32,7 @@ public:
     }
 
     std::unique_ptr<Instruction> remove_instruction(const Instruction* id) {
-        id->release();
+        id->release_instruction_users();
         return remove_instruction_fast(id);
     }
 
@@ -45,6 +46,12 @@ public:
     [[nodiscard]]
     std::span<BasicBlock* const> successors() const {
         return last().targets();
+    }
+
+    void remove_predecessor(const BasicBlock* pred) {
+        const auto it = std::find(m_predecessors.begin(), m_predecessors.end(), pred);
+        assertion(it != m_predecessors.end(), "must contain predecessor");
+        remove_fast(m_predecessors, it);
     }
 
 private:

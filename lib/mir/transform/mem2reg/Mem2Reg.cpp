@@ -78,13 +78,6 @@ namespace {
             return a;
         }
 
-        static void replace_all_uses(ValueInstruction* old_val, const Value& new_val) {
-            for (auto* user : old_val->users()) {
-                const auto idx = index_of(user->operands(), old_val);
-                user->update_operand(idx, new_val);
-            }
-        }
-
         void rename(BasicBlock* block) {
             // Track how many defs we push per alloc so we can pop them later.
             std::unordered_map<const Alloc*, std::size_t> num_pushed;
@@ -116,7 +109,7 @@ namespace {
                     if (load->op() == UnaryOp::Load) {
                         const auto* a = get_promotable_alloc(load->operand());
                         if (a != nullptr) {
-                            replace_all_uses(load, m_reaching_def[a].top());
+                            load->replace_all_uses(m_reaching_def[a].top());
                             m_dead_instructions.emplace_back(block, load);
                             continue;
                         }
@@ -276,13 +269,6 @@ namespace {
         }
 
         void prune_useless_phis() {
-            for (const auto &[phi, useful]: m_useful) {
-                if (useful) {
-                    continue;
-                }
-                phi->release();
-            }
-
             for (const auto &[phi, useful]: m_useful) {
                 if (useful) {
                     continue;

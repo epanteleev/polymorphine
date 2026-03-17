@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "mir/mir_frwd.h"
+#include "mir/types/FlagType.h"
 #include "mir/types/Type.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
@@ -14,11 +15,22 @@
 template <typename T>
 concept IsValueType = std::is_same_v<T, double> ||
     std::is_same_v<T, std::int64_t> ||
+    std::is_same_v<T, bool> ||
     std::is_same_v<T, ArgumentValue *> ||
     std::is_same_v<T, ValueInstruction *> ||
     std::is_same_v<T, GlobalValue *>;
 
 class Value final {
+public:
+    using Variants = std::variant<double,
+        std::int64_t,
+        ArgumentValue*,
+        bool,
+        ValueInstruction *,
+        GlobalValue*,
+        std::monostate>;
+
+private:
     constexpr Value(double value, const FloatingPointType *type) noexcept:
         m_value(value),
         m_type(type) {}
@@ -30,6 +42,12 @@ class Value final {
     constexpr Value() noexcept:
         m_value(std::monostate{}),
         m_type(Undef::undef()) {}
+
+    explicit Value(const VConstant& cst) noexcept;
+
+    constexpr explicit Value(const bool value) noexcept:
+        m_value(value),
+        m_type(FlagType::flag()) {}
 
 public:
     Value(const ArgumentValue* value) noexcept;
@@ -49,6 +67,7 @@ public:
     }
 
     template<typename Matcher>
+    [[nodiscard]]
     constexpr bool isa(Matcher&& matcher) const noexcept {
         return matcher(*this);
     }
@@ -121,14 +140,17 @@ public:
         return {};
     }
 
+    constexpr static Value false_value() noexcept {
+        return Value(false);
+    }
+
+    constexpr static Value true_value() noexcept {
+        return Value(true);
+    }
+
 private:
-    std::variant<double,
-        std::int64_t,
-        ArgumentValue*,
-        ValueInstruction *,
-        GlobalValue*,
-        std::monostate> m_value;
-    const Type* m_type;
+    Variants m_value;
+    const Type* m_type{};
 };
 
 namespace impls {

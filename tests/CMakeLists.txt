@@ -18,6 +18,7 @@ function(add_test_executable target path)
     endif()
 endfunction()
 
+add_test_executable(dead_code_tests      ir/dead_code_test.cpp)
 add_test_executable(object_pool_tests    ir/object_pool_tests.cpp)
 add_test_executable(sanity_check_ir      ir/sanity_check_ir.cpp)
 add_test_executable(sanity_check_ir1     ir/sanity_check_ir1.cpp)

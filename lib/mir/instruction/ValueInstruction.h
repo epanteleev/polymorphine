@@ -9,6 +9,8 @@ public:
     explicit ValueInstruction(const Type* ty, std::vector<Value>&& values) noexcept:
         Instruction(std::move(values)), Use(ty) {}
 
+    void replace_all_uses(const Value& new_val) noexcept;
+
     [[nodiscard]]
     static const ValueInstruction* cast(const Instruction* inst) noexcept {
         return dynamic_cast<const ValueInstruction*>(inst);

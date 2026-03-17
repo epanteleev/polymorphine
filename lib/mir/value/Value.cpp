@@ -2,12 +2,13 @@
 
 #include "mir/value/Value.h"
 #include "mir/types/Type.h"
+#include "mir/types/FlagType.h"
 #include "mir/instruction/ValueInstruction.h"
 #include "mir/value/ArgumentValue.h"
 #include "mir/module/BasicBlock.h"
 #include "mir/types/PointerType.h"
 #include "mir/global/GlobalValue.h"
-
+#include "mir/value/VConstant.h"
 
 static_assert(std::is_trivially_copyable_v<Value>, "assumed to be");
 static_assert(!std::is_polymorphic_v<Value>, "assumed to be");
@@ -24,6 +25,19 @@ Value::Value(const GlobalValue *value) noexcept:
     m_value(const_cast<GlobalValue *>(value)),
     m_type(PointerType::ptr()) {}
 
+[[nodiscard]]
+static Value::Variants to_variant(const VConstant& value) {
+    auto visitor = [&]<typename T>(const T &val) {
+        return val;
+    };
+
+    return value.visit(visitor);
+}
+
+Value::Value(const VConstant &cst) noexcept:
+    m_value(to_variant(cst)),
+    m_type(cst.type()) {}
+
 bool operator==(const Value& b, const Value& a) noexcept {
     if (&b == &a) {
         return true;
@@ -34,7 +48,7 @@ bool operator==(const Value& b, const Value& a) noexcept {
 
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t>) {
+        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, bool>) {
             os << val;
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, GlobalValue*>) {

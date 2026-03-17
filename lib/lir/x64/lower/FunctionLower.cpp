@@ -483,6 +483,9 @@ LIROperand FunctionLower::get_lir_operand(const Value &val) {
         } else if constexpr (std::is_same_v<T, std::int64_t>) {
             return make_int_constant(*val.type(), v);
 
+        } else if constexpr (std::is_same_v<T, bool>) {
+            die("bool value"); //TODO die for now
+
         } else if constexpr (std::is_same_v<T, ArgumentValue *>) {
             return m_value_mapping.at(UsedValue::from(v));
 

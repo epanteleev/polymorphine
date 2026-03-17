@@ -23,3 +23,4 @@
 #include "analysis/Analysis.h"
 
 #include "transform/mem2reg/Mem2Reg.h"
+#include "transform/sccp/Sccp.h"

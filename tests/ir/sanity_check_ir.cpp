@@ -58,7 +58,7 @@ static Module ret_f32(const FloatingPointType* fp, const Value& value) {
 
 TEST(SanityCheck, ret_f32) {
     for (const double i: {0., 1., -1., 42., -42., 1000000., -1000000., static_cast<double>(INT64_MAX), static_cast<double>(INT64_MIN), static_cast<double>(FLT_MAX), static_cast<double>(FLT_MIN)}) {
-        const auto buffer = jit_compile_and_assembly(ret_f32(FloatingPointType::f32(), Value::f32(i)), true);
+        const auto buffer = jit_compile_and_assembly(ret_f32(FloatingPointType::f32(), Value::f32(static_cast<float>(i))), true);
         const auto fn = buffer.code_start_as<float()>("ret_one").value();
         const auto res = fn();
         ASSERT_EQ(res, i) << "Failed for value: " << i;
