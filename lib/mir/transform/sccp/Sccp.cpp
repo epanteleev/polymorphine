@@ -27,13 +27,13 @@ namespace {
 
     class LatticeValue final {
         explicit constexpr LatticeValue(const LatticeKind _kind, const Value& _value) noexcept:
-            kind(_kind),
-            value(_value) {}
+            m_kind(_kind),
+            m_value(_value) {}
 
     public:
         consteval LatticeValue() noexcept:
-            kind(LatticeKind::Unknown),
-            value(Value::undefined()) {}
+            m_kind(LatticeKind::Unknown),
+            m_value(Value::undefined()) {}
 
         [[nodiscard]]
         static consteval LatticeValue unknown() noexcept {
@@ -50,8 +50,19 @@ namespace {
             return LatticeValue(LatticeKind::Constant, val);
         }
 
-        LatticeKind kind{};
-        Value value;
+        [[nodiscard]]
+        constexpr LatticeKind kind() const noexcept {
+            return m_kind;
+        }
+
+        [[nodiscard]]
+        constexpr const Value& value() const noexcept {
+            return m_value;
+        }
+
+    private:
+        LatticeKind m_kind{};
+        Value m_value;
     };
 
     [[nodiscard]]
@@ -158,11 +169,11 @@ namespace {
         [[nodiscard]]
         bool merge_state(const ValueInstruction* inst, const LatticeValue &incoming) {
             auto& current = m_states[inst];
-            if (current.kind == LatticeKind::Overdefined || incoming.kind == LatticeKind::Unknown) {
+            if (current.kind() == LatticeKind::Overdefined || incoming.kind() == LatticeKind::Unknown) {
                 return false;
             }
-            if (incoming.kind == LatticeKind::Overdefined) {
-                if (current.kind == LatticeKind::Overdefined) {
+            if (incoming.kind() == LatticeKind::Overdefined) {
+                if (current.kind() == LatticeKind::Overdefined) {
                     return false;
                 }
                 current = incoming;
@@ -170,12 +181,12 @@ namespace {
             }
 
             // incoming is constant.
-            if (current.kind == LatticeKind::Unknown) {
+            if (current.kind() == LatticeKind::Unknown) {
                 current = incoming;
                 return true;
             }
-            if (current.kind == LatticeKind::Constant) {
-                if (current.value == incoming.value) {
+            if (current.kind() == LatticeKind::Constant) {
+                if (current.value() == incoming.value()) {
                     return false;
                 }
                 current = LatticeValue::overdefined();
@@ -193,20 +204,20 @@ namespace {
                     continue;
                 }
 
-                const auto [kind, value] = lattice_of_operand(phi->operands()[i]);
-                if (kind == LatticeKind::Overdefined) {
+                const auto lattice = lattice_of_operand(phi->operands()[i]);
+                if (lattice.kind() == LatticeKind::Overdefined) {
                     return LatticeValue::overdefined();
                 }
-                if (kind == LatticeKind::Unknown) {
+                if (lattice.kind() == LatticeKind::Unknown) {
                     return LatticeValue::unknown();
                 }
 
                 if (!acc.has_value()) {
-                    acc = value;
+                    acc = lattice.value();
                     continue;
                 }
 
-                if (acc.value() != value) {
+                if (acc.value() != lattice.value()) {
                     return LatticeValue::overdefined();
                 }
             }
@@ -222,16 +233,16 @@ namespace {
         LatticeValue evaluate_binary(const Binary* bin) const noexcept {
             const auto lhs = lattice_of_operand(bin->lhs());
             const auto rhs = lattice_of_operand(bin->rhs());
-            if (lhs.kind == LatticeKind::Overdefined || rhs.kind == LatticeKind::Overdefined) {
+            if (lhs.kind() == LatticeKind::Overdefined || rhs.kind() == LatticeKind::Overdefined) {
                 return LatticeValue::overdefined();
             }
-            if (lhs.kind != LatticeKind::Constant || rhs.kind != LatticeKind::Constant) {
+            if (lhs.kind() != LatticeKind::Constant || rhs.kind() != LatticeKind::Constant) {
                 return LatticeValue::unknown();
             }
 
             if (const auto* int_type = IntegerType::cast(bin->type())) {
-                const auto lhs_i = lhs.value.get<std::int64_t>();
-                const auto rhs_i = rhs.value.get<std::int64_t>();
+                const auto lhs_i = lhs.value().get<std::int64_t>();
+                const auto rhs_i = rhs.value().get<std::int64_t>();
                 switch (bin->op()) {
                     case BinaryOp::Add: {
                         const auto cst = make_int_value(int_type, lhs_i + rhs_i);
@@ -291,8 +302,8 @@ namespace {
             }
 
             if (const auto* fp_type = FloatingPointType::cast(bin->type())) {
-                const auto lhs_fp = lhs.value.get<double>();
-                const auto rhs_fp = rhs.value.get<double>();
+                const auto lhs_fp = lhs.value().get<double>();
+                const auto rhs_fp = rhs.value().get<double>();
                 switch (bin->op()) {
                     case BinaryOp::Add: {
                         const auto fp = make_fp_value(fp_type, lhs_fp + rhs_fp);
@@ -320,12 +331,12 @@ namespace {
         [[nodiscard]]
         LatticeValue evaluate_select(const Select* select) const noexcept {
             const auto cond = lattice_of_operand(select->condition());
-            if (cond.kind == LatticeKind::Unknown) {
+            if (cond.kind() == LatticeKind::Unknown) {
                 return LatticeValue::unknown();
             }
 
-            if (cond.kind == LatticeKind::Constant) {
-                const auto cond_value = as_condition_value(cond.value);
+            if (cond.kind() == LatticeKind::Constant) {
+                const auto cond_value = as_condition_value(cond.value());
                 if (!cond_value.has_value()) {
                     return LatticeValue::overdefined();
                 }
@@ -336,14 +347,14 @@ namespace {
             const auto on_true = lattice_of_operand(select->on_true());
             const auto on_false = lattice_of_operand(select->on_false());
 
-            if (on_true.kind == LatticeKind::Constant && on_false.kind == LatticeKind::Constant) {
-                if (on_true.value == on_false.value) {
+            if (on_true.kind() == LatticeKind::Constant && on_false.kind() == LatticeKind::Constant) {
+                if (on_true.value() == on_false.value()) {
                     return on_true;
                 }
 
                 return LatticeValue::overdefined();
             }
-            if (on_true.kind == LatticeKind::Overdefined || on_false.kind == LatticeKind::Overdefined) {
+            if (on_true.kind() == LatticeKind::Overdefined || on_false.kind() == LatticeKind::Overdefined) {
                 return LatticeValue::overdefined();
             }
 
@@ -386,18 +397,18 @@ namespace {
         bool process_icmp(const IcmpInstruction* icmp) {
             const auto lhs = lattice_of_operand(icmp->lhs());
             const auto rhs = lattice_of_operand(icmp->rhs());
-            if (lhs.kind == LatticeKind::Overdefined || rhs.kind == LatticeKind::Overdefined) {
+            if (lhs.kind() == LatticeKind::Overdefined || rhs.kind() == LatticeKind::Overdefined) {
                 return merge_state(icmp, LatticeValue::overdefined());
             }
-            if (lhs.kind != LatticeKind::Constant || rhs.kind != LatticeKind::Constant) {
+            if (lhs.kind() != LatticeKind::Constant || rhs.kind() != LatticeKind::Constant) {
                 return false;
             }
-            if (!lhs.value.is<std::int64_t>() || !rhs.value.is<std::int64_t>()) {
+            if (!lhs.value().is<std::int64_t>() || !rhs.value().is<std::int64_t>()) {
                 return merge_state(icmp, LatticeValue::overdefined());
             }
 
-            const auto lhs_i = lhs.value.get<std::int64_t>();
-            const auto rhs_i = rhs.value.get<std::int64_t>();
+            const auto lhs_i = lhs.value().get<std::int64_t>();
+            const auto rhs_i = rhs.value().get<std::int64_t>();
             const bool is_signed = SignedIntegerType::cast(icmp->lhs().type()) != nullptr;
 
             bool pred_result = false;
@@ -445,8 +456,8 @@ namespace {
 
         bool process_cond_branch(const CondBranch* cond) {
             const auto cond_state = lattice_of_operand(cond->condition());
-            if (cond_state.kind == LatticeKind::Constant) {
-                const auto cond_value = as_condition_value(cond_state.value);
+            if (cond_state.kind() == LatticeKind::Constant) {
+                const auto cond_value = as_condition_value(cond_state.value());
                 if (!cond_value.has_value()) {
                     return false;
                 }
@@ -461,7 +472,7 @@ namespace {
 
         void rewrite_constants() const {
             for (const auto& [inst, state]: m_states) {
-                if (state.kind != LatticeKind::Constant) {
+                if (state.kind() != LatticeKind::Constant) {
                     continue;
                 }
 
@@ -482,7 +493,7 @@ namespace {
                             continue;
                         }
 
-                        const_cast<Instruction*>(user)->update_operand(idx, state.value);
+                        const_cast<Instruction*>(user)->update_operand(idx, state.value());
                     }
                 }
             }
@@ -503,7 +514,7 @@ namespace {
                     }
 
                     const auto cond_state = lattice_of_operand(cond->condition());
-                    if (cond_state.kind != LatticeKind::Constant || !as_condition_value(cond_state.value).has_value()) {
+                    if (cond_state.kind() != LatticeKind::Constant || !as_condition_value(cond_state.value()).has_value()) {
                         continue;
                     }
 
@@ -514,8 +525,8 @@ namespace {
             for (const auto* cond : foldable) {
                 auto* owner = cond->owner();
                 const auto cond_state = lattice_of_operand(cond->condition());
-                const auto cond_value = as_condition_value(cond_state.value);
-                assertion(cond_state.kind == LatticeKind::Constant && cond_value.has_value(), "must be constant");
+                const auto cond_value = as_condition_value(cond_state.value());
+                assertion(cond_state.kind() == LatticeKind::Constant && cond_value.has_value(), "must be constant");
 
                 const auto* target = cond_value.value() ? cond->on_true() : cond->on_false();
                 const auto term = Terminator::from(cond);
