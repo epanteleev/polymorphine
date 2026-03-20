@@ -21,6 +21,16 @@ public:
         return {&m_cont, 1};
     }
 
+    [[nodiscard]]
+    static const TerminateValueInstruction* cast(const Instruction* inst) noexcept {
+        return dynamic_cast<const TerminateValueInstruction*>(inst);
+    }
+
+    [[nodiscard]]
+    static TerminateValueInstruction* cast(Instruction* inst) noexcept {
+        return dynamic_cast<TerminateValueInstruction*>(inst);
+    }
+
 private:
     BasicBlock* m_cont;
 };

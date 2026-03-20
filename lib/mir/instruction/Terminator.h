@@ -25,6 +25,21 @@ public:
         return std::visit(matcher, m_value);
     }
 
+    template<typename T>
+    const T* get() const noexcept {
+        if constexpr (std::derived_from<T, TerminateInstruction>) {
+            return dynamic_cast<const T*>(std::get<const TerminateInstruction*>(m_value));
+
+        } else if constexpr (std::derived_from<T, TerminateValueInstruction>) {
+            return dynamic_cast<const T*>(std::get<const TerminateValueInstruction*>(m_value));
+
+        } else {
+            static_assert(false);
+            std::unreachable();
+        }
+    }
+
+    [[nodiscard]]
     static std::expected<Terminator, Error> from(const Instruction* inst) noexcept;
 
 private:
