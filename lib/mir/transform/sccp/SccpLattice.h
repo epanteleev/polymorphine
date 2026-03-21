@@ -3,7 +3,6 @@
 #include <unordered_map>
 
 #include "LatticeValue.h"
-#include "mir/module/BasicBlock.h"
 
 namespace details {
     class SccpLattice final {

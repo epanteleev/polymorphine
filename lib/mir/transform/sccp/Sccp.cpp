@@ -10,9 +10,9 @@
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/ValueInstruction.h"
 
-namespace {
+namespace details {
     [[nodiscard]]
-    std::optional<bool> as_condition_value(const Value& value) noexcept {
+    static std::optional<bool> as_condition_value(const Value& value) noexcept {
         const auto fun = []<typename T>(const T& raw) -> std::optional<bool> {
             if constexpr (std::same_as<T, bool>) {
                 return raw;
@@ -56,7 +56,7 @@ namespace {
         bool process_block(const BasicBlock& bb) {
             bool changed = false;
             for (const auto& inst: bb.instructions()) {
-                details::MeetInstruction merger(m_reachable_blocks, m_lattice);
+                MeetInstruction merger(m_reachable_blocks, m_lattice);
                 changed |= merger.meet(inst);
             }
             return changed;
@@ -98,11 +98,9 @@ namespace {
                 }
 
                 const auto cond_state = m_lattice.lattice_of_operand(cond->condition());
-                if (cond_state.kind() != LatticeKind::Constant || !as_condition_value(cond_state.value()).has_value()) {
-                    continue;
+                if (cond_state.kind() == LatticeKind::Constant) {
+                    foldable.push_back(cond);
                 }
-
-                foldable.push_back(cond);
             }
 
             return foldable;
@@ -208,12 +206,12 @@ namespace {
 
         FunctionData& m_fn;
         std::unordered_set<const BasicBlock*> m_reachable_blocks;
-        details::SccpLattice m_lattice;
+        SccpLattice m_lattice;
     };
 }
 
 void Sccp::run() noexcept {
-    SCCPEval eval(m_fn);
+    details::SCCPEval eval(m_fn);
     eval.run();
 }
 

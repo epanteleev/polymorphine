@@ -68,7 +68,7 @@ namespace details {
         }
 
         for (const auto* succ: term->targets()) {
-            m_changed |= m_executable_blocks.emplace(succ).second;
+            m_changed |= m_reachable_blocks.emplace(succ).second;
         }
     }
 
@@ -206,12 +206,12 @@ namespace details {
                 }
 
                 const auto* target = cond_value.value() ? cond_branch->on_true() : cond_branch->on_false();
-                m_changed = m_executable_blocks.emplace(target).second;
+                m_changed = m_reachable_blocks.emplace(target).second;
                 return;
             }
             default: {
-                const auto ins_true = m_executable_blocks.emplace(cond_branch->on_true()).second;
-                const auto ins_false = m_executable_blocks.emplace(cond_branch->on_false()).second;
+                const auto ins_true = m_reachable_blocks.emplace(cond_branch->on_true()).second;
+                const auto ins_false = m_reachable_blocks.emplace(cond_branch->on_false()).second;
                 m_changed = ins_true || ins_false;
             }
         }
@@ -244,7 +244,7 @@ namespace details {
     void MeetInstruction::accept(Phi *inst) {
         std::optional<Value> acc;
         for (const auto& [incoming, op]: std::ranges::views::zip(inst->incoming(), inst->operands())) {
-            if (!m_executable_blocks.contains(incoming)) {
+            if (!m_reachable_blocks.contains(incoming)) {
                 continue;
             }
 

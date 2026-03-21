@@ -10,7 +10,7 @@ namespace details {
     class MeetInstruction final: public Visitor {
     public:
         explicit MeetInstruction(std::unordered_set<const BasicBlock*>& executable_blocks, SccpLattice& states) noexcept:
-            m_executable_blocks(executable_blocks),
+            m_reachable_blocks(executable_blocks),
             m_states(states) {}
 
         [[nodiscard]]
@@ -76,7 +76,7 @@ namespace details {
         }
 
         bool m_changed{};
-        std::unordered_set<const BasicBlock*>& m_executable_blocks;
+        std::unordered_set<const BasicBlock*>& m_reachable_blocks;
         SccpLattice& m_states;
     };
 }
