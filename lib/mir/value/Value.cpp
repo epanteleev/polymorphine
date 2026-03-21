@@ -27,11 +27,19 @@ Value::Value(const GlobalValue *value) noexcept:
 
 [[nodiscard]]
 static Value::Variants to_variant(const VConstant& value) {
-    auto visitor = [&]<typename T>(const T &val) {
-        return val;
-    };
+    if (FlagType::cast(value.type()) != nullptr) {
+        return value.get<bool>();
+    }
 
-    return value.visit(visitor);
+    if (FloatingPointType::cast(value.type()) != nullptr) {
+        return value.get<double>();
+    }
+
+    if (IntegerType::cast(value.type()) != nullptr) {
+        return value.get<std::int64_t>();
+    }
+
+    std::unreachable();
 }
 
 Value::Value(const VConstant &cst) noexcept:

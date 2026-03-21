@@ -1,13 +1,14 @@
 
 #include "SccpLattice.h"
 
+#include "mir/value/Value.h"
 #include "mir/value/VConstant.h"
 
 namespace details {
     LatticeValue SccpLattice::lattice_of_operand(const Value &operand) const noexcept {
         const auto cst = VConstant::try_from(operand);
         if (cst.has_value()) {
-            return LatticeValue::constant(operand);
+            return LatticeValue::constant(cst.value());
         }
 
         if (!operand.is<ValueInstruction*>()) {
@@ -42,7 +43,7 @@ namespace details {
             return true;
         }
         if (current.kind() == LatticeKind::Constant) {
-            if (current.value() == incoming.value()) {
+            if (current.cst() == incoming.cst()) {
                 return false;
             }
             current = LatticeValue::overdefined();

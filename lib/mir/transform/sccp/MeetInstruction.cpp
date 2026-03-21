@@ -9,56 +9,12 @@
 #include "mir/instruction/Select.h"
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/TerminateValueInstruction.h"
-#include "mir/instruction/Unary.h"
 #include "mir/value/VConstant.h"
 
 namespace details {
     bool MeetInstruction::meet(const Instruction &inst) noexcept {
         inst.visit(*this);
         return m_changed;
-    }
-
-    [[nodiscard]]
-    Value make_int_value(const IntegerType* type, const std::int64_t value) noexcept {
-        if (SignedIntegerType::cast(type) != nullptr) {
-            switch (type->size_of()) {
-                case 1: return Value::i8(static_cast<std::int8_t>(value));
-                case 2: return Value::i16(static_cast<std::int16_t>(value));
-                case 4: return Value::i32(static_cast<std::int32_t>(value));
-                case 8: return Value::i64(value);
-                default: std::unreachable();
-            }
-        }
-
-        assertion(UnsignedIntegerType::cast(type) != nullptr, "expected unsigned integer type");
-        switch (type->size_of()) {
-            case 1: return Value::u8(static_cast<std::uint8_t>(value));
-            case 2: return Value::u16(static_cast<std::uint16_t>(value));
-            case 4: return Value::u32(static_cast<std::uint32_t>(value));
-            case 8: return Value::u64(static_cast<std::uint64_t>(value));
-            default: std::unreachable();
-        }
-    }
-
-    [[nodiscard]]
-    std::optional<bool> as_condition_value(const Value& value) noexcept {
-        const auto fun = []<typename T>(const T& raw) -> std::optional<bool> {
-            if constexpr (std::same_as<T, bool>) {
-                return raw;
-            } else {
-                return std::nullopt;
-            }
-        };
-        return value.visit(fun);
-    }
-
-    [[nodiscard]]
-    Value make_fp_value(const FloatingPointType* type, const double value) noexcept {
-        switch (type->size_of()) {
-            case 4: return Value::f32(static_cast<float>(value));
-            case 8: return Value::f64(value);
-            default: std::unreachable();
-        }
     }
 
     void MeetInstruction::terminator(const Instruction *inst) noexcept {
@@ -72,10 +28,25 @@ namespace details {
         }
     }
 
+    template <typename Fn>
+    [[nodiscard]]
+    LatticeValue evaluate(const LatticeValue& lhs, const LatticeValue& rhs, Fn&& fn) noexcept {
+        const auto res = fn(lhs.cst(), rhs.cst());
+        if (!res.has_value()) {
+            return LatticeValue::overdefined();
+        }
+
+        return LatticeValue::constant(res.value());
+    };
+
     void MeetInstruction::accept(Binary *inst) {
         const auto lhs = m_states.lattice_of_operand(inst->lhs());
+        if (lhs.kind() == LatticeKind::Overdefined) {
+            m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+            return;
+        }
         const auto rhs = m_states.lattice_of_operand(inst->rhs());
-        if (lhs.kind() == LatticeKind::Overdefined || rhs.kind() == LatticeKind::Overdefined) {
+        if (rhs.kind() == LatticeKind::Overdefined) {
             m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
             return;
         }
@@ -84,112 +55,28 @@ namespace details {
             return;
         }
 
-        if (const auto* int_type = IntegerType::cast(inst->type())) {
-            const auto lhs_i = lhs.value().get<std::int64_t>();
-            const auto rhs_i = rhs.value().get<std::int64_t>();
-            switch (inst->op()) {
-                case BinaryOp::Add: {
-                    const auto cst = make_int_value(int_type, lhs_i + rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::Subtract: {
-                    const auto cst = make_int_value(int_type, lhs_i - rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::Multiply: {
-                    const auto cst = make_int_value(int_type, lhs_i * rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::Divide: {
-                    if (rhs_i == 0) {
-                        m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                        return;
-                    }
-
-                    const auto cst = make_int_value(int_type, lhs_i / rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::BitwiseAnd: {
-                    const auto cst = make_int_value(int_type, lhs_i & rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::BitwiseOr: {
-                    const auto cst = make_int_value(int_type, lhs_i | rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::BitwiseXor: {
-                    const auto cst = make_int_value(int_type, lhs_i ^ rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::ShiftLeft: {
-                    if (rhs_i < 0 || rhs_i >= 64) {
-                        m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                        return;
-                    }
-
-                    const auto cst = make_int_value(int_type, lhs_i << rhs_i);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                case BinaryOp::ShiftRight: {
-                    if (rhs_i < 0 || rhs_i >= 64) {
-                        m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                        return;
-                    }
-                    if (SignedIntegerType::cast(int_type) != nullptr) {
-                        const auto cst = make_int_value(int_type, lhs_i >> rhs_i);
-                        m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                        return;
-                    }
-                    const auto lhs_u = static_cast<std::uint64_t>(lhs_i);
-                    const auto res_u = lhs_u >> rhs_i;
-                    const auto cst = make_int_value(int_type, static_cast<std::int64_t>(res_u));
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(cst));
-                    return;
-                }
-                default: std::unreachable();
+        LatticeValue result;
+        switch (inst->op()) {
+            case BinaryOp::Add: {
+                result = evaluate(lhs, rhs, VConstant::sum);
+                break;
             }
+            case BinaryOp::Subtract: {
+                result = evaluate(lhs, rhs, VConstant::sub);
+                break;
+            }
+            case BinaryOp::Multiply: {
+                result = evaluate(lhs, rhs, VConstant::mul);
+                break;
+            }
+            case BinaryOp::Divide: {
+                result = evaluate(lhs, rhs, VConstant::div);
+                break;
+            }
+            default: die("unimpl");
         }
 
-        if (const auto* fp_type = FloatingPointType::cast(inst->type())) {
-            const auto lhs_fp = lhs.value().get<double>();
-            const auto rhs_fp = rhs.value().get<double>();
-            switch (inst->op()) {
-                case BinaryOp::Add: {
-                    const auto fp = make_fp_value(fp_type, lhs_fp + rhs_fp);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(fp));
-                    return;
-                }
-                case BinaryOp::Subtract: {
-                    const auto fp = make_fp_value(fp_type, lhs_fp - rhs_fp);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(fp));
-                    return;
-                }
-                case BinaryOp::Multiply: {
-                    const auto fp = make_fp_value(fp_type, lhs_fp * rhs_fp);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(fp));
-                    return;
-                }
-                case BinaryOp::Divide: {
-                    const auto fp = make_fp_value(fp_type, lhs_fp / rhs_fp);
-                    m_changed |= m_states.merge_state(inst, LatticeValue::constant(fp));
-                    return;
-                }
-                default: {
-                    m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                    return;
-                }
-            }
-        }
-
-        m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+        m_changed |= m_states.merge_state(inst, result);
     }
 
     void MeetInstruction::accept(Branch *branch) {
@@ -197,15 +84,14 @@ namespace details {
     }
 
     void MeetInstruction::accept(CondBranch *cond_branch) {
-        const auto cond_state = m_states.lattice_of_operand(cond_branch->condition());
-        switch (cond_state.kind()) {
+        switch (const auto cond_state = m_states.lattice_of_operand(cond_branch->condition()); cond_state.kind()) {
             case LatticeKind::Constant: {
-                const auto cond_value = as_condition_value(cond_state.value());
-                if (!cond_value.has_value()) {
+                const auto& cond_value = cond_state.cst();
+                if (!cond_value.is<bool>()) {
                     return;
                 }
 
-                const auto* target = cond_value.value() ? cond_branch->on_true() : cond_branch->on_false();
+                const auto* target = cond_value.get<bool>() ? cond_branch->on_true() : cond_branch->on_false();
                 m_changed = m_reachable_blocks.emplace(target).second;
                 return;
             }
@@ -242,30 +128,32 @@ namespace details {
     }
 
     void MeetInstruction::accept(Phi *inst) {
-        std::optional<Value> acc;
+        std::optional<VConstant> acc;
         for (const auto& [incoming, op]: std::ranges::views::zip(inst->incoming(), inst->operands())) {
             if (!m_reachable_blocks.contains(incoming)) {
                 continue;
             }
 
-            const auto lattice = m_states.lattice_of_operand(op);
-            if (lattice.kind() == LatticeKind::Overdefined) {
-                m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                return;
-            }
-            if (lattice.kind() == LatticeKind::Unknown) {
-                m_changed |= m_states.merge_state(inst, LatticeValue::unknown());
-                return;
-            }
+            switch (const auto lattice = m_states.lattice_of_operand(op); lattice.kind()) {
+                case LatticeKind::Unknown: {
+                    m_changed |= m_states.merge_state(inst, LatticeValue::unknown());
+                    return;
+                }
+                case LatticeKind::Constant: {
+                    if (!acc.has_value()) {
+                        acc = lattice.cst();
+                        continue;
+                    }
 
-            if (!acc.has_value()) {
-                acc = lattice.value();
-                continue;
-            }
-
-            if (acc.value() != lattice.value()) {
-                m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
-                return;
+                    if (acc.value() == lattice.cst()) {
+                        continue;
+                    }
+                    [[fallthrough]];
+                }
+                case LatticeKind::Overdefined: {
+                    m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+                    return;
+                }
             }
         }
 
@@ -279,8 +167,12 @@ namespace details {
 
     void MeetInstruction::accept(IcmpInstruction *icmp) {
         const auto lhs = m_states.lattice_of_operand(icmp->lhs());
+        if (lhs.kind() == LatticeKind::Overdefined) {
+            m_changed |= m_states.merge_state(icmp, LatticeValue::overdefined());
+            return;
+        }
         const auto rhs = m_states.lattice_of_operand(icmp->rhs());
-        if (lhs.kind() == LatticeKind::Overdefined || rhs.kind() == LatticeKind::Overdefined) {
+        if (rhs.kind() == LatticeKind::Overdefined) {
             m_changed |= m_states.merge_state(icmp, LatticeValue::overdefined());
             return;
         }
@@ -289,51 +181,36 @@ namespace details {
             return;
         }
 
-        const auto lhs_i = lhs.value().get<std::int64_t>();
-        const auto rhs_i = rhs.value().get<std::int64_t>();
-        const bool is_signed = SignedIntegerType::cast(icmp->lhs().type()) != nullptr;
-
-        bool pred_result = false;
+        LatticeValue result;
         switch (icmp->predicate()) {
-            case IcmpPredicate::Eq: pred_result = lhs_i == rhs_i; break;
-            case IcmpPredicate::Ne: pred_result = lhs_i != rhs_i; break;
+            case IcmpPredicate::Eq: {
+                result = evaluate(lhs, rhs, VConstant::eq);
+                break;
+            }
+            case IcmpPredicate::Ne: {
+                result = evaluate(lhs, rhs, VConstant::ne);
+                break;
+            }
             case IcmpPredicate::Lt: {
-                if (is_signed) {
-                    pred_result = lhs_i < rhs_i;
-                } else {
-                    pred_result = static_cast<std::uint64_t>(lhs_i) < static_cast<std::uint64_t>(rhs_i);
-                }
+                result = evaluate(lhs, rhs, VConstant::lt);
                 break;
             }
             case IcmpPredicate::Le: {
-                if (is_signed) {
-                    pred_result = lhs_i <= rhs_i;
-                } else {
-                    pred_result = static_cast<std::uint64_t>(lhs_i) <= static_cast<std::uint64_t>(rhs_i);
-                }
+                result = evaluate(lhs, rhs, VConstant::le);
                 break;
             }
             case IcmpPredicate::Gt: {
-                if (is_signed) {
-                    pred_result = lhs_i > rhs_i;
-                } else {
-                    pred_result = static_cast<std::uint64_t>(lhs_i) > static_cast<std::uint64_t>(rhs_i);
-                }
+                result = evaluate(lhs, rhs, VConstant::gt);
                 break;
             }
             case IcmpPredicate::Ge: {
-                if (is_signed) {
-                    pred_result = lhs_i >= rhs_i;
-                } else {
-                    pred_result = static_cast<std::uint64_t>(lhs_i) >= static_cast<std::uint64_t>(rhs_i);
-                }
+                result = evaluate(lhs, rhs, VConstant::ge);
                 break;
             }
             default: std::unreachable();
         }
 
-        const auto boolean = pred_result ? Value::true_value() : Value::false_value();
-        m_changed |= m_states.merge_state(icmp, LatticeValue::constant(boolean));
+        m_changed |= m_states.merge_state(icmp, result);
     }
 
     void MeetInstruction::accept(Select *select) {
@@ -344,13 +221,13 @@ namespace details {
         }
 
         if (cond.kind() == LatticeKind::Constant) {
-            const auto cond_value = as_condition_value(cond.value());
-            if (!cond_value.has_value()) {
+            const auto& cond_value = cond.cst();
+            if (!cond_value.is<bool>()) {
                 m_changed |= m_states.merge_state(select, LatticeValue::overdefined());
                 return;
             }
 
-            const auto branch = cond_value.value() ? select->on_true() : select->on_false();
+            const auto branch = cond_value.get<bool>() ? select->on_true() : select->on_false();
             m_changed |= m_states.merge_state(select, m_states.lattice_of_operand(branch));
             return;
         }
@@ -359,7 +236,7 @@ namespace details {
         const auto on_false = m_states.lattice_of_operand(select->on_false());
 
         if (on_true.kind() == LatticeKind::Constant && on_false.kind() == LatticeKind::Constant) {
-            if (on_true.value() == on_false.value()) {
+            if (on_true.cst() == on_false.cst()) {
                 m_changed |= m_states.merge_state(select, on_true);
                 return;
             }

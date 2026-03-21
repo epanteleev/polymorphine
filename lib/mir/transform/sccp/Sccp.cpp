@@ -1,7 +1,5 @@
 #include "Sccp.h"
 
-#include <concepts>
-
 #include "MeetInstruction.h"
 #include "LatticeValue.h"
 #include "SccpLattice.h"
@@ -11,21 +9,9 @@
 #include "mir/instruction/ValueInstruction.h"
 
 namespace details {
-    [[nodiscard]]
-    static std::optional<bool> as_condition_value(const Value& value) noexcept {
-        const auto fun = []<typename T>(const T& raw) -> std::optional<bool> {
-            if constexpr (std::same_as<T, bool>) {
-                return raw;
-            } else {
-                return std::nullopt;
-            }
-        };
-        return value.visit(fun);
-    }
-
-    class SCCPEval final {
+    class SccpEval final {
     public:
-        explicit SCCPEval(FunctionData& fn) noexcept:
+        explicit SccpEval(FunctionData& fn) noexcept:
             m_fn(fn) {}
 
         void run() {
@@ -79,7 +65,7 @@ namespace details {
                             continue;
                         }
 
-                        const_cast<Instruction*>(user)->update_operand(idx, state.value());
+                        const_cast<Instruction*>(user)->update_operand(idx, state.cst());
                     }
                 }
             }
@@ -109,11 +95,11 @@ namespace details {
         void simplify_branches() const {
             for (const auto* cond : collect_branches()) {
                 const auto cond_state = m_lattice.lattice_of_operand(cond->condition());
-                const auto cond_value = as_condition_value(cond_state.value());
+                const auto& cond_value = cond_state.cst();
 
-                assertion(cond_state.kind() == LatticeKind::Constant && cond_value.has_value(), "must be constant");
+                assertion(cond_state.kind() == LatticeKind::Constant && cond_value.is<bool>(), "must be constant");
 
-                auto* target = cond_value.value() ? cond->on_true() : cond->on_false();
+                auto* target = cond_value.get<bool>() ? cond->on_true() : cond->on_false();
                 const auto term = Terminator::from(cond);
                 assertion(term.has_value(), "must be terminator");
 
@@ -133,6 +119,7 @@ namespace details {
                 if (m_reachable_blocks.contains(&bb)) {
                     continue;
                 }
+
                 dead_blocks.push_back(&bb);
             }
 
@@ -211,7 +198,7 @@ namespace details {
 }
 
 void Sccp::run() noexcept {
-    details::SCCPEval eval(m_fn);
+    details::SccpEval eval(m_fn);
     eval.run();
 }
 

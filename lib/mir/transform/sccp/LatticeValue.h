@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "mir/value/Value.h"
+
+#include "mir/value/VConstant.h"
 
 namespace details {
     enum class LatticeKind : std::uint8_t {
@@ -11,27 +12,27 @@ namespace details {
     };
 
     class LatticeValue final {
-        explicit constexpr LatticeValue(const LatticeKind& _kind, const Value& _value) noexcept:
+        explicit constexpr LatticeValue(const LatticeKind& _kind, const VConstant& _value) noexcept:
             m_kind(_kind),
             m_value(_value) {}
 
     public:
         consteval LatticeValue() noexcept:
             m_kind(LatticeKind::Unknown),
-            m_value(Value::undefined()) {}
+            m_value(VConstant::undefined()) {}
 
         [[nodiscard]]
         static consteval LatticeValue unknown() noexcept {
-            return LatticeValue(LatticeKind::Unknown, Value::undefined());
+            return LatticeValue(LatticeKind::Unknown, VConstant::undefined());
         }
 
         [[nodiscard]]
         static consteval LatticeValue overdefined() noexcept {
-            return LatticeValue(LatticeKind::Overdefined, Value::undefined());
+            return LatticeValue(LatticeKind::Overdefined, VConstant::undefined());
         }
 
         [[nodiscard]]
-        static LatticeValue constant(const Value& val) noexcept {
+        static LatticeValue constant(const VConstant& val) noexcept {
             return LatticeValue(LatticeKind::Constant, val);
         }
 
@@ -41,12 +42,12 @@ namespace details {
         }
 
         [[nodiscard]]
-        constexpr const Value& value() const noexcept {
+        constexpr const VConstant& cst() const noexcept {
             return m_value;
         }
 
     private:
         LatticeKind m_kind{};
-        Value m_value;
+        VConstant m_value;
     };
 }

@@ -137,17 +137,32 @@ std::optional<VConstant> VConstant::ge(const VConstant &lhs, const VConstant &rh
 std::optional<VConstant> VConstant::try_from(const Value &value) noexcept {
     if (value.is<double>()) {
         const auto *type = FloatingPointType::cast(value.type());
+        assertion(type != nullptr, "invariant");
         return VConstant(value.get<double>(), type);
     }
 
     if (value.is<std::int64_t>()) {
         const auto *type = IntegerType::cast(value.type());
+        assertion(type != nullptr, "invariant");
         return VConstant(value.get<std::int64_t>(), type);
     }
 
     if (value.is<bool>()) {
+        assertion(FlagType::cast(value.type()) != nullptr, "invariant");
         return VConstant(value.get<bool>());
     }
 
     return std::nullopt;
+}
+
+bool operator==(const VConstant &b, const VConstant &a) noexcept {
+    if (&b == &a) {
+        return true;
+    }
+
+    if (FlagType::cast(a.m_type) != nullptr) {
+        return a.m_type == b.m_type && a.m_bool == b.m_bool;
+    }
+
+    return a.m_type == b.m_type && a.m_i64 == b.m_i64;
 }

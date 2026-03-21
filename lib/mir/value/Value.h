@@ -43,8 +43,6 @@ private:
         m_value(std::monostate{}),
         m_type(Undef::undef()) {}
 
-    explicit Value(const VConstant& cst) noexcept;
-
     constexpr explicit Value(const bool value) noexcept:
         m_value(value),
         m_type(FlagType::flag()) {}
@@ -53,6 +51,7 @@ public:
     Value(const ArgumentValue* value) noexcept;
     Value(const ValueInstruction* value) noexcept;
     Value(const GlobalValue* value) noexcept;
+    Value(const VConstant& cst) noexcept;
 
     template <IsValueType T>
     [[nodiscard]]
@@ -96,54 +95,67 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Value& obj);
 
+    [[nodiscard]]
     constexpr static Value i8(std::int8_t value) noexcept {
         return {value, SignedIntegerType::i8()};
     }
 
+    [[nodiscard]]
     constexpr static Value u8(std::uint8_t value) noexcept {
         return {value, UnsignedIntegerType::u8()};
     }
 
+    [[nodiscard]]
     constexpr static Value i16(std::int16_t value) noexcept {
         return {value, SignedIntegerType::i16()};
     }
 
+    [[nodiscard]]
     constexpr static Value u16(const std::uint16_t value) noexcept {
         return {value, UnsignedIntegerType::u16()};
     }
 
+    [[nodiscard]]
     constexpr static Value i32(const int value) noexcept {
         return {value, SignedIntegerType::i32()};
     }
 
+    [[nodiscard]]
     constexpr static Value u32(const std::uint32_t value) noexcept {
         return {value, UnsignedIntegerType::u32()};
     }
 
+    [[nodiscard]]
     constexpr static Value i64(const std::int64_t value) noexcept {
         return {value, SignedIntegerType::i64()};
     }
 
+    [[nodiscard]]
     constexpr static Value u64(const std::uint64_t value) noexcept {
         return {static_cast<std::int64_t>(value), UnsignedIntegerType::u64()};
     }
 
+    [[nodiscard]]
     constexpr static Value f64(const double value) noexcept {
         return {value, FloatingPointType::f64()};
     }
 
+    [[nodiscard]]
     constexpr static Value f32(const float value) noexcept {
         return {value, FloatingPointType::f32()};
     }
 
+    [[nodiscard]]
     constexpr static Value undefined() noexcept {
         return {};
     }
 
+    [[nodiscard]]
     constexpr static Value false_value() noexcept {
         return Value(false);
     }
 
+    [[nodiscard]]
     constexpr static Value true_value() noexcept {
         return Value(true);
     }

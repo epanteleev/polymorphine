@@ -6,9 +6,13 @@
 #include "mir/types/FlagType.h"
 #include "mir/types/FloatingPointType.h"
 #include "mir/types/IntegerType.h"
-#include "mir/types/PrimitiveType.h"
+#include "mir/types/Undef.h"
 
 class VConstant final {
+    constexpr VConstant() noexcept:
+        m_bool(false),
+        m_type(Undef::undef()) {}
+
 public:
     constexpr VConstant(const double value, const FloatingPointType *type) noexcept:
         m_fp(value),
@@ -27,19 +31,42 @@ public:
         return m_type;
     }
 
-    template <typename Visitor>
-    decltype(auto) visit(Visitor&& visitor) const {
-        if (FloatingPointType::cast(m_type) != nullptr) {
-            return visitor(m_fp);
+    template <typename T>
+    constexpr const T& get() const noexcept {
+        if constexpr (std::is_same_v<T, double>) {
+            return m_fp;
+
+        } else if constexpr (std::is_same_v<T, std::int64_t>) {
+            return m_i64;
+
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return m_bool;
+
+        } else {
+            static_assert(false);
+            std::unreachable();
         }
-        if (IntegerType::cast(m_type) != nullptr) {
-            return visitor(m_fp);
-        }
-        if (FlagType::cast(m_type) != nullptr) {
-            return visitor(m_fp);
-        }
-        std::unreachable();
     }
+
+    template <typename T>
+    [[nodiscard]]
+    constexpr bool is() const noexcept {
+        if constexpr (std::is_same_v<T, double>) {
+            return FloatingPointType::cast(m_type) != nullptr;
+
+        } else if constexpr (std::is_same_v<T, std::int64_t>) {
+            return IntegerType::cast(m_type) != nullptr;
+
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return FlagType::cast(m_type) != nullptr;
+
+        } else {
+            static_assert(false);
+            std::unreachable();
+        }
+    }
+
+    friend bool operator==(const VConstant& b, const VConstant& a) noexcept;
 
     [[nodiscard]]
     static std::optional<VConstant> sum(const VConstant& lhs, const VConstant& rhs) noexcept;
@@ -76,6 +103,11 @@ public:
 
     [[nodiscard]]
     static std::optional<VConstant> try_from(const Value& value) noexcept;
+
+    [[nodiscard]]
+    static consteval VConstant undefined() noexcept {
+        return {};
+    }
 
 private:
     template<typename Fn>
