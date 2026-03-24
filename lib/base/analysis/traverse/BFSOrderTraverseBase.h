@@ -15,7 +15,7 @@ public:
 private:
     explicit BFSOrderTraverseBase(const FD *data) noexcept:
         m_data(data),
-        visited(data->size(), false) {}
+        visited(data->max_possible_block_id(), false) {}
 
 public:
     static constexpr auto analysis_kind = AnalysisType::BFSTraverse;

@@ -51,6 +51,11 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t max_possible_block_id() const noexcept {
+        return m_basic_blocks.max_possible_id();
+    }
+
+    [[nodiscard]]
     const ObjPool<BB>& basic_blocks() const noexcept {
         return m_basic_blocks;
     }

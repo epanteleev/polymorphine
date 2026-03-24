@@ -191,6 +191,11 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t max_possible_id() const noexcept {
+        return m_list.size();
+    }
+
+    [[nodiscard]]
     bool empty() const noexcept {
         return m_holder.empty();
     }

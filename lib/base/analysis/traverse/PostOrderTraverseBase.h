@@ -15,8 +15,8 @@ public:
     using result_type = Ordering<basic_block>;
 
 private:
-    explicit PostOrderTraverseBase(result_type &preorder) noexcept:
-          m_order(preorder.size()),
+    explicit PostOrderTraverseBase(const FD *data, result_type &preorder) noexcept:
+          m_order(data->max_possible_block_id()),
           m_preorder(preorder) {}
 
 public:
@@ -32,7 +32,7 @@ public:
 
     static PostOrderTraverseBase create(AnalysisPassManagerBase<FD>* cache, const FD *data) {
         auto& preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
-        return PostOrderTraverseBase(preorder);
+        return PostOrderTraverseBase(data, preorder);
     }
 
 private:

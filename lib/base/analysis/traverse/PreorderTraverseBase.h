@@ -21,7 +21,7 @@ public:
     static constexpr auto analysis_kind = AnalysisType::PreOrderTraverse;
 
     void run() {
-        std::vector visited(m_data->size(), false);
+        std::vector visited(m_data->max_possible_block_id(), false);
         std::stack<basic_block*> stack;
         stack.push(m_data->first());
         m_order.reserve(m_data->size());

@@ -252,10 +252,12 @@ private:
     }
 
     void accept(Return *inst) override {
+        verify_cfg();
         verify_return();
     }
 
     void accept(ReturnValue *inst) override {
+        verify_cfg();
         verify_return();
     }
 
