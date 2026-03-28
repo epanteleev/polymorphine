@@ -6,13 +6,14 @@
 #include <ranges>
 
 #include "Ordering.h"
+#include "base/BlockMask.h"
 #include "base/analysis/AnalysisPass.h"
 #include "base/analysis/AnalysisPassManagerBase.h"
 
 
 template<Function FD>
 class PreorderTraverseBase final {
-    explicit PreorderTraverseBase(const FD *data) noexcept:
+    explicit PreorderTraverseBase(const FD& data) noexcept:
         m_data(data) {}
 
 public:
@@ -21,23 +22,23 @@ public:
     static constexpr auto analysis_kind = AnalysisType::PreOrderTraverse;
 
     void run() {
-        std::vector visited(m_data->max_possible_block_id(), false);
+        auto visited = BlockMask<basic_block>::blockMask(m_data);
         std::stack<basic_block*> stack;
-        stack.push(m_data->first());
-        m_order.reserve(m_data->size());
+        stack.push(m_data.first());
+        m_order.reserve(m_data.size());
         
-        const auto exit = m_data->last();
+        const auto exit = m_data.last();
         while (!stack.empty()) {
             auto bb = stack.top();
             stack.pop();
-            if (visited[bb->id()]) {
+            if (visited.contains(bb)) {
                 continue;
             }
             if (bb == exit) {
                 continue;
             }
 
-            visited[bb->id()] = true;
+            visited.emplace(bb);
             m_order.push_back(bb);
 
             for (auto s: std::ranges::reverse_view(bb->successors())) {
@@ -53,10 +54,10 @@ public:
     }
 
     static PreorderTraverseBase create(AnalysisPassManagerBase<FD>*, const FD *data) {
-        return PreorderTraverseBase(data);
+        return PreorderTraverseBase(*data);
     }
 
 private:
-    const FD *m_data;
+    const FD& m_data;
     std::vector<basic_block *> m_order{};
 };

@@ -5,7 +5,6 @@
 #include "mir/instruction/Phi.h"
 #include "mir/instruction/Store.h"
 #include "mir/instruction/Unary.h"
-#include "mir/value/UsedValue.h"
 
 #include <stack>
 #include <unordered_set>

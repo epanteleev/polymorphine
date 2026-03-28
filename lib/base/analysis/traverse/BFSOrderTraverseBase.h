@@ -3,6 +3,7 @@
 #include <stack>
 
 #include "Ordering.h"
+#include "base/BlockMask.h"
 #include "base/analysis/AnalysisPass.h"
 
 
@@ -13,21 +14,21 @@ public:
     using result_type = Ordering<basic_block>;
 
 private:
-    explicit BFSOrderTraverseBase(const FD *data) noexcept:
+    explicit BFSOrderTraverseBase(const FD& data) noexcept:
         m_data(data),
-        visited(data->max_possible_block_id(), false) {}
+        visited(BlockMask<basic_block>::blockMask(data)) {}
 
 public:
     static constexpr auto analysis_kind = AnalysisType::BFSTraverse;
 
     void run() {
-        m_order.reserve(m_data->size());
-        visitBlock(m_data->first());
+        m_order.reserve(m_data.size());
+        visitBlock(m_data.first());
         while (!stack.empty()) {
             auto bbs = stack.top();
             stack.pop();
             for (const auto bb: bbs) {
-                if (visited[bb->id()]) {
+                if (visited.contains(bb)) {
                     continue;
                 }
 
@@ -41,20 +42,20 @@ public:
     }
 
     static BFSOrderTraverseBase create(AnalysisPassManagerBase<FD>*, const FD *data) {
-        return BFSOrderTraverseBase(data);
+        return BFSOrderTraverseBase(*data);
     }
 
 private:
     void visitBlock(basic_block *bb) {
-        visited[bb->id()] = true;
+        visited.emplace(bb);
         m_order.push_back(bb);
         if (!bb->successors().empty()) {
             stack.emplace(bb->successors());
         }
     }
 
-    const FD* m_data;
-    std::vector<bool> visited;
+    const FD& m_data;
+    BlockMask<basic_block> visited;
     std::vector<basic_block *> m_order{};
     std::stack<std::span<basic_block* const>> stack;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -15,15 +16,15 @@ public:
     using result_type = Ordering<basic_block>;
 
 private:
-    explicit PostOrderTraverseBase(const FD *data, result_type &preorder) noexcept:
-          m_order(data->max_possible_block_id()),
+    explicit PostOrderTraverseBase(const result_type &preorder) noexcept:
           m_preorder(preorder) {}
 
 public:
     static constexpr auto analysis_kind = AnalysisType::PostOrderTraverse;
 
     void run() {
-        std::ranges::reverse_copy(m_preorder, std::begin(m_order));
+        m_order.reserve(m_preorder.size());
+        std::ranges::reverse_copy(m_preorder, std::back_inserter(m_order));
     }
 
     std::unique_ptr<result_type> result() noexcept {
@@ -31,11 +32,11 @@ public:
     }
 
     static PostOrderTraverseBase create(AnalysisPassManagerBase<FD>* cache, const FD *data) {
-        auto& preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
-        return PostOrderTraverseBase(data, preorder);
+        const auto& preorder = cache->template analyze<PreorderTraverseBase<FD>>(data);
+        return PostOrderTraverseBase(preorder);
     }
 
 private:
+    const result_type &m_preorder;
     std::vector<basic_block *> m_order{};
-    result_type &m_preorder;
 };
