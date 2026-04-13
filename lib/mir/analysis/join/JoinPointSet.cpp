@@ -1,6 +1,5 @@
 #include "JoinPointSet.h"
 
-#include "base/analysis/dom/DominatorTreeEvalBase.h"
 #include "mir/analysis/escape/EscapeAnalysis.h"
 
 #include "mir/instruction/Alloc.h"

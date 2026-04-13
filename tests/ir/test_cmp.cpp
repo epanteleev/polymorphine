@@ -405,3 +405,52 @@ TEST(SanityCheck, branch_u32_predicate) {
         }
     }
 }
+
+static Module br_cond_cst_mod() {
+    ModuleBuilder builder;
+    const auto prototype = builder.add_function_prototype(SignedIntegerType::i32(), {}, "check", FunctionBind::DEFAULT);
+    auto fn_builder = builder.make_function_builder(prototype);
+    auto data = fn_builder.value();
+
+    const auto then = data.create_basic_block();
+    const auto else_ = data.create_basic_block();
+    const auto cont = data.create_basic_block();
+    const auto res = data.alloc(SignedIntegerType::i32());
+    
+    data.br_cond(Value::true_value(), then, else_);
+
+    data.switch_block(then);
+    data.store(res, Value::i32(1));
+    data.br(cont);
+
+    data.switch_block(else_);
+    data.store(res, Value::i32(0));
+    data.br(cont);
+
+    data.switch_block(cont);
+    data.ret(data.load(SignedIntegerType::i32(), res));
+    return builder.build();
+}
+
+TEST(SanityCheck, br_cond_cst) {
+    auto fib_mod = br_cond_cst_mod();
+    const OptPipeline pipeline;
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(fib_mod);
+
+    const auto check = obj.code_start_as<std::int32_t()>("check").value();
+    ASSERT_EQ(check(), 1);
+}
+
+TEST(SanityCheck, br_cond_cst_opt) {
+    auto fib_mod = br_cond_cst_mod();
+    OptPipeline pipeline;
+    pipeline.add_pass<Mem2Reg>();
+    pipeline.add_pass<Sccp>();
+
+    const JitCompiler compiler(pipeline, true);
+    const auto obj = compiler.compile(fib_mod);
+
+    const auto check = obj.code_start_as<std::int32_t()>("check").value();
+    ASSERT_EQ(check(), 1);
+}

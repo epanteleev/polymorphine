@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 
 #include "mir/module/FunctionData.h"
 #include "mir/instruction/Alloc.h"

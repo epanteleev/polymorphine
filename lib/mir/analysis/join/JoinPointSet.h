@@ -3,7 +3,6 @@
 #include "JoinPointSetResult.h"
 
 #include "base/analysis/AnalysisPassManagerBase.h"
-#include "base/analysis/dom/DominatorTree.h"
 #include "base/analysis/frontiers/DominanceFrontiers.h"
 
 #include "mir/analysis/escape/EscapeAnalysisResult.h"

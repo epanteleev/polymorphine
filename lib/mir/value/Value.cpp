@@ -56,8 +56,15 @@ bool operator==(const Value& b, const Value& a) noexcept {
 
 std::ostream& operator<<(std::ostream& os, const Value& obj) {
     auto visitor = [&]<typename T>(const T &val) {
-        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, bool>) {
+        if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::int64_t>) {
             os << val;
+
+        } else if constexpr (std::is_same_v<T, bool>) {
+            if (val) {
+                os << "true";
+            } else {
+                os << "false";
+            }
 
         } else if constexpr (std::is_same_v<T, ArgumentValue *> || std::is_same_v<T, GlobalValue*>) {
             os << *val;

@@ -171,7 +171,7 @@ namespace impls {
     }
 
     inline bool constant(const Value& value) noexcept {
-        return value.is<double>() || value.is<std::int64_t>();
+        return value.is<double>() || value.is<std::int64_t>() || value.is<bool>();
     }
 
     inline bool signed_v(const Value& value) noexcept {
@@ -180,6 +180,10 @@ namespace impls {
 
     inline bool unsigned_v(const Value& value) noexcept {
         return unsigned_type(value.type());
+    }
+
+    inline bool bool_v(const Value& value) noexcept {
+        return value.is<bool>();
     }
 
     inline bool integral(const Value& value, const std::uint64_t cst) noexcept {
@@ -209,6 +213,10 @@ consteval auto signed_v() {
 
 consteval auto unsigned_v() {
     return impls::unsigned_v;
+}
+
+consteval auto bool_v() {
+    return impls::bool_v;
 }
 
 consteval auto integral(const std::uint64_t cst) noexcept {

@@ -8,7 +8,6 @@
 #include "mir/instruction/TerminateInstruction.h"
 #include "mir/instruction/TerminateValueInstruction.h"
 #include "mir/instruction/Unary.h"
-#include "mir/value/ValueMatcher.h"
 
 namespace {
     class InstructionEscapeStateAnalysis final: public Visitor {

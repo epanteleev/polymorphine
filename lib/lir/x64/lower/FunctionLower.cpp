@@ -589,11 +589,20 @@ void FunctionLower::accept(Branch *branch) {
 }
 
 void FunctionLower::accept(CondBranch *cond_branch) {
-    try_schedule_late(cond_branch->condition());
+    const auto& cond = cond_branch->condition();
+    try_schedule_late(cond);
     const auto true_target = m_bb_mapping.at(cond_branch->on_true());
     const auto false_target = m_bb_mapping.at(cond_branch->on_false());
 
-    m_bb->ins(LIRCondBranch::jcc(cond_type(cond_branch->condition()), true_target, false_target));
+    if (cond.isa(bool_v())) {
+        if (cond.get<bool>()) {
+            m_bb->ins(LIRBranch::jmp(true_target));
+        } else {
+            m_bb->ins(LIRBranch::jmp(false_target));
+        }
+    } else {
+        m_bb->ins(LIRCondBranch::jcc(cond_type(cond), true_target, false_target));
+    }
 }
 
 void FunctionLower::allocate_arguments_for_call(const std::span<LIROperand const> args) const {
