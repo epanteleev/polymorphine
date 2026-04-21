@@ -211,7 +211,7 @@ namespace {
                     // Index each (predecessor -> phi slot) so `rename` can
                     // update a successor's phi operand in O(1).
                     for (std::size_t i{}; i < pred_span.size(); ++i) {
-                        m_phi_slots_by_pred[pred_span[i]].push_back({phi, v, i});
+                        m_phi_slots_by_pred[pred_span[i]].emplace_back(phi, v, i);
                     }
                 }
             }
