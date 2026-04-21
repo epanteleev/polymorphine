@@ -25,6 +25,6 @@ class DominatorTreeNodeChildrenIterator final {
 public:
     using iterator = DominatorTreeNode<BB>::iterator;
 
-public:
+private:
     iterator m_iterator;
 };

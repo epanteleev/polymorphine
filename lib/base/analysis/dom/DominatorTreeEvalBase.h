@@ -3,7 +3,6 @@
 #include <limits>
 #include <memory>
 #include <unordered_map>
-#include <ranges>
 #include <vector>
 
 #include "DominatorTree.h"
@@ -12,6 +11,17 @@
 #include "base/analysis/traverse/PostOrderTraverseBase.h"
 
 
+/**
+ * Cooper-Harvey-Kennedy "A Simple, Fast Dominance Algorithm".
+ *
+ * Blocks are addressed by their post-order index; the entry block has the
+ * largest index (size - 1). The idom mapping is refined in reverse post-order
+ * (skipping the entry) until it stabilises.
+ *
+ * Because indices are dense (0..N-1), dominators and predecessors are stored in
+ * std::vector rather than std::unordered_map, which removes hashing overhead
+ * from the innermost intersect/compute_idom loops.
+ */
 template<Function FD>
 class DominatorTreeEvalBase final {
 public:
@@ -28,24 +38,39 @@ public:
     static constexpr auto analysis_kind = AnalysisType::DominatorTree;
 
     void run() {
-        const auto blocks_indexes = indexing_blocks(m_postorder);
-        const auto predecessor_map = calculate_incoming(m_postorder, blocks_indexes);
-        auto dominators = initialize_dominators(m_postorder);
+        const auto n = m_postorder.size();
+        if (n == 0) {
+            return;
+        }
+
+        std::vector<basic_block*> index_to_block;
+        index_to_block.reserve(n);
+        std::unordered_map<basic_block*, std::size_t> block_to_index;
+        block_to_index.reserve(n);
+        for (const auto bb: m_postorder) {
+            block_to_index.emplace(bb, index_to_block.size());
+            index_to_block.push_back(bb);
+        }
+
+        const auto predecessors = build_predecessors(index_to_block, block_to_index);
+
+        const auto entry = n - 1;
+        std::vector<std::size_t> idoms(n, UNDEFINED);
+        idoms[entry] = entry;
 
         bool changed = true;
         while (changed) {
             changed = false;
-            for (auto i: std::views::iota(0UL, m_postorder.size()-1) | std::views::reverse) {
-                const auto idom = evaluate_idom(dominators, predecessor_map, i);
-                if (idom != dominators.at(i)) {
-                    dominators[i] = idom;
+            for (std::size_t i = entry; i-- > 0;) {
+                const auto new_idom = compute_idom(idoms, predecessors[i]);
+                if (new_idom != idoms[i]) {
+                    idoms[i] = new_idom;
                     changed = true;
                 }
             }
         }
 
-        auto index_to_label = eval_index_to_label(blocks_indexes);
-        enumeration_to_dom_map(m_postorder, index_to_label, dominators);
+        build_dominator_tree(idoms, index_to_block);
     }
 
     static DominatorTreeEvalBase create(AnalysisPassManagerBase<FD> *cache, const FD *data) {
@@ -54,118 +79,78 @@ public:
     }
 
     std::unique_ptr<result_type> result() noexcept {
-        return std::make_unique<result_type>(std::move(dominator_tree));
+        return std::make_unique<result_type>(std::move(m_dominator_tree));
     }
 
 private:
     static constexpr auto UNDEFINED = std::numeric_limits<std::size_t>::max();
 
-    void enumeration_to_dom_map(const Ordering<basic_block>& ordering, const std::unordered_map<std::size_t, basic_block*>& index_to_block, std::unordered_map<std::size_t, std::size_t>& dominators) {
-        for (const auto key: dominators | std::views::keys) {
-            const auto block = index_to_block.at(key);
-            dominator_tree.emplace(block, block);
-        }
-
-        dominators.erase(ordering.size()-1); // Remove the entry block
-
-        for (auto& [key, value]: dominators) {
-            const auto block = index_to_block.at(key);
-            const auto idom = index_to_block.at(value);
-            auto idom_node = dominator_tree.find(idom);
-            assertion(idom_node != dominator_tree.end(), "must be");
-            auto dominator_node = dominator_tree.find(block);
-            assertion(dominator_node != dominator_tree.end(), "must be");
-
-            dominator_node->second.idom = &idom_node->second;
-            idom_node->second.children.push_back(dominator_node->first);
-        }
-    }
-
-    static std::unordered_map<std::size_t, std::size_t> initialize_dominators(const order_type& postorder) {
-        std::unordered_map<std::size_t, std::size_t> dominators;
-        const auto begin = postorder.size()-1; // Exclude the entry block
-        for (const auto bb : std::views::iota(0UL, postorder.size())) {
-            if (bb == begin) {
-                dominators[bb] = begin;
-            } else {
-                dominators[bb] = UNDEFINED;
-            }
-        }
-
-        return dominators;
-    }
-
-    static std::unordered_map<std::size_t, std::vector<std::size_t>> calculate_incoming(const order_type& postorder, const std::unordered_map<basic_block*, std::size_t>& incoming) {
-        std::unordered_map<std::size_t, std::vector<std::size_t>> predecessors;
-
-        for (const auto bb : postorder) {
-            const auto pred = bb->predecessors();
-            if (pred.empty()) {
-                continue;
-            }
-
-            std::vector<std::size_t> mapped_pred;
-            mapped_pred.reserve(pred.size());
+    static std::vector<std::vector<std::size_t>> build_predecessors(const std::vector<basic_block*>& index_to_block, const std::unordered_map<basic_block*, std::size_t>& block_to_index) {
+        std::vector<std::vector<std::size_t>> predecessors(index_to_block.size());
+        for (std::size_t i{}; i < index_to_block.size(); ++i) {
+            const auto pred = index_to_block[i]->predecessors();
+            auto& bucket = predecessors[i];
+            bucket.reserve(pred.size());
             for (const auto p: pred) {
-                const auto mapped = incoming.at(p);
-                mapped_pred.push_back(mapped);
+                bucket.push_back(block_to_index.at(p));
             }
-
-            const auto key = incoming.at(bb);
-            predecessors[key] = std::move(mapped_pred);
         }
 
         return predecessors;
     }
 
-    static std::unordered_map<basic_block*, std::size_t> indexing_blocks(const Ordering<basic_block>& ordering) {
-        std::unordered_map<basic_block*, std::size_t> indexing;
-        for (auto [i, bb]: std::ranges::views::enumerate(ordering)) {
-            indexing[bb] = i;
-        }
-
-        return indexing;
-    }
-
-    static std::size_t intersect(const std::unordered_map<std::size_t, std::size_t> & dominators, const std::size_t a, const std::size_t b) {
-        auto finger1 = a;
-        auto finger2 = b;
-        while (finger1 != finger2) {
-            while (finger1 < finger2) {
-                finger1 = dominators.at(finger1);
+    /** Walk up the dominator tree from @p a and @p b until they meet. */
+    static std::size_t intersect(const std::span<std::size_t const> idoms, std::size_t a, std::size_t b) noexcept {
+        while (a != b) {
+            while (a < b) {
+                a = idoms[a];
             }
-            while (finger2 < finger1) {
-                finger2 = dominators.at(finger2);
+            while (b < a) {
+                b = idoms[b];
             }
         }
 
-        return finger1;
+        return a;
     }
 
-    static std::size_t evaluate_idom(const std::unordered_map<std::size_t, std::size_t> & dominators, const std::unordered_map<std::size_t, std::vector<std::size_t>> & incoming_map, const std::size_t idx) {
-        const auto& incoming = incoming_map.at(idx);
+    /** Meet over the already-processed predecessors of a block. */
+    static std::size_t compute_idom(const std::span<std::size_t const> idoms, const std::span<std::size_t const> preds) noexcept {
+        auto it = preds.begin();
+        const auto end = preds.end();
 
-        const auto filter = [&dominators](const std::size_t idom) {
-            return dominators.at(idom) != UNDEFINED;
-        };
+        while (it != end && idoms[*it] == UNDEFINED) {
+            ++it;
+        }
+        assertion(it != end, "block must have at least one processed predecessor");
 
-        const auto fold = [&dominators](const std::size_t acc, const std::size_t idom) {
-            return intersect(dominators, acc, idom);
-        };
-
-        auto&& v = incoming | std::ranges::views::filter(filter);
-        return std::ranges::fold_left_first(v, fold).value();
-    }
-
-    static std::unordered_map<std::size_t, basic_block*> eval_index_to_label(const std::unordered_map<basic_block *, std::size_t> & block_to_index) {
-        std::unordered_map<std::size_t, basic_block*> index_to_label;
-        for (const auto &[bb, idx]: block_to_index) {
-            index_to_label[idx] = bb;
+        auto acc = *it++;
+        for (; it != end; ++it) {
+            if (idoms[*it] != UNDEFINED) {
+                acc = intersect(idoms, acc, *it);
+            }
         }
 
-        return index_to_label;
+        return acc;
     }
 
-    std::unordered_map<basic_block*, dom_node> dominator_tree{};
+    void build_dominator_tree(const std::vector<std::size_t>& idoms, const std::vector<basic_block*>& index_to_block) {
+        const auto n = index_to_block.size();
+        m_dominator_tree.reserve(n);
+        for (const auto bb: index_to_block) {
+            m_dominator_tree.emplace(bb, bb);
+        }
+
+        const auto entry = n - 1;
+        for (std::size_t i{}; i < entry; ++i) {
+            const auto block = index_to_block[i];
+            const auto idom_block = index_to_block[idoms[i]];
+            auto& node = m_dominator_tree.find(block)->second;
+            auto& idom_node = m_dominator_tree.find(idom_block)->second;
+            node.idom = &idom_node;
+            idom_node.children.push_back(block);
+        }
+    }
+
+    std::unordered_map<basic_block*, dom_node> m_dominator_tree{};
     order_type& m_postorder;
 };
