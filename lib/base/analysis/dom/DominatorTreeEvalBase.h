@@ -77,7 +77,7 @@ private:
             assertion(dominator_node != dominator_tree.end(), "must be");
 
             dominator_node->second.idom = &idom_node->second;
-            idom_node->second.children.push_back(&dominator_node->second);
+            idom_node->second.children.push_back(dominator_node->first);
         }
     }
 

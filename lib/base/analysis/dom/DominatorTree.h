@@ -57,10 +57,11 @@ public:
     }
 
     /**
-     * @return
+     * @return immediate dominator-tree children of the given block
+     * (i.e. blocks for which `dominator` is the immediate dominator).
      * **/
     [[nodiscard]]
-    std::span<BB*> idom(BB* const dominator) const {
+    std::span<BB* const> children(BB* const dominator) const {
         const auto idom_node = m_dominator_tree.find(dominator);
         if (idom_node == m_dominator_tree.end()) {
             return {};

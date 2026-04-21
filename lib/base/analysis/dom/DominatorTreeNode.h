@@ -6,12 +6,12 @@
 template<CodeBlock BB>
 class DominatorTreeNode final {
 public:
-    using iterator = std::vector<DominatorTreeNode *>::iterator;
+    using iterator = std::vector<BB *>::iterator;
 
     explicit DominatorTreeNode(BB *const me) noexcept:
         m_me(me) {}
 
     DominatorTreeNode *idom{};
     BB *const m_me;
-    std::vector<DominatorTreeNode *> children{};
+    std::vector<BB *> children{};
 };
