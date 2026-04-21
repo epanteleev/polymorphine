@@ -12,11 +12,6 @@
 #include "mir/value/VConstant.h"
 
 namespace details {
-    bool MeetInstruction::meet(const Instruction &inst) noexcept {
-        inst.visit(*this);
-        return m_changed;
-    }
-
     void MeetInstruction::terminator(const Instruction *inst) noexcept {
         const auto term = Terminator::from(inst);
         if (!term.has_value()) {
@@ -24,7 +19,7 @@ namespace details {
         }
 
         for (const auto* succ: term->targets()) {
-            m_changed |= m_reachable_blocks.emplace(succ).second;
+            m_cfg_worklist.push_back(succ);
         }
     }
 
@@ -42,16 +37,16 @@ namespace details {
     void MeetInstruction::accept(Binary *inst) {
         const auto lhs = m_states.lattice_of_operand(inst->lhs());
         if (lhs.kind() == LatticeKind::Overdefined) {
-            m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+            update(inst, LatticeValue::overdefined());
             return;
         }
         const auto rhs = m_states.lattice_of_operand(inst->rhs());
         if (rhs.kind() == LatticeKind::Overdefined) {
-            m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+            update(inst, LatticeValue::overdefined());
             return;
         }
         if (lhs.kind() != LatticeKind::Constant || rhs.kind() != LatticeKind::Constant) {
-            m_changed |= m_states.merge_state(inst, LatticeValue::unknown());
+            update(inst, LatticeValue::unknown());
             return;
         }
 
@@ -76,7 +71,7 @@ namespace details {
             default: die("unimpl");
         }
 
-        m_changed |= m_states.merge_state(inst, result);
+        update(inst, result);
     }
 
     void MeetInstruction::accept(Branch *branch) {
@@ -84,23 +79,15 @@ namespace details {
     }
 
     void MeetInstruction::accept(CondBranch *cond_branch) {
-        switch (const auto cond_state = m_states.lattice_of_operand(cond_branch->condition()); cond_state.kind()) {
-            case LatticeKind::Constant: {
-                const auto& cond_value = cond_state.cst();
-                if (!cond_value.is<bool>()) {
-                    return;
-                }
-
-                const auto* target = cond_value.get<bool>() ? cond_branch->on_true() : cond_branch->on_false();
-                m_changed = m_reachable_blocks.emplace(target).second;
-                return;
-            }
-            default: {
-                const auto ins_true = m_reachable_blocks.emplace(cond_branch->on_true()).second;
-                const auto ins_false = m_reachable_blocks.emplace(cond_branch->on_false()).second;
-                m_changed = ins_true || ins_false;
-            }
+        const auto cond_state = m_states.lattice_of_operand(cond_branch->condition());
+        if (cond_state.kind() == LatticeKind::Constant && cond_state.cst().is<bool>()) {
+            const auto* target = cond_state.cst().get<bool>() ? cond_branch->on_true() : cond_branch->on_false();
+            m_cfg_worklist.push_back(target);
+            return;
         }
+
+        m_cfg_worklist.push_back(cond_branch->on_true());
+        m_cfg_worklist.push_back(cond_branch->on_false());
     }
 
     void MeetInstruction::accept(Call *inst) {
@@ -136,7 +123,7 @@ namespace details {
 
             switch (const auto lattice = m_states.lattice_of_operand(op); lattice.kind()) {
                 case LatticeKind::Unknown: {
-                    m_changed |= m_states.merge_state(inst, LatticeValue::unknown());
+                    update(inst, LatticeValue::unknown());
                     return;
                 }
                 case LatticeKind::Constant: {
@@ -151,33 +138,33 @@ namespace details {
                     [[fallthrough]];
                 }
                 case LatticeKind::Overdefined: {
-                    m_changed |= m_states.merge_state(inst, LatticeValue::overdefined());
+                    update(inst, LatticeValue::overdefined());
                     return;
                 }
             }
         }
 
         if (!acc.has_value()) {
-            m_changed |= m_states.merge_state(inst, LatticeValue::unknown());
+            update(inst, LatticeValue::unknown());
             return;
         }
 
-        m_changed |= m_states.merge_state(inst, LatticeValue::constant(acc.value()));
+        update(inst, LatticeValue::constant(acc.value()));
     }
 
     void MeetInstruction::accept(IcmpInstruction *icmp) {
         const auto lhs = m_states.lattice_of_operand(icmp->lhs());
         if (lhs.kind() == LatticeKind::Overdefined) {
-            m_changed |= m_states.merge_state(icmp, LatticeValue::overdefined());
+            update(icmp, LatticeValue::overdefined());
             return;
         }
         const auto rhs = m_states.lattice_of_operand(icmp->rhs());
         if (rhs.kind() == LatticeKind::Overdefined) {
-            m_changed |= m_states.merge_state(icmp, LatticeValue::overdefined());
+            update(icmp, LatticeValue::overdefined());
             return;
         }
         if (lhs.kind() != LatticeKind::Constant || rhs.kind() != LatticeKind::Constant) {
-            m_changed |= m_states.merge_state(icmp, LatticeValue::unknown());
+            update(icmp, LatticeValue::unknown());
             return;
         }
 
@@ -210,25 +197,25 @@ namespace details {
             default: std::unreachable();
         }
 
-        m_changed |= m_states.merge_state(icmp, result);
+        update(icmp, result);
     }
 
     void MeetInstruction::accept(Select *select) {
         const auto cond = m_states.lattice_of_operand(select->condition());
         if (cond.kind() == LatticeKind::Unknown) {
-            m_changed |= m_states.merge_state(select, LatticeValue::unknown());
+            update(select, LatticeValue::unknown());
             return;
         }
 
         if (cond.kind() == LatticeKind::Constant) {
             const auto& cond_value = cond.cst();
             if (!cond_value.is<bool>()) {
-                m_changed |= m_states.merge_state(select, LatticeValue::overdefined());
+                update(select, LatticeValue::overdefined());
                 return;
             }
 
             const auto branch = cond_value.get<bool>() ? select->on_true() : select->on_false();
-            m_changed |= m_states.merge_state(select, m_states.lattice_of_operand(branch));
+            update(select, m_states.lattice_of_operand(branch));
             return;
         }
 
@@ -237,18 +224,18 @@ namespace details {
 
         if (on_true.kind() == LatticeKind::Constant && on_false.kind() == LatticeKind::Constant) {
             if (on_true.cst() == on_false.cst()) {
-                m_changed |= m_states.merge_state(select, on_true);
+                update(select, on_true);
                 return;
             }
 
-            m_changed |= m_states.merge_state(select, LatticeValue::overdefined());
+            update(select, LatticeValue::overdefined());
             return;
         }
         if (on_true.kind() == LatticeKind::Overdefined || on_false.kind() == LatticeKind::Overdefined) {
-            m_changed |= m_states.merge_state(select, LatticeValue::overdefined());
+            update(select, LatticeValue::overdefined());
             return;
         }
 
-        m_changed |= m_states.merge_state(select, LatticeValue::unknown());
+        update(select, LatticeValue::unknown());
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <vector>
 
 #include "SccpLattice.h"
 #include "mir/instruction/InstructionVisitor.h"
@@ -9,14 +10,23 @@
 namespace details {
     class MeetInstruction final: public Visitor {
     public:
-        explicit MeetInstruction(std::unordered_set<const BasicBlock*>& executable_blocks, SccpLattice& states) noexcept:
-            m_reachable_blocks(executable_blocks),
-            m_states(states) {}
+        MeetInstruction(std::unordered_set<const BasicBlock*>& reachable_blocks, SccpLattice& states, std::vector<const BasicBlock*>& cfg_worklist, std::vector<const ValueInstruction*>& ssa_worklist) noexcept:
+            m_reachable_blocks(reachable_blocks),
+            m_states(states),
+            m_cfg_worklist(cfg_worklist),
+            m_ssa_worklist(ssa_worklist) {}
 
-        [[nodiscard]]
-        bool meet(const Instruction &inst) noexcept;
+        void meet(const Instruction& inst) noexcept {
+            inst.visit(*this);
+        }
 
     private:
+        void update(const ValueInstruction* inst, const LatticeValue& incoming) noexcept {
+            if (m_states.merge_state(inst, incoming)) {
+                m_ssa_worklist.push_back(inst);
+            }
+        }
+
         void terminator(const Instruction *inst) noexcept;
 
         void accept(Binary *inst) override;
@@ -75,8 +85,9 @@ namespace details {
 
         }
 
-        bool m_changed{};
         std::unordered_set<const BasicBlock*>& m_reachable_blocks;
         SccpLattice& m_states;
+        std::vector<const BasicBlock*>& m_cfg_worklist;
+        std::vector<const ValueInstruction*>& m_ssa_worklist;
     };
 }

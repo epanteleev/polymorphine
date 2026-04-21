@@ -24,28 +24,43 @@ namespace details {
 
     private:
         void process_function() {
-            m_reachable_blocks.emplace(m_fn.first());
+            std::vector<const BasicBlock*> cfg_worklist;
+            std::vector<const ValueInstruction*> ssa_worklist;
+            MeetInstruction merger(m_reachable_blocks, m_lattice, cfg_worklist, ssa_worklist);
 
-            bool changed = false;
-            do {
-                changed = false;
-                for (auto& bb: m_fn.basic_blocks()) {
-                    if (!m_reachable_blocks.contains(&bb)) {
+            cfg_worklist.push_back(m_fn.first());
+            while (!cfg_worklist.empty() || !ssa_worklist.empty()) {
+                if (!cfg_worklist.empty()) {
+                    const auto* bb = cfg_worklist.back();
+                    cfg_worklist.pop_back();
+
+                    if (m_reachable_blocks.insert(bb).second) {
+                        m_reachable_ordered.push_back(bb);
+                        for (const auto& inst : bb->instructions()) {
+                            merger.meet(inst);
+                        }
+                    } else {
+                        for (const auto& inst : bb->instructions()) {
+                            if (Phi::cast(&inst) == nullptr) {
+                                break;
+                            }
+                            merger.meet(inst);
+                        }
+                    }
+                    continue;
+                }
+
+                const auto def = ssa_worklist.back();
+                ssa_worklist.pop_back();
+
+                for (const auto* user : def->users()) {
+                    if (!m_reachable_blocks.contains(user->owner())) {
                         continue;
                     }
 
-                    changed |= process_block(bb);
+                    merger.meet(*user);
                 }
-            } while (changed);
-        }
-
-        bool process_block(const BasicBlock& bb) {
-            bool changed = false;
-            for (const auto& inst: bb.instructions()) {
-                MeetInstruction merger(m_reachable_blocks, m_lattice);
-                changed |= merger.meet(inst);
             }
-            return changed;
         }
 
         void rewrite_constants() const {
@@ -54,52 +69,39 @@ namespace details {
                     continue;
                 }
 
-                for (const auto* user: inst->users()) {
-                    const auto operands = user->operands();
-                    for (std::size_t idx{}; idx < operands.size(); ++idx) {
-                        const auto& op = operands[idx];
-                        if (!op.is<ValueInstruction*>()) {
-                            continue;
-                        }
-                        if (op.get<ValueInstruction*>() != inst) {
-                            continue;
-                        }
-
-                        const_cast<Instruction*>(user)->update_operand(idx, state.cst());
-                    }
-                }
+                const_cast<ValueInstruction*>(inst)->replace_all_uses(state.cst());
             }
         }
 
-        std::vector<const CondBranch*> collect_branches() const {
-            std::vector<const CondBranch*> foldable;
-            for (const auto& bb : m_fn.basic_blocks()) {
-                if (!m_reachable_blocks.contains(&bb)) {
-                    continue;
-                }
-                const auto last = bb.last();
+        struct FoldableBranch {
+            const CondBranch* cond;
+            const BasicBlock* target;
+        };
+
+        [[nodiscard]]
+        std::vector<FoldableBranch> collect_branches() const {
+            std::vector<FoldableBranch> foldable;
+            for (const auto* bb : m_reachable_ordered) {
+                const auto last = bb->last();
                 const auto cond = last.get<CondBranch>();
                 if (cond == nullptr) {
                     continue;
                 }
 
                 const auto cond_state = m_lattice.lattice_of_operand(cond->condition());
-                if (cond_state.kind() == LatticeKind::Constant) {
-                    foldable.push_back(cond);
+                if (cond_state.kind() != LatticeKind::Constant || !cond_state.cst().is<bool>()) {
+                    continue;
                 }
+
+                const auto* target = cond_state.cst().get<bool>() ? cond->on_true() : cond->on_false();
+                foldable.push_back({cond, target});
             }
 
             return foldable;
         }
 
         void simplify_branches() const {
-            for (const auto* cond : collect_branches()) {
-                const auto cond_state = m_lattice.lattice_of_operand(cond->condition());
-                const auto& cond_value = cond_state.cst();
-
-                assertion(cond_state.kind() == LatticeKind::Constant && cond_value.is<bool>(), "must be constant");
-
-                auto* target = cond_value.get<bool>() ? cond->on_true() : cond->on_false();
+            for (const auto [cond, target] : collect_branches()) {
                 const auto term = Terminator::from(cond);
                 assertion(term.has_value(), "must be terminator");
 
@@ -109,7 +111,7 @@ namespace details {
                 }
 
                 owner->remove_instruction(cond);
-                owner->ins(Branch::br(target));
+                owner->ins(Branch::br(const_cast<BasicBlock*>(target)));
             }
         }
 
@@ -143,14 +145,10 @@ namespace details {
         }
 
         void remove_dead_instructions() const {
-            std::deque<const ValueInstruction*> worklist;
+            std::vector<const ValueInstruction*> worklist;
 
-            for (const auto& bb : m_fn.basic_blocks()) {
-                if (!m_reachable_blocks.contains(&bb)) {
-                    continue;
-                }
-
-                for (const auto& inst : bb.instructions()) {
+            for (const auto* bb : m_reachable_ordered) {
+                for (const auto& inst : bb->instructions()) {
                     const auto* value_inst = ValueInstruction::cast(&inst);
                     if (value_inst == nullptr) {
                         continue;
@@ -164,8 +162,8 @@ namespace details {
             }
 
             while (!worklist.empty()) {
-                const auto* inst = worklist.front();
-                worklist.pop_front();
+                const auto* inst = worklist.back();
+                worklist.pop_back();
 
                 auto* owner = inst->owner();
                 if (!m_reachable_blocks.contains(owner)) {
@@ -176,23 +174,31 @@ namespace details {
                     continue;
                 }
 
+                // Snapshot operand defs before removal: `remove_instruction` will
+                // destroy `inst` and unhook it from each def's user list, which is
+                // exactly the signal we use below to queue transitive dead defs.
+                std::vector<const ValueInstruction*> operand_defs;
+                operand_defs.reserve(inst->operands().size());
                 for (const auto& operand : inst->operands()) {
                     if (!operand.is<ValueInstruction*>()) {
                         continue;
                     }
+                    operand_defs.push_back(operand.get<ValueInstruction*>());
+                }
 
-                    const auto* def = operand.get<ValueInstruction*>();
+                owner->remove_instruction(inst);
+
+                for (const auto* def : operand_defs) {
                     if (def->users().empty()) {
                         worklist.push_back(def);
                     }
                 }
-
-                owner->remove_instruction(inst);
             }
         }
 
         FunctionData& m_fn;
         std::unordered_set<const BasicBlock*> m_reachable_blocks;
+        std::vector<const BasicBlock*> m_reachable_ordered;
         SccpLattice m_lattice;
     };
 }
